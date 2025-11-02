@@ -1013,24 +1013,27 @@ class AdvancedMusicPlayer {
 		}
 	}
 	fetchYouTubeTitle(videoId) {
-		return new Promise((resolve, reject) => {
-			const url = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`;
-			fetch(url)
-				.then((response) => {
-					if (!response.ok) {
-						throw new Error("Failed to fetch video info");
-					}
-					return response.json();
-				})
-				.then((data) => {
-					resolve(data.title);
-				})
-				.catch((error) => {
-					console.error("Error fetching YouTube title:", error);
-					reject(error);
-				});
-		});
-	}
+    return new Promise((resolve, reject) => {
+        const url = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`;
+        fetch(url)
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Failed to fetch video info");
+                }
+                return response.json();
+            })
+            .then((data) => {
+                resolve({
+                    title: data.title,
+                    channelName: data.author_name
+                });
+            })
+            .catch((error) => {
+                console.error("Error fetching YouTube title:", error);
+                reject(error);
+            });
+    });
+}
 	renderSongLibrary(searchTerm = null) {
 		try {
 			if (!this.elements.songLibrary) return;
@@ -3950,16 +3953,12 @@ class AdvancedMusicPlayer {
 			};
 		}
 
-		// STEP 7: No pattern found - return as song only
 		return {
 			author: "",
 			songName: cleanTitle
 		};
 	}
 
-	// ============================================
-	// ADD THIS NEW METHOD TO YOUR CLASS
-	// ============================================
 
 	removeNoisePatterns(text) {
 		const patterns = [
@@ -4102,45 +4101,42 @@ class AdvancedMusicPlayer {
 	}
 
 	handleAutofill() {
-		const songUrl = this.elements.songUrlInput.value.trim();
-		if (!songUrl) return;
-		const videoId = this.extractYouTubeId(songUrl);
-		if (!videoId) return;
-		this.fetchYouTubeTitle(videoId)
-			.then((title) => {
-				if (title) {
-					const {
-						author,
-						songName
-					} = this.parseVideoTitle(title);
-					this.elements.songNameInput.value = songName;
-					this.elements.songAuthorInput.value = author;
-				}
-			})
-			.catch((error) => {
-				console.error("Error fetching video title for autofill:", error);
-				alert("Could not fetch video information for autofill");
-			});
-	}
+    const songUrl = this.elements.songUrlInput.value.trim();
+    if (!songUrl) return;
+    const videoId = this.extractYouTubeId(songUrl);
+    if (!videoId) return;
+    this.fetchYouTubeTitle(videoId)
+        .then((data) => {
+            if (data.title) {
+                const { author, songName } = this.parseVideoTitle(data.title);
+                this.elements.songNameInput.value = songName;
+                // Use channel name as fallback if author is empty
+                this.elements.songAuthorInput.value = author || data.channelName;
+            }
+        })
+        .catch((error) => {
+            console.error("Error fetching video title for autofill:", error);
+            alert("Could not fetch video information for autofill");
+        });
+}
 	showGhostPreview(event) {
-		const songUrl = this.elements.songUrlInput.value.trim();
-		if (!songUrl) return;
-		const videoId = this.extractYouTubeId(songUrl);
-		if (!videoId) return;
-		this.fetchYouTubeTitle(videoId)
-			.then((title) => {
-				if (title) {
-					const {
-						author,
-						songName
-					} = this.parseVideoTitle(title);
-					this.createGhostPreview(songName, author, event);
-				}
-			})
-			.catch((error) => {
-				console.warn("Could not fetch title for ghost preview:", error);
-			});
-	}
+    const songUrl = this.elements.songUrlInput.value.trim();
+    if (!songUrl) return;
+    const videoId = this.extractYouTubeId(songUrl);
+    if (!videoId) return;
+    this.fetchYouTubeTitle(videoId)
+        .then((data) => {
+            if (data.title) {
+                const { author, songName } = this.parseVideoTitle(data.title);
+                // Use channel name as fallback
+                const finalAuthor = author || data.channelName;
+                this.createGhostPreview(songName, finalAuthor, event);
+            }
+        })
+        .catch((error) => {
+            console.warn("Could not fetch title for ghost preview:", error);
+        });
+}
 	createGhostPreview(songName, author, event) {
 		this.removeGhostPreview();
 		const nameInput = this.elements.songNameInput;
