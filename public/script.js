@@ -585,6 +585,22 @@ sidebarSearchInput: document.getElementById('sidebarSearchInput')
 		this.setupLayoutEventListeners();
 		this.setupGlobalLibraryEventListeners();
 		this.setupExportButtonListeners();
+		// ============================================
+		// ADD TO setupEventListeners() - SIMPLIFIED VERSION
+		// ============================================
+		
+		// Toggle sidebar display mode (overlay <-> expanded)
+		if (this.elements.toggleSidebarModeBtn) {
+			this.elements.toggleSidebarModeBtn.addEventListener('click', () => {
+				this.toggleSidebarDisplayMode();
+			});
+		}
+		
+		// Setup expanded mode search debounce
+		this.setupSidebarExpandedSearchDebounce();
+		
+		// Setup event delegation for expanded mode song cards
+		this.setupSidebarExpandedDelegationListener();
 		document.addEventListener('contextmenu', (e) => {
 			if (e.target.classList.contains('play-btn') ||
 				e.target.closest('.play-btn') ||
@@ -619,22 +635,7 @@ sidebarSearchInput: document.getElementById('sidebarSearchInput')
 			}
 		});
 
-		// ============================================
-// ADD TO setupEventListeners() - SIMPLIFIED VERSION
-// ============================================
-
-// Toggle sidebar display mode (overlay <-> expanded)
-if (this.elements.toggleSidebarModeBtn) {
-	this.elements.toggleSidebarModeBtn.addEventListener('click', () => {
-		this.toggleSidebarDisplayMode();
-	});
-}
-
-// Setup expanded mode search debounce
-this.setupSidebarExpandedSearchDebounce();
-
-// Setup event delegation for expanded mode song cards
-this.setupSidebarExpandedDelegationListener();
+		
 
 		const eventBindings = [
 			[this.elements.toggleControlBarBtn, "click", this.handleToggleControlBar],
@@ -2636,14 +2637,18 @@ setupSidebarExpandedSearchDebounce() {
 }
 
 handleSidebarExpandedSongCardDelegation(e) {
-	const songCard = e.target.closest('.sidebar-song-card');
-	if (!songCard) return;
-	
+	// Check if clicking on button or icon inside button
 	const actionButton = e.target.closest('.sidebar-song-btn');
 	
 	if (actionButton) {
 		e.stopPropagation();
+		e.preventDefault();
+		
 		const action = actionButton.dataset.action;
+		const songCard = actionButton.closest('.sidebar-song-card');
+		
+		if (!songCard) return;
+		
 		const entryId = songCard.dataset.entryId;
 		const index = parseInt(songCard.dataset.playlistIndex, 10);
 		
@@ -2656,10 +2661,12 @@ handleSidebarExpandedSongCardDelegation(e) {
 	}
 	
 	// Click anywhere else on card = play
+	const songCard = e.target.closest('.sidebar-song-card');
+	if (!songCard) return;
+	
 	const index = parseInt(songCard.dataset.playlistIndex, 10);
 	this.playSongFromPlaylist(index);
 }
-
 setupSidebarExpandedDelegationListener() {
 	if (this.elements.sidebarPlaylistSongs) {
 		this.elements.sidebarPlaylistSongs.addEventListener('click', (e) => {
