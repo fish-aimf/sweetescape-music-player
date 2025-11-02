@@ -188,9 +188,6 @@ class AdvancedMusicPlayer {
 		this.libraryReverseOrder = false;
 		this.isTabVisible = !document.hidden;
 		this.handleVisibilityChange = null;
-		this.sidebarDisplayMode = 'overlay'; // 'overlay' or 'expanded'
-		this.activeSidebarPlaylistFilter = '';
-		this.sidebarFilterDebounceTimer = null;
 		this.initDatabase()
 			.then(() => {
 				return Promise.all([
@@ -390,10 +387,7 @@ class AdvancedMusicPlayer {
 			libraryOptionsDropdown: document.getElementById("libraryOptionsDropdown"),
 			showDeleteBtn: document.getElementById("showDeleteBtn"),
 			showUnfavoriteBtn: document.getElementById("showUnfavoriteBtn"),
-			showEditBtn: document.getElementById("showEditBtn"),
-			toggleSidebarModeBtn: document.getElementById('toggleSidebarModeBtn'),
-sidebarSearchContainer: document.getElementById('sidebarSearchContainer'),
-sidebarSearchInput: document.getElementById('sidebarSearchInput')
+			showEditBtn: document.getElementById("showEditBtn")
 		};
 		this.elements.modifyLibraryBtn.parentElement.addEventListener("mouseenter",
 			this.handleShowLibraryDropdown.bind(this));
@@ -585,22 +579,6 @@ sidebarSearchInput: document.getElementById('sidebarSearchInput')
 		this.setupLayoutEventListeners();
 		this.setupGlobalLibraryEventListeners();
 		this.setupExportButtonListeners();
-		// ============================================
-		// ADD TO setupEventListeners() - SIMPLIFIED VERSION
-		// ============================================
-		
-		// Toggle sidebar display mode (overlay <-> expanded)
-		if (this.elements.toggleSidebarModeBtn) {
-			this.elements.toggleSidebarModeBtn.addEventListener('click', () => {
-				this.toggleSidebarDisplayMode();
-			});
-		}
-		
-		// Setup expanded mode search debounce
-		this.setupSidebarExpandedSearchDebounce();
-		
-		// Setup event delegation for expanded mode song cards
-		this.setupSidebarExpandedDelegationListener();
 		document.addEventListener('contextmenu', (e) => {
 			if (e.target.classList.contains('play-btn') ||
 				e.target.closest('.play-btn') ||
@@ -634,9 +612,6 @@ sidebarSearchInput: document.getElementById('sidebarSearchInput')
 				}
 			}
 		});
-
-		
-
 		const eventBindings = [
 			[this.elements.toggleControlBarBtn, "click", this.handleToggleControlBar],
 			[this.elements.modifyLibraryBtn, "click", this.handleOpenLibraryModal],
@@ -2392,290 +2367,78 @@ sidebarSearchInput: document.getElementById('sidebarSearchInput')
 		this.isSidebarVisible = false;
 	}
 	renderPlaylistSidebar() {
-	if (!this.currentPlaylist) return;
-	
-	if (this.sidebarDisplayMode === 'expanded') {
-		this.renderSidebarExpandedMode();
-	} else {
-		this.renderSidebarOverlayMode();
-	}
-}
-
-	// ============================================
-// PLAYLIST SIDEBAR - SIMPLIFIED CONTROL METHODS
-// ============================================
-
-toggleSidebarDisplayMode() {
-	if (this.sidebarDisplayMode === 'overlay') {
-		this.sidebarDisplayMode = 'expanded';
-		this.applySidebarExpandedLayout();
-		this.renderPlaylistSidebar();
-		this.elements.toggleSidebarModeBtn.innerHTML = '<i class="fas fa-compress"></i>';
-		this.elements.toggleSidebarModeBtn.title = 'Switch to Overlay Mode';
-		if (this.elements.sidebarSearchContainer) {
-			this.elements.sidebarSearchContainer.style.display = 'block';
+		if (!this.currentPlaylist) return;
+		this.elements.sidebarPlaylistName.textContent = this.currentPlaylist.name;
+		if (this.elements.playlistTotalDuration) {
+			this.elements.playlistTotalDuration.textContent =
+				this.getPlaylistDurationText();
 		}
-	} else {
-		this.sidebarDisplayMode = 'overlay';
-		this.removeSidebarExpandedLayout();
-		this.renderPlaylistSidebar();
-		this.elements.toggleSidebarModeBtn.innerHTML = '<i class="fas fa-expand"></i>';
-		this.elements.toggleSidebarModeBtn.title = 'Switch to Expanded Mode';
-		if (this.elements.sidebarSearchContainer) {
-			this.elements.sidebarSearchContainer.style.display = 'none';
-		}
-		this.activeSidebarPlaylistFilter = '';
-		if (this.elements.sidebarSearchInput) {
-			this.elements.sidebarSearchInput.value = '';
-		}
-	}
-}
-
-applySidebarExpandedLayout() {
-	this.elements.currentPlaylistSidebar.classList.add('expanded');
-	
-	const appContainer = document.querySelector('.app-container');
-	if (appContainer) {
-		appContainer.classList.add('sidebar-expanded');
-	}
-	
-	const leftBanner = document.querySelector('.left-banner');
-	const rightBanner = document.querySelector('.right-banner');
-	
-	if (leftBanner) leftBanner.classList.add('hidden');
-	if (rightBanner) rightBanner.classList.add('hidden');
-}
-
-removeSidebarExpandedLayout() {
-	this.elements.currentPlaylistSidebar.classList.remove('expanded');
-	
-	const appContainer = document.querySelector('.app-container');
-	if (appContainer) {
-		appContainer.classList.remove('sidebar-expanded');
-	}
-	
-	const leftBanner = document.querySelector('.left-banner');
-	const rightBanner = document.querySelector('.right-banner');
-	
-	if (leftBanner) leftBanner.classList.remove('hidden');
-	if (rightBanner) rightBanner.classList.remove('hidden');
-}
-
-renderSidebarExpandedMode() {
-	if (!this.currentPlaylist) return;
-	
-	this.elements.sidebarPlaylistName.textContent = this.currentPlaylist.name;
-	if (this.elements.playlistTotalDuration) {
-		this.elements.playlistTotalDuration.textContent = this.getPlaylistDurationText();
-	}
-	
-	this.updatePlaylistLoopButton();
-	this.elements.sidebarPlaylistSongs.innerHTML = '';
-	
-	let songsToRender = this.currentPlaylist.songs;
-	
-	// Apply search filter
-	if (this.activeSidebarPlaylistFilter) {
-		const query = this.activeSidebarPlaylistFilter.toLowerCase().trim();
-		songsToRender = this.currentPlaylist.songs.filter(song => {
-			return song.name.toLowerCase().includes(query);
-		});
-	}
-	
-	const fragment = document.createDocumentFragment();
-	
-	songsToRender.forEach((song) => {
-		const actualIndex = this.currentPlaylist.songs.indexOf(song);
-		const songCard = document.createElement('div');
-		songCard.classList.add('sidebar-song-card');
-		songCard.dataset.playlistIndex = actualIndex;
-		
-		const entryId = song.entryId || 'id_' + song.videoId;
-		songCard.dataset.entryId = entryId;
-		
-		if (actualIndex === this.currentSongIndex) {
-			songCard.classList.add('active');
-		}
-		
-		if (this.temporarilySkippedSongs.has(entryId)) {
-			songCard.classList.add('temporarily-skipped');
-		}
-		
-		const thumbnailUrl = `https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg`;
-		
-		songCard.innerHTML = `
-			<img src="${thumbnailUrl}" alt="${song.name}" class="sidebar-song-thumbnail" />
-			<div class="sidebar-song-info">
-				<div class="sidebar-song-name">${song.name}</div>
-			</div>
-			<div class="sidebar-song-actions">
-				<button class="sidebar-song-btn play-btn" data-action="play" title="Play">
-					<i class="fas fa-play"></i>
-				</button>
-				<button class="sidebar-song-btn ban-btn" data-action="ban" title="Toggle Skip">
-					<i class="fas fa-ban"></i>
-				</button>
-			</div>
-		`;
-		
-		fragment.appendChild(songCard);
-	});
-	
-	this.elements.sidebarPlaylistSongs.appendChild(fragment);
-	
-	// Scroll to active song
-	if (this.currentPlaylist.songs.length > 0) {
-		const activeElement = this.elements.sidebarPlaylistSongs.querySelector('.sidebar-song-card.active');
-		if (activeElement) {
-			requestAnimationFrame(() => {
-				activeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-			});
-		}
-	}
-}
-
-renderSidebarOverlayMode() {
-	if (!this.currentPlaylist) return;
-	
-	this.elements.sidebarPlaylistName.textContent = this.currentPlaylist.name;
-	if (this.elements.playlistTotalDuration) {
-		this.elements.playlistTotalDuration.textContent = this.getPlaylistDurationText();
-	}
-	
-	this.updatePlaylistLoopButton();
-	this.elements.sidebarPlaylistSongs.innerHTML = '';
-	
-	this.currentPlaylist.songs.forEach((song, index) => {
-		const songElement = document.createElement('div');
-		songElement.classList.add('sidebar-song-item');
-		
-		const entryId = song.entryId || 'id_' + song.videoId;
-		songElement.dataset.entryId = entryId;
-		
-		if (index === this.currentSongIndex) {
-			songElement.classList.add('active');
-		}
-		
-		if (this.temporarilySkippedSongs.has(entryId)) {
-			songElement.classList.add('temporarily-skipped');
-		}
-		
-		songElement.innerHTML = `<span>${index + 1}. ${song.name}</span>`;
-		
-		let clickHandler = (e) => {
-			if (!this.isLongPressing) {
-				this.playSongFromPlaylist(index);
+		this.updatePlaylistLoopButton();
+		this.elements.sidebarPlaylistSongs.innerHTML = "";
+		this.currentPlaylist.songs.forEach((song, index) => {
+			const songElement = document.createElement("div");
+			songElement.classList.add("sidebar-song-item");
+			const entryId = song.entryId || "id_" + song.videoId;
+			songElement.dataset.entryId = entryId;
+			if (index === this.currentSongIndex) {
+				songElement.classList.add("active");
 			}
-		};
-		songElement.addEventListener('click', clickHandler);
-		
-		songElement.addEventListener('mousedown', (e) => {
-			clearTimeout(this.longPressTimer);
-			this.isLongPressing = false;
-			this.longPressTimer = setTimeout(() => {
-				this.isLongPressing = true;
-				this.temporarilySkipSong(entryId);
-				setTimeout(() => {
-					this.isLongPressing = false;
-				}, 300);
-			}, 400);
-		});
-		
-		const cancelLongPress = () => {
-			clearTimeout(this.longPressTimer);
-		};
-		
-		songElement.addEventListener('mouseup', cancelLongPress);
-		songElement.addEventListener('mouseleave', cancelLongPress);
-		
-		songElement.addEventListener('touchstart', (e) => {
-			clearTimeout(this.longPressTimer);
-			this.isLongPressing = false;
-			this.longPressTimer = setTimeout(() => {
-				this.isLongPressing = true;
-				this.temporarilySkipSong(entryId);
-				setTimeout(() => {
-					this.isLongPressing = false;
-				}, 300);
-				e.preventDefault();
-			}, 400);
-		});
-		
-		songElement.addEventListener('touchend', cancelLongPress);
-		songElement.addEventListener('touchcancel', cancelLongPress);
-		
-		this.elements.sidebarPlaylistSongs.appendChild(songElement);
-	});
-	
-	if (this.currentPlaylist.songs.length > 0) {
-		const activeElement = this.elements.sidebarPlaylistSongs.querySelector('.sidebar-song-item.active');
-		if (activeElement) {
-			requestAnimationFrame(() => {
-				activeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-			});
-		}
-	}
-}
-
-
-filterSongsInActiveSidebarPlaylist(query) {
-	this.activeSidebarPlaylistFilter = query;
-	if (this.sidebarDisplayMode === 'expanded') {
-		this.renderSidebarExpandedMode();
-	}
-}
-
-setupSidebarExpandedSearchDebounce() {
-	if (this.elements.sidebarSearchInput) {
-		this.elements.sidebarSearchInput.addEventListener('input', (e) => {
-			clearTimeout(this.sidebarFilterDebounceTimer);
-			this.sidebarFilterDebounceTimer = setTimeout(() => {
-				this.filterSongsInActiveSidebarPlaylist(e.target.value);
-			}, 50);
-		});
-	}
-}
-
-handleSidebarExpandedSongCardDelegation(e) {
-	// Check if clicking on button or icon inside button
-	const actionButton = e.target.closest('.sidebar-song-btn');
-	
-	if (actionButton) {
-		e.stopPropagation();
-		e.preventDefault();
-		
-		const action = actionButton.dataset.action;
-		const songCard = actionButton.closest('.sidebar-song-card');
-		
-		if (!songCard) return;
-		
-		const entryId = songCard.dataset.entryId;
-		const index = parseInt(songCard.dataset.playlistIndex, 10);
-		
-		if (action === 'ban') {
-			this.temporarilySkipSong(entryId);
-		} else if (action === 'play') {
-			this.playSongFromPlaylist(index);
-		}
-		return;
-	}
-	
-	// Click anywhere else on card = play
-	const songCard = e.target.closest('.sidebar-song-card');
-	if (!songCard) return;
-	
-	const index = parseInt(songCard.dataset.playlistIndex, 10);
-	this.playSongFromPlaylist(index);
-}
-setupSidebarExpandedDelegationListener() {
-	if (this.elements.sidebarPlaylistSongs) {
-		this.elements.sidebarPlaylistSongs.addEventListener('click', (e) => {
-			if (this.sidebarDisplayMode === 'expanded') {
-				this.handleSidebarExpandedSongCardDelegation(e);
+			if (this.temporarilySkippedSongs.has(entryId)) {
+				songElement.classList.add("temporarily-skipped");
 			}
+			songElement.innerHTML = `
+                <span>${index + 1}. ${song.name}</span>
+            `;
+			let clickHandler = (e) => {
+				if (!this.isLongPressing) {
+					this.playSongFromPlaylist(index);
+				}
+			};
+			songElement.addEventListener("click", clickHandler);
+			songElement.addEventListener("mousedown", (e) => {
+				clearTimeout(this.longPressTimer);
+				this.isLongPressing = false;
+				this.longPressTimer = setTimeout(() => {
+					this.isLongPressing = true;
+					this.temporarilySkipSong(entryId);
+					setTimeout(() => {
+						this.isLongPressing = false;
+					}, 300);
+				}, 400);
+			});
+			const cancelLongPress = () => {
+				clearTimeout(this.longPressTimer);
+			};
+			songElement.addEventListener("mouseup", cancelLongPress);
+			songElement.addEventListener("mouseleave", cancelLongPress);
+			songElement.addEventListener("touchstart", (e) => {
+				clearTimeout(this.longPressTimer);
+				this.isLongPressing = false;
+				this.longPressTimer = setTimeout(() => {
+					this.isLongPressing = true;
+					this.temporarilySkipSong(entryId);
+					setTimeout(() => {
+						this.isLongPressing = false;
+					}, 300);
+					e.preventDefault();
+				}, 400);
+			});
+			songElement.addEventListener("touchend", cancelLongPress);
+			songElement.addEventListener("touchcancel", cancelLongPress);
+			this.elements.sidebarPlaylistSongs.appendChild(songElement);
 		});
+		if (this.currentPlaylist.songs.length > 0) {
+			const activeElement = this.elements.sidebarPlaylistSongs.querySelector(
+				".sidebar-song-item.active"
+			);
+			if (activeElement) {
+				activeElement.scrollIntoView({
+					behavior: "smooth",
+					block: "center"
+				});
+			}
+		}
 	}
-}
 	setupYouTubePlayer() {
 		if (window.YT && window.YT.Player) {
 			this.initializeYouTubePlayer();
