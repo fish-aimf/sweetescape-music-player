@@ -1013,6 +1013,25 @@ class AdvancedMusicPlayer {
 		}
 	}
 	fetchYouTubeTitle(videoId) {
+		return new Promise((resolve, reject) => {
+			const url = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`;
+			fetch(url)
+				.then((response) => {
+					if (!response.ok) {
+						throw new Error("Failed to fetch video info");
+					}
+					return response.json();
+				})
+				.then((data) => {
+					resolve(data.title);
+				})
+				.catch((error) => {
+					console.error("Error fetching YouTube title:", error);
+					reject(error);
+				});
+		});
+	}
+	fetchYouTubeChannel(videoId) {
     return new Promise((resolve, reject) => {
         const url = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`;
         fetch(url)
@@ -1023,13 +1042,10 @@ class AdvancedMusicPlayer {
                 return response.json();
             })
             .then((data) => {
-                resolve({
-                    title: data.title,
-                    channelName: data.author_name
-                });
+                resolve(data.author_name);
             })
             .catch((error) => {
-                console.error("Error fetching YouTube title:", error);
+                console.error("Error fetching YouTube channel:", error);
                 reject(error);
             });
     });
@@ -3953,12 +3969,16 @@ class AdvancedMusicPlayer {
 			};
 		}
 
+		// STEP 7: No pattern found - return as song only
 		return {
 			author: "",
 			songName: cleanTitle
 		};
 	}
 
+	// ============================================
+	// ADD THIS NEW METHOD TO YOUR CLASS
+	// ============================================
 
 	removeNoisePatterns(text) {
 		const patterns = [
@@ -4105,13 +4125,17 @@ class AdvancedMusicPlayer {
     if (!songUrl) return;
     const videoId = this.extractYouTubeId(songUrl);
     if (!videoId) return;
-    this.fetchYouTubeTitle(videoId)
-        .then((data) => {
-            if (data.title) {
-                const { author, songName } = this.parseVideoTitle(data.title);
+    
+    Promise.all([
+        this.fetchYouTubeTitle(videoId),
+        this.fetchYouTubeChannel(videoId)
+    ])
+        .then(([title, channelName]) => {
+            if (title) {
+                const { author, songName } = this.parseVideoTitle(title);
                 this.elements.songNameInput.value = songName;
                 // Use channel name as fallback if author is empty
-                this.elements.songAuthorInput.value = author || data.channelName;
+                this.elements.songAuthorInput.value = author || channelName;
             }
         })
         .catch((error) => {
@@ -4124,12 +4148,15 @@ class AdvancedMusicPlayer {
     if (!songUrl) return;
     const videoId = this.extractYouTubeId(songUrl);
     if (!videoId) return;
-    this.fetchYouTubeTitle(videoId)
-        .then((data) => {
-            if (data.title) {
-                const { author, songName } = this.parseVideoTitle(data.title);
-                // Use channel name as fallback
-                const finalAuthor = author || data.channelName;
+    
+    Promise.all([
+        this.fetchYouTubeTitle(videoId),
+        this.fetchYouTubeChannel(videoId)
+    ])
+        .then(([title, channelName]) => {
+            if (title) {
+                const { author, songName } = this.parseVideoTitle(title);
+                const finalAuthor = author || channelName;
                 this.createGhostPreview(songName, finalAuthor, event);
             }
         })
