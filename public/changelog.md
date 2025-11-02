@@ -351,3 +351,4 @@
 - added more cases for the autofill so it will be more accurate. v45.2.8
 - added even more cases. it is now quite comprehensive v45.2.9
 - made the welcome modal show immediately after library loads instead of after a set timer of 1s which may trigger inconsistencies and errors. v45.2.10
+- made autofill use youtube channel name if author is not present. v45.3.0
