@@ -6625,15 +6625,9 @@ body:has(#ytPlayer.fullscreen-video) {
 
 
 
-
-
-/* ============================================
-   PLAYLIST SIDEBAR - ENHANCED STYLES
-   ============================================ */
-
 /* Overlay Mode - 95% Opacity with Backdrop Blur */
 .playlist-sidebar:not(.expanded) {
-    background-color: rgba(30, 30, 30, 0.95); /* Fallback for dark theme */
+    background-color: rgba(30, 30, 30, 0.95);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
 }
@@ -6699,19 +6693,25 @@ body:has(#ytPlayer.fullscreen-video) {
     display: none;
 }
 
-/* Expanded Mode Header */
+/* Expanded Mode Header - FIXED ALIGNMENT */
 .playlist-sidebar.expanded .sidebar-header {
     display: flex;
     flex-direction: column;
     padding: 16px;
     border-bottom: 1px solid var(--border-color);
-    gap: 12px;
+    gap: 0;
 }
 
 .sidebar-header-top {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+    width: 100%;
+}
+
+.sidebar-title-section {
+    flex: 1;
+    min-width: 0;
 }
 
 .sidebar-title-section h3 {
@@ -6725,12 +6725,15 @@ body:has(#ytPlayer.fullscreen-video) {
     font-size: 12px;
     color: var(--text-secondary);
     margin-top: 4px;
+    display: block;
 }
 
 .sidebar-controls {
     display: flex;
-    gap: 8px;
-    align-items: center;
+    gap: 4px;
+    align-items: flex-start;
+    flex-shrink: 0;
+    margin-left: 8px;
 }
 
 .sidebar-controls button {
@@ -6739,10 +6742,13 @@ body:has(#ytPlayer.fullscreen-video) {
     color: var(--text-primary);
     font-size: 16px;
     cursor: pointer;
-    padding: 6px;
+    padding: 8px;
     border-radius: 4px;
     transition: background-color 0.2s, color 0.2s;
     outline: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .sidebar-controls button:hover {
@@ -6754,41 +6760,20 @@ body:has(#ytPlayer.fullscreen-video) {
     outline: none;
 }
 
-/* Loop Button with Number Badge */
-.loop-playlist-btn {
-    position: relative;
-}
-
+/* Loop Button Active State */
 .loop-playlist-btn.active {
     color: var(--accent-color);
 }
 
-.loop-badge {
-    position: absolute;
-    top: -4px;
-    right: -4px;
-    background-color: var(--accent-color);
-    color: var(--button-text-color);
-    font-size: 10px;
-    font-weight: bold;
-    border-radius: 50%;
-    width: 16px;
-    height: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
-}
-
 /* Search Bar in Expanded Mode */
 .sidebar-search-container {
-    padding: 0 16px 12px 16px;
+    padding: 12px 16px;
     border-bottom: 1px solid var(--border-color);
 }
 
 .sidebar-search-input {
     width: 100%;
-    padding: 8px 32px 8px 12px;
+    padding: 8px 12px;
     background-color: var(--bg-primary);
     border: 1px solid var(--border-color);
     border-radius: 6px;
@@ -6796,6 +6781,7 @@ body:has(#ytPlayer.fullscreen-video) {
     font-size: 14px;
     transition: border-color 0.2s;
     outline: none;
+    box-sizing: border-box;
 }
 
 .sidebar-search-input:focus {
@@ -6815,7 +6801,7 @@ body:has(#ytPlayer.fullscreen-video) {
 .sidebar-song-card {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     padding: 8px;
     margin-bottom: 6px;
     background-color: var(--bg-primary);
@@ -6848,13 +6834,10 @@ body:has(#ytPlayer.fullscreen-video) {
     background-color: var(--bg-secondary);
 }
 
-/* Song Info */
+/* Song Info - NO AUTHOR */
 .sidebar-song-info {
     flex: 1;
     min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
 }
 
 .sidebar-song-name {
@@ -6866,16 +6849,7 @@ body:has(#ytPlayer.fullscreen-video) {
     text-overflow: ellipsis;
 }
 
-.sidebar-song-artist {
-    font-size: 12px;
-    color: var(--text-secondary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.sidebar-song-card.active .sidebar-song-name,
-.sidebar-song-card.active .sidebar-song-artist {
+.sidebar-song-card.active .sidebar-song-name {
     color: var(--button-text-color);
 }
 
@@ -6896,6 +6870,9 @@ body:has(#ytPlayer.fullscreen-video) {
     border-radius: 4px;
     transition: color 0.2s, background-color 0.2s;
     outline: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .sidebar-song-btn:focus {
