@@ -188,6 +188,11 @@ class AdvancedMusicPlayer {
 		this.libraryReverseOrder = false;
 		this.isTabVisible = !document.hidden;
 		this.handleVisibilityChange = null;
+		this.sidebarDisplayMode = 'expanded'; // 'overlay' or 'expanded'
+		this.playlistLoopMode = 'none'; // 'none', 'infinite', 'once', 'twice', 'thrice'
+		this.playlistLoopsRemaining = 0;
+		this.activeSidebarPlaylistFilter = '';
+		this.sidebarFilterDebounceTimer = null;
 		this.initDatabase()
 			.then(() => {
 				return Promise.all([
@@ -387,7 +392,10 @@ class AdvancedMusicPlayer {
 			libraryOptionsDropdown: document.getElementById("libraryOptionsDropdown"),
 			showDeleteBtn: document.getElementById("showDeleteBtn"),
 			showUnfavoriteBtn: document.getElementById("showUnfavoriteBtn"),
-			showEditBtn: document.getElementById("showEditBtn")
+			showEditBtn: document.getElementById("showEditBtn"),
+			toggleSidebarModeBtn: document.getElementById('toggleSidebarModeBtn'),
+			sidebarSearchContainer: document.getElementById('sidebarSearchContainer'),
+			sidebarSearchInput: document.getElementById('sidebarSearchInput')
 		};
 		this.elements.modifyLibraryBtn.parentElement.addEventListener("mouseenter",
 			this.handleShowLibraryDropdown.bind(this));
@@ -612,6 +620,32 @@ class AdvancedMusicPlayer {
 				}
 			}
 		});
+
+
+		// Toggle sidebar display mode (overlay <-> expanded)
+		if (this.elements.toggleSidebarModeBtn) {
+			this.elements.toggleSidebarModeBtn.addEventListener('click', () => {
+				this.toggleSidebarDisplayMode();
+			});
+		}
+		
+		// Update loop button to use new cycle system
+		if (this.elements.loopPlaylistBtn) {
+			// Remove old listener if exists, then add new one
+			const newLoopBtn = this.elements.loopPlaylistBtn.cloneNode(true);
+			this.elements.loopPlaylistBtn.parentNode.replaceChild(newLoopBtn, this.elements.loopPlaylistBtn);
+			this.elements.loopPlaylistBtn = newLoopBtn;
+			
+			this.elements.loopPlaylistBtn.addEventListener('click', () => {
+				this.advancePlaylistLoopModeState();
+			});
+		}
+		
+		// Setup expanded mode search debounce
+		this.setupSidebarExpandedSearchDebounce();
+		
+		// Setup event delegation for expanded mode song cards
+		this.setupSidebarExpandedDelegationListener();
 		const eventBindings = [
 			[this.elements.toggleControlBarBtn, "click", this.handleToggleControlBar],
 			[this.elements.modifyLibraryBtn, "click", this.handleOpenLibraryModal],
@@ -2102,7 +2136,7 @@ class AdvancedMusicPlayer {
 			console.error("Error toggling play/pause:", error);
 		}
 	}
-	// Complete playNextSong method with Discord RPC
+	
 	playNextSong() {
 		if (this.songQueue.length > 0) {
 			const nextSong = this.songQueue.shift();
@@ -2118,39 +2152,62 @@ class AdvancedMusicPlayer {
 			this.playSongById(nextSong.videoId);
 			this.updatePlayerUI();
 			this.updateCurrentSongDisplay();
-
-			// Send Discord RPC update
+	
 			if (this.discordEnabled && this.discordConnected) {
 				this.sendDiscordRPC();
 			}
 			return;
 		}
+		
 		const source = this.currentPlaylist ? this.currentPlaylist.songs : this.songLibrary;
 		if (!source.length) return;
+		
 		if (this.currentPlaylist && this.temporarilySkippedSongs && this.temporarilySkippedSongs.size > 0) {
 			this.playNextNonSkippedSong();
 			return;
 		}
-		if (this.currentSongIndex === source.length - 1 && !this.isPlaylistLooping) {
-			if (this.ytPlayer) {
-				this.ytPlayer.stopVideo();
-				this.isPlaying = false;
-				this.updatePlayerUI();
+		
+		// Check if we're at the last song
+		const isLastSong = this.currentSongIndex === source.length - 1;
+		
+		// Handle loop countdown when wrapping from last to first song
+		if (isLastSong) {
+			if (this.playlistLoopMode === 'none') {
+				if (this.ytPlayer) {
+					this.ytPlayer.stopVideo();
+					this.isPlaying = false;
+					this.updatePlayerUI();
+				}
+				return;
+			} else if (this.playlistLoopMode === 'infinite') {
+				// Loop infinitely, no countdown
+			} else if (this.playlistLoopsRemaining > 0) {
+				// Decrement the loop counter
+				this.playlistLoopsRemaining--;
+				
+				// If counter reaches 0, switch to 'none' mode
+				if (this.playlistLoopsRemaining === 0) {
+					this.playlistLoopMode = 'none';
+					this.isPlaylistLooping = false;
+				}
+				
+				this.refreshPlaylistLoopModeIndicator();
 			}
-			return;
 		}
+		
 		this.currentSongIndex = (this.currentSongIndex + 1) % source.length;
 		const currentSong = source[this.currentSongIndex];
 		this.currentSong = currentSong;
 		this.saveRecentlyPlayedSong(currentSong);
+		
 		if (this.currentPlaylist) {
 			this.playSongById(currentSong.videoId);
 		} else {
 			this.playCurrentSong();
 		}
+		
 		this.updateCurrentSongDisplay();
-
-		// Send Discord RPC update
+	
 		if (this.discordEnabled && this.discordConnected) {
 			this.sendDiscordRPC();
 		}
@@ -2367,35 +2424,176 @@ class AdvancedMusicPlayer {
 		this.isSidebarVisible = false;
 	}
 	renderPlaylistSidebar() {
+	if (!this.currentPlaylist) return;
+	
+	if (this.sidebarDisplayMode === 'expanded') {
+		this.renderSidebarExpandedMode();
+	} else {
+		this.renderSidebarOverlayMode();
+	}
+}
+
+	// ============================================
+	// PLAYLIST SIDEBAR - MAIN CONTROL METHODS
+	// ============================================
+	
+	toggleSidebarDisplayMode() {
+		if (this.sidebarDisplayMode === 'overlay') {
+			this.sidebarDisplayMode = 'expanded';
+			this.applySidebarExpandedLayout();
+			this.renderSidebarExpandedMode();
+			this.elements.toggleSidebarModeBtn.innerHTML = '<i class="fas fa-compress"></i>';
+			this.elements.toggleSidebarModeBtn.title = 'Switch to Overlay Mode';
+			this.elements.sidebarSearchContainer.style.display = 'block';
+		} else {
+			this.sidebarDisplayMode = 'overlay';
+			this.removeSidebarExpandedLayout();
+			this.renderSidebarOverlayMode();
+			this.elements.toggleSidebarModeBtn.innerHTML = '<i class="fas fa-expand"></i>';
+			this.elements.toggleSidebarModeBtn.title = 'Switch to Expanded Mode';
+			this.elements.sidebarSearchContainer.style.display = 'none';
+			this.activeSidebarPlaylistFilter = '';
+			this.elements.sidebarSearchInput.value = '';
+		}
+	}
+	
+	applySidebarExpandedLayout() {
+		this.elements.currentPlaylistSidebar.classList.add('expanded');
+		
+		const appContainer = document.querySelector('.app-container');
+		if (appContainer) {
+			appContainer.classList.add('sidebar-expanded');
+		}
+		
+		const leftBanner = document.querySelector('.left-banner');
+		const rightBanner = document.querySelector('.right-banner');
+		
+		if (leftBanner) leftBanner.classList.add('hidden');
+		if (rightBanner) rightBanner.classList.add('hidden');
+	}
+	
+	removeSidebarExpandedLayout() {
+		this.elements.currentPlaylistSidebar.classList.remove('expanded');
+		
+		const appContainer = document.querySelector('.app-container');
+		if (appContainer) {
+			appContainer.classList.remove('sidebar-expanded');
+		}
+		
+		const leftBanner = document.querySelector('.left-banner');
+		const rightBanner = document.querySelector('.right-banner');
+		
+		if (leftBanner) leftBanner.classList.remove('hidden');
+		if (rightBanner) rightBanner.classList.remove('hidden');
+	}
+	
+	renderSidebarExpandedMode() {
 		if (!this.currentPlaylist) return;
+		
 		this.elements.sidebarPlaylistName.textContent = this.currentPlaylist.name;
 		if (this.elements.playlistTotalDuration) {
-			this.elements.playlistTotalDuration.textContent =
-				this.getPlaylistDurationText();
+			this.elements.playlistTotalDuration.textContent = this.getPlaylistDurationText();
 		}
-		this.updatePlaylistLoopButton();
-		this.elements.sidebarPlaylistSongs.innerHTML = "";
-		this.currentPlaylist.songs.forEach((song, index) => {
-			const songElement = document.createElement("div");
-			songElement.classList.add("sidebar-song-item");
-			const entryId = song.entryId || "id_" + song.videoId;
-			songElement.dataset.entryId = entryId;
-			if (index === this.currentSongIndex) {
-				songElement.classList.add("active");
+		
+		this.refreshPlaylistLoopModeIndicator();
+		this.elements.sidebarPlaylistSongs.innerHTML = '';
+		
+		let songsToRender = this.currentPlaylist.songs;
+		
+		if (this.activeSidebarPlaylistFilter) {
+			const query = this.activeSidebarPlaylistFilter.toLowerCase();
+			songsToRender = this.currentPlaylist.songs.filter(song => {
+				return song.name.toLowerCase().includes(query) || 
+					   song.author.toLowerCase().includes(query);
+			});
+		}
+		
+		const fragment = document.createDocumentFragment();
+		
+		songsToRender.forEach((song, index) => {
+			const actualIndex = this.currentPlaylist.songs.indexOf(song);
+			const songCard = document.createElement('div');
+			songCard.classList.add('sidebar-song-card');
+			songCard.dataset.playlistIndex = actualIndex;
+			
+			const entryId = song.entryId || 'id_' + song.videoId;
+			songCard.dataset.entryId = entryId;
+			
+			if (actualIndex === this.currentSongIndex) {
+				songCard.classList.add('active');
 			}
+			
 			if (this.temporarilySkippedSongs.has(entryId)) {
-				songElement.classList.add("temporarily-skipped");
+				songCard.classList.add('temporarily-skipped');
 			}
-			songElement.innerHTML = `
-                <span>${index + 1}. ${song.name}</span>
-            `;
+			
+			const thumbnailUrl = `https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg`;
+			
+			songCard.innerHTML = `
+				<img src="${thumbnailUrl}" alt="${song.name}" class="sidebar-song-thumbnail" />
+				<div class="sidebar-song-info">
+					<div class="sidebar-song-name">${song.name}</div>
+					<div class="sidebar-song-artist">by ${song.author}</div>
+				</div>
+				<div class="sidebar-song-actions">
+					<button class="sidebar-song-btn play-btn" data-action="play">
+						<i class="fas fa-play"></i>
+					</button>
+					<button class="sidebar-song-btn ban-btn" data-action="ban">
+						<i class="fas fa-ban"></i>
+					</button>
+				</div>
+			`;
+			
+			fragment.appendChild(songCard);
+		});
+		
+		this.elements.sidebarPlaylistSongs.appendChild(fragment);
+		
+		if (this.currentPlaylist.songs.length > 0) {
+			const activeElement = this.elements.sidebarPlaylistSongs.querySelector('.sidebar-song-card.active');
+			if (activeElement) {
+				activeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			}
+		}
+	}
+	
+	renderSidebarOverlayMode() {
+		if (!this.currentPlaylist) return;
+		
+		this.elements.sidebarPlaylistName.textContent = this.currentPlaylist.name;
+		if (this.elements.playlistTotalDuration) {
+			this.elements.playlistTotalDuration.textContent = this.getPlaylistDurationText();
+		}
+		
+		this.refreshPlaylistLoopModeIndicator();
+		this.elements.sidebarPlaylistSongs.innerHTML = '';
+		
+		this.currentPlaylist.songs.forEach((song, index) => {
+			const songElement = document.createElement('div');
+			songElement.classList.add('sidebar-song-item');
+			
+			const entryId = song.entryId || 'id_' + song.videoId;
+			songElement.dataset.entryId = entryId;
+			
+			if (index === this.currentSongIndex) {
+				songElement.classList.add('active');
+			}
+			
+			if (this.temporarilySkippedSongs.has(entryId)) {
+				songElement.classList.add('temporarily-skipped');
+			}
+			
+			songElement.innerHTML = `<span>${index + 1}. ${song.name}</span>`;
+			
 			let clickHandler = (e) => {
 				if (!this.isLongPressing) {
 					this.playSongFromPlaylist(index);
 				}
 			};
-			songElement.addEventListener("click", clickHandler);
-			songElement.addEventListener("mousedown", (e) => {
+			songElement.addEventListener('click', clickHandler);
+			
+			songElement.addEventListener('mousedown', (e) => {
 				clearTimeout(this.longPressTimer);
 				this.isLongPressing = false;
 				this.longPressTimer = setTimeout(() => {
@@ -2406,12 +2604,15 @@ class AdvancedMusicPlayer {
 					}, 300);
 				}, 400);
 			});
+			
 			const cancelLongPress = () => {
 				clearTimeout(this.longPressTimer);
 			};
-			songElement.addEventListener("mouseup", cancelLongPress);
-			songElement.addEventListener("mouseleave", cancelLongPress);
-			songElement.addEventListener("touchstart", (e) => {
+			
+			songElement.addEventListener('mouseup', cancelLongPress);
+			songElement.addEventListener('mouseleave', cancelLongPress);
+			
+			songElement.addEventListener('touchstart', (e) => {
 				clearTimeout(this.longPressTimer);
 				this.isLongPressing = false;
 				this.longPressTimer = setTimeout(() => {
@@ -2423,22 +2624,156 @@ class AdvancedMusicPlayer {
 					e.preventDefault();
 				}, 400);
 			});
-			songElement.addEventListener("touchend", cancelLongPress);
-			songElement.addEventListener("touchcancel", cancelLongPress);
+			
+			songElement.addEventListener('touchend', cancelLongPress);
+			songElement.addEventListener('touchcancel', cancelLongPress);
+			
 			this.elements.sidebarPlaylistSongs.appendChild(songElement);
 		});
+		
 		if (this.currentPlaylist.songs.length > 0) {
-			const activeElement = this.elements.sidebarPlaylistSongs.querySelector(
-				".sidebar-song-item.active"
-			);
+			const activeElement = this.elements.sidebarPlaylistSongs.querySelector('.sidebar-song-item.active');
 			if (activeElement) {
-				activeElement.scrollIntoView({
-					behavior: "smooth",
-					block: "center"
-				});
+				activeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
 			}
 		}
 	}
+	
+	
+	// ============================================
+	// PLAYLIST SIDEBAR - SEARCH & EVENT DELEGATION
+	// ============================================
+	
+	filterSongsInActiveSidebarPlaylist(query) {
+		this.activeSidebarPlaylistFilter = query;
+		this.renderSidebarExpandedMode();
+	}
+	
+	setupSidebarExpandedSearchDebounce() {
+		if (this.elements.sidebarSearchInput) {
+			this.elements.sidebarSearchInput.addEventListener('input', (e) => {
+				clearTimeout(this.sidebarFilterDebounceTimer);
+				this.sidebarFilterDebounceTimer = setTimeout(() => {
+					this.filterSongsInActiveSidebarPlaylist(e.target.value);
+				}, 50);
+			});
+		}
+	}
+	
+	handleSidebarExpandedSongCardDelegation(e) {
+		const songCard = e.target.closest('.sidebar-song-card');
+		if (!songCard) return;
+		
+		const actionButton = e.target.closest('.sidebar-song-btn');
+		
+		if (actionButton) {
+			e.stopPropagation();
+			const action = actionButton.dataset.action;
+			const entryId = songCard.dataset.entryId;
+			const index = parseInt(songCard.dataset.playlistIndex);
+			
+			if (action === 'ban') {
+				this.temporarilySkipSong(entryId);
+			} else if (action === 'play') {
+				if (!this.temporarilySkippedSongs.has(entryId)) {
+					this.playSongFromPlaylist(index);
+				}
+			}
+			return;
+		}
+		
+		const entryId = songCard.dataset.entryId;
+		const index = parseInt(songCard.dataset.playlistIndex);
+		
+		if (!this.temporarilySkippedSongs.has(entryId)) {
+			this.playSongFromPlaylist(index);
+		}
+	}
+	
+	setupSidebarExpandedDelegationListener() {
+		if (this.elements.sidebarPlaylistSongs) {
+			this.elements.sidebarPlaylistSongs.addEventListener('click', (e) => {
+				if (this.sidebarDisplayMode === 'expanded') {
+					this.handleSidebarExpandedSongCardDelegation(e);
+				}
+			});
+		}
+	}
+	
+	// ============================================
+	// PLAYLIST SIDEBAR - LOOP MODE SYSTEM
+	// ============================================
+	
+	advancePlaylistLoopModeState() {
+		const modes = ['none', 'infinite', 'once', 'twice', 'thrice'];
+		const currentIndex = modes.indexOf(this.playlistLoopMode);
+		const nextIndex = (currentIndex + 1) % modes.length;
+		this.playlistLoopMode = modes[nextIndex];
+		
+		if (this.playlistLoopMode === 'once') {
+			this.playlistLoopsRemaining = 1;
+		} else if (this.playlistLoopMode === 'twice') {
+			this.playlistLoopsRemaining = 2;
+		} else if (this.playlistLoopMode === 'thrice') {
+			this.playlistLoopsRemaining = 3;
+		} else {
+			this.playlistLoopsRemaining = 0;
+		}
+		
+		this.isPlaylistLooping = (this.playlistLoopMode !== 'none');
+		this.refreshPlaylistLoopModeIndicator();
+	}
+	
+	refreshPlaylistLoopModeIndicator() {
+		if (!this.elements.loopPlaylistBtn) return;
+		
+		const existingBadge = this.elements.loopPlaylistBtn.querySelector('.loop-badge');
+		if (existingBadge) {
+			existingBadge.remove();
+		}
+		
+		if (this.playlistLoopMode === 'none') {
+			this.elements.loopPlaylistBtn.classList.remove('active');
+		} else if (this.playlistLoopMode === 'infinite') {
+			this.elements.loopPlaylistBtn.classList.add('active');
+		} else {
+			this.elements.loopPlaylistBtn.classList.add('active');
+			
+			const badge = document.createElement('span');
+			badge.classList.add('loop-badge');
+			badge.textContent = this.playlistLoopsRemaining;
+			this.elements.loopPlaylistBtn.appendChild(badge);
+		}
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+	
 	setupYouTubePlayer() {
 		if (window.YT && window.YT.Player) {
 			this.initializeYouTubePlayer();
