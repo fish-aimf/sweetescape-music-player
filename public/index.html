@@ -300,21 +300,36 @@ Another Playlist{
             </div>
          </div>
          <!-- Current Playlist Sidebar -->
+         <!-- Updated Current Playlist Sidebar -->
          <div id="currentPlaylistSidebar" class="playlist-sidebar">
-            <div class="sidebar-header">
-               <div class="sidebar-title-section">
-                  <h3 id="sidebarPlaylistName">Now Playing</h3>
-                  <span id="playlistTotalDuration" class="playlist-duration">0 songs</span>
-               </div>
-               <div class="sidebar-controls">
-                  <button id="loopPlaylistBtn" class="loop-playlist-btn" title="Loop Playlist">
-                  <i class="fas fa-sync-alt"></i>
-                  </button>
-                  <button id="closeSidebarBtn"><i class="fas fa-times"></i></button>
-               </div>
-            </div>
-            <div id="sidebarPlaylistSongs" class="sidebar-songs-list">
-            </div>
+             <div class="sidebar-header">
+                 <div class="sidebar-title-section">
+                     <h3 id="sidebarPlaylistName">Now Playing</h3>
+                     <span id="playlistTotalDuration" class="playlist-duration">0 songs</span>
+                 </div>
+                 <div class="sidebar-controls">
+                     <button id="sidebarModeToggleBtn" class="sidebar-mode-toggle-btn" title="Toggle Expanded Mode">
+                         <i class="fas fa-expand-alt"></i>
+                     </button>
+                     <button id="loopPlaylistBtn" class="loop-playlist-btn" title="Loop Playlist">
+                         <i class="fas fa-sync-alt"></i>
+                     </button>
+                     <button id="closeSidebarBtn"><i class="fas fa-times"></i></button>
+                 </div>
+             </div>
+             
+             <!-- Search bar (only visible in expanded mode) -->
+             <div class="sidebar-search-container">
+                 <input 
+                     type="text" 
+                     id="sidebarSearchInput" 
+                     class="sidebar-search-input" 
+                     placeholder="Search songs in playlist..."
+                 >
+             </div>
+             
+             <div id="sidebarPlaylistSongs" class="sidebar-songs-list">
+             </div>
          </div>
          <!-- Now Playing Section -->
          <div class="now-playing">
