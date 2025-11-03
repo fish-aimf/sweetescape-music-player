@@ -6610,7 +6610,7 @@ body:has(#ytPlayer.fullscreen-video) {
 .playlist-sidebar.expanded-mode {
     right: auto;
     left: 0;
-    width: 350px;
+    width: 250px;
     padding: 15px;
     box-shadow: 2px 0 10px var(--shadow-color);
 }
