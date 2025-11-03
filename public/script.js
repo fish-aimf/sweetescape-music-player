@@ -81,6 +81,8 @@ class AdvancedMusicPlayer {
 		this.importSongsTextarea = null;
 		this.filteredPlaylists = [];
 		this.currentSearchTerm = "";
+		this.playlistSidebarMode = 'overlay'; 
+		this.sidebarSearchDebounceTimer = null;
 		this.webEmbedSites = [
 			'https://www.desmos.com/calculator',
 			'https://i2.res.24o.it/pdf2010/Editrice/ILSOLE24ORE/ILSOLE24ORE/Online/_Oggetti_Embedded/Documenti/2025/07/12/Preliminary%20Report%20VT.pdf',
@@ -219,6 +221,7 @@ class AdvancedMusicPlayer {
 				this.setupYouTubePlayer();
 				this.loadQueue();
 				this.setupEventListeners();
+				this.setupPlaylistSidebarModeListeners();
 				this.initializeTheme();
 				this.initializeAutoplay();
 				this.setupKeyboardControls();
@@ -325,6 +328,8 @@ class AdvancedMusicPlayer {
 			sidebarPlaylistName: document.getElementById("sidebarPlaylistName"),
 			sidebarPlaylistSongs: document.getElementById("sidebarPlaylistSongs"),
 			closeSidebarBtn: document.getElementById("closeSidebarBtn"),
+			sidebarModeToggleBtn: document.getElementById("sidebarModeToggleBtn"), // NEW
+	        sidebarSearchInput: document.getElementById("sidebarSearchInput"), // NEW
 			youtubeSearchSuggestion: document.getElementById("youtubeSearchSuggestion"),
 			listeningTimeDisplay: document.getElementById("listeningTime"),
 			speedBtn: document.getElementById("speedBtn"),
@@ -579,6 +584,7 @@ class AdvancedMusicPlayer {
 		this.setupLayoutEventListeners();
 		this.setupGlobalLibraryEventListeners();
 		this.setupExportButtonListeners();
+		
 		document.addEventListener('contextmenu', (e) => {
 			if (e.target.classList.contains('play-btn') ||
 				e.target.closest('.play-btn') ||
@@ -2357,88 +2363,60 @@ class AdvancedMusicPlayer {
 		}
 	}
 	showSidebar() {
-		if (!this.currentPlaylist) return;
-		this.elements.currentPlaylistSidebar.classList.add("visible");
-		this.isSidebarVisible = true;
-		this.renderPlaylistSidebar();
+	if (!this.currentPlaylist) return;
+	this.elements.currentPlaylistSidebar.classList.add("visible");
+	this.isSidebarVisible = true;
+	
+	// Apply current mode
+	this.applyPlaylistSidebarMode();
+	
+	// Render with current mode
+	this.renderPlaylistSidebar();
+}
+
+hideSidebar() {
+	this.elements.currentPlaylistSidebar.classList.remove("visible");
+	this.isSidebarVisible = false;
+	
+	// Remove expanded mode class from body when closing
+	document.body.classList.remove("playlist-expanded-active");
+	
+	// Clear search
+	if (this.elements.sidebarSearchInput) {
+		this.elements.sidebarSearchInput.value = "";
 	}
-	hideSidebar() {
-		this.elements.currentPlaylistSidebar.classList.remove("visible");
-		this.isSidebarVisible = false;
-	}
+}
 	renderPlaylistSidebar() {
-		if (!this.currentPlaylist) return;
-		this.elements.sidebarPlaylistName.textContent = this.currentPlaylist.name;
-		if (this.elements.playlistTotalDuration) {
-			this.elements.playlistTotalDuration.textContent =
-				this.getPlaylistDurationText();
-		}
-		this.updatePlaylistLoopButton();
-		this.elements.sidebarPlaylistSongs.innerHTML = "";
-		this.currentPlaylist.songs.forEach((song, index) => {
-			const songElement = document.createElement("div");
-			songElement.classList.add("sidebar-song-item");
-			const entryId = song.entryId || "id_" + song.videoId;
-			songElement.dataset.entryId = entryId;
-			if (index === this.currentSongIndex) {
-				songElement.classList.add("active");
-			}
-			if (this.temporarilySkippedSongs.has(entryId)) {
-				songElement.classList.add("temporarily-skipped");
-			}
-			songElement.innerHTML = `
-                <span>${index + 1}. ${song.name}</span>
-            `;
-			let clickHandler = (e) => {
-				if (!this.isLongPressing) {
-					this.playSongFromPlaylist(index);
-				}
-			};
-			songElement.addEventListener("click", clickHandler);
-			songElement.addEventListener("mousedown", (e) => {
-				clearTimeout(this.longPressTimer);
-				this.isLongPressing = false;
-				this.longPressTimer = setTimeout(() => {
-					this.isLongPressing = true;
-					this.temporarilySkipSong(entryId);
-					setTimeout(() => {
-						this.isLongPressing = false;
-					}, 300);
-				}, 400);
+	if (!this.currentPlaylist) return;
+	
+	this.elements.sidebarPlaylistName.textContent = this.currentPlaylist.name;
+	if (this.elements.playlistTotalDuration) {
+		this.elements.playlistTotalDuration.textContent = this.getPlaylistDurationText();
+	}
+	this.updatePlaylistLoopButton();
+	
+	this.elements.sidebarPlaylistSongs.innerHTML = "";
+	
+	// Render based on current mode
+	if (this.playlistSidebarMode === "expanded") {
+		this.renderPlaylistSidebarExpandedMode();
+	} else {
+		this.renderPlaylistSidebarOverlayMode();
+	}
+	
+	// Scroll to active song
+	if (this.currentPlaylist.songs.length > 0) {
+		const activeElement = this.elements.sidebarPlaylistSongs.querySelector(
+			".sidebar-song-item.active, .sidebar-song-card.active"
+		);
+		if (activeElement) {
+			activeElement.scrollIntoView({
+				behavior: "smooth",
+				block: "center"
 			});
-			const cancelLongPress = () => {
-				clearTimeout(this.longPressTimer);
-			};
-			songElement.addEventListener("mouseup", cancelLongPress);
-			songElement.addEventListener("mouseleave", cancelLongPress);
-			songElement.addEventListener("touchstart", (e) => {
-				clearTimeout(this.longPressTimer);
-				this.isLongPressing = false;
-				this.longPressTimer = setTimeout(() => {
-					this.isLongPressing = true;
-					this.temporarilySkipSong(entryId);
-					setTimeout(() => {
-						this.isLongPressing = false;
-					}, 300);
-					e.preventDefault();
-				}, 400);
-			});
-			songElement.addEventListener("touchend", cancelLongPress);
-			songElement.addEventListener("touchcancel", cancelLongPress);
-			this.elements.sidebarPlaylistSongs.appendChild(songElement);
-		});
-		if (this.currentPlaylist.songs.length > 0) {
-			const activeElement = this.elements.sidebarPlaylistSongs.querySelector(
-				".sidebar-song-item.active"
-			);
-			if (activeElement) {
-				activeElement.scrollIntoView({
-					behavior: "smooth",
-					block: "center"
-				});
-			}
 		}
 	}
+}
 	setupYouTubePlayer() {
 		if (window.YT && window.YT.Player) {
 			this.initializeYouTubePlayer();
@@ -10566,6 +10544,232 @@ Song list:`;
 			}
 		}
 	}
+	filterPlaylistSidebarSongs(searchTerm) {
+	// Debounce for performance
+	clearTimeout(this.sidebarSearchDebounceTimer);
+	
+	this.sidebarSearchDebounceTimer = setTimeout(() => {
+		const query = searchTerm.toLowerCase().trim();
+		const songCards = this.elements.sidebarPlaylistSongs.querySelectorAll(".sidebar-song-card");
+		
+		songCards.forEach(card => {
+			const songName = card.dataset.songName;
+			if (!query || songName.includes(query)) {
+				card.style.display = "flex";
+			} else {
+				card.style.display = "none";
+			}
+		});
+	}, 50);
+}
+	renderPlaylistSidebarExpandedMode() {
+	const fragment = document.createDocumentFragment();
+	
+	this.currentPlaylist.songs.forEach((song, index) => {
+		const songCard = document.createElement("div");
+		songCard.classList.add("sidebar-song-card");
+		const entryId = song.entryId || "id_" + song.videoId;
+		songCard.dataset.entryId = entryId;
+		songCard.dataset.songName = song.name.toLowerCase();
+		
+		if (index === this.currentSongIndex) {
+			songCard.classList.add("active");
+		}
+		if (this.temporarilySkippedSongs.has(entryId)) {
+			songCard.classList.add("temporarily-skipped");
+		}
+		
+		// YouTube thumbnail URL
+		const thumbnailUrl = `https://img.youtube.com/vi/${song.videoId}/default.jpg`;
+		
+		songCard.innerHTML = `
+			<img src="${thumbnailUrl}" alt="${song.name}" class="song-card-thumbnail" loading="lazy">
+			<div class="song-card-info">
+				<div class="song-card-index">#${index + 1}</div>
+				<div class="song-card-title">${song.name}</div>
+			</div>
+			<div class="song-card-actions">
+				<button class="song-card-btn play-btn" title="Play this song">
+					<i class="fas fa-play"></i>
+				</button>
+				<button class="song-card-btn skip-btn ${this.temporarilySkippedSongs.has(entryId) ? 'active' : ''}" title="Temporarily skip">
+					<i class="fas fa-ban"></i>
+				</button>
+			</div>
+		`;
+		
+		// Play button click
+		const playBtn = songCard.querySelector(".play-btn");
+		playBtn.addEventListener("click", (e) => {
+			e.stopPropagation();
+			if (!this.temporarilySkippedSongs.has(entryId)) {
+				this.playSongFromPlaylist(index);
+			}
+		});
+		
+		// Skip button click
+		const skipBtn = songCard.querySelector(".skip-btn");
+		skipBtn.addEventListener("click", (e) => {
+			e.stopPropagation();
+			this.temporarilySkipSong(entryId);
+		});
+		
+		// Card click (same as play button)
+		songCard.addEventListener("click", (e) => {
+			if (!e.target.closest(".song-card-btn") && !this.temporarilySkippedSongs.has(entryId)) {
+				this.playSongFromPlaylist(index);
+			}
+		});
+		
+		fragment.appendChild(songCard);
+	});
+	
+	this.elements.sidebarPlaylistSongs.appendChild(fragment);
+}
+	renderPlaylistSidebarOverlayMode() {
+	// This is your existing rendering logic for overlay mode
+	this.currentPlaylist.songs.forEach((song, index) => {
+		const songElement = document.createElement("div");
+		songElement.classList.add("sidebar-song-item");
+		const entryId = song.entryId || "id_" + song.videoId;
+		songElement.dataset.entryId = entryId;
+		
+		if (index === this.currentSongIndex) {
+			songElement.classList.add("active");
+		}
+		if (this.temporarilySkippedSongs.has(entryId)) {
+			songElement.classList.add("temporarily-skipped");
+		}
+		
+		songElement.innerHTML = `
+			<span>${index + 1}. ${song.name}</span>
+		`;
+		
+		let clickHandler = (e) => {
+			if (!this.isLongPressing) {
+				this.playSongFromPlaylist(index);
+			}
+		};
+		
+		songElement.addEventListener("click", clickHandler);
+		
+		songElement.addEventListener("mousedown", (e) => {
+			clearTimeout(this.longPressTimer);
+			this.isLongPressing = false;
+			this.longPressTimer = setTimeout(() => {
+				this.isLongPressing = true;
+				this.temporarilySkipSong(entryId);
+				setTimeout(() => {
+					this.isLongPressing = false;
+				}, 300);
+			}, 400);
+		});
+		
+		const cancelLongPress = () => {
+			clearTimeout(this.longPressTimer);
+		};
+		
+		songElement.addEventListener("mouseup", cancelLongPress);
+		songElement.addEventListener("mouseleave", cancelLongPress);
+		
+		songElement.addEventListener("touchstart", (e) => {
+			clearTimeout(this.longPressTimer);
+			this.isLongPressing = false;
+			this.longPressTimer = setTimeout(() => {
+				this.isLongPressing = true;
+				this.temporarilySkipSong(entryId);
+				setTimeout(() => {
+					this.isLongPressing = false;
+				}, 300);
+				e.preventDefault();
+			}, 400);
+		});
+		
+		songElement.addEventListener("touchend", cancelLongPress);
+		songElement.addEventListener("touchcancel", cancelLongPress);
+		
+		this.elements.sidebarPlaylistSongs.appendChild(songElement);
+	});
+}
+applyPlaylistSidebarMode() {
+	const sidebar = this.elements.currentPlaylistSidebar;
+	const modeToggleBtn = this.elements.sidebarModeToggleBtn;
+	const modeIcon = modeToggleBtn?.querySelector("i");
+
+	if (this.playlistSidebarMode === "expanded") {
+		// Apply expanded mode
+		sidebar.classList.add("expanded-mode");
+		document.body.classList.add("playlist-expanded-active");
+		
+		// Update icon
+		if (modeIcon) {
+			modeIcon.classList.remove("fa-expand-alt");
+			modeIcon.classList.add("fa-compress-alt");
+		}
+		modeToggleBtn?.classList.add("expanded");
+		modeToggleBtn?.setAttribute("title", "Switch to Overlay Mode");
+	} else {
+		// Apply overlay mode
+		sidebar.classList.remove("expanded-mode");
+		document.body.classList.remove("playlist-expanded-active");
+		
+		// Update icon
+		if (modeIcon) {
+			modeIcon.classList.remove("fa-compress-alt");
+			modeIcon.classList.add("fa-expand-alt");
+		}
+		modeToggleBtn?.classList.remove("expanded");
+		modeToggleBtn?.setAttribute("title", "Switch to Expanded Mode");
+	}
+
+	// Clear search when switching modes
+	if (this.elements.sidebarSearchInput) {
+		this.elements.sidebarSearchInput.value = "";
+	}
+}
+	togglePlaylistSidebarMode() {
+	if (this.playlistSidebarMode === "overlay") {
+		this.playlistSidebarMode = "expanded";
+	} else {
+		this.playlistSidebarMode = "overlay";
+	}
+
+	// Save preference
+	localStorage.setItem("playlistSidebarMode", this.playlistSidebarMode);
+
+	// Apply mode
+	this.applyPlaylistSidebarMode();
+
+	// Re-render if sidebar is visible
+	if (this.isSidebarVisible) {
+		this.renderPlaylistSidebar();
+	}
+}
+	setupPlaylistSidebarModeListeners() {
+	// Mode toggle button
+	if (this.elements.sidebarModeToggleBtn) {
+		this.elements.sidebarModeToggleBtn.addEventListener("click", () => {
+			this.togglePlaylistSidebarMode();
+		});
+	}
+
+	// Search input for expanded mode
+	if (this.elements.sidebarSearchInput) {
+		this.elements.sidebarSearchInput.addEventListener("input", (e) => {
+			this.filterPlaylistSidebarSongs(e.target.value);
+		});
+	}
+
+	// Load saved mode preference
+	const savedMode = localStorage.getItem("playlistSidebarMode");
+	if (savedMode === "expanded" || savedMode === "overlay") {
+		this.playlistSidebarMode = savedMode;
+		this.applyPlaylistSidebarMode();
+	}
+}
+
+
+	
 
 
 
