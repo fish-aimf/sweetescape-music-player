@@ -6604,3 +6604,225 @@ body:has(#ytPlayer.fullscreen-video) {
 #discordButton:active {
     transform: scale(0.95);
 }
+
+
+/* Expanded Playlist Sidebar Mode */
+.playlist-sidebar.expanded-mode {
+    right: auto;
+    left: 0;
+    width: 350px;
+    padding: 15px;
+    box-shadow: 2px 0 10px var(--shadow-color);
+}
+
+.playlist-sidebar.expanded-mode.visible {
+    left: 0;
+}
+
+/* Hide banners when expanded mode is active */
+body.playlist-expanded-active .left-banner,
+body.playlist-expanded-active .right-banner {
+    display: none !important;
+}
+
+/* Shift app-container when expanded mode is active */
+body.playlist-expanded-active .app-container {
+    margin-left: 370px;
+    margin-right: auto;
+    transition: margin-left 0.3s ease-in-out, max-width 0.3s ease-in-out;
+}
+
+/* Compress app-container on smaller screens */
+@media (max-width: 1400px) {
+    body.playlist-expanded-active .app-container {
+        max-width: calc(100vw - 390px);
+    }
+}
+
+/* Mode toggle button */
+.sidebar-mode-toggle-btn {
+    background: transparent;
+    border: none;
+    color: #888;
+    font-size: 16px;
+    cursor: pointer;
+    margin-right: 8px;
+    padding: 5px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.sidebar-mode-toggle-btn:hover {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-mode-toggle-btn.expanded {
+    color: #1DB954;
+}
+
+/* Expanded mode search bar */
+.sidebar-search-container {
+    margin-bottom: 12px;
+    display: none;
+}
+
+.playlist-sidebar.expanded-mode .sidebar-search-container {
+    display: block;
+}
+
+.sidebar-search-input {
+    width: 100%;
+    padding: 8px 12px;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.sidebar-search-input:focus {
+    border-color: var(--accent-color);
+}
+
+.sidebar-search-input::placeholder {
+    color: #666;
+}
+
+/* Expanded mode song cards */
+.sidebar-song-card {
+    display: none;
+    padding: 10px;
+    margin-bottom: 8px;
+    background-color: var(--bg-primary);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.playlist-sidebar.expanded-mode .sidebar-song-item {
+    display: none;
+}
+
+.playlist-sidebar.expanded-mode .sidebar-song-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sidebar-song-card:hover {
+    background-color: var(--hover-color);
+    border-color: var(--accent-color);
+}
+
+.sidebar-song-card.active {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.sidebar-song-card.temporarily-skipped {
+    opacity: 0.4;
+}
+
+.sidebar-song-card.temporarily-skipped .song-card-title {
+    text-decoration: line-through;
+}
+
+/* Thumbnail */
+.song-card-thumbnail {
+    width: 60px;
+    height: 45px;
+    border-radius: 4px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background-color: #222;
+}
+
+/* Song info */
+.song-card-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.song-card-index {
+    font-size: 11px;
+    color: #888;
+    font-weight: 500;
+}
+
+.song-card-title {
+    font-size: 14px;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Action buttons */
+.song-card-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.song-card-btn {
+    background: transparent;
+    border: none;
+    color: #888;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.song-card-btn:hover {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.song-card-btn.play-btn:hover {
+    color: #1DB954;
+}
+
+.song-card-btn.skip-btn:hover {
+    color: #ff6b6b;
+}
+
+.song-card-btn.skip-btn.active {
+    color: #ff6b6b;
+}
+
+/* Scrollbar for expanded mode */
+.playlist-sidebar.expanded-mode .sidebar-songs-list {
+    max-height: calc(100vh - 180px);
+}
+
+.playlist-sidebar.expanded-mode .sidebar-songs-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.playlist-sidebar.expanded-mode .sidebar-songs-list::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+    border-radius: 3px;
+}
+
+.playlist-sidebar.expanded-mode .sidebar-songs-list::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 3px;
+}
+
+.playlist-sidebar.expanded-mode .sidebar-songs-list::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
