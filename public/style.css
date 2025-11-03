@@ -6613,6 +6613,7 @@ body:has(#ytPlayer.fullscreen-video) {
     width: 321px;
     padding: 15px;
     box-shadow: 2px 0 10px var(--shadow-color);
+    z-index: 0;
 }
 
 .playlist-sidebar.expanded-mode.visible {
