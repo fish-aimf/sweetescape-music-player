@@ -6626,19 +6626,27 @@ body.playlist-expanded-active .right-banner {
 }
 
 /* Shift app-container properly when expanded mode is active */
+/* Shift and compress app-container dynamically */
 body.playlist-expanded-active .app-container {
     margin-left: 336px; /* sidebar width + padding */
-    margin-right: auto;
-    width: calc(100% - 336px); /* fill remaining space */
+    margin-right: 0;
+    width: calc(100vw - 336px); /* container fills remaining space */
     transition: margin-left 0.3s ease-in-out, width 0.3s ease-in-out;
+    box-sizing: border-box; /* include padding/border in width */
 }
 
-/* Compress app-container on smaller screens */
+/* Compress further on smaller screens */
 @media (max-width: 1400px) {
     body.playlist-expanded-active .app-container {
-        width: calc(100vw - 336px); /* match sidebar width */
-        max-width: none;
+        width: calc(100vw - 321px - 15px); /* precise sidebar width */
+        margin-left: 336px;
     }
+}
+
+/* Optional: prevent overflow of inner content */
+body.playlist-expanded-active .app-container * {
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 /* Mode toggle button */
