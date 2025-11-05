@@ -10763,12 +10763,32 @@ applyPlaylistSidebarMode() {
 		});
 	}
 
-	// Load saved mode preference
 	const savedMode = localStorage.getItem("playlistSidebarMode");
 	if (savedMode === "expanded" || savedMode === "overlay") {
 		this.playlistSidebarMode = savedMode;
-		this.applyPlaylistSidebarMode();
+		// Update the toggle button icon only, don't shift the app-container yet
+		this.updateSidebarModeToggleIcon();
 	}
+}
+updateSidebarModeToggleIcon() {
+    const modeToggleBtn = this.elements.sidebarModeToggleBtn;
+    const modeIcon = modeToggleBtn?.querySelector("i");
+    
+    if (this.playlistSidebarMode === "expanded") {
+        if (modeIcon) {
+            modeIcon.classList.remove("fa-expand-alt");
+            modeIcon.classList.add("fa-compress-alt");
+        }
+        modeToggleBtn?.classList.add("expanded");
+        modeToggleBtn?.setAttribute("title", "Switch to Overlay Mode");
+    } else {
+        if (modeIcon) {
+            modeIcon.classList.remove("fa-compress-alt");
+            modeIcon.classList.add("fa-expand-alt");
+        }
+        modeToggleBtn?.classList.remove("expanded");
+        modeToggleBtn?.setAttribute("title", "Switch to Expanded Mode");
+    }
 }
 
 
