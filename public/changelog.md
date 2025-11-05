@@ -353,3 +353,9 @@
 - made the welcome modal show immediately after library loads instead of after a set timer of 1s which may trigger inconsistencies and errors. v45.2.10
 - made autofill use youtube channel name if author is not present. v45.3.0
 - few bug fixes. v45.3.1
+- playlist sidebar modes officially implimented with all bug fixes. expanded mode vs overlay mode v46.0.0
+- changed z index of overlay mode such that it will be under control bar. v46.1.0
+- fixed how the sidebar in expanded mode will not disappear when closed. v46.2.0
+- fixed how when expanded mode is used, and page refreshed. the appcontainer formatting does not return to normal. v46.3.0
+- fixed how the playlist in expanded mode does not disappear when no playlist is playing. v46.4.0
+- added spacers to both playlists. that counteracts the control bar blocking so all content remains accessible. v46.5.0
