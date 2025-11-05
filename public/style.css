@@ -6837,3 +6837,12 @@ body.playlist-expanded-active .app-container * {
 .playlist-sidebar.expanded-mode .sidebar-songs-list::-webkit-scrollbar-thumb:hover {
     background: #555;
 }
+
+
+.playlist-sidebar.expanded-mode {
+    left: -350px; /* Hidden by default */
+}
+
+.playlist-sidebar.expanded-mode.visible {
+    left: 0; /* Visible when opened */
+}
