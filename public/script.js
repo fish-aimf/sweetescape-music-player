@@ -4484,40 +4484,62 @@ hideSidebar() {
 		}, 1500);
 	}
 	toggleControlBar() {
-		const controlBarContainer = document
-			.querySelector(".player-controls")
-			.closest(".player-container");
-		const targetElement =
-			controlBarContainer ||
-			document.querySelector(".player-controls").parentElement;
-		const layoutToggleBtn = document.querySelector(".layout-toggle-button");
-		const isVisible = targetElement.style.visibility !== "hidden";
-		const leftBanner = document.querySelector('.left-banner');
-		const rightBanner = document.querySelector('.right-banner');
-		const spacerDiv = document.getElementById("controlBarSpacer");
-		if (isVisible) {
-			targetElement.style.visibility = "hidden";
-			targetElement.style.position = "absolute";
-			targetElement.style.pointerEvents = "none";
-			localStorage.setItem("controlBarVisible", "false");
-			if (leftBanner) leftBanner.classList.add('expanded');
-			if (rightBanner) rightBanner.classList.add('expanded');
-			if (layoutToggleBtn && !targetElement.contains(layoutToggleBtn)) {
-				layoutToggleBtn.style.visibility = "visible";
-				layoutToggleBtn.style.position = "";
-				layoutToggleBtn.style.pointerEvents = "auto";
-			}
-			if (spacerDiv) spacerDiv.style.display = "none";
-		} else {
-			targetElement.style.visibility = "visible";
-			targetElement.style.position = "";
-			targetElement.style.pointerEvents = "auto";
-			localStorage.setItem("controlBarVisible", "true");
-			if (leftBanner) leftBanner.classList.remove('expanded');
-			if (rightBanner) rightBanner.classList.remove('expanded');
-			if (spacerDiv) spacerDiv.style.display = "block";
+	const controlBarContainer = document
+		.querySelector(".player-controls")
+		.closest(".player-container");
+	const targetElement =
+		controlBarContainer ||
+		document.querySelector(".player-controls").parentElement;
+	const layoutToggleBtn = document.querySelector(".layout-toggle-button");
+	const isVisible = targetElement.style.visibility !== "hidden";
+	const leftBanner = document.querySelector('.left-banner');
+	const rightBanner = document.querySelector('.right-banner');
+	const spacerDiv = document.getElementById("controlBarSpacer");
+	
+	// Playlist sidebar spacers
+	const overlayModeSpacer = document.getElementById("overlayModeSpacer");
+	const expandedModeSpacer = document.getElementById("expandedModeSpacer");
+	
+	if (isVisible) {
+		targetElement.style.visibility = "hidden";
+		targetElement.style.position = "absolute";
+		targetElement.style.pointerEvents = "none";
+		localStorage.setItem("controlBarVisible", "false");
+		document.body.classList.add("control-bar-hidden");
+		
+		if (leftBanner) leftBanner.classList.add('expanded');
+		if (rightBanner) rightBanner.classList.add('expanded');
+		if (layoutToggleBtn && !targetElement.contains(layoutToggleBtn)) {
+			layoutToggleBtn.style.visibility = "visible";
+			layoutToggleBtn.style.position = "";
+			layoutToggleBtn.style.pointerEvents = "auto";
 		}
+		
+		// Hide all spacers
+		if (spacerDiv) spacerDiv.style.display = "none";
+		if (overlayModeSpacer) overlayModeSpacer.style.display = "none";
+		if (expandedModeSpacer) expandedModeSpacer.style.display = "none";
+	} else {
+		targetElement.style.visibility = "visible";
+		targetElement.style.position = "";
+		targetElement.style.pointerEvents = "auto";
+		localStorage.setItem("controlBarVisible", "true");
+		document.body.classList.remove("control-bar-hidden");
+		
+		if (leftBanner) leftBanner.classList.remove('expanded');
+		if (rightBanner) rightBanner.classList.remove('expanded');
+		
+		// Show spacers
+		if (spacerDiv) spacerDiv.style.display = "block";
+		if (overlayModeSpacer) overlayModeSpacer.style.display = "block";
+		if (expandedModeSpacer) expandedModeSpacer.style.display = "block";
 	}
+	
+	// Re-render playlist sidebar if it's open to refresh spacers
+	if (this.isSidebarVisible && this.currentPlaylist) {
+		this.renderPlaylistSidebar();
+	}
+}
 	togglePlaylistLoop() {
 		this.isPlaylistLooping = !this.isPlaylistLooping;
 		this.updatePlaylistLoopButton();
@@ -10627,6 +10649,15 @@ Song list:`;
 		fragment.appendChild(songCard);
 	});
 	
+	// Add spacer at the end (only if control bar is visible)
+	const isControlBarVisible = localStorage.getItem("controlBarVisible") !== "false";
+	if (isControlBarVisible) {
+		const spacer = document.createElement("div");
+		spacer.classList.add("playlist-sidebar-spacer");
+		spacer.id = "expandedModeSpacer";
+		fragment.appendChild(spacer);
+	}
+	
 	this.elements.sidebarPlaylistSongs.appendChild(fragment);
 }
 	renderPlaylistSidebarOverlayMode() {
@@ -10693,6 +10724,15 @@ Song list:`;
 		
 		this.elements.sidebarPlaylistSongs.appendChild(songElement);
 	});
+	
+	// Add spacer at the end (only if control bar is visible)
+	const isControlBarVisible = localStorage.getItem("controlBarVisible") !== "false";
+	if (isControlBarVisible) {
+		const spacer = document.createElement("div");
+		spacer.classList.add("playlist-sidebar-spacer");
+		spacer.id = "overlayModeSpacer";
+		this.elements.sidebarPlaylistSongs.appendChild(spacer);
+	}
 }
 applyPlaylistSidebarMode() {
 	const sidebar = this.elements.currentPlaylistSidebar;
