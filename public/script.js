@@ -2378,8 +2378,11 @@ hideSidebar() {
 	this.elements.currentPlaylistSidebar.classList.remove("visible");
 	this.isSidebarVisible = false;
 	
-	// Remove expanded mode class from body when closing
+	// Remove expanded mode styling from body when closing
 	document.body.classList.remove("playlist-expanded-active");
+	
+	// Don't remove expanded-mode class from sidebar - keep the mode setting
+	// Just hide it with the 'visible' class removal
 	
 	// Clear search
 	if (this.elements.sidebarSearchInput) {
