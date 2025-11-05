@@ -6851,7 +6851,7 @@ body.playlist-expanded-active .app-container * {
 
 /* Playlist sidebar spacers - one for each mode */
 .playlist-sidebar-spacer {
-    height: 120px;
+    height: 130px;
     flex-shrink: 0;
     pointer-events: none;
 }
