@@ -6846,3 +6846,31 @@ body.playlist-expanded-active .app-container * {
 .playlist-sidebar.expanded-mode.visible {
     left: 0; /* Visible when opened */
 }
+
+
+/* Playlist sidebar spacers - one for each mode */
+.playlist-sidebar-spacer {
+    height: 120px;
+    flex-shrink: 0;
+    pointer-events: none;
+}
+
+/* Adjust sidebar songs list max-height to account for control bar */
+.sidebar-songs-list {
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+}
+
+/* When control bar is hidden, allow more space */
+body.control-bar-hidden .sidebar-songs-list {
+    max-height: calc(100vh - 80px);
+}
+
+/* Expanded mode needs different calculation due to search bar */
+.playlist-sidebar.expanded-mode .sidebar-songs-list {
+    max-height: calc(100vh - 180px);
+}
+
+body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
+    max-height: calc(100vh - 140px);
+}
