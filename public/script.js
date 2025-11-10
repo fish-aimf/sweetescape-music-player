@@ -10399,67 +10399,67 @@ Song list:`;
 	}
 
 	async checkDiscordAppRunning() {
-		return new Promise((resolve) => {
-			const testWs = new WebSocket('ws://localhost:9112');
-	
-			const timeout = setTimeout(() => {
-				testWs.close();
-				resolve(false);
-			}, 2000);
-	
-			testWs.onopen = () => {
-				clearTimeout(timeout);
-				testWs.close();
-				resolve(true);
-			};
-	
-			testWs.onerror = () => {
-				clearTimeout(timeout);
-				resolve(false);
-			};
-		});
-	}
+	return new Promise((resolve) => {
+		const testWs = new WebSocket('ws://localhost:9112');
+
+		const timeout = setTimeout(() => {
+			testWs.close();
+			resolve(false);
+		}, 2000);
+
+		testWs.onopen = () => {
+			clearTimeout(timeout);
+			testWs.close();
+			resolve(true);
+		};
+
+		testWs.onerror = () => {
+			clearTimeout(timeout);
+			resolve(false);
+		};
+	});
+}
 
 	async handleDiscordClick() {
-		const status = await this.checkDiscordAppInstalled();
-	
-		if (!status.installed) {
-			// App not installed at all
-			const userWantsDownload = confirm(
-				'Discord RPC app is not installed.\n\n' +
-				'Would you like to download and install it?\n\n' +
-				'Click OK to open the download page.'
-			);
-	
-			if (userWantsDownload) {
-				window.open('https://sweetescape.vercel.app/download', '_blank');
-			}
-			return;
+	const status = await this.checkDiscordAppInstalled();
+
+	if (!status.installed) {
+		// App not installed at all
+		const userWantsDownload = confirm(
+			'Discord RPC app is not installed.\n\n' +
+			'Would you like to download and install it?\n\n' +
+			'Click OK to open the download page.'
+		);
+
+		if (userWantsDownload) {
+			window.open('https://sweetescape.vercel.app/download', '_blank');
 		}
-	
-		if (!status.running && !this.discordEnabled) {
-			// App installed but not running
-			const userWantsLaunch = confirm(
-				'Discord RPC app is installed but not running.\n\n' +
-				'Would you like to launch it?\n\n' +
-				'Click OK to start the app, or Cancel to continue without Discord RPC.'
-			);
-	
-			if (userWantsLaunch) {
-				// Try to launch via protocol
-				window.location.href = 'sweetescape://launch';
-				
-				// Wait a moment and try to connect
-				setTimeout(() => {
-					this.toggleDiscordRPC();
-				}, 2000);
-			}
-			return;
-		}
-	
-		// App is running, just toggle
-		this.toggleDiscordRPC();
+		return;
 	}
+
+	if (!status.running && !this.discordEnabled) {
+		// App installed but not running
+		const userWantsLaunch = confirm(
+			'Discord RPC app is installed but not running.\n\n' +
+			'Would you like to launch it?\n\n' +
+			'Click OK to start the app, or Cancel to continue without Discord RPC.'
+		);
+
+		if (userWantsLaunch) {
+			// Try to launch via protocol
+			window.location.href = 'sweetescape://launch';
+			
+			// Wait a moment and try to connect
+			setTimeout(() => {
+				this.toggleDiscordRPC();
+			}, 2000);
+		}
+		return;
+	}
+
+	// App is running, just toggle
+	this.toggleDiscordRPC();
+}
 	initializeVisibilityTracking() {
 		this.handleVisibilityChange = () => {
 			const wasVisible = this.isTabVisible;
@@ -10486,59 +10486,20 @@ Song list:`;
 	}
 
 
-	async checkDiscordAppInstalled() {
-	// First check if it's running
+	
+async checkDiscordAppInstalled() {
+	// Check if it's currently running
 	const isRunning = await this.checkDiscordAppRunning();
 	
 	if (isRunning) {
 		return { installed: true, running: true };
 	}
 
-	// If not running, check if the protocol is registered (file exists)
-	return new Promise((resolve) => {
-		// Create a temporary iframe to test the protocol
-		const iframe = document.createElement('iframe');
-		iframe.style.display = 'none';
-		document.body.appendChild(iframe);
-
-		let protocolHandled = false;
-		let timeout;
-
-		// Listen for blur event (indicates protocol was handled)
-		const blurHandler = () => {
-			protocolHandled = true;
-			clearTimeout(timeout);
-			cleanup();
-			resolve({ installed: true, running: false });
-		};
-
-		const cleanup = () => {
-			window.removeEventListener('blur', blurHandler);
-			if (iframe.parentNode) {
-				document.body.removeChild(iframe);
-			}
-		};
-
-		window.addEventListener('blur', blurHandler);
-
-		// Set timeout to check if protocol wasn't handled
-		timeout = setTimeout(() => {
-			if (!protocolHandled) {
-				cleanup();
-				resolve({ installed: false, running: false });
-			}
-		}, 1000);
-
-		// Try to trigger the protocol
-		try {
-			iframe.contentWindow.location.href = 'sweetescape://check';
-		} catch (e) {
-			clearTimeout(timeout);
-			cleanup();
-			resolve({ installed: false, running: false });
-		}
-	});
+	// For installed but not running apps, we can't reliably detect without user interaction
+	// So we'll just return "not running" and let the user choose to launch
+	return { installed: 'unknown', running: false };
 }
+
 
 	syncUIWithCurrentState() {
 		if (this.ytPlayer && this.ytPlayerReady) {
