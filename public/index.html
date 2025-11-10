@@ -1,52 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
    <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Music</title>
-  <meta name="description" content="SweetEscape: Seamless ad-free music streaming and lyrics player. Create, play, and explore songs online — adless, best, free, quality experience SE.">
-  <meta name="theme-color" content="#1a1a1a">
-  <link rel="canonical" href="https://sweetescape.vercel.app/">
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>SweetEscape - Music Player</title>
+        <meta name="description" content="SweetEscape: Seamless ad-free music streaming and lyrics player. Create, play, and explore songs online — adless, best, free, quality experience SE.">
+        <meta name="theme-color" content="#1a1a1a">
+        <link rel="canonical" href="https://sweetescape.vercel.app/">
+        <link rel="icon" type="image/svg+xml" href="favicon.svg">
+      
+        <!-- Preconnect: open sockets early -->
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+        <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
+      
+        <!-- Preload critical assets -->
+        <link rel="preload" href="style.css" as="style">
+        <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style">
+        <link rel="preload" href="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" as="script" crossorigin>
+      
+        <!-- Stylesheets -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" media="all">
+        <link rel="stylesheet" href="style.css" media="all">
+      
+        <!-- Open Graph / Twitter -->
+        <meta property="og:title" content="sweetescape - music player">
+        <meta property="og:description" content="seamless ad-free music streaming packed with features">
+        <meta property="og:image" content="https://sweetescape.vercel.app/websitecover.png">
+        <meta property="og:url" content="https://sweetescape.vercel.app">
+        <meta property="og:type" content="website">
+        <meta property="og:site_name" content="sweetescape">
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="sweetescape - a music player">
+        <meta name="twitter:description" content="seamless ad-free music streaming packed with features">
+        <meta name="twitter:image" content="https://sweetescape.vercel.app/websitecover.png">
+      
+        <!-- Google Analytics (async) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-QKSKJE9HVN"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-QKSKJE9HVN');
+        </script>
+      </head>
+   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 
-  <!-- Preconnects for performance -->
-  <link rel="preconnect" href="https://cdn.jsdelivr.net">
-  <link rel="preconnect" href="https://www.googletagmanager.com">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-  <!-- Styles -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
+   </body>
 
-  <!-- Open Graph (Facebook, Discord, etc.) -->
-  <meta property="og:title" content="sweetescape - music player">
-  <meta property="og:description" content="seamless ad-free music streaming packed with features">
-  <meta property="og:image" content="https://sweetescape.vercel.app/websitecover.png">
-  <meta property="og:url" content="https://sweetescape.vercel.app">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="sweetescape">
-
-  <!-- Twitter Card Tags -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="sweetescape - a music player">
-  <meta name="twitter:description" content="seamless ad-free music streaming packed with features">
-  <meta name="twitter:image" content="https://sweetescape.vercel.app/websitecover.png">
-
-  <!-- Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-QKSKJE9HVN"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-QKSKJE9HVN');
-  </script>
-
-  <!-- Supabase SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-
-   <body>
       <div class="music-visualizer" id="musicVisualizer">
          <canvas class="visualizer-canvas" id="visualizerCanvas"></canvas>
          <div class="visualizer-bars" id="visualizerBars"></div>
