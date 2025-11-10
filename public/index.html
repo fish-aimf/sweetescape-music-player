@@ -1,39 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
    <head>
-      <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-      <!-- start of google analytics -->
-      <!-- Google tag (gtag.js) -->
-      <script async src="https://www.googletagmanager.com/gtag/js?id=G-QKSKJE9HVN"></script>
-      <script>
-         window.dataLayer = window.dataLayer || [];
-         function gtag(){dataLayer.push(arguments);}
-         gtag('js', new Date());
-         
-         gtag('config', 'G-QKSKJE9HVN');
-      </script>
-      <!-- End of Google Analytics -->
-      <meta charset="UTF-8">
-      <link rel="icon" type="image/svg+xml" href="favicon.svg">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Music</title>
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-      <link rel="stylesheet" href="style.css">
-      <meta property="og:title" content="sweetescape - music player">
-      <meta property="og:description" content="seamless ad-free music streaming packed with features">
-      <meta property="og:image" content="https://sweetescape.vercel.app/websitecover.png">
-      <meta property="og:url" content="https://sweetescape.vercel.app">
-      <meta property="og:type" content="website">
-      <meta property="og:site_name" content="sweetescape">
-      <!-- Twitter Card Tags -->
-      <meta name="twitter:card" content="summary_large_image">
-      <meta name="twitter:title" content="sweetescape - a music player">
-      <meta name="twitter:description" content="seamless ad-free music streaming packed with features">
-      <meta name="twitter:image" content="https://sweetescape.vercel.app/websitecover.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Music</title>
+  <meta name="description" content="SweetEscape: Seamless ad-free music streaming and lyrics player. Create, play, and explore songs online — adless, best, free, quality experience SE.">
+  <meta name="theme-color" content="#1a1a1a">
+  <link rel="canonical" href="https://sweetescape.vercel.app/">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
 
-      <meta name="description" content="SweetEscape: Seamless ad-free music streaming and lyrics player. Create, play, and explore songs online.  adless, best, free, quality experience SE">
+  <!-- Preconnects for performance -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://www.googletagmanager.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-   </head>
+  <!-- Styles -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Open Graph (Facebook, Discord, etc.) -->
+  <meta property="og:title" content="sweetescape - music player">
+  <meta property="og:description" content="seamless ad-free music streaming packed with features">
+  <meta property="og:image" content="https://sweetescape.vercel.app/websitecover.png">
+  <meta property="og:url" content="https://sweetescape.vercel.app">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="sweetescape">
+
+  <!-- Twitter Card Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="sweetescape - a music player">
+  <meta name="twitter:description" content="seamless ad-free music streaming packed with features">
+  <meta name="twitter:image" content="https://sweetescape.vercel.app/websitecover.png">
+
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-QKSKJE9HVN"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-QKSKJE9HVN');
+  </script>
+
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
    <body>
       <div class="music-visualizer" id="musicVisualizer">
          <canvas class="visualizer-canvas" id="visualizerCanvas"></canvas>
