@@ -360,3 +360,4 @@
 - fixed how the playlist in expanded mode does not disappear when no playlist is playing. v46.4.0
 - added spacers to both playlists. that counteracts the control bar blocking so all content remains accessible. v46.5.0
 - allows website to run the discord rich presence directly by adding specified path and testing if sweetescape:// protocol is registered. so the app can be run from the website. v46.6.0
+- improved detection and stopped triggering false positives for downloads v46.7.0
