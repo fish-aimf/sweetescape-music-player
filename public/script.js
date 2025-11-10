@@ -7223,40 +7223,31 @@ hideSidebar() {
 		}
 	}
 	async loadVersion() {
-	try {
-		const response = await fetch('changelog.md', { cache: 'no-store' });
-		const text = await response.text();
-		const lines = text.trim().split('\n').filter(line => line.trim());
-		
-		if (lines.length > 0) {
-			const lastLine = lines[lines.length - 1];
-			const versionMatch = lastLine.match(/v\d+\.\d+\.\d+/);
-			
-			if (versionMatch) {
-				const currentVersion = versionMatch[0];
-				const versionDisplay = document.getElementById('versionDisplay');
-				const versionText = document.getElementById('versionText');
-				
-				if (versionDisplay && versionText) {
-					versionText.textContent = currentVersion;
-					const changeText = lastLine.replace(/v\d+\.\d+\.\d+/, '').replace(/^\*\s*/, '').trim();
-					versionDisplay.title = `Latest: ${changeText}`;
-					this.fullChangelog = text;
-					
-					versionDisplay.addEventListener('click', () => {
-						this.showChangelogModal();
-					});
+		try {
+			const response = await fetch('changelog.md');
+			const text = await response.text();
+			const lines = text.trim().split('\n').filter(line => line.trim());
+			if (lines.length > 0) {
+				const lastLine = lines[lines.length - 1];
+				const versionMatch = lastLine.match(/v\d+\.\d+\.\d+/);
+				if (versionMatch) {
+					const versionDisplay = document.getElementById('versionDisplay');
+					const versionText = document.getElementById('versionText');
+					if (versionDisplay && versionText) {
+						versionText.textContent = versionMatch[0];
+						const changeText = lastLine.replace(/v\d+\.\d+\.\d+/, '').replace(/^\*\s*/, '').trim();
+						versionDisplay.title = `Latest: ${changeText}`;
+						this.fullChangelog = text;
+						versionDisplay.addEventListener('click', () => {
+							this.showChangelogModal();
+						});
+					}
 				}
-				
-				// Update cached version after successful load
-				localStorage.setItem('se_version', currentVersion);
-				localStorage.setItem('se_last_check', Date.now().toString());
 			}
+		} catch (error) {
+			console.warn('Could not load version:', error);
 		}
-	} catch (error) {
-		console.warn('Could not load version:', error);
 	}
-}
 	showChangelogModal() {
 		const modal = document.getElementById('changelogModal');
 		const content = document.getElementById('changelogContent');
