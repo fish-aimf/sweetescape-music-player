@@ -1,77 +1,132 @@
 <!DOCTYPE html>
 <html lang="en">
    <head>
-      
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="theme-color" content="#1a1a1a">
-        <meta name="description" content="SweetEscape: Seamless ad-free music streaming and lyrics player. Create, play, and explore songs online — adless, best, free, quality experience SE.">
-        <link rel="canonical" href="https://sweetescape.vercel.app/">
-        <title>SweetEscape – Music Player</title>
-        <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1a1a1a">
+  <meta name="description" content="SweetEscape: Seamless ad-free music streaming and lyrics player. Create, play, and explore songs online — adless, best, free, quality experience SE.">
+  <link rel="canonical" href="https://sweetescape.vercel.app/">
+  <title>SweetEscape – Music Player</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
 
+  <!-- Critical cache busting script - runs FIRST -->
+  <script>
+    (function() {
+      const CACHE_KEY = 'se_version';
+      const LAST_CHECK_KEY = 'se_last_check';
+      const CHECK_INTERVAL = 3600000; // 1 hour
       
-        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
-        <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
-        <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+      // Check if Ctrl+Shift+R was pressed (hard reload)
+      const isHardReload = performance.navigation.type === 1 && 
+                           (performance.getEntriesByType('navigation')[0]?.type === 'reload');
+      
+      if (isHardReload) {
+        console.log('[Cache] Hard reload detected, clearing cache');
+        localStorage.removeItem(CACHE_KEY);
+        localStorage.removeItem(LAST_CHECK_KEY);
+        location.reload(true);
+        return;
+      }
 
-      
-        <style>
-          :root {
-            --bg-primary:#f4f4f4;--bg-secondary:#fff;--text-primary:#333;
-            --text-secondary:#666;--accent-color:#5D9C59;--hover-color:#4A7C59;
-            --border-color:#ddd;--button-text-color:#fff;
+      const cachedVersion = localStorage.getItem(CACHE_KEY);
+      const lastCheck = parseInt(localStorage.getItem(LAST_CHECK_KEY) || '0');
+      const now = Date.now();
+
+      // Skip check if checked recently (within 1 hour)
+      if (cachedVersion && (now - lastCheck) < CHECK_INTERVAL) {
+        console.log('[Cache] Using cached version:', cachedVersion);
+        return;
+      }
+
+      // Async version check
+      fetch('changelog.md', { cache: 'no-store' })
+        .then(r => r.text())
+        .then(text => {
+          const lines = text.trim().split('\n').filter(l => l.trim());
+          const lastLine = lines[lines.length - 1];
+          const match = lastLine.match(/v\d+\.\d+\.\d+/);
+          
+          if (match) {
+            const serverVersion = match[0];
+            
+            if (cachedVersion && cachedVersion !== serverVersion) {
+              console.log('[Cache] Version mismatch! Cached:', cachedVersion, 'Server:', serverVersion);
+              console.log('[Cache] Clearing cache and reloading...');
+              localStorage.removeItem(CACHE_KEY);
+              localStorage.removeItem(LAST_CHECK_KEY);
+              // Force hard reload to clear all caches
+              window.location.reload(true);
+            } else {
+              console.log('[Cache] Version up to date:', serverVersion);
+              localStorage.setItem(CACHE_KEY, serverVersion);
+              localStorage.setItem(LAST_CHECK_KEY, now.toString());
+            }
           }
-          [data-theme='dark'] {
-            --bg-primary:#121212;--bg-secondary:#1e1e1e;
-            --text-primary:#e0e0e0;--text-secondary:#b0b0b0;
-            --accent-color:#3A6B35;--hover-color:#4D7C46;--border-color:#444;
-          }
-          * {margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif;}
-          body {
-            background-color:var(--bg-primary);
-            color:var(--text-primary);
-            transition:background-color .3s,color .3s;
-            min-height:100vh;
-          }
-          .app-container {
-            max-width:1000px;margin:0 auto;padding:20px;
-            background-color:var(--bg-secondary);
-          }
-        </style>
+        })
+        .catch(err => {
+          console.warn('[Cache] Version check failed:', err);
+          // Continue loading even if check fails
+        });
+    })();
+  </script>
 
-      
-        <link rel="preload" href="style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-        <noscript><link rel="stylesheet" href="style.css"></noscript>
-        <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-        <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
 
-      
-        <meta property="og:title" content="SweetEscape – Music Player">
-        <meta property="og:description" content="Seamless ad-free music streaming packed with features.">
-        <meta property="og:image" content="https://sweetescape.vercel.app/websitecover.png">
-        <meta property="og:url" content="https://sweetescape.vercel.app">
-        <meta property="og:type" content="website">
-        <meta property="og:site_name" content="SweetEscape">
-        <meta name="twitter:card" content="summary_large_image">
-        <meta name="twitter:title" content="SweetEscape – Music Player">
-        <meta name="twitter:description" content="Seamless ad-free music streaming packed with features.">
-        <meta name="twitter:image" content="https://sweetescape.vercel.app/websitecover.png">
-      
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-QKSKJE9HVN"></script>
-        <script>
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', 'G-QKSKJE9HVN', { transport_type: 'beacon' });
-        </script>
-      
-        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-      </head>
+  <style>
+    :root {
+      --bg-primary:#f4f4f4;--bg-secondary:#fff;--text-primary:#333;
+      --text-secondary:#666;--accent-color:#5D9C59;--hover-color:#4A7C59;
+      --border-color:#ddd;--button-text-color:#fff;
+    }
+    [data-theme='dark'] {
+      --bg-primary:#121212;--bg-secondary:#1e1e1e;
+      --text-primary:#e0e0e0;--text-secondary:#b0b0b0;
+      --accent-color:#3A6B35;--hover-color:#4D7C46;--border-color:#444;
+    }
+    * {margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif;}
+    body {
+      background-color:var(--bg-primary);
+      color:var(--text-primary);
+      transition:background-color .3s,color .3s;
+      min-height:100vh;
+    }
+    .app-container {
+      max-width:1000px;margin:0 auto;padding:20px;
+      background-color:var(--bg-secondary);
+    }
+  </style>
 
+  <link rel="preload" href="style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="style.css"></noscript>
+  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
+
+  <meta property="og:title" content="SweetEscape – Music Player">
+  <meta property="og:description" content="Seamless ad-free music streaming packed with features.">
+  <meta property="og:image" content="https://sweetescape.vercel.app/websitecover.png">
+  <meta property="og:url" content="https://sweetescape.vercel.app">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="SweetEscape">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="SweetEscape – Music Player">
+  <meta name="twitter:description" content="Seamless ad-free music streaming packed with features.">
+  <meta name="twitter:image" content="https://sweetescape.vercel.app/websitecover.png">
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-QKSKJE9HVN"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-QKSKJE9HVN', { transport_type: 'beacon' });
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+</head>
 
 
 
