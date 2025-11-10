@@ -13,8 +13,6 @@
   <script>
     (function() {
       const CACHE_KEY = 'se_version';
-      const LAST_CHECK_KEY = 'se_last_check';
-      const CHECK_INTERVAL = 3600000; // 1 hour
       
       // Check if Ctrl+Shift+R was pressed (hard reload)
       const isHardReload = performance.navigation.type === 1 && 
@@ -23,22 +21,12 @@
       if (isHardReload) {
         console.log('[Cache] Hard reload detected, clearing cache');
         localStorage.removeItem(CACHE_KEY);
-        localStorage.removeItem(LAST_CHECK_KEY);
-        location.reload(true);
         return;
       }
 
       const cachedVersion = localStorage.getItem(CACHE_KEY);
-      const lastCheck = parseInt(localStorage.getItem(LAST_CHECK_KEY) || '0');
-      const now = Date.now();
 
-      // Skip check if checked recently (within 1 hour)
-      if (cachedVersion && (now - lastCheck) < CHECK_INTERVAL) {
-        console.log('[Cache] Using cached version:', cachedVersion);
-        return;
-      }
-
-      // Async version check
+      // Async version check - non-blocking
       fetch('changelog.md', { cache: 'no-store' })
         .then(r => r.text())
         .then(text => {
@@ -53,19 +41,15 @@
               console.log('[Cache] Version mismatch! Cached:', cachedVersion, 'Server:', serverVersion);
               console.log('[Cache] Clearing cache and reloading...');
               localStorage.removeItem(CACHE_KEY);
-              localStorage.removeItem(LAST_CHECK_KEY);
-              // Force hard reload to clear all caches
-              window.location.reload(true);
+              location.reload(true);
             } else {
               console.log('[Cache] Version up to date:', serverVersion);
               localStorage.setItem(CACHE_KEY, serverVersion);
-              localStorage.setItem(LAST_CHECK_KEY, now.toString());
             }
           }
         })
         .catch(err => {
           console.warn('[Cache] Version check failed:', err);
-          // Continue loading even if check fails
         });
     })();
   </script>
