@@ -150,7 +150,11 @@
         
         async function fetchBillboardChart() {
             try {
-                const response = await fetch('https://billboard-api2.p.rapidapi.com/hot-100?range=1-10', {
+                // Get current date in YYYY-MM-DD format
+                const today = new Date();
+                const dateStr = today.toISOString().split('T')[0];
+                
+                const response = await fetch(`https://billboard-api2.p.rapidapi.com/hot-100?date=${dateStr}&range=1-10`, {
                     method: 'GET',
                     headers: {
                         'x-rapidapi-key': API_KEY,
@@ -163,6 +167,7 @@
                 }
                 
                 const data = await response.json();
+                console.log('Full API Response:', data); // Debug log
                 return data;
             } catch (error) {
                 console.error('Error fetching Billboard data:', error);
