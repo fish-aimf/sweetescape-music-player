@@ -1898,7 +1898,6 @@ body {
     border-bottom: 20px solid var(--border-color);
 }
 
-/* Playlist action buttons */
 .playlist-action-btn {
     display: block;
     width: 100%;
@@ -1918,7 +1917,6 @@ body {
     color: var(--background-primary);
 }
 
-/* Duplicates button states */
 .playlist-action-btn.duplicates-allowed {
     background-color: #28a745;
     color: white;
@@ -1940,7 +1938,7 @@ body {
     background-color: #c82333;
     border-color: #bd2130;
 }
-/* Randomize button positioned at top right */
+
 .randomize-btn-absolute {
     position: absolute;
     top: -42px;
@@ -1965,83 +1963,79 @@ body {
     font-size: 8px;
 }
 
-/* Make sure the parent container has relative positioning */
 #currentPlaylistSongs {
     position: relative;
 }
 
-
 .export-dropdown {
-            background: var(--bg-secondary, #2a2a2a);
-            border: 1px solid var(--border-color, #444);
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            opacity: 0;
-            transform: translateY(-10px);
-            transition: all 0.2s ease-in-out;
-            overflow: hidden;
-        }
+    background: var(--bg-secondary, #2a2a2a);
+    border: 1px solid var(--border-color, #444);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.2s ease-in-out;
+    overflow: hidden;
+}
 
-        .dropdown-item {
-            display: block;
-            width: 100%;
-            padding: 12px 16px;
-            background: none;
-            border: none;
-            color: var(--text-primary, #ffffff);
-            text-align: left;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-            position: relative;
-            font-size: 14px;
-        }
+.dropdown-item {
+    display: block;
+    width: 100%;
+    padding: 12px 16px;
+    background: none;
+    border: none;
+    color: var(--text-primary, #ffffff);
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    position: relative;
+    font-size: 14px;
+}
 
-        .dropdown-item:hover:not(.disabled) {
-            background-color: var(--accent-color, #4a9eff);
-        }
+.dropdown-item:hover:not(.disabled) {
+    background-color: var(--accent-color, #4a9eff);
+}
 
-        .dropdown-item.disabled {
-            color: var(--text-secondary, #999);
-            cursor: not-allowed;
-        }
+.dropdown-item.disabled {
+    color: var(--text-secondary, #999);
+    cursor: not-allowed;
+}
 
-        .dropdown-item-with-submenu .dropdown-arrow {
-            float: right;
-            transition: transform 0.2s ease;
-        }
+.dropdown-item-with-submenu .dropdown-arrow {
+    float: right;
+    transition: transform 0.2s ease;
+}
 
-        .export-submenu {
-            background: var(--bg-secondary, #2a2a2a);
-            border: 1px solid var(--border-color, #444);
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            max-height: 200px;
-            overflow-y: auto;
-            opacity: 0;
-            transform: translateX(-10px);
-            transition: all 0.2s ease-in-out;
-        }
+.export-submenu {
+    background: var(--bg-secondary, #2a2a2a);
+    border: 1px solid var(--border-color, #444);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    max-height: 200px;
+    overflow-y: auto;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.2s ease-in-out;
+}
 
-        .export-submenu::-webkit-scrollbar {
-            width: 6px;
-        }
+.export-submenu::-webkit-scrollbar {
+    width: 6px;
+}
 
-        .export-submenu::-webkit-scrollbar-track {
-            background: var(--bg-primary, #1a1a1a);
-        }
+.export-submenu::-webkit-scrollbar-track {
+    background: var(--bg-primary, #1a1a1a);
+}
 
-        .export-submenu::-webkit-scrollbar-thumb {
-            background: var(--accent-color, #4a9eff);
-            border-radius: 3px;
-        }
+.export-submenu::-webkit-scrollbar-thumb {
+    background: var(--accent-color, #4a9eff);
+    border-radius: 3px;
+}
 
-        .export-submenu .dropdown-item {
-            padding: 10px 14px;
-            font-size: 13px;
-        }
+.export-submenu .dropdown-item {
+    padding: 10px 14px;
+    font-size: 13px;
+}
 
-
-/* Playlist Export Modal Specific Styles */
 .playlist-export-modal {
     max-width: 500px;
     max-height: 80vh;
@@ -2084,7 +2078,6 @@ body {
     min-height: 200px;
 }
 
-/* Custom scrollbar for webkit browsers */
 .playlist-selection-container::-webkit-scrollbar {
     width: 8px;
 }
@@ -2145,14 +2138,12 @@ body {
     color: var(--text-primary);
 }
 
-
 .playlist-info {
     font-size: 0.9rem;
     opacity: 0.8;
     color: inherit;
 }
 
-/* Dark theme adjustments */
 [data-theme='dark'] .playlist-selection-btn {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
@@ -2161,48 +2152,18 @@ body {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
 }
 
-/* Responsive design */
-@media (max-width: 768px) {
-    .playlist-export-modal {
-        max-width: 90vw;
-        max-height: 85vh;
-        margin: 5vh auto;
-    }
-    
-    .playlist-selection-container {
-        max-height: 60vh;
-        padding: 10px 15px 15px 15px;
-    }
-    
-    .playlist-export-modal .modal-heading {
-        padding: 15px 20px 12px 20px;
-        font-size: 1.3rem;
-    }
-    
-    .playlist-selection-btn {
-        padding: 12px 15px;
-        margin-bottom: 10px;
-    }
-}
-
-
-
-/* Add these CSS rules to your existing stylesheet */
-
-/* Fullscreen video player styles */
 #ytPlayer.fullscreen-video {
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
     width: 100vw !important;
-    height: calc(100vh - 120px) !important; /* Leave space for bottom controls */
+    height: calc(100vh - 120px) !important;
     z-index: 1000 !important;
     background: #000;
     opacity: 1 !important;
     pointer-events: auto !important;
 }
 
-/* Ensure the bottom controls stay visible in video mode */
 body:has(#ytPlayer.fullscreen-video) .now-playing {
     position: fixed !important;
     bottom: 0 !important;
@@ -2214,7 +2175,6 @@ body:has(#ytPlayer.fullscreen-video) .now-playing {
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2) !important;
 }
 
-/* Video hint styles */
 .video-hint {
     position: fixed;
     top: 20px;
@@ -2238,45 +2198,23 @@ body:has(#ytPlayer.fullscreen-video) .now-playing {
     color: var(--accent-color);
 }
 
-/* Dark theme adjustments for video mode */
 [data-theme='dark'] .video-hint {
     background: rgba(30, 30, 30, 0.9);
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Ensure iframe is properly styled */
 #ytPlayer iframe {
     width: 100% !important;
     height: 100% !important;
 }
 
-/* Hide scrollbars when in video mode */
 body:has(#ytPlayer.fullscreen-video) {
     overflow: hidden;
 }
 
-/* Responsive adjustments for smaller screens */
-@media (max-width: 768px) {
-    #ytPlayer.fullscreen-video {
-        height: calc(100vh - 140px) !important; /* More space for mobile controls */
-    }
-    
-    .video-hint {
-        top: 10px;
-        right: 10px;
-        font-size: 12px;
-        padding: 8px 12px;
-    }
-    
-    body:has(#ytPlayer.fullscreen-video) .now-playing {
-        padding: 10px 15px !important;
-    }
-}
-
-/* Default YouTube player - hidden but minimal for audio */
 #ytPlayer {
     position: absolute;
-    top: -9999px; /* Move off-screen instead of display:none */
+    top: -9999px;
     left: -9999px;
     width: 1px !important;
     height: 1px !important;
@@ -2293,9 +2231,6 @@ body:has(#ytPlayer.fullscreen-video) {
 .watermark {
     transition: opacity 0.2s ease-in-out;
 }
-
-
-
 
 .thumbnail-close-btn {
     position: absolute;
@@ -2350,42 +2285,8 @@ body:has(#ytPlayer.fullscreen-video) {
 #autoplayBtn.active {
     color: var(--accent-color); 
     background-color: transparent; 
-
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* Add these styles to your existing CSS */
-
-/* Expand button in lyrics tab */
 .lyrics-expand-btn {
     display: block;
     margin: 15px auto;
@@ -2408,7 +2309,6 @@ body:has(#ytPlayer.fullscreen-video) {
     margin-right: 8px;
 }
 
-/* Fullscreen lyrics modal */
 .lyrics-fullscreen-modal {
     display: none;
     position: fixed;
@@ -2501,12 +2401,49 @@ body:has(#ytPlayer.fullscreen-video) {
     background: #000;
     border-radius: 10px;
     overflow: hidden;
+    position: relative;
+    width: 100%;
+    height: 300px;
+    margin: 20px 0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.fullscreen-video-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, 
+        rgba(255, 255, 255, 0.1) 0%, 
+        rgba(255, 255, 255, 0.05) 100%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.fullscreen-video-container:empty::after {
+    content: 'Video will appear here';
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 14px;
+    text-align: center;
+    z-index: 2;
+    position: relative;
 }
 
 .fullscreen-video-container iframe {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
     width: 100% !important;
     height: 100% !important;
-    border: none;
+    border: none !important;
+    border-radius: inherit !important;
+    z-index: 10001 !important;
 }
 
 .fullscreen-lyrics-display {
@@ -2518,13 +2455,11 @@ body:has(#ytPlayer.fullscreen-video) {
     border: 2px solid var(--border-color);
 }
 
-/* When video is hidden, lyrics take full width */
 .lyrics-fullscreen-content.video-hidden .fullscreen-lyrics-display {
     flex: 1;
     max-width: 100%;
 }
 
-/* Fullscreen lyrics styling */
 .fullscreen-lyrics-display .lyric-line {
     padding: 15px 20px !important;
     margin: 10px 0 !important;
@@ -2545,128 +2480,15 @@ body:has(#ytPlayer.fullscreen-video) {
     box-shadow: 0 5px 15px rgba(0,0,0,0.2);
 }
 
-/* Responsive design for smaller screens */
-@media (max-width: 768px) {
-    .lyrics-fullscreen-content {
-        flex-direction: column;
-    }
-    
-    .fullscreen-video-container {
-        flex: 0 0 30%;
-    }
-    
-    .song-info h2 {
-        font-size: 2em;
-    }
-    
-    .song-info p {
-        font-size: 1.2em;
-    }
-    
-    .fullscreen-lyrics-display .lyric-line {
-        font-size: 1.4em !important;
-    }
-    
-    .fullscreen-lyrics-display .lyric-line.active {
-        font-size: 1.8em !important;
-    }
-}
-
-#ytPlayer.lyrics-fullscreen-video {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 10001; /* Higher than lyrics modal */
-}
-
-
-
-/* Fullscreen Video Container Styling */
-.fullscreen-video-container {
-    position: relative;
-    width: 100%;
-    height: 300px; /* Adjust this height as needed */
-    background: #000;
-    border-radius: 8px;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 20px 0;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-}
-
-.fullscreen-video-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(45deg, 
-        rgba(255, 255, 255, 0.1) 0%, 
-        rgba(255, 255, 255, 0.05) 100%);
-    pointer-events: none;
-    z-index: 1;
-}
-
-/* When video is hidden, show a placeholder */
-.fullscreen-video-container:empty::after {
-    content: 'Video will appear here';
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 14px;
-    text-align: center;
-    z-index: 2;
-    position: relative;
-}
-
-/* Ensure the iframe fills the container completely */
-.fullscreen-video-container iframe {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    border: none !important;
-    border-radius: inherit !important;
-    z-index: 10001 !important;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .fullscreen-video-container {
-        height: 200px;
-        margin: 10px 0;
-    }
-}
-
-/* Ensure proper stacking context */
-.lyrics-fullscreen-modal {
-    z-index: 10000;
-}
-
-.lyrics-fullscreen-content {
-    position: relative;
-    z-index: 10000;
-}
-
-/* Add this CSS for lyrics video positioning */
+#ytPlayer.lyrics-fullscreen-video,
 #ytPlayer.lyrics-video {
-    position: fixed !important;
-    z-index: 10001 !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
     border-radius: 8px !important;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
-}
-
-/* Position it over the lyrics video container */
-.lyrics-fullscreen-modal .fullscreen-video-container {
-    position: relative;
-}
-
-/* When lyrics video is active, position the player over the container */
-.lyrics-fullscreen-modal.active #ytPlayer.lyrics-video {
-    /* This will be calculated dynamically by JavaScript */
+    z-index: 10001 !important;
 }
 
 .version-display {
@@ -2770,33 +2592,6 @@ body:has(#ytPlayer.fullscreen-video) {
     color: var(--accent-color);
 }
 
-#ytPlayer.lyrics-video {
-    position: absolute !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    z-index: 10001;
-}
-
-.fullscreen-video-container {
-    position: relative;
-    justify-content: center;
-    align-items: center;
-    padding: 10px;
-}
-
-.fullscreen-video-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 10px;
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 12px;
-    margin-bottom: 20px;
-}
-
 .visitor-counter {
     position: absolute;
     transform: translate(110px, 0px);
@@ -2808,9 +2603,6 @@ body:has(#ytPlayer.fullscreen-video) {
     pointer-events: none;
 }
 
-
-
-/* Settings Button */
 .settings-button {
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
@@ -2827,11 +2619,11 @@ body:has(#ytPlayer.fullscreen-video) {
     align-items: center;
     justify-content: center;
 }
+
 .settings-button:hover {
     opacity: 0.7;
 }
 
-/* Settings Modal */
 .settings-modal {
     display: none;
     position: fixed;
@@ -2926,71 +2718,6 @@ body:has(#ytPlayer.fullscreen-video) {
     margin: 0;
 }
 
-/* Settings Modal Responsive */
-@media (max-width: 768px) {
-    .settings-modal-content {
-        width: 95%;
-        margin: 10% auto;
-        max-height: 90vh;
-    }
-    
-    .settings-modal-header {
-        padding: 15px 20px;
-    }
-    
-    .settings-modal-header h2 {
-        font-size: 20px;
-    }
-    
-    .settings-modal-body {
-        padding: 20px;
-    }
-}
-
-
-.settings-section {
-  margin-bottom: 1.5rem;
-}
-
-.setting-group {
-  margin-bottom: 1rem;
-}
-
-.color-picker-item {
-  margin-bottom: 1rem;
-}
-
-.color-picker-item input[type="color"] {
-  width: 100%;
-  height: 50px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-#customThemeSection {
-  margin-top: 1rem;
-  padding: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-/* Keep app container completely unchanged */
-.app-container {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: var(--bg-secondary);
-    min-height: 100vh;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-}
-.toggle-switch {
-    position: relative;
-    display: inline-block;
-    margin-left: 10px;
-}
-
-/* Settings section styling */
 .settings-section {
     margin-bottom: 30px;
     padding-bottom: 20px;
@@ -3029,18 +2756,130 @@ body:has(#ytPlayer.fullscreen-video) {
     font-style: italic;
 }
 
-/* Coming soon placeholder styling */
-.coming-soon {
-    color: var(--secondary-text-color, #94a3b8);
-    font-style: italic;
-    text-align: center;
-    padding: 20px;
-    background-color: var(--secondary-bg-color, #334155);
-    border-radius: 8px;
-    border: 1px dashed var(--border-color, #475569);
+.color-picker-item {
+    margin-bottom: 1rem;
 }
 
-/* Advertisement banners - hide by default */
+.color-picker-item input[type="color"] {
+    width: 100%;
+    height: 50px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#customThemeSection {
+    margin-top: 1rem;
+    padding: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.app-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: var(--bg-secondary);
+    min-height: 100vh;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    margin-left: 10px;
+}
+
+@media (max-width: 768px) {
+    .playlist-export-modal {
+        max-width: 90vw;
+        max-height: 85vh;
+        margin: 5vh auto;
+    }
+    
+    .playlist-selection-container {
+        max-height: 60vh;
+        padding: 10px 15px 15px 15px;
+    }
+    
+    .playlist-export-modal .modal-heading {
+        padding: 15px 20px 12px 20px;
+        font-size: 1.3rem;
+    }
+    
+    .playlist-selection-btn {
+        padding: 12px 15px;
+        margin-bottom: 10px;
+    }
+
+    #ytPlayer.fullscreen-video {
+        height: calc(100vh - 140px) !important;
+    }
+    
+    .video-hint {
+        top: 10px;
+        right: 10px;
+        font-size: 12px;
+        padding: 8px 12px;
+    }
+    
+    body:has(#ytPlayer.fullscreen-video) .now-playing {
+        padding: 10px 15px !important;
+    }
+
+    .fullscreen-video-container {
+        height: 200px;
+        margin: 10px 0;
+    }
+
+    .lyrics-fullscreen-content {
+        flex-direction: column;
+    }
+    
+    .fullscreen-video-container {
+        flex: 0 0 30%;
+    }
+    
+    .song-info h2 {
+        font-size: 2em;
+    }
+    
+    .song-info p {
+        font-size: 1.2em;
+    }
+    
+    .fullscreen-lyrics-display .lyric-line {
+        font-size: 1.4em !important;
+    }
+    
+    .fullscreen-lyrics-display .lyric-line.active {
+        font-size: 1.8em !important;
+    }
+
+    .settings-modal-content {
+        width: 95%;
+        margin: 10% auto;
+        max-height: 90vh;
+    }
+    
+    .settings-modal-header {
+        padding: 15px 20px;
+    }
+    
+    .settings-modal-header h2 {
+        font-size: 20px;
+    }
+    
+    .settings-modal-body {
+        padding: 20px;
+    }
+}
+
+
+
+
+
+
 .left-banner,
 .right-banner {
     position: fixed;
@@ -3048,7 +2887,7 @@ body:has(#ytPlayer.fullscreen-video) {
     width: calc((100vw - 1040px) / 2);
     height: 75vh;
     z-index: 1;
-    display: none; /* Hidden by default */
+    display: none;
 }
 
 .left-banner {
@@ -3059,21 +2898,11 @@ body:has(#ytPlayer.fullscreen-video) {
     right: 0;
 }
 
-/* Show banners when ads are enabled */
 .ads-enabled .left-banner,
 .ads-enabled .right-banner {
     display: block;
 }
 
-/* Hide banners on smaller screens regardless of setting */
-@media (max-width: 1080px) {
-    .left-banner,
-    .right-banner {
-        display: none !important;
-    }
-}
-
-/* Expanded banner state when control bar is hidden */
 .ads-enabled .left-banner.expanded,
 .ads-enabled .right-banner.expanded {
     height: 100vh;
@@ -3089,6 +2918,7 @@ body:has(#ytPlayer.fullscreen-video) {
     display: flex;
     gap: 10px;
     margin-bottom: 15px;
+    flex-wrap: wrap;
 }
 
 .theme-input-group {
@@ -3105,6 +2935,10 @@ body:has(#ytPlayer.fullscreen-video) {
     font-family: monospace;
     font-size: 12px;
     resize: vertical;
+    min-height: 100px;
+    padding: 10px;
+    border-radius: 6px;
+    background: var(--bg-primary);
 }
 
 .color-picker-group {
@@ -3112,15 +2946,28 @@ body:has(#ytPlayer.fullscreen-video) {
     align-items: center;
     gap: 10px;
     margin-bottom: 10px;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.color-picker-group label {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.color-picker-group input[type="color"] {
+    width: 100%;
+    height: 40px;
+    border: 2px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    background: none;
 }
 
 .color-picker-group input[type="range"] {
     width: 60px;
+    flex: 1;
 }
-
-
-/* Toggle Switch Container */
-
 
 .collapsible-section {
     border: 1px solid var(--border-color, #475569);
@@ -3142,7 +2989,6 @@ body:has(#ytPlayer.fullscreen-video) {
 
 .section-header:hover {
     background: var(--hover-color, #2563eb);
-    cursor: pointer;
 }
 
 .section-header h3 {
@@ -3174,14 +3020,14 @@ body:has(#ytPlayer.fullscreen-video) {
     padding: 20px;
 }
 
-/* Discover More Settings Specific Styles */
 .number-input-group {
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
-.number-input-group input[type="number"] {
+.number-input-group input[type="number"],
+.number-input-group input {
     width: 80px;
     padding: 8px 12px;
     border: 1px solid var(--border-color, #475569);
@@ -3213,6 +3059,9 @@ body:has(#ytPlayer.fullscreen-video) {
     font-weight: 600;
     cursor: pointer;
     transition: background-color 0.2s ease;
+    width: 100%;
+    padding: 12px;
+    background: var(--accent-color);
 }
 
 .save-settings-btn:hover {
@@ -3223,299 +3072,282 @@ body:has(#ytPlayer.fullscreen-video) {
     transform: translateY(1px);
 }
 
-/* Ensure existing styles don't conflict */
 .settings-section.collapsible-section .setting-group,
 .settings-section.collapsible-section .custom-theme-section,
 .settings-section.collapsible-section iframe {
     margin-bottom: 16px;
 }
 
-
-/* Lyrics Maker Modal Styles */
 .lyrics-maker-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.95);
-  z-index: 10000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  backdrop-filter: blur(5px);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(5px);
 }
 
 .lyrics-maker-modal.hidden {
-  display: none;
+    display: none;
 }
 
 .lyrics-maker-content {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  width: 95vw;
-  height: 95vh;
-  border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    width: 95vw;
+    height: 95vh;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .lyrics-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 30px;
-  border-bottom: 1px solid var(--border-color);
-  background: var(--bg-primary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 30px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-primary);
 }
 
 .lyrics-header h1 {
-  margin: 0;
-  font-size: 1.8rem;
-  color: var(--text-primary);
+    margin: 0;
+    font-size: 1.8rem;
+    color: var(--text-primary);
 }
 
 .close-btn {
-  font-size: 32px;
-  cursor: pointer;
-  color: var(--text-secondary);
-  transition: color 0.2s;
-  line-height: 1;
-  padding: 5px;
+    font-size: 32px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: color 0.2s;
+    line-height: 1;
+    padding: 5px;
+    background: none;
+    border: none;
+    color: var(--button-text-color);
+    font-size: 1.5rem;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
 }
 
 .close-btn:hover {
-  color: var(--accent-color);
+    color: var(--accent-color);
+    background: rgba(255,255,255,0.2);
 }
 
 .lyrics-navbar {
-  display: flex;
-  background: var(--bg-primary);
-  border-bottom: 1px solid var(--border-color);
-  padding: 0 30px;
+    display: flex;
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0 30px;
 }
 
 .lyrics-nav-item {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  padding: 15px 25px;
-  cursor: pointer;
-  font-size: 1rem;
-  border-bottom: 3px solid transparent;
-  transition: all 0.3s;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    padding: 15px 25px;
+    cursor: pointer;
+    font-size: 1rem;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s;
 }
 
 .lyrics-nav-item:hover {
-  color: var(--text-primary);
-  background: var(--bg-secondary);
+    color: var(--text-primary);
+    background: var(--bg-secondary);
 }
 
 .lyrics-nav-item.active {
-  color: var(--accent-color);
-  border-bottom-color: var(--accent-color);
+    color: var(--accent-color);
+    border-bottom-color: var(--accent-color);
 }
 
 .lyrics-tab {
-  display: none;
-  flex: 1;
-  padding: 30px;
-  overflow-y: auto;
+    display: none;
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
 }
 
 .lyrics-tab.active {
-  display: block;
+    display: block;
 }
 
 .lyrics-section {
-  margin-bottom: 30px;
-  padding: 20px;
-  background: var(--bg-primary);
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
+    margin-bottom: 30px;
+    padding: 20px;
+    background: var(--bg-primary);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
 }
 
 .lyrics-section h2,
 .lyrics-section h3 {
-  margin-top: 0;
-  color: var(--accent-color);
-  font-size: 1.3rem;
+    margin-top: 0;
+    color: var(--accent-color);
+    font-size: 1.3rem;
 }
 
 .lyrics-section input,
 .lyrics-section textarea {
-  width: 100%;
-  padding: 12px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  color: var(--text-primary);
-  font-size: 1rem;
-  margin-bottom: 15px;
-  resize: vertical;
+    width: 100%;
+    padding: 12px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 1rem;
+    margin-bottom: 15px;
+    resize: vertical;
 }
 
 .lyrics-section textarea {
-  min-height: 120px;
-  font-family: monospace;
+    min-height: 120px;
+    font-family: monospace;
 }
 
 .lyrics-section button {
-  background: var(--accent-color);
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background 0.3s;
-  margin-right: 10px;
+    background: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.3s;
+    margin-right: 10px;
 }
 
 .lyrics-section button:hover:not(:disabled) {
-  background: var(--accent-hover);
+    background: var(--accent-hover);
 }
 
 .lyrics-section button:disabled {
-  background: var(--bg-tertiary);
-  color: var(--text-secondary);
-  cursor: not-allowed;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    cursor: not-allowed;
 }
 
 .lyrics-box {
-  background: var(--bg-primary);
-  border: 2px solid var(--border-color);
-  border-radius: 8px;
-  padding: 20px;
-  margin: 10px 0;
-  font-size: 1.2rem;
-  text-align: center;
-  min-height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    background: var(--bg-primary);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 10px 0;
+    font-size: 1.2rem;
+    text-align: center;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 #currentLine {
-  border-color: var(--accent-color);
-  background: rgba(var(--accent-rgb), 0.1);
-  font-weight: bold;
-  font-size: 1.4rem;
+    border-color: var(--accent-color);
+    background: rgba(var(--accent-rgb), 0.1);
+    font-weight: bold;
+    font-size: 1.4rem;
 }
 
 #currentTime {
-  text-align: center;
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: var(--accent-color);
-  margin: 20px 0;
-  padding: 10px;
-  background: var(--bg-primary);
-  border-radius: 8px;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--accent-color);
+    margin: 20px 0;
+    padding: 10px;
+    background: var(--bg-primary);
+    border-radius: 8px;
 }
 
 #videoContainer {
-  text-align: center;
-  margin: 20px 0;
-  background: var(--bg-primary);
-  border-radius: 8px;
-  padding: 20px;
+    text-align: center;
+    margin: 20px 0;
+    background: var(--bg-primary);
+    border-radius: 8px;
+    padding: 20px;
 }
 
 .progress-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px;
-  margin: 8px 0;
-  background: var(--bg-secondary);
-  border-radius: 6px;
-  border-left: 4px solid var(--border-color);
-  transition: all 0.3s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    margin: 8px 0;
+    background: var(--bg-secondary);
+    border-radius: 6px;
+    border-left: 4px solid var(--border-color);
+    transition: all 0.3s;
 }
 
 .progress-item.completed {
-  background: rgba(var(--accent-rgb), 0.1);
-  border-left-color: var(--accent-color);
+    background: rgba(var(--accent-rgb), 0.1);
+    border-left-color: var(--accent-color);
 }
 
 #nextToRecordBtn {
-  background: var(--accent-color);
-  color: white;
-  border: none;
-  padding: 15px 30px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 1.1rem;
-  font-weight: bold;
-  margin-top: 20px;
-  transition: background 0.3s;
+    background: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-top: 20px;
+    transition: background 0.3s;
 }
 
 #nextToRecordBtn:hover {
-  background: var(--accent-hover);
+    background: var(--accent-hover);
 }
 
 .accent-btn {
-  background: var(--accent-color) !important;
-  color: white !important;
-  font-weight: bold !important;
+    background: var(--accent-color) !important;
+    color: white !important;
+    font-weight: bold !important;
 }
 
 .accent-btn:hover {
-  background: var(--accent-hover) !important;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .lyrics-maker-content {
-    width: 100vw;
-    height: 100vh;
-    border-radius: 0;
-  }
-  
-  .lyrics-header {
-    padding: 15px 20px;
-  }
-  
-  .lyrics-tab {
-    padding: 20px;
-  }
-  
-  .lyrics-navbar {
-    padding: 0 20px;
-  }
-  
-  .lyrics-nav-item {
-    padding: 12px 15px;
-    font-size: 0.9rem;
-  }
+    background: var(--accent-hover) !important;
 }
 
 .lyrics-search-buttons {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 15px;
-  flex-wrap: wrap;
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
 }
 
 .lyrics-search-btn {
-  padding: 8px 12px;
-  background-color: #444;
-  border: 1px solid #666;
-  border-radius: 4px;
-  color: white;
-  cursor: pointer;
-  font-size: 12px;
-  transition: background-color 0.3s;
+    padding: 8px 12px;
+    background-color: #444;
+    border: 1px solid #666;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.3s;
 }
 
 .lyrics-search-btn:hover {
-  background-color: #555;
+    background-color: #555;
 }
-/* Music Visualizer Background */
+
 .music-visualizer {
     position: fixed;
     top: 0;
@@ -3573,7 +3405,7 @@ body:has(#ytPlayer.fullscreen-video) {
     border-radius: 50%;
     opacity: 0.4;
 }
-/* Settings Tabs Styling */
+
 .settings-tabs {
     display: flex;
     border-bottom: 2px solid var(--border-color);
@@ -3615,7 +3447,6 @@ body:has(#ytPlayer.fullscreen-video) {
     font-size: 16px;
 }
 
-/* Tab Content */
 .settings-tab-content {
     min-height: 400px;
 }
@@ -3634,32 +3465,11 @@ body:has(#ytPlayer.fullscreen-video) {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Color Picker Grid */
 .color-picker-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 15px;
     margin-bottom: 20px;
-}
-
-.color-picker-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.color-picker-group label {
-    font-weight: 500;
-    color: var(--text-primary);
-}
-
-.color-picker-group input[type="color"] {
-    width: 100%;
-    height: 40px;
-    border: 2px solid var(--border-color);
-    border-radius: 6px;
-    cursor: pointer;
-    background: none;
 }
 
 .shadow-controls {
@@ -3668,15 +3478,11 @@ body:has(#ytPlayer.fullscreen-video) {
     gap: 10px;
 }
 
-.shadow-controls input[type="color"] {
-    flex: 1;
-}
-
+.shadow-controls input[type="color"],
 .shadow-controls input[type="range"] {
     flex: 1;
 }
 
-/* Theme Buttons */
 .theme-buttons {
     display: flex;
     gap: 10px;
@@ -3699,54 +3505,6 @@ body:has(#ytPlayer.fullscreen-video) {
     background: var(--hover-color);
 }
 
-/* Import/Export Section */
-.theme-import-export {
-    border-top: 1px solid var(--border-color);
-    padding-top: 20px;
-    margin-top: 20px;
-}
-
-.import-export-group {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
-    flex-wrap: wrap;
-}
-
-.theme-input-group textarea {
-    width: 100%;
-    min-height: 100px;
-    padding: 10px;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    background: var(--bg-primary);
-    color: var(--text-primary);
-    font-family: monospace;
-    resize: vertical;
-}
-
-/* Number Input Groups */
-.number-input-group {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.number-input-group input {
-    width: 80px;
-    padding: 8px;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    background: var(--bg-primary);
-    color: var(--text-primary);
-}
-
-.input-suffix {
-    color: var(--text-secondary);
-    font-size: 14px;
-}
-
-/* Setting Groups */
 .setting-group {
     margin-bottom: 20px;
     padding: 15px;
@@ -3769,65 +3527,26 @@ body:has(#ytPlayer.fullscreen-video) {
     font-style: italic;
 }
 
-/* Save Button */
-.save-settings-btn {
-    width: 100%;
-    padding: 12px;
-    background: var(--accent-color);
-    color: var(--button-text-color);
-    border: none;
-    border-radius: 6px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.3s ease;
-}
-
-.save-settings-btn:hover {
-    background: var(--hover-color);
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .settings-tabs {
-        flex-direction: column;
-    }
-    
-    .settings-tab-btn {
-        justify-content: flex-start;
-        padding: 12px 15px;
-    }
-    
-    .color-picker-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .theme-buttons {
-        flex-direction: column;
-    }
-    
-    .import-export-group {
-        flex-direction: column;
-    }
-}
 .watermark {
-  position: fixed;
-  left: -30px; /* Small margin from left edge */
-  top: 50%;
-  transform: translateY(-50%) rotate(-90deg);
-  transform-origin: center center;
-  font-size: 12px;
-  color: rgba(var(--text-primary-rgb, 51, 51, 51), 0.2); /* Uses theme text color with transparency */
-  text-decoration: none;
-  z-index: 9999;
-  pointer-events: auto;
-  user-select: none;
-  white-space: nowrap; /* Prevents text wrapping */
-  transition: color 0.2s ease; /* Smooth transition for hover */
+    position: fixed;
+    left: -30px;
+    top: 50%;
+    transform: translateY(-50%) rotate(-90deg);
+    transform-origin: center center;
+    font-size: 12px;
+    color: rgba(var(--text-primary-rgb, 51, 51, 51), 0.2);
+    text-decoration: none;
+    z-index: 9999;
+    pointer-events: auto;
+    user-select: none;
+    white-space: nowrap;
+    transition: color 0.2s ease;
 }
 
 .watermark:hover {
-  color: rgba(var(--text-primary-rgb, 51, 51, 51), 0.8); /* Theme-aware hover color */
+    color: rgba(var(--text-primary-rgb, 51, 51, 51), 0.8);
 }
+
 .find-songs-btn {
     white-space: nowrap;
     padding: 8px 12px;
@@ -3913,7 +3632,6 @@ body:has(#ytPlayer.fullscreen-video) {
     color: var(--text-primary);
 }
 
-
 .playlist-songs {
     margin: 10px 0;
 }
@@ -3956,7 +3674,6 @@ body:has(#ytPlayer.fullscreen-video) {
     color: var(--text-secondary);
 }
 
-
 .add-songs-button {
     background-color: var(--accent-color);
     color: var(--button-text-color);
@@ -3995,9 +3712,11 @@ body:has(#ytPlayer.fullscreen-video) {
     width: 44px;
     height: 28px;
 }
+
 .toggle-input {
     display: none;
 }
+
 .toggle-label {
     display: block;
     width: 100%;
@@ -4009,6 +3728,7 @@ body:has(#ytPlayer.fullscreen-video) {
     position: relative;
     border: 2px solid var(--border-color);
 }
+
 .toggle-slider {
     position: absolute;
     top: 2px;
@@ -4020,13 +3740,15 @@ body:has(#ytPlayer.fullscreen-video) {
     transition: transform 0.3s ease;
     box-shadow: 0 2px 4px var(--shadow-color);
 }
+
 .toggle-input:checked + .toggle-label .toggle-slider {
     transform: translateX(120px);
 }
+
 .toggle-label:hover {
     background-color: var(--bg-secondary);
 }
-/* AI Generator Modal Styles */
+
 .ai-generator-container {
     position: fixed;
     top: 0;
@@ -4075,26 +3797,6 @@ body:has(#ytPlayer.fullscreen-video) {
     color: var(--button-text-color);
 }
 
-.close-btn {
-    background: none;
-    border: none;
-    color: var(--button-text-color);
-    font-size: 1.5rem;
-    cursor: pointer;
-    padding: 5px;
-    border-radius: 50%;
-    width: 35px;
-    height: 35px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-}
-
-.close-btn:hover {
-    background: rgba(255,255,255,0.2);
-}
-
 .ai-generator-form {
     padding: 30px;
     flex: 1;
@@ -4141,6 +3843,7 @@ body:has(#ytPlayer.fullscreen-video) {
     margin-top: 20px;
     flex-wrap: wrap;
 }
+
 .ai-generate-btn, .ai-copy-btn, .ai-import-global-btn, .ai-import-btn {
     flex: 1;
     min-width: 150px;
@@ -4151,14 +3854,14 @@ body:has(#ytPlayer.fullscreen-video) {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-}
-
-.ai-generate-btn {
     background: var(--accent-color);
     color: var(--button-text-color);
 }
 
-.ai-generate-btn:hover:not(:disabled) {
+.ai-generate-btn:hover:not(:disabled),
+.ai-copy-btn:hover,
+.ai-import-global-btn:hover,
+.ai-import-btn:hover {
     background: var(--hover-color);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px var(--shadow-color);
@@ -4173,45 +3876,30 @@ body:has(#ytPlayer.fullscreen-video) {
 }
 
 .ai-copy-btn {
-    background: var(--accent-color);
-    color: var(--button-text-color);
     opacity: 0.9;
 }
 
 .ai-copy-btn:hover {
-    background: var(--hover-color);
     opacity: 1;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px var(--shadow-color);
 }
 
 .ai-import-global-btn {
-    background: var(--accent-color);
-    color: var(--button-text-color);
     opacity: 0.95;
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .ai-import-global-btn:hover {
-    background: var(--hover-color);
-    opacity: 1;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px var(--shadow-color);
     border-color: rgba(255, 255, 255, 0.3);
 }
 
 .ai-import-btn {
-    background: var(--accent-color);
-    color: var(--button-text-color);
     opacity: 0.85;
 }
 
 .ai-import-btn:hover {
-    background: var(--hover-color);
     opacity: 1;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px var(--shadow-color);
 }
+
 .ai-output-section {
     padding: 0 30px 30px;
     flex: 1;
@@ -4273,6 +3961,58 @@ body:has(#ytPlayer.fullscreen-video) {
     font-size: 1rem;
 }
 
+@media (max-width: 1080px) {
+    .left-banner,
+    .right-banner {
+        display: none !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .lyrics-maker-content {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+    }
+    
+    .lyrics-header {
+        padding: 15px 20px;
+    }
+    
+    .lyrics-tab {
+        padding: 20px;
+    }
+    
+    .lyrics-navbar {
+        padding: 0 20px;
+    }
+    
+    .lyrics-nav-item {
+        padding: 12px 15px;
+        font-size: 0.9rem;
+    }
+
+    .settings-tabs {
+        flex-direction: column;
+    }
+    
+    .settings-tab-btn {
+        justify-content: flex-start;
+        padding: 12px 15px;
+    }
+    
+    .color-picker-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .theme-buttons {
+        flex-direction: column;
+    }
+    
+    .import-export-group {
+        flex-direction: column;
+    }
+}
 .generate-playlist-btn {
     background: var(--accent-color);
     color: var(--button-text-color);
