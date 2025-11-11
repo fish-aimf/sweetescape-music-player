@@ -366,3 +366,4 @@
 - reverted changes v46.8.0
 - cleaned up css. remove redundent stuff. v46.8.1
 - fixed global library mass import v46.8.2
+- more fixes to the global library import v46.8.3
