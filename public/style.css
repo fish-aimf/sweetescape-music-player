@@ -21,26 +21,21 @@
     --accent-color: #3A6B35; 
     --hover-color: #4D7C46; 
     --border-color: #444;
-    --button-text-color: #ffffff;
-    --shadow-color: rgba(0,0,0,0.1);
-    --error-color: #dc3545;
-    --error-hover: #c82333;
-    --youtube-red: #FF0000;
 }
 
 [data-theme="custom"] {
     --bg-primary: var(--custom-background, #1a2a32);
---bg-secondary: var(--custom-secondary, #323d49);
---text-primary: var(--custom-text-primary, #dde9f9);
---text-secondary: var(--custom-text-secondary, #d6e2ff);
---accent-color: var(--custom-primary, #699bba);
---hover-color: var(--custom-hover, #5c8fff);
---border-color: var(--custom-border, #4b5563);
---button-text-color: var(--custom-button-text, #ffffff);
---shadow-color: var(--custom-shadow, rgba(0,0,0,0.4));
---error-color: var(--custom-error, #dc3545);
---error-hover: var(--custom-error-hover, #c82333);
---youtube-red: var(--custom-youtube-red, #ff0000);
+    --bg-secondary: var(--custom-secondary, #323d49);
+    --text-primary: var(--custom-text-primary, #dde9f9);
+    --text-secondary: var(--custom-text-secondary, #d6e2ff);
+    --accent-color: var(--custom-primary, #699bba);
+    --hover-color: var(--custom-hover, #5c8fff);
+    --border-color: var(--custom-border, #4b5563);
+    --button-text-color: var(--custom-button-text, #ffffff);
+    --shadow-color: var(--custom-shadow, rgba(0,0,0,0.4));
+    --error-color: var(--custom-error, #dc3545);
+    --error-hover: var(--custom-error-hover, #c82333);
+    --youtube-red: var(--custom-youtube-red, #ff0000);
 }
 
 * {
@@ -65,7 +60,6 @@ body {
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
-
 .theme-toggle {
     text-align: right;
     margin-bottom: 0px;
@@ -81,7 +75,6 @@ body {
     color: var(--text-primary);
     font-size: 19px;
     cursor: pointer;
-    
 }
 
 .tabs {
@@ -120,16 +113,13 @@ body {
 .create-playlist {
     display: flex;
     margin-bottom: 15px;
+    gap: 10px;
 }
 
 .add-song-section {
     display: flex;
     flex-direction: column;
     margin-bottom: 15px;
-}
-.create-playlist {
-    display: flex;
-    gap: 10px;
 }
 
 .create-playlist input, 
@@ -140,6 +130,7 @@ body {
     background-color: var(--bg-primary);
     color: var(--text-primary);
 }
+
 .add-song-section .input-group {
     display: flex;
     flex-direction: column;
@@ -212,24 +203,37 @@ body {
     height: 100%;
     overflow: auto;
     background-color: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(3px);
 }
 
 .modal-content {
     background-color: var(--bg-secondary);
     margin: 15% auto;
     padding: 20px;
-    border-radius: 5px;
-    width: 80%;
-    max-width: 500px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px;
     border: 1px solid var(--border-color);
+    position: relative;
+    animation: modalFadeIn 0.3s;
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .close-btn {
     color: var(--text-secondary);
-    float: right;
-    font-size: 28px;
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 20px;
     font-weight: bold;
     cursor: pointer;
+    transition: color 0.2s;
 }
 
 .close-btn:hover {
@@ -238,7 +242,8 @@ body {
 
 .playlist-edit-section {
     display: flex;
-    gap: 15px;
+    gap: 20px;
+    margin-top: 15px;
 }
 
 .search-library-section, .current-playlist-songs {
@@ -248,7 +253,11 @@ body {
 .search-results {
     max-height: 300px;
     overflow-y: auto;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
 }
+
 .now-playing {
     position: fixed;
     bottom: 0;
@@ -410,13 +419,6 @@ body {
     border-color: var(--accent-color);
 }
 
-.search-results {
-    max-height: 300px;
-    overflow-y: auto;
-    background-color: var(--bg-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-}
 .search-song-item {
     display: flex;
     justify-content: space-between;
@@ -449,7 +451,6 @@ body {
     background-color: var(--hover-color);
 }
 
-/* Music player specific styles using CSS variables */
 .music-player {
     background-color: var(--bg-secondary);
     border: 1px solid var(--border-color);
@@ -463,11 +464,7 @@ body {
     padding: 10px;
     border-radius: 4px;
     margin: 10px 0;
-    z-index: 3
-}
-
-.search-song-item button:hover {
-    background-color: var(--hover-color);
+    z-index: 3;
 }
 
 .current-playlist-songs {
@@ -508,18 +505,7 @@ body {
 }
 
 .playlist-song-item button:hover {
-    background-color: var(--error-hover, #c82333);
-}
-
-.playlist-edit-section {
-    display: flex;
-    gap: 20px;
-    margin-top: 15px;
-}
-
-.search-library-section, 
-.current-playlist-songs {
-    flex: 1;
+    background-color: var(--error-hover);
 }
 
 #loopBtn.active {
@@ -620,7 +606,7 @@ body {
 }
 
 .search-suggestion-content i.fab.fa-youtube {
-    color: var(--youtube-red, #FF0000);
+    color: var(--youtube-red);
     font-size: 1.5em;
 }
 
@@ -717,6 +703,7 @@ body {
     justify-content: center;
     transition: all 0.3s ease;
 }
+
 .layout-toggle button:hover {
     transform: scale(1.1);
 }
@@ -750,16 +737,6 @@ body {
     text-align: center;
 }
 
-
-
-
-
-
-
-
-
-
-
 .timer-button {
     opacity: 0.8; 
     font-size: 0.7em;
@@ -789,12 +766,13 @@ body {
 }
 
 .timer-modal-content h2 {
-    color: white;  /* Changed from var(--accent-color) */
+    color: white;
     margin-top: 0;
     border-bottom: 1px solid var(--border-color);
     padding-bottom: 10px;
     font-size: 1.2em;
 }
+
 .timer-options {
     display: flex;
     flex-wrap: wrap;
@@ -812,10 +790,29 @@ body {
     color: white;
     cursor: pointer;
     transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
 }
 
 .timer-options button:hover {
     background: var(--hover-color);
+}
+
+.timer-options button:after {
+    content: "";
+    background: rgba(255, 255, 255, 0.2);
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.timer-options button:active:after {
+    opacity: 1;
 }
 
 .custom-timer {
@@ -838,6 +835,12 @@ body {
     border-color: var(--accent-color);
 }
 
+.custom-timer input::-webkit-outer-spin-button,
+.custom-timer input::-webkit-inner-spin-button {
+    opacity: 1;
+    height: 24px;
+}
+
 .custom-timer button {
     padding: 8px 12px;
     border: none;
@@ -846,10 +849,29 @@ body {
     color: white;
     cursor: pointer;
     transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
 }
 
 .custom-timer button:hover {
     background: var(--hover-color);
+}
+
+.custom-timer button:after {
+    content: "";
+    background: rgba(255, 255, 255, 0.2);
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.custom-timer button:active:after {
+    opacity: 1;
 }
 
 .timer-status {
@@ -860,74 +882,38 @@ body {
     text-align: center;
     color: var(--accent-color);
     font-weight: bold;
+    transition: color 0.3s;
+}
+
+.timer-warning {
+    color: var(--error-color) !important;
+    animation: textPulse 0.5s infinite alternate;
+}
+
+@keyframes textPulse {
+    from { opacity: 0.7; }
+    to { opacity: 1; }
 }
 
 #cancelTimer {
     display: none;
     margin-top: 10px;
     padding: 5px 10px;
-    background: var(--danger-color);
+    background: var(--error-color);
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     transition: background 0.2s;
     width: 100%;
-}
-
-#cancelTimer:hover {
-    background: var(--danger-hover);
-}
-
-.modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: var(--modal-overlay);
-    z-index: 1000;
-    justify-content: center;
-    align-items: center;
-    backdrop-filter: blur(3px);
-}
-
-.modal-content {
-    padding: 20px;
-    border-radius: 8px;
-    position: relative;
-    max-width: 600px;
-    width: 90%;
-    animation: modalFadeIn 0.3s;
-}
-
-@keyframes modalFadeIn {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.close-btn {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 20px;
-    cursor: pointer;
-    color: var(--text-secondary);
-    transition: color 0.2s;
-}
-
-.close-btn:hover {
-    color: var(--danger-color);
-}
-
-.timer-options button, .custom-timer button, #cancelTimer {
     position: relative;
     overflow: hidden;
 }
 
-.timer-options button:after, 
-.custom-timer button:after,
+#cancelTimer:hover {
+    background: var(--error-hover);
+}
+
 #cancelTimer:after {
     content: "";
     background: rgba(255, 255, 255, 0.2);
@@ -941,16 +927,26 @@ body {
     transition: opacity 0.3s;
 }
 
-.timer-options button:active:after,
-.custom-timer button:active:after,
 #cancelTimer:active:after {
     opacity: 1;
 }
 
-.custom-timer input::-webkit-outer-spin-button,
-.custom-timer input::-webkit-inner-spin-button {
-    opacity: 1;
-    height: 24px;
+.timer-button.active::after {
+    content: "";
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 6px;
+    height: 6px;
+    background-color: var(--accent-color);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(93, 156, 89, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 4px rgba(93, 156, 89, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(93, 156, 89, 0); }
 }
 
 @media (max-width: 480px) {
@@ -972,41 +968,6 @@ body {
         font-size: 0.9em;
     }
 }
-
-.timer-button.active::after {
-    content: "";
-    position: absolute;
-    top: -3px;
-    right: -3px;
-    width: 6px;
-    height: 6px;
-    background-color: var(--accent-color);
-    border-radius: 50%;
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(93, 156, 89, 0.7); }
-    70% { transform: scale(1); box-shadow: 0 0 0 4px rgba(93, 156, 89, 0); }
-    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(93, 156, 89, 0); }
-}
-
-#timerStatus {
-    transition: color 0.3s;
-}
-
-.timer-warning {
-    color: var(--danger-color) !important;
-    animation: textPulse 0.5s infinite alternate;
-}
-
-@keyframes textPulse {
-    from { opacity: 0.7; }
-    to { opacity: 1; }
-}
-
-
-
 
 
 
