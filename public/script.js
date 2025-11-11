@@ -187,21 +187,22 @@ class AdvancedMusicPlayer {
 		this.isTabVisible = !document.hidden;
 		this.handleVisibilityChange = null;
 		
-		// Debounced functions - create once, reuse
+		// Debounced functions
 		this.debouncedUpdatePlayerUI = this.debounce(this.updatePlayerUI.bind(this), 50);
 		this.debouncedFilterLibrary = this.debounce(this.filterLibrarySongs.bind(this), 96);
 		
-		// Elements reference - will be populated in initializeElements()
+		// Elements reference
 		this.elements = {};
 		
-		// Initialize
+		// Initialize with error handling
 		this._initialize();
 	}
 	
-	// Extract initialization to separate method for better error handling
 	async _initialize() {
 		try {
 			await this.initDatabase();
+			
+			// Load all data in parallel
 			await Promise.all([
 				this.loadSongLibrary(),
 				this.loadPlaylists(),
@@ -218,6 +219,7 @@ class AdvancedMusicPlayer {
 			
 			const shouldShowWelcome = this.songLibrary.length === 0;
 			
+			// Initialize UI
 			this.initializeElements();
 			this._syncInitialUI();
 			this._setupComponents();
@@ -231,19 +233,19 @@ class AdvancedMusicPlayer {
 		}
 	}
 	
-	// Group UI sync operations
 	_syncInitialUI() {
+		// Sync toggle states
 		if (this.elements.librarySortToggle) {
 			this.elements.librarySortToggle.checked = this.librarySortAlphabetically;
 		}
 		if (this.elements.libraryReverseToggle) {
 			this.elements.libraryReverseToggle.checked = this.libraryReverseOrder;
 		}
+		
 		this.syncLibraryDisplayUI();
 		this.syncVisualizerUI();
 	}
 	
-	// Group component setup
 	_setupComponents() {
 		this.setupYouTubePlayer();
 		this.loadQueue();
@@ -263,11 +265,9 @@ class AdvancedMusicPlayer {
 		this.loadVersion();
 	}
 	
-	// Error handler for initialization failures
 	_handleInitializationError(error) {
-		// Show user-friendly error message
 		const errorDiv = document.createElement('div');
-		errorDiv.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#f44;color:#fff;padding:15px 25px;border-radius:8px;z-index:10000;';
+		errorDiv.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#f44;color:#fff;padding:15px 25px;border-radius:8px;z-index:10000;font-family:sans-serif;';
 		errorDiv.textContent = 'Failed to initialize music player. Please refresh the page.';
 		document.body.appendChild(errorDiv);
 		setTimeout(() => errorDiv.remove(), 5000);
@@ -289,12 +289,17 @@ class AdvancedMusicPlayer {
 			
 			request.onupgradeneeded = (event) => {
 				const db = event.target.result;
-				const storeNames = ["songLibrary", "playlists", "settings", "recentlyPlayed", "userSettings"];
-				const keyPaths = ["id", "id", "name", "type", "category"];
+				const stores = [
+					{ name: "songLibrary", keyPath: "id" },
+					{ name: "playlists", keyPath: "id" },
+					{ name: "settings", keyPath: "name" },
+					{ name: "recentlyPlayed", keyPath: "type" },
+					{ name: "userSettings", keyPath: "category" }
+				];
 				
-				storeNames.forEach((storeName, index) => {
-					if (!db.objectStoreNames.contains(storeName)) {
-						db.createObjectStore(storeName, { keyPath: keyPaths[index] });
+				stores.forEach(({ name, keyPath }) => {
+					if (!db.objectStoreNames.contains(name)) {
+						db.createObjectStore(name, { keyPath });
 					}
 				});
 			};
@@ -302,52 +307,129 @@ class AdvancedMusicPlayer {
 	}
 
 	initializeElements() {
-		// Cache all DOM elements at once
-		const ids = [
-			'songName', 'songAuthor', 'songUrl', 'addSongBtn', 'songLibrary', 'librarySearch',
-			'toggleControlBarBtn', 'additionalDetails', 'newPlaylistName', 'createPlaylistBtn',
-			'playlistContainer', 'timeDisplay', 'playlistEditModal', 'closePlaylistModal',
-			'currentPlaylistName', 'searchSongsToAdd', 'librarySearchResults', 'currentPlaylistSongs',
-			'playlistTotalDuration', 'loopPlaylistBtn', 'autoplayBtn', 'playlistSongsModal',
-			'playlistSongsContent', 'addSongToPlaylistBtn', 'playlistSelectionForSong',
-			'importLibraryBtn', 'exportLibraryBtn', 'modifyLibraryBtn', 'libraryModificationModal',
-			'closeLibraryModal', 'musicProgressBar', 'currentSongName', 'nextSongName',
-			'playPauseBtn', 'prevBtn', 'nextBtn', 'loopBtn', 'showPlaylistBtn', 'volumeSlider',
-			'currentPlaylistSidebar', 'sidebarPlaylistName', 'sidebarPlaylistSongs', 'closeSidebarBtn',
-			'sidebarModeToggleBtn', 'sidebarSearchInput', 'youtubeSearchSuggestion', 'listeningTime',
-			'speedBtn', 'speedOptions', 'themeToggle', 'autofillBtn', 'settingsButton',
-			'settingsModal', 'settingsCloseBtn', 'settingsContent', 'themeMode', 'customThemeSection',
-			'primaryColorPicker', 'backgroundColorPicker', 'saveCustomTheme', 'secondaryColorPicker',
-			'textPrimaryColorPicker', 'textSecondaryColorPicker', 'hoverColorPicker', 'borderColorPicker',
-			'accentColorPicker', 'themeImportText', 'buttonTextColorPicker', 'shadowColorPicker',
-			'shadowOpacity', 'errorColorPicker', 'errorHoverColorPicker', 'youtubeRedColorPicker',
-			'adsToggle', 'recentlyPlayedStorageLimit', 'recentlyPlayedDisplayLimit',
-			'suggestedSongsDisplayLimit', 'yourPicksDisplayLimit', 'recentlyPlayedPlaylistsLimit',
-			'saveDiscoverMoreSettings', 'discordButton', 'visualizerToggle', 'findSongsBtn',
-			'closeFindSongs', 'findSongsDiv', 'findSongsSearch', 'findSongsResults',
-			'librarySortToggle', 'libraryReverseToggle', 'aiImportGlobalBtn', 'importModal',
-			'closeImportModal', 'importSongsBtn', 'importSongsTextarea', 'playlistSearch',
-			'toggleCreatePlaylistBtn', 'createPlaylistDiv', 'togglePlaylistEditModeBtn',
-			'libraryOptionsDropdown', 'showDeleteBtn', 'showUnfavoriteBtn', 'showEditBtn',
-			'aiGeneratorDiv', 'closeAiGenerator', 'aiArtistName', 'aiSongCount', 'aiGenerateBtn',
-			'aiRequiredSongs', 'aiCopyBtn', 'aiImportBtn', 'aiOutputSection', 'aiOutput',
-			'openAiGeneratorBtn', 'notFindingSection'
-		];
+		// SAFE: Keep original element mapping to preserve exact property names
+		this.elements = {
+			songNameInput: document.getElementById("songName"),
+			songAuthorInput: document.getElementById("songAuthor"),
+			songUrlInput: document.getElementById("songUrl"),
+			addSongBtn: document.getElementById("addSongBtn"),
+			songLibrary: document.getElementById("songLibrary"),
+			librarySearch: document.getElementById("librarySearch"),
+			toggleControlBarBtn: document.getElementById("toggleControlBarBtn"),
+			additionalDetails: document.getElementById("additionalDetails"),
+			newPlaylistName: document.getElementById("newPlaylistName"),
+			createPlaylistBtn: document.getElementById("createPlaylistBtn"),
+			playlistContainer: document.getElementById("playlistContainer"),
+			timeDisplay: document.getElementById("timeDisplay"),
+			playlistEditModal: document.getElementById("playlistEditModal"),
+			closePlaylistModalBtn: document.getElementById("closePlaylistModal"),
+			currentPlaylistName: document.getElementById("currentPlaylistName"),
+			searchSongsToAdd: document.getElementById("searchSongsToAdd"),
+			librarySearchResults: document.getElementById("librarySearchResults"),
+			currentPlaylistSongs: document.getElementById("currentPlaylistSongs"),
+			playlistTotalDuration: document.getElementById("playlistTotalDuration"),
+			loopPlaylistBtn: document.getElementById("loopPlaylistBtn"),
+			autoplayBtn: document.getElementById("autoplayBtn"),
+			playlistSongsModal: document.getElementById("playlistSongsModal"),
+			playlistSongsContent: document.getElementById("playlistSongsContent"),
+			addSongToPlaylistBtn: document.getElementById("addSongToPlaylistBtn"),
+			playlistSelectionForSong: document.getElementById("playlistSelectionForSong"),
+			importLibraryBtn: document.getElementById("importLibraryBtn"),
+			exportLibraryBtn: document.getElementById("exportLibraryBtn"),
+			modifyLibraryBtn: document.getElementById("modifyLibraryBtn"),
+			libraryModificationModal: document.getElementById("libraryModificationModal"),
+			closeLibraryModalBtn: document.getElementById("closeLibraryModal"),
+			progressBar: document.getElementById("musicProgressBar"),
+			currentSongName: document.getElementById("currentSongName"),
+			nextSongName: document.getElementById("nextSongName"),
+			playPauseBtn: document.getElementById("playPauseBtn"),
+			prevBtn: document.getElementById("prevBtn"),
+			nextBtn: document.getElementById("nextBtn"),
+			loopBtn: document.getElementById("loopBtn"),
+			showPlaylistBtn: document.getElementById("showPlaylistBtn"),
+			volumeSlider: document.getElementById("volumeSlider"),
+			currentPlaylistSidebar: document.getElementById("currentPlaylistSidebar"),
+			sidebarPlaylistName: document.getElementById("sidebarPlaylistName"),
+			sidebarPlaylistSongs: document.getElementById("sidebarPlaylistSongs"),
+			closeSidebarBtn: document.getElementById("closeSidebarBtn"),
+			sidebarModeToggleBtn: document.getElementById("sidebarModeToggleBtn"),
+			sidebarSearchInput: document.getElementById("sidebarSearchInput"),
+			youtubeSearchSuggestion: document.getElementById("youtubeSearchSuggestion"),
+			listeningTimeDisplay: document.getElementById("listeningTime"),
+			speedBtn: document.getElementById("speedBtn"),
+			speedOptions: document.getElementById("speedOptions"),
+			tabs: document.querySelectorAll(".tab"),
+			tabPanes: document.querySelectorAll(".tab-pane"),
+			themeToggle: document.getElementById("themeToggle"),
+			lyricsTab: document.querySelector('.tab[data-tab="lyrics"]'),
+			lyricsPane: document.getElementById("lyrics"),
+			autofillBtn: document.getElementById("autofillBtn"),
+			settingsButton: document.getElementById("settingsButton"),
+			settingsModal: document.getElementById("settingsModal"),
+			settingsCloseBtn: document.getElementById("settingsCloseBtn"),
+			settingsContent: document.getElementById("settingsContent"),
+			themeMode: document.getElementById("themeMode"),
+			customThemeSection: document.getElementById("customThemeSection"),
+			primaryColorPicker: document.getElementById("primaryColorPicker"),
+			backgroundColorPicker: document.getElementById("backgroundColorPicker"),
+			saveCustomTheme: document.getElementById("saveCustomTheme"),
+			secondaryColorPicker: document.getElementById('secondaryColorPicker'),
+			textPrimaryColorPicker: document.getElementById('textPrimaryColorPicker'),
+			textSecondaryColorPicker: document.getElementById('textSecondaryColorPicker'),
+			hoverColorPicker: document.getElementById('hoverColorPicker'),
+			borderColorPicker: document.getElementById('borderColorPicker'),
+			accentColorPicker: document.getElementById('accentColorPicker'),
+			themeImportText: document.getElementById("themeImportText"),
+			buttonTextColorPicker: document.getElementById("buttonTextColorPicker"),
+			shadowColorPicker: document.getElementById("shadowColorPicker"),
+			shadowOpacity: document.getElementById("shadowOpacity"),
+			errorColorPicker: document.getElementById("errorColorPicker"),
+			errorHoverColorPicker: document.getElementById("errorHoverColorPicker"),
+			youtubeRedColorPicker: document.getElementById("youtubeRedColorPicker"),
+			adsToggle: document.getElementById("adsToggle"),
+			recentlyPlayedStorageLimit: document.getElementById("recentlyPlayedStorageLimit"),
+			recentlyPlayedDisplayLimit: document.getElementById("recentlyPlayedDisplayLimit"),
+			suggestedSongsDisplayLimit: document.getElementById("suggestedSongsDisplayLimit"),
+			yourPicksDisplayLimit: document.getElementById("yourPicksDisplayLimit"),
+			recentlyPlayedPlaylistsLimit: document.getElementById("recentlyPlayedPlaylistsLimit"),
+			saveDiscoverMoreSettings: document.getElementById("saveDiscoverMoreSettings"),
+			discordButton: document.getElementById("discordButton"),
+			visualizerToggle: document.getElementById("visualizerToggle"),
+			findSongsBtn: document.getElementById("findSongsBtn"),
+			closeFindSongs: document.getElementById("closeFindSongs"),
+			findSongsDiv: document.getElementById("findSongsDiv"),
+			findSongsSearch: document.getElementById("findSongsSearch"),
+			findSongsResults: document.getElementById("findSongsResults"),
+			librarySortToggle: document.getElementById("librarySortToggle"),
+			libraryReverseToggle: document.getElementById("libraryReverseToggle"),
+			aiImportGlobalBtn: document.getElementById("aiImportGlobalBtn"),
+			importModal: document.getElementById("importModal"),
+			closeImportModalBtn: document.getElementById("closeImportModal"),
+			importSongsBtn: document.getElementById("importSongsBtn"),
+			importSongsTextarea: document.getElementById("importSongsTextarea"),
+			playlistSearch: document.getElementById("playlistSearch"),
+			toggleCreatePlaylistBtn: document.getElementById("toggleCreatePlaylistBtn"),
+			createPlaylistDiv: document.getElementById("createPlaylistDiv"),
+			togglePlaylistEditModeBtn: document.getElementById("togglePlaylistEditModeBtn"),
+			libraryOptionsDropdown: document.getElementById("libraryOptionsDropdown"),
+			showDeleteBtn: document.getElementById("showDeleteBtn"),
+			showUnfavoriteBtn: document.getElementById("showUnfavoriteBtn"),
+			showEditBtn: document.getElementById("showEditBtn"),
+			aiGeneratorDiv: document.getElementById("aiGeneratorDiv"),
+			closeAiGenerator: document.getElementById("closeAiGenerator"),
+			aiArtistName: document.getElementById("aiArtistName"),
+			aiSongCount: document.getElementById("aiSongCount"),
+			aiGenerateBtn: document.getElementById("aiGenerateBtn"),
+			aiRequiredSongs: document.getElementById("aiRequiredSongs"),
+			aiCopyBtn: document.getElementById("aiCopyBtn"),
+			aiImportBtn: document.getElementById("aiImportBtn"),
+			aiOutputSection: document.getElementById("aiOutputSection"),
+			aiOutput: document.getElementById("aiOutput"),
+			openAiGeneratorBtn: document.getElementById("openAiGeneratorBtn"),
+			notFindingSection: document.getElementById("notFindingSection")
+		};
 		
-		this.elements = ids.reduce((acc, id) => {
-			const el = document.getElementById(id);
-			if (id === 'musicProgressBar') acc.progressBar = el;
-			else acc[id.replace(/Btn$/, 'Btn').replace(/^(.)/g, m => m.toLowerCase())] = el;
-			return acc;
-		}, {});
-		
-		// Query selectors
-		this.elements.tabs = document.querySelectorAll(".tab");
-		this.elements.tabPanes = document.querySelectorAll(".tab-pane");
-		this.elements.lyricsTab = document.querySelector('.tab[data-tab="lyrics"]');
-		this.elements.lyricsPane = document.getElementById("lyrics");
-		
-		// Setup UI-specific handlers
+		// Setup specialized UI handlers
 		this._setupLibraryDropdown();
 		this._setupSpeedButton();
 		this._checkControlBarVisibility();
@@ -360,9 +442,15 @@ class AdvancedMusicPlayer {
 		parent.addEventListener("mouseenter", this.handleShowLibraryDropdown.bind(this));
 		parent.addEventListener("mouseleave", this.handleHideLibraryDropdown.bind(this));
 		
-		this.elements.showDeleteBtn?.addEventListener("change", this.handleToggleDeleteButtons.bind(this));
-		this.elements.showUnfavoriteBtn?.addEventListener("change", this.handleToggleUnfavoriteButtons.bind(this));
-		this.elements.showEditBtn?.addEventListener("change", this.handleToggleEditButtons.bind(this));
+		if (this.elements.showDeleteBtn) {
+			this.elements.showDeleteBtn.addEventListener("change", this.handleToggleDeleteButtons.bind(this));
+		}
+		if (this.elements.showUnfavoriteBtn) {
+			this.elements.showUnfavoriteBtn.addEventListener("change", this.handleToggleUnfavoriteButtons.bind(this));
+		}
+		if (this.elements.showEditBtn) {
+			this.elements.showEditBtn.addEventListener("change", this.handleToggleEditButtons.bind(this));
+		}
 	}
 	
 	_setupSpeedButton() {
@@ -388,20 +476,9 @@ class AdvancedMusicPlayer {
 	}
 
 	setupEventListeners() {
-		// Bind all handlers once
-		const handlers = this._createEventHandlers();
-		
-		// Apply event listeners efficiently
-		this._attachSimpleListeners(handlers);
-		this._attachSpecialListeners(handlers);
-		this._attachDelegatedListeners();
-		
-		// Setup specialized listeners
-		this.setupSongLibraryDelegation();
-	}
-	
-	_createEventHandlers() {
-		return {
+		// Create bound handlers ONCE
+		const handlers = {
+			// Simple handlers
 			addSong: this.addSongToLibrary.bind(this),
 			filterLibrary: this.filterLibrarySongs.bind(this),
 			createPlaylist: this.createPlaylist.bind(this),
@@ -444,14 +521,54 @@ class AdvancedMusicPlayer {
 			themeModeChange: this.handleThemeModeChange.bind(this),
 			saveCustomTheme: this.handleSaveCustomTheme.bind(this),
 			adsToggle: this.handleAdsToggle.bind(this),
-			playlistDragStart: this.handlePlaylistDragStart.bind(this),
-			playlistDragOver: this.handlePlaylistDragOver.bind(this),
-			playlistDrop: this.handlePlaylistDrop.bind(this)
+			
+			// Special handlers with custom logic
+			librarySearchKeydown: (e) => {
+				if (e.key === "Enter") {
+					const searchTerm = this.elements.librarySearch.value.trim();
+					const videoId = this.extractYouTubeId(searchTerm);
+					if (videoId && this.elements.youtubeSearchSuggestion.style.display !== "none") {
+						this.autofillFromUrl(searchTerm);
+					} else if (this.elements.youtubeSearchSuggestion.style.display !== "none") {
+						this.searchYouTube(searchTerm);
+					} else {
+						this.playFirstVisibleSong();
+					}
+				}
+			},
+			songUrlKeydown: (e) => {
+				if (e.key === "Enter") this.addSongToLibrary();
+			},
+			newPlaylistNameKeydown: (e) => {
+				if (e.key === "Enter") this.createPlaylist();
+			},
+			songUrlPaste: () => {
+				setTimeout(() => this.handleUrlPaste(), 10);
+			},
+			urlPasteInput: this.handleUrlPaste.bind(this),
+			autofillClick: this.handleAutofill.bind(this),
+			autofillMouseenter: this.showGhostPreview.bind(this),
+			autofillMouseleave: this.removeGhostPreview.bind(this),
+			findSongsOpen: this.openFindSongs.bind(this),
+			findSongsClose: this.closeFindSongs.bind(this),
+			findSongsSearch: () => {
+				clearTimeout(this.searchTimeout);
+				this.searchTimeout = setTimeout(() => this.filterResults(), 300);
+			},
+			librarySearchInput: this.handleLibrarySearchInput.bind(this),
+			saveDiscoverMoreSettings: this.handleSaveDiscoverMoreSettings.bind(this),
+			importToGlobalLibrary: this.handleImportToGlobalLibrary.bind(this),
+			refreshRandomRecommendations: () => this.refreshRandomRecommendations(),
+			openAiGenerator: () => this.openAiGenerator(),
+			closeAiGenerator: () => this.closeAiGenerator(),
+			generateAiSongs: () => this.generateAiSongs(),
+			copyAiResults: () => this.copyAiResults(),
+			importAiResults: () => this.importAiResults(),
+			visualizerToggle: (e) => this.handleVisualizerToggle(e)
 		};
-	}
-	
-	_attachSimpleListeners(handlers) {
-		const bindings = [
+		
+		// Attach all simple event listeners in one pass
+		const simpleBindings = [
 			[this.elements.addSongBtn, 'click', handlers.addSong],
 			[this.elements.createPlaylistBtn, 'click', handlers.createPlaylist],
 			[this.elements.closePlaylistModalBtn, 'click', handlers.closePlaylistModal],
@@ -487,12 +604,55 @@ class AdvancedMusicPlayer {
 			[this.elements.settingsModal, 'click', handlers.settingsModalClick],
 			[this.elements.themeMode, 'change', handlers.themeModeChange],
 			[this.elements.saveCustomTheme, 'click', handlers.saveCustomTheme],
-			[this.elements.adsToggle, 'change', handlers.adsToggle]
+			[this.elements.adsToggle, 'change', handlers.adsToggle],
+			[this.elements.saveDiscoverMoreSettings, 'click', handlers.saveDiscoverMoreSettings],
+			[this.elements.aiImportGlobalBtn, 'click', handlers.importToGlobalLibrary],
+			[this.elements.openAiGeneratorBtn, 'click', handlers.openAiGenerator],
+			[this.elements.closeAiGenerator, 'click', handlers.closeAiGenerator],
+			[this.elements.aiGenerateBtn, 'click', handlers.generateAiSongs],
+			[this.elements.aiCopyBtn, 'click', handlers.copyAiResults],
+			[this.elements.aiImportBtn, 'click', handlers.importAiResults],
+			[this.elements.visualizerToggle, 'change', handlers.visualizerToggle],
+			[this.elements.findSongsBtn, 'click', handlers.findSongsOpen],
+			[this.elements.closeFindSongs, 'click', handlers.findSongsClose],
+			[this.elements.findSongsSearch, 'input', handlers.findSongsSearch],
+			[this.elements.searchSongsToAdd, 'input', handlers.searchSongsToAdd]
 		];
 		
-		bindings.forEach(([el, event, handler]) => {
-			if (el) el.addEventListener(event, handler);
+		// Efficiently attach all simple listeners with null checks
+		simpleBindings.forEach(([element, event, handler]) => {
+			if (element) element.addEventListener(event, handler);
 		});
+		
+		// Special listeners with complex logic
+		if (this.elements.librarySearch) {
+			this.elements.librarySearch.addEventListener('input', handlers.librarySearchInput);
+			this.elements.librarySearch.addEventListener('keydown', handlers.librarySearchKeydown);
+		}
+		
+		if (this.elements.songUrlInput) {
+			this.elements.songUrlInput.addEventListener('input', handlers.songUrlInput);
+			this.elements.songUrlInput.addEventListener('keydown', handlers.songUrlKeydown);
+			this.elements.songUrlInput.addEventListener('paste', handlers.songUrlPaste);
+			this.elements.songUrlInput.addEventListener('input', handlers.urlPasteInput);
+		}
+		
+		if (this.elements.newPlaylistName) {
+			this.elements.newPlaylistName.addEventListener('keydown', handlers.newPlaylistNameKeydown);
+		}
+		
+		if (this.elements.autofillBtn) {
+			this.elements.autofillBtn.addEventListener('click', handlers.autofillClick);
+			this.elements.autofillBtn.addEventListener('mouseenter', handlers.autofillMouseenter);
+			this.elements.autofillBtn.addEventListener('mouseleave', handlers.autofillMouseleave);
+		}
+		
+		// Current song name styling
+		const currentSongName = document.getElementById('currentSongName');
+		if (currentSongName) {
+			currentSongName.style.cursor = 'pointer';
+			currentSongName.title = 'Right-click to copy song name';
+		}
 		
 		// Speed options
 		document.querySelectorAll(".speed-option").forEach(opt => {
@@ -500,94 +660,33 @@ class AdvancedMusicPlayer {
 		});
 		
 		// Tabs
-		this.elements.tabs?.forEach(tab => {
-			tab.addEventListener("click", () => this.switchTab(tab.dataset.tab));
-		});
+		if (this.elements.tabs) {
+			this.elements.tabs.forEach(tab => {
+				tab.addEventListener("click", () => this.switchTab(tab.dataset.tab));
+			});
+		}
+		
+		// Refresh button
+		const refreshBtn = document.getElementById('refreshRandomBtn');
+		if (refreshBtn) {
+			refreshBtn.addEventListener('click', handlers.refreshRandomRecommendations);
+		}
+		
+		// Delegated event listeners
+		this._setupDelegatedListeners();
+		
+		// Additional component setup
+		this.initializeCurrentSongSection();
+		this.addQueueStyles();
+		this.setupTimerEventListeners();
+		this.setupLayoutEventListeners();
+		this.setupGlobalLibraryEventListeners();
+		this.setupExportButtonListeners();
+		this.setupSongLibraryDelegation();
 	}
 	
-	_attachSpecialListeners(handlers) {
-		// Library search with special behaviors
-		if (this.elements.librarySearch) {
-			this.elements.librarySearch.addEventListener('input', this.handleLibrarySearchInput.bind(this));
-			this.elements.librarySearch.addEventListener('keydown', (e) => {
-				if (e.key === "Enter") {
-					const searchTerm = this.elements.librarySearch.value.trim();
-					const videoId = this.extractYouTubeId(searchTerm);
-					if (videoId && this.elements.youtubeSearchSuggestion.style.display !== "none") {
-						this.autofillFromUrl(searchTerm);
-					} else if (this.elements.youtubeSearchSuggestion.style.display !== "none") {
-						this.searchYouTube(searchTerm);
-					} else {
-						this.playFirstVisibleSong();
-					}
-				}
-			});
-		}
-		
-		// Song URL with paste and enter
-		if (this.elements.songUrlInput) {
-			this.elements.songUrlInput.addEventListener('input', handlers.songUrlInput);
-			this.elements.songUrlInput.addEventListener('keydown', (e) => {
-				if (e.key === "Enter") this.addSongToLibrary();
-			});
-			this.elements.songUrlInput.addEventListener('paste', () => {
-				setTimeout(() => this.handleUrlPaste(), 10);
-			});
-			this.elements.songUrlInput.addEventListener('input', this.handleUrlPaste.bind(this));
-		}
-		
-		// Playlist name enter
-		if (this.elements.newPlaylistName) {
-			this.elements.newPlaylistName.addEventListener('keydown', (e) => {
-				if (e.key === "Enter") this.createPlaylist();
-			});
-		}
-		
-		// Search songs to add
-		if (this.elements.searchSongsToAdd) {
-			this.elements.searchSongsToAdd.addEventListener('input', handlers.searchSongsToAdd);
-		}
-		
-		// Autofill button
-		if (this.elements.autofillBtn) {
-			this.elements.autofillBtn.addEventListener('click', this.handleAutofill.bind(this));
-			this.elements.autofillBtn.addEventListener('mouseenter', this.showGhostPreview.bind(this));
-			this.elements.autofillBtn.addEventListener('mouseleave', this.removeGhostPreview.bind(this));
-		}
-		
-		// Find songs
-		this.elements.findSongsBtn?.addEventListener('click', this.openFindSongs.bind(this));
-		this.elements.closeFindSongs?.addEventListener('click', this.closeFindSongs.bind(this));
-		this.elements.findSongsSearch?.addEventListener('input', () => {
-			clearTimeout(this.searchTimeout);
-			this.searchTimeout = setTimeout(() => this.filterResults(), 300);
-		});
-		
-		// Current song name right-click
-		const currentSongName = document.getElementById('currentSongName');
-		if (currentSongName) {
-			currentSongName.style.cursor = 'pointer';
-			currentSongName.title = 'Right-click to copy song name';
-		}
-		
-		// AI Generator
-		this.elements.openAiGeneratorBtn?.addEventListener('click', () => this.openAiGenerator());
-		this.elements.closeAiGenerator?.addEventListener('click', () => this.closeAiGenerator());
-		this.elements.aiGenerateBtn?.addEventListener('click', () => this.generateAiSongs());
-		this.elements.aiCopyBtn?.addEventListener('click', () => this.copyAiResults());
-		this.elements.aiImportBtn?.addEventListener('click', () => this.importAiResults());
-		this.elements.visualizerToggle?.addEventListener('change', (e) => this.handleVisualizerToggle(e));
-		this.elements.aiImportGlobalBtn?.addEventListener('click', this.handleImportToGlobalLibrary.bind(this));
-		
-		// Discover more settings
-		this.elements.saveDiscoverMoreSettings?.addEventListener('click', this.handleSaveDiscoverMoreSettings.bind(this));
-		
-		// Random recommendations refresh
-		document.getElementById('refreshRandomBtn')?.addEventListener('click', () => this.refreshRandomRecommendations());
-	}
-	
-	_attachDelegatedListeners() {
-		// Keybind inputs and settings tabs
+	_setupDelegatedListeners() {
+		// Keybind recording and settings tabs
 		document.addEventListener('click', (e) => {
 			if (e.target.classList.contains('keybind-input')) {
 				const action = e.target.dataset.action;
@@ -601,7 +700,7 @@ class AdvancedMusicPlayer {
 			}
 		});
 		
-		// Context menu for adding to queue
+		// Context menu for queue additions
 		document.addEventListener('contextmenu', (e) => {
 			if (e.target.classList.contains('play-btn') ||
 				e.target.closest('.play-btn') ||
@@ -632,14 +731,6 @@ class AdvancedMusicPlayer {
 				}
 			}
 		});
-		
-		// Initialize additional components
-		this.initializeCurrentSongSection();
-		this.addQueueStyles();
-		this.setupTimerEventListeners();
-		this.setupLayoutEventListeners();
-		this.setupGlobalLibraryEventListeners();
-		this.setupExportButtonListeners();
 	}
 
 	setupKeyboardControls() {
@@ -683,27 +774,27 @@ class AdvancedMusicPlayer {
 				reject("Database not initialized");
 				return;
 			}
-			
 			const transaction = this.db.transaction(["songLibrary"], "readonly");
 			const store = transaction.objectStore("songLibrary");
 			const request = store.getAll();
 			
 			request.onsuccess = () => {
-				this.songLibrary = (request.result || []).map(song => ({
-					...song,
-					favorite: song.favorite ?? false,
-					lyrics: song.lyrics ?? "",
-					author: song.author ?? ""
-				}));
+				this.songLibrary = request.result || [];
 				
-				// Check if we need to save (any undefined fields found)
-				const needsSave = request.result?.some(song => 
+				// Ensure all songs have required properties
+				this.songLibrary = this.songLibrary.map((song) => {
+					if (song.favorite === undefined) song.favorite = false;
+					if (song.lyrics === undefined) song.lyrics = "";
+					if (song.author === undefined) song.author = "";
+					return song;
+				});
+				
+				// Save if any migrations were needed
+				if (this.songLibrary.some(song => 
 					song.favorite === undefined || 
 					song.lyrics === undefined || 
 					song.author === undefined
-				);
-				
-				if (needsSave) {
+				)) {
 					this.saveSongLibrary().then(resolve).catch(reject);
 				} else {
 					resolve();
@@ -716,6 +807,7 @@ class AdvancedMusicPlayer {
 			};
 		});
 	}
+
 
 	loadPlaylists() {
 		return new Promise((resolve, reject) => {
