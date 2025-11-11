@@ -980,8 +980,6 @@ body {
 
 
 
-
-
 @keyframes textPulse {
     from { opacity: 0.7; }
     to { opacity: 1; }
@@ -1028,7 +1026,6 @@ body {
     max-width: 400px;
 }
 
-
 .timer-button {
     position: relative;
     display: flex;
@@ -1074,6 +1071,7 @@ body {
 .specific-time-input button:hover {
     background: #2980b9;
 }
+
 .bulk-actions {
     display: flex;
     justify-content: space-between;
@@ -1187,9 +1185,6 @@ body {
     border-radius: 0 4px 4px 0;
 }
 
-
-
-
 .playlist-song-item {
     display: flex;
     align-items: center;
@@ -1211,12 +1206,10 @@ body {
 
 .song-name {
     flex-grow: 1;
-}
-.song-name {
-    cursor: pointer;  /* ADD THIS */
+    cursor: pointer;
 }
 
-..favorite-btn {
+.favorite-btn {
     background: none;
     border: none;
     cursor: pointer;
@@ -1239,6 +1232,7 @@ body {
     position: relative;
     top: -1px; 
 }
+
 .favorite-btn .fa-star {
     color: gold;
 }
@@ -1250,8 +1244,6 @@ body {
 .song-item.favorite {
     background-color: rgba(255, 215, 0, 0.1);
 }
-
-
 
 .thumbnail-preview {
     position: absolute;
@@ -1273,6 +1265,7 @@ body {
     border-radius: 4px;
     margin-bottom: 5px;
 }
+
 .thumbnail-close-btn {
     position: absolute;
     top: -10px;
@@ -1300,25 +1293,6 @@ body.dark-mode .thumbnail-preview {
     background: rgba(50, 50, 50, 0.9);
 }
 
-@media (max-width: 992px) {
-    .thumbnail-preview {
-        position: fixed;
-        left: auto;
-        right: 20px;
-        top: 20px;
-    }
-}
-
-
-.top-right-clock .fas {
-    font-size: 18px; 
-}
-
-.top-right-clock .timer-display {
-    margin-left: 5px;
-    font-size: 16px; 
-}
-
 .top-right-clock {
     position: fixed;
     top: 10px;
@@ -1329,37 +1303,45 @@ body.dark-mode .thumbnail-preview {
     gap: 4px;
 }
 
+.top-right-clock .fas {
+    font-size: 18px; 
+}
+
+.top-right-clock .timer-display {
+    margin-left: 5px;
+    font-size: 16px; 
+}
+
 .search-section {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 15px;
-  width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    width: 100%;
 }
 
 #librarySearch {
-  flex: 1;
-  margin-right: 10px;
-  padding: 8px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
+    flex: 1;
+    margin-right: 10px;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
 }
 
 #modifyLibraryBtn {
-  white-space: nowrap;
-  padding: 8px 12px;
-  border-radius: 4px;
-  background-color: #4a5568;
-  color: white;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.3s;
+    white-space: nowrap;
+    padding: 8px 12px;
+    border-radius: 4px;
+    background-color: #4a5568;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
 }
 
 #modifyLibraryBtn:hover {
-  background-color: #2d3748;
+    background-color: #2d3748;
 }
-
 
 .input-row {
     display: flex;
@@ -1388,9 +1370,6 @@ body.dark-mode .thumbnail-preview {
 .input-row button:hover {
     background-color: #3367d6;
 }
-
-
-
 
 .select-container {
     margin-bottom: 15px;
@@ -1441,9 +1420,7 @@ body.dark-mode .thumbnail-preview {
 
 .import-btn:hover {
     opacity: 0.9;
-  
 }
-
 
 .control-bar-toggle {
     position: fixed;
@@ -1515,11 +1492,13 @@ body.dark-mode .thumbnail-preview {
 .loop-playlist-btn.active {
     color: #1DB954;
 }
+
 .sidebar-song-item.temporarily-skipped {
     text-decoration: line-through;
     opacity: 0.4;
     transition: opacity 0.3s ease;
 }
+
 .playlist-card.draggable {
     cursor: move;
 }
@@ -1623,9 +1602,6 @@ body.dark-mode .thumbnail-preview {
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
-
-
-
 * {
     margin: 0;
     padding: 0;
@@ -1716,6 +1692,7 @@ body {
     align-items: center;
     justify-content: center;
 }
+
 .details-item-thumbnail img {
     width: 100%;
     height: 100%;
@@ -1743,11 +1720,6 @@ body {
     text-overflow: ellipsis;
 }
 
-@media screen and (max-width: 768px) {
-    #additionalDetails {
-        display: none;
-    }
-}
 .recently-played-modal-bg {
     position: fixed;
     top: 0;
@@ -1845,6 +1817,21 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+@media (max-width: 992px) {
+    .thumbnail-preview {
+        position: fixed;
+        left: auto;
+        right: 20px;
+        top: 20px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    #additionalDetails {
+        display: none;
+    }
 }
 
 .recently-played-time {
