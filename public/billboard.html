@@ -174,21 +174,44 @@
             const chartDiv = document.getElementById('chart');
             const statusDiv = document.getElementById('status');
             
-            if (!data.content || !data.content.length) {
-                chartDiv.innerHTML = '<div class="error">No chart data available</div>';
+            console.log('API Response:', data); // Debug log
+            
+            // Try different possible response structures
+            let songs = null;
+            
+            if (data.content && Array.isArray(data.content)) {
+                songs = data.content;
+            } else if (data.chart && Array.isArray(data.chart)) {
+                songs = data.chart;
+            } else if (data.entries && Array.isArray(data.entries)) {
+                songs = data.entries;
+            } else if (Array.isArray(data)) {
+                songs = data;
+            }
+            
+            if (!songs || songs.length === 0) {
+                chartDiv.innerHTML = `<div class="error">
+                    No chart data available<br><br>
+                    <small>Response structure: ${JSON.stringify(Object.keys(data))}</small>
+                </div>`;
                 return;
             }
             
-            const top10 = data.content.slice(0, 10);
+            const top10 = songs.slice(0, 10);
             
             let html = '';
             top10.forEach(song => {
+                // Handle different property names
+                const rank = song.rank || song.position || song.chartPosition || '?';
+                const title = song.title || song.song || song.name || 'Unknown';
+                const artist = song.artist || song.artists || 'Unknown Artist';
+                
                 html += `
                     <div class="song">
-                        <div class="rank">${song.rank}</div>
+                        <div class="rank">${rank}</div>
                         <div class="info">
-                            <div class="title">${song.title}</div>
-                            <div class="artist">${song.artist}</div>
+                            <div class="title">${title}</div>
+                            <div class="artist">${artist}</div>
                         </div>
                     </div>
                 `;
@@ -196,9 +219,10 @@
             
             chartDiv.innerHTML = html;
             
-            // Display chart date
-            if (data.date) {
-                statusDiv.textContent = `Chart Date: ${data.date}`;
+            // Display chart date if available
+            const chartDate = data.date || data.week || data.chartDate || data.issueDate;
+            if (chartDate) {
+                statusDiv.textContent = `Chart Date: ${chartDate}`;
             }
         }
         
