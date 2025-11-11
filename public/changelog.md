@@ -365,3 +365,4 @@
 - made it cache script and css for faster page load v47.0.0
 - reverted changes v46.8.0
 - cleaned up css. remove redundent stuff. v46.8.1
+- fixed global library mass import v46.8.2
