@@ -12,87 +12,145 @@
     <div id="results"></div>
 
     <script>
-        async function scrapeAndStore() {
+        const PROXIES = [
+            { name: 'AllOrigins', url: 'https://api.allorigins.win/get?url=' },
+            { name: 'CORS Anywhere Demo', url: 'https://cors-anywhere.herokuapp.com/' },
+            { name: 'ThingProxy', url: 'https://thingproxy.freeboard.io/fetch/' }
+        ];
+
+        async function tryProxy(proxyIndex = 0) {
             const statusEl = document.getElementById('status');
             const resultsEl = document.getElementById('results');
             const updatedEl = document.getElementById('lastUpdated');
             
+            if (proxyIndex >= PROXIES.length) {
+                statusEl.textContent = 'All proxies failed';
+                resultsEl.innerHTML = `
+                    <p><strong>Unable to fetch data</strong></p>
+                    <p>All proxy services failed. This could be due to:</p>
+                    <ul>
+                        <li>Proxy services are down or rate-limited</li>
+                        <li>Billboard is blocking these proxies</li>
+                        <li>Network connectivity issues</li>
+                    </ul>
+                    <p><strong>Alternative Solutions:</strong></p>
+                    <ol>
+                        <li>Use a Python backend with billboard.py library</li>
+                        <li>Deploy your own CORS proxy on Vercel/Netlify</li>
+                        <li>Try again later when proxy services recover</li>
+                    </ol>
+                `;
+                return;
+            }
+
+            const proxy = PROXIES[proxyIndex];
+            
             try {
-                statusEl.textContent = 'Scraping Billboard chart...';
+                statusEl.textContent = `Trying ${proxy.name}...`;
                 
-                // Use AllOrigins free proxy to bypass CORS
-                const proxyUrl = 'https://api.allorigins.win/get?url=';
-                const targetUrl = encodeURIComponent('https://www.billboard.com/charts/artist-100/');
+                const targetUrl = 'https://www.billboard.com/charts/artist-100/';
+                let fetchUrl;
+                let responseData;
                 
-                const response = await fetch(proxyUrl + targetUrl);
-                const data = await response.json();
-                
-                // Parse the HTML content
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(data.contents, 'text/html');
-                
-                // Extract artist names
-                const artists = [];
-                
-                // Try multiple selectors in case Billboard changes their structure
-                const selectors = [
-                    '#title-of-a-story',
-                    '.o-chart-results-list__item h3',
-                    '.c-title',
-                    'h3.c-title'
-                ];
-                
-                for (const selector of selectors) {
-                    const elements = doc.querySelectorAll(selector);
-                    if (elements.length >= 10) {
-                        for (let i = 0; i < 10; i++) {
-                            const text = elements[i].textContent.trim();
-                            if (text) artists.push(text);
-                        }
-                        break;
-                    }
+                if (proxy.name === 'AllOrigins') {
+                    fetchUrl = proxy.url + encodeURIComponent(targetUrl);
+                    const response = await fetch(fetchUrl, {
+                        method: 'GET',
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    
+                    const data = await response.json();
+                    responseData = data.contents;
+                } else {
+                    fetchUrl = proxy.url + targetUrl;
+                    const response = await fetch(fetchUrl);
+                    
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    
+                    responseData = await response.text();
                 }
+                
+                // Parse the HTML
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(responseData, 'text/html');
+                
+                // Extract artists using multiple methods
+                const artists = extractArtists(doc);
                 
                 if (artists.length === 0) {
-                    throw new Error('Could not parse artist names from Billboard page');
+                    throw new Error('No artists found in parsed HTML');
                 }
                 
-                // Store data with timestamp
+                // Store and display
                 const chartData = {
                     artists: artists.slice(0, 10),
                     timestamp: Date.now(),
-                    date: new Date().toLocaleString()
+                    date: new Date().toLocaleString(),
+                    proxy: proxy.name
                 };
                 
                 localStorage.setItem('billboard-data', JSON.stringify(chartData));
                 
-                // Display the results
                 let html = '<h2>Top 10 Artists:</h2><ol>';
                 chartData.artists.forEach(artist => {
                     html += `<li>${artist}</li>`;
                 });
                 html += '</ol>';
+                html += `<p><small>Fetched via ${proxy.name}</small></p>`;
                 
                 resultsEl.innerHTML = html;
-                statusEl.textContent = 'Data successfully scraped!';
+                statusEl.textContent = 'Successfully fetched!';
                 updatedEl.textContent = `Last updated: ${chartData.date}`;
                 
             } catch (error) {
-                statusEl.textContent = 'Error occurred';
-                resultsEl.innerHTML = `
-                    <p><strong>Error:</strong> ${error.message}</p>
-                    <p>The scraping might have failed. This could be due to:</p>
-                    <ul>
-                        <li>Billboard changed their HTML structure</li>
-                        <li>Proxy service rate limit</li>
-                        <li>Network issue</li>
-                    </ul>
-                `;
+                console.error(`${proxy.name} failed:`, error);
+                statusEl.textContent = `${proxy.name} failed, trying next...`;
+                // Try next proxy after a short delay
+                setTimeout(() => tryProxy(proxyIndex + 1), 1000);
             }
         }
-        
-        // Run scrape immediately when page loads
-        scrapeAndStore();
+
+        function extractArtists(doc) {
+            const artists = [];
+            
+            // Method 1: Look for specific Billboard chart structure
+            const rows = doc.querySelectorAll('.o-chart-results-list-row');
+            if (rows.length >= 10) {
+                rows.forEach((row, index) => {
+                    if (index < 10) {
+                        const titleEl = row.querySelector('#title-of-a-story, h3, .c-title');
+                        if (titleEl) {
+                            const text = titleEl.textContent.trim();
+                            if (text && !text.includes('NEW') && !text.includes('RE-')) {
+                                artists.push(text);
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Method 2: Look for h3 elements with artist names
+            if (artists.length < 10) {
+                artists.length = 0; // Reset
+                const h3Elements = doc.querySelectorAll('h3');
+                h3Elements.forEach((el, index) => {
+                    if (artists.length < 10) {
+                        const text = el.textContent.trim();
+                        if (text && text.length > 2 && text.length < 100 && 
+                            !text.includes('Chart') && !text.includes('Billboard')) {
+                            artists.push(text);
+                        }
+                    }
+                });
+            }
+            
+            return artists;
+        }
+
+        // Start scraping on page load
+        tryProxy();
     </script>
 </body>
 </html>
