@@ -8782,9 +8782,9 @@ hideSidebar() {
 		const select = document.getElementById('globalLibrarySongPlaylistSelect');
 		const massImportSelect = document.getElementById('globalLibraryMassImportSelect');
 		select.innerHTML = '<option value="">Select Playlist</option>' +
-			this.globalLibraryArtists.map(artist => `<option value="${artist.id}">🎵 ${artist.name}</option>`).join('');
+			this.globalLibraryArtists.map(artist => `<option value="${artist.id}">${artist.name}</option>`).join('');
 		massImportSelect.innerHTML = '<option value="">Select Playlist for Import</option>' +
-			this.globalLibraryArtists.map(artist => `<option value="${artist.id}">🎵 ${artist.name}</option>`).join('');
+			this.globalLibraryArtists.map(artist => `<option value="${artist.id}">${artist.name}</option>`).join('');
 	}
 	async globalLibraryMassImport() {
 	    const artistId = document.getElementById('globalLibraryMassImportSelect').value;
@@ -8805,44 +8805,34 @@ hideSidebar() {
 	    const errors = [];
 	    
 	    lines.forEach((line, index) => {
-	        // New parsing logic: Find the LAST comma as the separator before URL
-	        // This allows commas in song names
-	        const lastCommaIndex = line.lastIndexOf(',');
+	        // Use regex to find YouTube URL pattern
+	        const urlPattern = /(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)[^\s,]+)/;
+	        const urlMatch = line.match(urlPattern);
 	        
-	        if (lastCommaIndex === -1) {
-	            errors.push(`Line ${index + 1}: Missing comma separator`);
+	        if (!urlMatch) {
+	            errors.push(`Line ${index + 1}: No valid YouTube URL found`);
 	            return;
 	        }
 	        
-	        // Everything before last comma is the song name
-	        const name = line.substring(0, lastCommaIndex).trim();
+	        const youtubeUrl = urlMatch[0];
+	        const urlIndex = line.indexOf(youtubeUrl);
 	        
-	        // Everything after last comma should be: URL, Author (optional)
-	        const remainder = line.substring(lastCommaIndex + 1).trim();
+	        // Everything before the URL is the song name
+	        const beforeUrl = line.substring(0, urlIndex).trim();
+	        const name = beforeUrl.endsWith(',') ? beforeUrl.slice(0, -1).trim() : beforeUrl;
 	        
-	        // Now split remainder to separate URL and author
-	        const remainderParts = remainder.split(',').map(part => part.trim());
-	        const youtubeUrl = remainderParts[0];
-	        const author = remainderParts[1] || 'Unknown';
+	        // Everything after the URL is the author
+	        const afterUrl = line.substring(urlIndex + youtubeUrl.length).trim();
+	        const author = afterUrl.startsWith(',') ? afterUrl.slice(1).trim() : afterUrl || 'Unknown';
 	        
 	        if (!name) {
 	            errors.push(`Line ${index + 1}: Missing song name`);
 	            return;
 	        }
 	        
-	        if (!youtubeUrl) {
-	            errors.push(`Line ${index + 1}: Missing URL`);
-	            return;
-	        }
-	        
-	        if (!youtubeUrl.includes('youtube.com') && !youtubeUrl.includes('youtu.be')) {
-	            errors.push(`Line ${index + 1}: Invalid YouTube URL`);
-	            return;
-	        }
-	        
 	        songsToImport.push({
 	            name: name,
-	            author: author,
+	            author: author || 'Unknown',
 	            youtube_url: youtubeUrl,
 	            artist_id: parseInt(artistId),
 	            created_by: this.globalLibraryCurrentUser.id
