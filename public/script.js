@@ -8787,57 +8787,85 @@ hideSidebar() {
 			this.globalLibraryArtists.map(artist => `<option value="${artist.id}">🎵 ${artist.name}</option>`).join('');
 	}
 	async globalLibraryMassImport() {
-		const artistId = document.getElementById('globalLibraryMassImportSelect').value;
-		const importText = document.getElementById('globalLibraryMassImportText').value.trim();
-		if (!artistId) {
-			this.showGlobalLibraryMessage('Please select a playlist', 'error');
-			return;
-		}
-		if (!importText) {
-			this.showGlobalLibraryMessage('Please enter songs to import', 'error');
-			return;
-		}
-		const lines = importText.split('\n').filter(line => line.trim());
-		const songsToImport = [];
-		const errors = [];
-		lines.forEach((line, index) => {
-			const parts = line.split(',').map(part => part.trim());
-			if (parts.length < 2) {
-				errors.push(`Line ${index + 1}: Missing name or URL`);
-				return;
-			}
-			const name = parts[0];
-			const youtubeUrl = parts[1];
-			const author = parts[2] || 'Unknown';
-			if (!youtubeUrl.includes('youtube.com') && !youtubeUrl.includes('youtu.be')) {
-				errors.push(`Line ${index + 1}: Invalid YouTube URL`);
-				return;
-			}
-			songsToImport.push({
-				name: name,
-				author: author,
-				youtube_url: youtubeUrl,
-				artist_id: parseInt(artistId),
-				created_by: this.globalLibraryCurrentUser.id
-			});
-		});
-		if (errors.length > 0) {
-			this.showGlobalLibraryMessage('Import errors: ' + errors.join(', '), 'error');
-			return;
-		}
-		const {
-			error
-		} = await this.globalLibrarySupabase
-			.from('songs')
-			.insert(songsToImport);
-		if (error) {
-			this.showGlobalLibraryMessage('Error importing songs: ' + error.message, 'error');
-		} else {
-			this.showGlobalLibraryMessage(`Successfully imported ${songsToImport.length} songs!`, 'success');
-			document.getElementById('globalLibraryMassImportText').value = '';
-			document.getElementById('globalLibraryMassImportSelect').value = '';
-			this.loadGlobalLibraryData();
-		}
+	    const artistId = document.getElementById('globalLibraryMassImportSelect').value;
+	    const importText = document.getElementById('globalLibraryMassImportText').value.trim();
+	    
+	    if (!artistId) {
+	        this.showGlobalLibraryMessage('Please select a playlist', 'error');
+	        return;
+	    }
+	    
+	    if (!importText) {
+	        this.showGlobalLibraryMessage('Please enter songs to import', 'error');
+	        return;
+	    }
+	    
+	    const lines = importText.split('\n').filter(line => line.trim());
+	    const songsToImport = [];
+	    const errors = [];
+	    
+	    lines.forEach((line, index) => {
+	        // New parsing logic: Find the LAST comma as the separator before URL
+	        // This allows commas in song names
+	        const lastCommaIndex = line.lastIndexOf(',');
+	        
+	        if (lastCommaIndex === -1) {
+	            errors.push(`Line ${index + 1}: Missing comma separator`);
+	            return;
+	        }
+	        
+	        // Everything before last comma is the song name
+	        const name = line.substring(0, lastCommaIndex).trim();
+	        
+	        // Everything after last comma should be: URL, Author (optional)
+	        const remainder = line.substring(lastCommaIndex + 1).trim();
+	        
+	        // Now split remainder to separate URL and author
+	        const remainderParts = remainder.split(',').map(part => part.trim());
+	        const youtubeUrl = remainderParts[0];
+	        const author = remainderParts[1] || 'Unknown';
+	        
+	        if (!name) {
+	            errors.push(`Line ${index + 1}: Missing song name`);
+	            return;
+	        }
+	        
+	        if (!youtubeUrl) {
+	            errors.push(`Line ${index + 1}: Missing URL`);
+	            return;
+	        }
+	        
+	        if (!youtubeUrl.includes('youtube.com') && !youtubeUrl.includes('youtu.be')) {
+	            errors.push(`Line ${index + 1}: Invalid YouTube URL`);
+	            return;
+	        }
+	        
+	        songsToImport.push({
+	            name: name,
+	            author: author,
+	            youtube_url: youtubeUrl,
+	            artist_id: parseInt(artistId),
+	            created_by: this.globalLibraryCurrentUser.id
+	        });
+	    });
+	    
+	    if (errors.length > 0) {
+	        this.showGlobalLibraryMessage('Import errors: ' + errors.join(', '), 'error');
+	        return;
+	    }
+	    
+	    const { error } = await this.globalLibrarySupabase
+	        .from('songs')
+	        .insert(songsToImport);
+	    
+	    if (error) {
+	        this.showGlobalLibraryMessage('Error importing songs: ' + error.message, 'error');
+	    } else {
+	        this.showGlobalLibraryMessage(`Successfully imported ${songsToImport.length} songs!`, 'success');
+	        document.getElementById('globalLibraryMassImportText').value = '';
+	        document.getElementById('globalLibraryMassImportSelect').value = '';
+	        this.loadGlobalLibraryData();
+	    }
 	}
 	async globalLibraryCreatePlaylist() {
 		const name = document.getElementById('globalLibraryNewPlaylistName').value.trim();
@@ -8969,7 +8997,7 @@ hideSidebar() {
                                 <button class="preview-btn" onclick="window.open('${song.youtube_url}', '_blank')" title="Open in YouTube">
                                     ▶️
                                 </button>
-                                <button class="add-single-song-btn" onclick="musicPlayer.addSingleSongToLibrary('${song.name}', '${song.author || ''}', '${song.youtube_url}')">
+                                <button class="add-single-song-btn" onclick="musicPlayer.addSingleSongToLocalLibrary('${song.name}', '${song.author || ''}', '${song.youtube_url}')">
                                     Add Song
                                 </button>
                             </div>
@@ -9154,7 +9182,7 @@ hideSidebar() {
                                 <button class="preview-btn" onclick="window.open('${song.youtube_url}', '_blank')" title="Open in YouTube">
                                     ▶️
                                 </button>
-                                <button class="add-single-song-btn" onclick="musicPlayer.addSingleSongToLibrary('${song.name.replace(/'/g, "\\'")}', '${(song.author || '').replace(/'/g, "\\'")}', '${song.youtube_url}')">
+                                <button class="add-single-song-btn" onclick="musicPlayer.addSingleSongToLocalLibrary('${song.name.replace(/'/g, "\\'")}', '${(song.author || '').replace(/'/g, "\\'")}', '${song.youtube_url}')">
                                     Add Song
                                 </button>
                             </div>
@@ -9174,7 +9202,7 @@ hideSidebar() {
 			alert('Error loading playlist details');
 		}
 	}
-	async addSingleSongToLibrary(songName, songAuthor, youtubeUrl) {
+	async addSingleSongToLocalLibrary(songName, songAuthor, youtubeUrl) {
 		const videoId = this.extractYouTubeId(youtubeUrl);
 		if (!videoId) {
 			alert("Invalid YouTube URL");
