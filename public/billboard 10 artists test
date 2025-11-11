@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top 10 Billboard Artists</title>
+</head>
+<body>
+    <h1>Top 10 Billboard Artists</h1>
+    <p id="status">Fetching latest data...</p>
+    <p id="lastUpdated"></p>
+    <div id="results"></div>
+
+    <script>
+        async function scrapeAndStore() {
+            const statusEl = document.getElementById('status');
+            const resultsEl = document.getElementById('results');
+            const updatedEl = document.getElementById('lastUpdated');
+            
+            try {
+                statusEl.textContent = 'Scraping Billboard chart...';
+                
+                // Use AllOrigins free proxy to bypass CORS
+                const proxyUrl = 'https://api.allorigins.win/get?url=';
+                const targetUrl = encodeURIComponent('https://www.billboard.com/charts/artist-100/');
+                
+                const response = await fetch(proxyUrl + targetUrl);
+                const data = await response.json();
+                
+                // Parse the HTML content
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(data.contents, 'text/html');
+                
+                // Extract artist names
+                const artists = [];
+                
+                // Try multiple selectors in case Billboard changes their structure
+                const selectors = [
+                    '#title-of-a-story',
+                    '.o-chart-results-list__item h3',
+                    '.c-title',
+                    'h3.c-title'
+                ];
+                
+                for (const selector of selectors) {
+                    const elements = doc.querySelectorAll(selector);
+                    if (elements.length >= 10) {
+                        for (let i = 0; i < 10; i++) {
+                            const text = elements[i].textContent.trim();
+                            if (text) artists.push(text);
+                        }
+                        break;
+                    }
+                }
+                
+                if (artists.length === 0) {
+                    throw new Error('Could not parse artist names from Billboard page');
+                }
+                
+                // Store data with timestamp
+                const chartData = {
+                    artists: artists.slice(0, 10),
+                    timestamp: Date.now(),
+                    date: new Date().toLocaleString()
+                };
+                
+                localStorage.setItem('billboard-data', JSON.stringify(chartData));
+                
+                // Display the results
+                let html = '<h2>Top 10 Artists:</h2><ol>';
+                chartData.artists.forEach(artist => {
+                    html += `<li>${artist}</li>`;
+                });
+                html += '</ol>';
+                
+                resultsEl.innerHTML = html;
+                statusEl.textContent = 'Data successfully scraped!';
+                updatedEl.textContent = `Last updated: ${chartData.date}`;
+                
+            } catch (error) {
+                statusEl.textContent = 'Error occurred';
+                resultsEl.innerHTML = `
+                    <p><strong>Error:</strong> ${error.message}</p>
+                    <p>The scraping might have failed. This could be due to:</p>
+                    <ul>
+                        <li>Billboard changed their HTML structure</li>
+                        <li>Proxy service rate limit</li>
+                        <li>Network issue</li>
+                    </ul>
+                `;
+            }
+        }
+        
+        // Run scrape immediately when page loads
+        scrapeAndStore();
+    </script>
+</body>
+</html>
