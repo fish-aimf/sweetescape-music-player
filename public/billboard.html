@@ -185,11 +185,16 @@
             
             console.log('API Response:', data); // Debug log
             
-            // Try different possible response structures
-            let songs = null;
+            // Handle the object structure with numbered keys
+            let songs = [];
             
-            if (data.content && Array.isArray(data.content)) {
-                songs = data.content;
+            if (data.content) {
+                // Convert object with numbered keys to array
+                if (typeof data.content === 'object' && !Array.isArray(data.content)) {
+                    songs = Object.values(data.content);
+                } else if (Array.isArray(data.content)) {
+                    songs = data.content;
+                }
             } else if (data.chart && Array.isArray(data.chart)) {
                 songs = data.chart;
             } else if (data.entries && Array.isArray(data.entries)) {
@@ -229,7 +234,7 @@
             chartDiv.innerHTML = html;
             
             // Display chart date if available
-            const chartDate = data.date || data.week || data.chartDate || data.issueDate;
+            const chartDate = data.info?.date || data.date || data.week || data.chartDate || data.issueDate;
             if (chartDate) {
                 statusDiv.textContent = `Chart Date: ${chartDate}`;
             }
