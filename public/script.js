@@ -105,7 +105,17 @@ class AdvancedMusicPlayer {
 		};
 		
 		// API keys and URLs
-		this.GEMINI_API_KEY = 'AIzaSyBk6siv7qqObbOnpvq-nzpeeM7GmZIYcQA';
+		this.GEMINI_API_KEYS = [
+		    'AIzaSyBk6siv7qqObbOnpvq-nzpeeM7GmZIYcQA',
+		    'AIzaSyCeAZAD797nug4__PsVucLCOCpn1sF2rD0',
+		    'AIzaSyDMVsB7Gd455fPn32LUvFB9zkl-kHUot4I',
+		    'AIzaSyBqv0v6nmO8tmsHBsPVZPmlRH28bLdBtYI',
+		    'AIzaSyCaQzhYAt9NfS-V_HnBfHm-P3Ni_MPe5dM',
+		    'AIzaSyBDmRL5uMlUn6ZkFVTp6zcsnJecsjd3shw',
+		    'AIzaSyDB9foBQLmF3Gqv7OSQRuOHqvYnnRImeD0',
+		    'AIzaSyASNm4Qfo6uyLf3uDUR_ahYspzRDGSrXpE'
+		];
+		this.currentKeyIndex = Math.floor(Math.random() * this.GEMINI_API_KEYS.length);
 		this.YOUTUBE_API_KEYS = [
 			'AIzaSyDPT2lmIab9DPC-ltZh4sWrlhapwp0mgTA',
 			'AIzaSyAENxiCNCZPHgPt2-ip4-GUWcLTkxge8tc',
@@ -9399,125 +9409,166 @@ hideSidebar() {
 			generateBtn.textContent = 'Regenerate Song List';
 		}
 	}
+	getNextApiKey() {
+	    const key = this.GEMINI_API_KEYS[this.currentKeyIndex];
+	    this.currentKeyIndex = (this.currentKeyIndex + 1) % this.GEMINI_API_KEYS.length;
+	    return key;
+	}
+	
+	// Add helper method to make API calls with fallback
+	async callGeminiWithFallback(requestBody, maxRetries = this.GEMINI_API_KEYS.length) {
+	    let lastError = null;
+	    
+	    for (let attempt = 0; attempt < maxRetries; attempt++) {
+	        const apiKey = this.getNextApiKey();
+	        
+	        try {
+	            const response = await fetch(`${this.GEMINI_API_URL}?key=${apiKey}`, {
+	                method: 'POST',
+	                headers: {
+	                    'Content-Type': 'application/json',
+	                },
+	                body: JSON.stringify(requestBody)
+	            });
+	            
+	            if (response.ok) {
+	                return await response.json();
+	            }
+	            
+	            // If quota exceeded (429) or other rate limit, try next key
+	            if (response.status === 429 || response.status === 403) {
+	                console.warn(`API key ${attempt + 1} quota exceeded, trying next key...`);
+	                lastError = new Error(`API quota exceeded: ${response.status}`);
+	                continue;
+	            }
+	            
+	            // For other errors, throw immediately
+	            throw new Error(`Gemini API error: ${response.status}`);
+	            
+	        } catch (error) {
+	            lastError = error;
+	            // Only retry on quota/network errors
+	            if (error.message.includes('quota') || error.message.includes('429') || error.message.includes('403')) {
+	                continue;
+	            }
+	            throw error;
+	        }
+	    }
+	    
+	    // All keys exhausted
+	    throw new Error(`All API keys exhausted. Last error: ${lastError?.message}`);
+	}
+	
+	// Complete replacement for getSongTitlesFromGemini method
 	async getSongTitlesFromGemini(author, quantity) {
-		const requiredSongs = this.elements.aiRequiredSongs.value.trim();
-		const requiredSongsList = requiredSongs ? requiredSongs.split(',').map(s => s.trim()).filter(s => s) : [];
-		const currentDate = new Date().toISOString().split('T')[0];
-		const classificationPrompt = `Analyze this music query and respond with only "SPECIFIC_ARTIST" or "BROAD_REQUEST":
-Query: "${author}"
-SPECIFIC_ARTIST = songs by one artist/band
-BROAD_REQUEST = category/genre/trend request`;
-		const classificationResponse = await fetch(`${this.GEMINI_API_URL}?key=${this.GEMINI_API_KEY}`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({
-				contents: [{
-					parts: [{
-						text: classificationPrompt
-					}]
-				}],
-				generationConfig: {
-					temperature: 0.1,
-					maxOutputTokens: 20
-				}
-			})
-		});
-		if (!classificationResponse.ok) {
-			throw new Error(`Classification API error: ${classificationResponse.status}`);
-		}
-		const classificationData = await classificationResponse.json();
-		const classification = classificationData.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "BROAD_REQUEST";
-		console.log(`AI Classification for "${author}": ${classification}`);
-		const isSpecificArtist = classification === "SPECIFIC_ARTIST";
-		let prompt;
-		if (isSpecificArtist) {
-			prompt = `Return exactly ${quantity} real song titles by ${author}. 
-${requiredSongsList.length > 0 ? `Include these required songs if they exist:\n${requiredSongsList.join('\n')}\n\n` : ''}Format: One song title per line, no numbers, no bullets, no extra text.
-Only song titles, nothing else.
-Include recent 2024-2025 releases and popular tracks.
-Song titles:`;
-		} else {
-			prompt = `Return exactly ${quantity} real songs matching "${author}".
-${requiredSongsList.length > 0 ? `Include these required songs if they match:\n${requiredSongsList.join('\n')}\n\n` : ''}Format: "Song Title by Artist Name" (one per line)
-No numbers, no bullets, no extra text.
-Include current trending songs from 2024-2025.
-Song list:`;
-		}
-		const response = await fetch(`${this.GEMINI_API_URL}?key=${this.GEMINI_API_KEY}`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({
-				contents: [{
-					parts: [{
-						text: prompt
-					}]
-				}],
-				generationConfig: {
-					temperature: 0.1,
-					maxOutputTokens: 800,
-					topP: 0.8,
-					topK: 10,
-					stopSequences: ["Here is", "Here are", "I found", "Based on", "According to"]
-				}
-			})
-		});
-		if (!response.ok) {
-			throw new Error(`Gemini API error: ${response.status}`);
-		}
-		const data = await response.json();
-		if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-			const result = data.candidates[0].content.parts[0].text;
-			const lines = result.split('\n')
-				.map(line => line.trim())
-				.filter(line => {
-					if (!line) return false;
-					if (line.match(/^\d+\.?\s*/)) return false;
-					if (line.startsWith('-') || line.startsWith('*')) return false;
-					if (line.toLowerCase().includes('here is') ||
-						line.toLowerCase().includes('here are') ||
-						line.toLowerCase().includes('i found') ||
-						line.toLowerCase().includes('based on') ||
-						line.toLowerCase().includes('according to') ||
-						line.toLowerCase().includes('verified') ||
-						line.toLowerCase().includes('discography') ||
-						line.toLowerCase().includes('internet search')) return false;
-					return true;
-				})
-				.slice(0, quantity);
-			if (isSpecificArtist) {
-				return lines.map(title => ({
-					title: title.replace(/^[\d\.\-\*\s]+/, '').trim(),
-					artist: author,
-					queryType: 'SPECIFIC_ARTIST'
-				}));
-			} else {
-				return lines.map(line => {
-					const cleanLine = line.replace(/^[\d\.\-\*\s]+/, '').trim();
-					const byMatch = cleanLine.match(/^(.+?)\s+by\s+(.+)$/i);
-					if (byMatch) {
-						const songTitle = byMatch[1].trim();
-						const artistInfo = byMatch[2].trim();
-						return {
-							title: songTitle,
-							artist: artistInfo,
-							queryType: 'BROAD_REQUEST'
-						};
-					} else {
-						return {
-							title: cleanLine,
-							artist: 'Unknown',
-							queryType: 'BROAD_REQUEST'
-						};
-					}
-				});
-			}
-		} else {
-			throw new Error('No valid response from Gemini API');
-		}
+	    const requiredSongs = this.elements.aiRequiredSongs.value.trim();
+	    const requiredSongsList = requiredSongs ? requiredSongs.split(',').map(s => s.trim()).filter(s => s) : [];
+	    const currentDate = new Date().toISOString().split('T')[0];
+	    
+	    const classificationPrompt = `Analyze this music query and respond with only "SPECIFIC_ARTIST" or "BROAD_REQUEST":
+	Query: "${author}"
+	SPECIFIC_ARTIST = songs by one artist/band
+	BROAD_REQUEST = category/genre/trend request`;
+	
+	    // Use fallback method for classification
+	    const classificationData = await this.callGeminiWithFallback({
+	        contents: [{
+	            parts: [{
+	                text: classificationPrompt
+	            }]
+	        }],
+	        generationConfig: {
+	            temperature: 0.1,
+	            maxOutputTokens: 20
+	        }
+	    });
+	
+	    const classification = classificationData.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "BROAD_REQUEST";
+	    console.log(`AI Classification for "${author}": ${classification}`);
+	    
+	    const isSpecificArtist = classification === "SPECIFIC_ARTIST";
+	    let prompt;
+	    
+	    if (isSpecificArtist) {
+	        prompt = `Return exactly ${quantity} real song titles by ${author}. 
+	${requiredSongsList.length > 0 ? `Include these required songs if they exist:\n${requiredSongsList.join('\n')}\n\n` : ''}Format: One song title per line, no numbers, no bullets, no extra text.
+	Only song titles, nothing else.
+	Include recent 2024-2025 releases and popular tracks.
+	Song titles:`;
+	    } else {
+	        prompt = `Return exactly ${quantity} real songs matching "${author}".
+	${requiredSongsList.length > 0 ? `Include these required songs if they match:\n${requiredSongsList.join('\n')}\n\n` : ''}Format: "Song Title by Artist Name" (one per line)
+	No numbers, no bullets, no extra text.
+	Include current trending songs from 2024-2025.
+	Song list:`;
+	    }
+	
+	    // Use fallback method for main request
+	    const data = await this.callGeminiWithFallback({
+	        contents: [{
+	            parts: [{
+	                text: prompt
+	            }]
+	        }],
+	        generationConfig: {
+	            temperature: 0.1,
+	            maxOutputTokens: 800,
+	            topP: 0.8,
+	            topK: 10,
+	            stopSequences: ["Here is", "Here are", "I found", "Based on", "According to"]
+	        }
+	    });
+	
+	    if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+	        const result = data.candidates[0].content.parts[0].text;
+	        const lines = result.split('\n')
+	            .map(line => line.trim())
+	            .filter(line => {
+	                if (!line) return false;
+	                if (line.match(/^\d+\.?\s*/)) return false;
+	                if (line.startsWith('-') || line.startsWith('*')) return false;
+	                if (line.toLowerCase().includes('here is') ||
+	                    line.toLowerCase().includes('here are') ||
+	                    line.toLowerCase().includes('i found') ||
+	                    line.toLowerCase().includes('based on') ||
+	                    line.toLowerCase().includes('according to') ||
+	                    line.toLowerCase().includes('verified') ||
+	                    line.toLowerCase().includes('discography') ||
+	                    line.toLowerCase().includes('internet search')) return false;
+	                return true;
+	            })
+	            .slice(0, quantity);
+	
+	        if (isSpecificArtist) {
+	            return lines.map(title => ({
+	                title: title.replace(/^[\d\.\-\*\s]+/, '').trim(),
+	                artist: author,
+	                queryType: 'SPECIFIC_ARTIST'
+	            }));
+	        } else {
+	            return lines.map(line => {
+	                const cleanLine = line.replace(/^[\d\.\-\*\s]+/, '').trim();
+	                const byMatch = cleanLine.match(/^(.+?)\s+by\s+(.+)$/i);
+	                if (byMatch) {
+	                    const songTitle = byMatch[1].trim();
+	                    const artistInfo = byMatch[2].trim();
+	                    return {
+	                        title: songTitle,
+	                        artist: artistInfo,
+	                        queryType: 'BROAD_REQUEST'
+	                    };
+	                } else {
+	                    return {
+	                        title: cleanLine,
+	                        artist: 'Unknown',
+	                        queryType: 'BROAD_REQUEST'
+	                    };
+	                }
+	            });
+	        }
+	    } else {
+	        throw new Error('No valid response from Gemini API');
+	    }
 	}
 	async searchYouTubeForSongs(songData, authorQuery) {
 		const songsWithLinks = [];
