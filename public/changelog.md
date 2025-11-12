@@ -369,3 +369,4 @@
 - more fixes to the global library import v46.8.3
 - script.js initialization improved v46.8.4
 - added more api keys so the gemini will never run out of usage v46.9.0
+- added a hit counter to ping.html so i could observe the supabase getting pinged so it wont sleep. v46.9.1
