@@ -368,3 +368,4 @@
 - fixed global library mass import v46.8.2
 - more fixes to the global library import v46.8.3
 - script.js initialization improved v46.8.4
+- added more api keys so the gemini will never run out of usage v46.9.0
