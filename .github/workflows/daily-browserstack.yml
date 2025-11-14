@@ -2,9 +2,8 @@ name: Daily BrowserStack Capture
 
 on:
   schedule:
-    # Runs daily at 18:35 GMT+8
-    - cron: "35 10 * * *"
-  workflow_dispatch:    # Optional: manual trigger
+    - cron: "18 10 * * *"
+  workflow_dispatch:
 
 jobs:
   run-test:
@@ -23,9 +22,6 @@ jobs:
         run: npm install selenium-webdriver
 
       - name: Run BrowserStack Script
-        env:
-          BS_USER: ${{ secrets.BROWSERSTACK_USERNAME }}
-          BS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
         run: |
           node - << 'EOF'
           const fs = require("fs");
@@ -44,14 +40,14 @@ jobs:
           (async () => {
             const driver = new webdriver.Builder()
               .usingServer(
-                `https://${process.env.BS_USER}:${process.env.BS_KEY}@hub.browserstack.com/wd/hub`
+                'https://${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }}@hub.browserstack.com/wd/hub'
               )
               .withCapabilities(caps)
               .build();
 
             await driver.get("https://sweetescape.vercel.app/billboard.html");
 
-            // Wait 1 minute for page to fully update
+            // 1-minute wait
             await new Promise(r => setTimeout(r, 60000));
 
             // Capture all visible text
