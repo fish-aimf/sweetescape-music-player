@@ -45,7 +45,7 @@ jobs:
               .build();
 
             // 1. Go to your website
-            await driver.get("https://YOUR-WEBSITE-HERE.com");
+            await driver.get("https://sweetescape.vercel.app/billboard.html");
 
             // 2. Wait a full minute for everything to load
             await new Promise(r => setTimeout(r, 60000)); // 60 seconds
