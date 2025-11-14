@@ -8,21 +8,19 @@
         body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
         .song { margin: 10px 0; padding: 10px; border-bottom: 1px solid #eee; }
         .rank { font-weight: bold; color: #666; margin-right: 10px; }
-        button { margin: 10px 0; padding: 10px 20px; }
+        button { margin: 10px 0; padding: 10px 20px; cursor: pointer; }
         .error { color: red; }
-        .note { background: #fffacd; padding: 10px; margin: 10px 0; border-radius: 5px; }
     </style>
 </head>
 <body>
     <h1>Billboard Hot 100 - Top 10</h1>
-    <div class="note">
-        <strong>Note:</strong> This scrapes Billboard's website. Due to CORS restrictions and anti-scraping measures, this may not work reliably. Consider using an official API instead.
-    </div>
-    <button onclick="loadChart()">Load Chart</button>
+    <button id="loadBtn">Load Chart</button>
     <div id="status"></div>
     <div id="chart"></div>
 
     <script>
+        document.getElementById('loadBtn').addEventListener('click', loadChart);
+        
         async function loadChart() {
             const statusDiv = document.getElementById('status');
             const chartDiv = document.getElementById('chart');
@@ -31,7 +29,6 @@
             chartDiv.innerHTML = '';
             
             try {
-                // Using a CORS proxy - this may not work reliably
                 const proxyUrl = 'https://api.allorigins.win/raw?url=';
                 const billboardUrl = encodeURIComponent('https://www.billboard.com/charts/hot-100/');
                 
@@ -42,34 +39,68 @@
                 }
                 
                 const html = await response.text();
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
                 
-                // Parse the chart data from the HTML
+                // Parse using regex since DOM parsing may not work well with proxy
                 const songs = [];
                 
-                // Try to find song elements - Billboard's structure may vary
-                const chartItems = doc.querySelectorAll('li[class*="chart-list__element"]');
+                // Look for the pattern in the text we fetched
+                const lines = html.split('\n');
+                let currentRank = 0;
+                let currentTitle = '';
+                let currentArtist = '';
                 
-                if (chartItems.length === 0) {
-                    throw new Error('Could not find chart data in page structure');
+                for (let i = 0; i < lines.length && songs.length < 10; i++) {
+                    const line = lines[i].trim();
+                    
+                    // Try to match rank numbers at start of content
+                    if (line.match(/^-\s*\d+\s*-/) && currentRank === 0) {
+                        const match = line.match(/^-\s*(\d+)\s*-/);
+                        if (match) {
+                            currentRank = parseInt(match[1]);
+                        }
+                    }
+                    
+                    // Look for artist links
+                    if (line.includes('billboard.com/artist/') && currentRank > 0 && !currentArtist) {
+                        const nextLines = lines.slice(i, i + 5).join(' ');
+                        const artistMatch = nextLines.match(/\[([^\]]+)\]/);
+                        if (artistMatch) {
+                            currentArtist = artistMatch[1];
+                        }
+                    }
+                    
+                    // If we have rank and artist, look for title nearby
+                    if (currentRank > 0 && currentArtist && !currentTitle) {
+                        // Title usually comes before artist info
+                        for (let j = Math.max(0, i - 20); j < i; j++) {
+                            const titleLine = lines[j].trim();
+                            if (titleLine.length > 2 && titleLine.length < 100 && 
+                                !titleLine.includes('http') && 
+                                !titleLine.includes('PEAK') &&
+                                !titleLine.match(/^-?\d+$/)) {
+                                currentTitle = titleLine;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // If we have all three, save and reset
+                    if (currentRank > 0 && currentTitle && currentArtist) {
+                        songs.push({
+                            rank: currentRank,
+                            title: currentTitle,
+                            artist: currentArtist
+                        });
+                        currentRank = 0;
+                        currentTitle = '';
+                        currentArtist = '';
+                    }
                 }
                 
-                chartItems.forEach((item, index) => {
-                    if (index >= 10) return; // Only top 10
-                    
-                    const rank = index + 1;
-                    const titleEl = item.querySelector('[class*="title"]');
-                    const artistEl = item.querySelector('[class*="artist"]');
-                    
-                    const title = titleEl ? titleEl.textContent.trim() : 'Unknown';
-                    const artist = artistEl ? artistEl.textContent.trim() : 'Unknown Artist';
-                    
-                    songs.push({ rank, title, artist });
-                });
-                
                 if (songs.length === 0) {
-                    throw new Error('No songs found - page structure may have changed');
+                    // Fallback: show raw structure for debugging
+                    console.log('First 5000 chars:', html.substring(0, 5000));
+                    throw new Error('Could not parse chart data. Check console for raw HTML.');
                 }
                 
                 displayChart(songs);
@@ -96,6 +127,9 @@
             
             chartDiv.innerHTML = html;
         }
+        
+        // Auto-load on page load
+        loadChart();
     </script>
 </body>
 </html>
