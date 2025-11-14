@@ -6,130 +6,46 @@
     <title>Billboard Hot 100</title>
     <style>
         body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
-        .song { margin: 10px 0; padding: 10px; border-bottom: 1px solid #eee; }
-        .rank { font-weight: bold; color: #666; margin-right: 10px; }
-        button { margin: 10px 0; padding: 10px 20px; cursor: pointer; }
-        .error { color: red; }
+        .song { margin: 5px 0; padding: 8px; border-bottom: 1px solid #eee; }
+        .rank { font-weight: bold; color: #666; display: inline-block; width: 30px; }
+        #status { margin: 10px 0; color: #666; }
     </style>
 </head>
 <body>
     <h1>Billboard Hot 100 - Top 10</h1>
-    <button id="loadBtn">Load Chart</button>
-    <div id="status"></div>
+    <div id="status">Loading...</div>
     <div id="chart"></div>
 
     <script>
-        document.getElementById('loadBtn').addEventListener('click', loadChart);
-        
         async function loadChart() {
             const statusDiv = document.getElementById('status');
             const chartDiv = document.getElementById('chart');
             
-            statusDiv.textContent = 'Loading...';
-            chartDiv.innerHTML = '';
-            
             try {
-                const proxyUrl = 'https://api.allorigins.win/raw?url=';
-                const billboardUrl = encodeURIComponent('https://www.billboard.com/charts/hot-100/');
-                
-                const response = await fetch(proxyUrl + billboardUrl);
+                const response = await fetch('https://raw.githubusercontent.com/mhollingshead/billboard-hot-100/main/recent.json');
                 
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}`);
                 }
                 
-                const html = await response.text();
+                const data = await response.json();
+                const top10 = data.data.slice(0, 10);
                 
-                // Parse using regex since DOM parsing may not work well with proxy
-                const songs = [];
+                let html = '';
+                top10.forEach(song => {
+                    html += `<div class="song"><span class="rank">${song.this_week}.</span> <strong>${song.song}</strong> - ${song.artist}</div>`;
+                });
                 
-                // Look for the pattern in the text we fetched
-                const lines = html.split('\n');
-                let currentRank = 0;
-                let currentTitle = '';
-                let currentArtist = '';
-                
-                for (let i = 0; i < lines.length && songs.length < 10; i++) {
-                    const line = lines[i].trim();
-                    
-                    // Try to match rank numbers at start of content
-                    if (line.match(/^-\s*\d+\s*-/) && currentRank === 0) {
-                        const match = line.match(/^-\s*(\d+)\s*-/);
-                        if (match) {
-                            currentRank = parseInt(match[1]);
-                        }
-                    }
-                    
-                    // Look for artist links
-                    if (line.includes('billboard.com/artist/') && currentRank > 0 && !currentArtist) {
-                        const nextLines = lines.slice(i, i + 5).join(' ');
-                        const artistMatch = nextLines.match(/\[([^\]]+)\]/);
-                        if (artistMatch) {
-                            currentArtist = artistMatch[1];
-                        }
-                    }
-                    
-                    // If we have rank and artist, look for title nearby
-                    if (currentRank > 0 && currentArtist && !currentTitle) {
-                        // Title usually comes before artist info
-                        for (let j = Math.max(0, i - 20); j < i; j++) {
-                            const titleLine = lines[j].trim();
-                            if (titleLine.length > 2 && titleLine.length < 100 && 
-                                !titleLine.includes('http') && 
-                                !titleLine.includes('PEAK') &&
-                                !titleLine.match(/^-?\d+$/)) {
-                                currentTitle = titleLine;
-                                break;
-                            }
-                        }
-                    }
-                    
-                    // If we have all three, save and reset
-                    if (currentRank > 0 && currentTitle && currentArtist) {
-                        songs.push({
-                            rank: currentRank,
-                            title: currentTitle,
-                            artist: currentArtist
-                        });
-                        currentRank = 0;
-                        currentTitle = '';
-                        currentArtist = '';
-                    }
-                }
-                
-                if (songs.length === 0) {
-                    // Fallback: show raw structure for debugging
-                    console.log('First 5000 chars:', html.substring(0, 5000));
-                    throw new Error('Could not parse chart data. Check console for raw HTML.');
-                }
-                
-                displayChart(songs);
-                statusDiv.textContent = `Loaded ${songs.length} songs at ${new Date().toISOString()}`;
+                chartDiv.innerHTML = html;
+                statusDiv.textContent = `Chart Date: ${data.date} | Fetched: ${new Date().toISOString()}`;
                 
             } catch (error) {
-                statusDiv.innerHTML = `<span class="error">Error: ${error.message}</span>`;
-                console.error('Full error:', error);
+                statusDiv.textContent = `Error: ${error.message}`;
             }
         }
         
-        function displayChart(songs) {
-            const chartDiv = document.getElementById('chart');
-            
-            let html = '';
-            songs.forEach(song => {
-                html += `
-                    <div class="song">
-                        <span class="rank">${song.rank}.</span>
-                        <strong>${song.title}</strong> - ${song.artist}
-                    </div>
-                `;
-            });
-            
-            chartDiv.innerHTML = html;
-        }
-        
-        // Auto-load on page load
         loadChart();
+        setInterval(loadChart, 3600000);
     </script>
 </body>
 </html>
