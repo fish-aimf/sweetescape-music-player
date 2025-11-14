@@ -317,7 +317,6 @@ class AdvancedMusicPlayer {
 	}
 
 	initializeElements() {
-		// SAFE: Keep original element mapping to preserve exact property names
 		this.elements = {
 			songNameInput: document.getElementById("songName"),
 			songAuthorInput: document.getElementById("songAuthor"),
@@ -486,9 +485,7 @@ class AdvancedMusicPlayer {
 	}
 
 	setupEventListeners() {
-		// Create bound handlers ONCE
 		const handlers = {
-			// Simple handlers
 			addSong: this.addSongToLibrary.bind(this),
 			filterLibrary: this.filterLibrarySongs.bind(this),
 			createPlaylist: this.createPlaylist.bind(this),
@@ -9797,33 +9794,10 @@ hideSidebar() {
 		messages.forEach(msg => msg.remove());
 	}
 	async loadRecommendations() {
-		await this.loadTopSongs();
-		await this.loadRandomRecommendations();
+	    await this.loadBillboardHot100Top3();
+	    await this.loadRandomRecommendations();
 	}
-	async loadTopSongs() {
-		try {
-			const {
-				data: topSongs,
-				error
-			} = await this.supabase
-				.from('top_songs_of_week')
-				.select(`
-                position,
-                songs (
-                    id,
-                    name,
-                    author,
-                    youtube_url
-                )
-            `)
-				.order('position');
-			if (error) throw error;
-			this.displayTopSongs(topSongs || []);
-		} catch (error) {
-			console.error('Error loading top songs:', error);
-			document.getElementById('topSongsContainer').innerHTML = '<div style="color: var(--text-secondary); font-size: 12px;">Unable to load top songs</div>';
-		}
-	}
+	
 	async loadRandomRecommendations() {
 		try {
 			const {
@@ -9842,26 +9816,7 @@ hideSidebar() {
 			document.getElementById('randomSongsContainer').innerHTML = '<div style="color: var(--text-secondary); font-size: 12px;">Unable to load recommendations</div>';
 		}
 	}
-	displayTopSongs(topSongs) {
-		const container = document.getElementById('topSongsContainer');
-		if (!topSongs || topSongs.length === 0) {
-			container.innerHTML = '<div style="color: var(--text-secondary); font-size: 12px;">No top songs set for this week</div>';
-			return;
-		}
-		container.innerHTML = topSongs.map(item => {
-			const song = item.songs;
-			const thumbnailUrl = this.getYouTubeThumbnail(song.youtube_url);
-			return `
-            <div class="recommendation-song-item">
-                <img src="${thumbnailUrl}" alt="Thumbnail" class="song-thumbnail" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'40\\' height=\\'30\\' viewBox=\\'0 0 40 30\\'%3E%3Crect fill=\\'%23ddd\\' width=\\'40\\' height=\\'30\\'/%3E%3Ctext x=\\'20\\' y=\\'18\\' text-anchor=\\'middle\\' font-size=\\'8\\' fill=\\'%23666\\'%3E♪%3C/text%3E%3C/svg%3E'">
-                <div class="recommendation-song-info">
-                    <div class="recommendation-song-name">${song.name}</div>
-                    <div class="recommendation-song-author">by ${song.author || 'Unknown'}</div>
-                </div>
-            </div>
-        `;
-		}).join('');
-	}
+	
 	displayRandomRecommendations(songs) {
 		const container = document.getElementById('randomSongsContainer');
 		if (!songs || songs.length === 0) {
@@ -9881,109 +9836,161 @@ hideSidebar() {
         `;
 		}).join('');
 	}
+	// ========================================
+// BILLBOARD HOT 100 METHODS
+// ========================================
+
+async loadBillboardHot100Top3() {
+    try {
+        const { data: top3Songs, error } = await this.supabase
+            .from('billboard_hot_100')
+            .select('*')
+            .order('this_week')
+            .limit(3);
+
+        if (error) throw error;
+        this.displayBillboardHot100Top3(top3Songs || []);
+    } catch (error) {
+        console.error('Error loading Billboard Hot 100 top 3:', error);
+        document.getElementById('topSongsContainer').innerHTML = 
+            '<div style="color: var(--text-secondary); font-size: 12px;">Unable to load Billboard Hot 100</div>';
+    }
+}
+
+displayBillboardHot100Top3(top3Songs) {
+    const container = document.getElementById('topSongsContainer');
+    
+    if (!top3Songs || top3Songs.length === 0) {
+        container.innerHTML = '<div style="color: var(--text-secondary); font-size: 12px;">No Billboard Hot 100 data available</div>';
+        return;
+    }
+
+    container.innerHTML = top3Songs.map(song => {
+        const thumbnailUrl = this.getYouTubeThumbnail(song.youtube_url);
+        return `
+            <div class="recommendation-song-item">
+                <img src="${thumbnailUrl}" 
+                     alt="Thumbnail" 
+                     class="song-thumbnail" 
+                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'40\\' height=\\'30\\' viewBox=\\'0 0 40 30\\'%3E%3Crect fill=\\'%23ddd\\' width=\\'40\\' height=\\'30\\'/%3E%3Ctext x=\\'20\\' y=\\'18\\' text-anchor=\\'middle\\' font-size=\\'8\\' fill=\\'%23666\\'%3E♪%3C/text%3E%3C/svg%3E'">
+                <div class="recommendation-song-info">
+                    <div class="recommendation-song-name">${song.song}</div>
+                    <div class="recommendation-song-author">by ${song.artist}</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+async openBillboardHot100Modal() {
+    try {
+        const { data: allSongs, error } = await this.supabase
+            .from('billboard_hot_100')
+            .select('*')
+            .order('this_week');
+
+        if (error) throw error;
+        this.displayBillboardHot100FullModal(allSongs || []);
+    } catch (error) {
+        console.error('Error loading full Billboard Hot 100:', error);
+        alert('Error loading Billboard Hot 100 chart');
+    }
+}
+
+displayBillboardHot100FullModal(songs) {
+    const modal = document.createElement('div');
+    modal.className = 'billboard-hot-100-modal';
+    modal.id = 'billboardHot100Modal';
+    
+    modal.innerHTML = `
+        <div class="billboard-modal-content">
+            <div class="billboard-modal-header">
+                <h2>Billboard Hot 100</h2>
+                <button class="billboard-close-btn" onclick="musicPlayer.closeBillboardHot100Modal()">×</button>
+            </div>
+            <div class="billboard-songs-container">
+                ${songs.map(song => this.createBillboardSongElementInModal(song)).join('')}
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            this.closeBillboardHot100Modal();
+        }
+    });
+}
+
+createBillboardSongElementInModal(song) {
+    const isRising = song.last_week && song.last_week > song.this_week;
+    const isFalling = song.last_week && song.last_week < song.this_week;
+    const isNew = !song.last_week || song.weeks_on_chart === 1;
+    const isSteady = song.last_week === song.this_week;
+    const isPeakPosition = song.this_week === song.peak_position;
+    
+    let movementIndicator = '';
+    let movementClass = '';
+    
+    if (isNew) {
+        movementIndicator = '<span class="billboard-new-badge">NEW</span>';
+        movementClass = 'billboard-new';
+    } else if (isRising) {
+        const movement = song.last_week - song.this_week;
+        movementIndicator = `<span class="billboard-rising">▲ ${movement}</span>`;
+        movementClass = 'billboard-rising-item';
+    } else if (isFalling) {
+        const movement = song.this_week - song.last_week;
+        movementIndicator = `<span class="billboard-falling">▼ ${movement}</span>`;
+        movementClass = 'billboard-falling-item';
+    } else if (isSteady) {
+        movementIndicator = '<span class="billboard-steady">—</span>';
+        movementClass = 'billboard-steady-item';
+    }
+    
+    const thumbnailUrl = this.getYouTubeThumbnail(song.youtube_url);
+    
+    return `
+        <div class="billboard-song-item ${movementClass}">
+            <div class="billboard-position-badge ${isPeakPosition ? 'billboard-peak' : ''}">#${song.this_week}</div>
+            <img src="${thumbnailUrl}" 
+                 alt="${song.song}" 
+                 class="billboard-song-thumbnail"
+                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'60\\' height=\\'60\\' viewBox=\\'0 0 60 60\\'%3E%3Crect fill=\\'%23ddd\\' width=\\'60\\' height=\\'60\\'/%3E%3Ctext x=\\'30\\' y=\\'35\\' text-anchor=\\'middle\\' font-size=\\'14\\' fill=\\'%23666\\'%3E♪%3C/text%3E%3C/svg%3E'">
+            <div class="billboard-song-details">
+                <div class="billboard-song-title">${song.song}</div>
+                <div class="billboard-song-artist">${song.artist}</div>
+                <div class="billboard-song-stats">
+                    <span class="billboard-stat">Peak: #${song.peak_position}</span>
+                    <span class="billboard-stat">Weeks: ${song.weeks_on_chart}</span>
+                    ${song.last_week ? `<span class="billboard-stat">Last: #${song.last_week}</span>` : ''}
+                </div>
+            </div>
+            <div class="billboard-song-actions">
+                ${movementIndicator}
+                <button class="billboard-play-btn" 
+                        onclick="window.open('${song.youtube_url}', '_blank')"
+                        title="Play on YouTube">▶</button>
+            </div>
+        </div>
+    `;
+}
+
+closeBillboardHot100Modal() {
+    const modal = document.getElementById('billboardHot100Modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+
+	
 	getYouTubeThumbnail(youtubeUrl) {
 		const videoId = this.extractYouTubeId(youtubeUrl);
 		return videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : '';
 	}
-	async loadTopSongsManagement() {
-		if (!this.globalLibraryCurrentUser) return;
-		try {
-			const {
-				data: currentTopSongs,
-				error: topError
-			} = await this.globalLibrarySupabase
-				.from('top_songs_of_week')
-				.select(`
-                position,
-                song_id,
-                songs (
-                    id,
-                    name,
-                    author
-                )
-            `)
-				.order('position');
-			if (topError) throw topError;
-			const {
-				data: allSongs,
-				error: songsError
-			} = await this.globalLibrarySupabase
-				.from('songs')
-				.select('id, name, author')
-				.order('name');
-			if (songsError) throw songsError;
-			this.displayTopSongsManagement(currentTopSongs || [], allSongs || []);
-		} catch (error) {
-			console.error('Error loading top songs management:', error);
-		}
-	}
-	displayTopSongsManagement(currentTopSongs, allSongs) {
-		const container = document.getElementById('topSongsManagement');
-		const songsOptionsHTML = allSongs.map(song =>
-			`<option value="${song.id}">${song.name} - ${song.author || 'Unknown'}</option>`
-		).join('');
-		const managementHTML = [1, 2, 3].map(position => {
-			const currentSong = currentTopSongs.find(item => item.position === position);
-			const selectedSongId = currentSong ? currentSong.song_id : '';
-			return `
-            <div class="top-song-management-item">
-                <div class="top-song-position">#${position}</div>
-                <select class="top-song-select" data-position="${position}">
-                    <option value="">Select a song...</option>
-                    ${songsOptionsHTML}
-                </select>
-            </div>
-        `;
-		}).join('');
-		container.innerHTML = managementHTML + `
-        <button class="update-top-songs-btn" onclick="musicPlayer.updateTopSongs()">
-            Update Top Songs
-        </button>
-    `;
-		currentTopSongs.forEach(item => {
-			const select = container.querySelector(`[data-position="${item.position}"]`);
-			if (select) {
-				select.value = item.song_id;
-			}
-		});
-	}
-	async updateTopSongs() {
-		const selects = document.querySelectorAll('.top-song-select');
-		const updates = [];
-		selects.forEach(select => {
-			const position = parseInt(select.dataset.position);
-			const songId = select.value;
-			if (songId) {
-				updates.push({
-					position: position,
-					song_id: parseInt(songId),
-					created_by: this.globalLibraryCurrentUser.id
-				});
-			}
-		});
-		try {
-			await this.globalLibrarySupabase
-				.from('top_songs_of_week')
-				.delete()
-				.neq('id', 0);
-			if (updates.length > 0) {
-				const {
-					error
-				} = await this.globalLibrarySupabase
-					.from('top_songs_of_week')
-					.insert(updates);
-				if (error) throw error;
-			}
-			this.showGlobalLibraryMessage('Top songs updated successfully!', 'success');
-			this.loadTopSongsManagement();
-		} catch (error) {
-			this.showGlobalLibraryMessage('Error updating top songs: ' + error.message, 'error');
-		}
-	}
-	async refreshRandomRecommendations() {
-		await this.loadRandomRecommendations();
-	}
-
+	
 
 
 
