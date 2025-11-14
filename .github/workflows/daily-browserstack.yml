@@ -1,0 +1,68 @@
+name: Daily BrowserStack Capture
+
+on:
+  schedule:
+    # 18:18 GMT+8 = 10:18 UTC
+    - cron: "18 10 * * *"
+  workflow_dispatch:    # Optional: manual run button
+
+jobs:
+  run-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Selenium
+        run: npm install selenium-webdriver
+
+      - name: Run BrowserStack Job
+        run: |
+          node - << 'EOF'
+          const fs = require("fs");
+          const webdriver = require("selenium-webdriver");
+          const { By } = webdriver;
+
+          const caps = {
+            browserName: "Safari",
+            browserVersion: "17.3",
+            "bstack:options": {
+              os: "OS X",
+              osVersion: "Sonoma",
+              seleniumVersion: "4.20.0"
+            }
+          };
+
+          (async () => {
+            const driver = new webdriver.Builder()
+              .usingServer(
+                'https://${{ secrets.BROWSERSTACK_USERNAME }}:${{ secrets.BROWSERSTACK_ACCESS_KEY }}@hub.browserstack.com/wd/hub'
+              )
+              .withCapabilities(caps)
+              .build();
+
+            // 1. Go to your website
+            await driver.get("https://YOUR-WEBSITE-HERE.com");
+
+            // 2. Wait a full minute for everything to load
+            await new Promise(r => setTimeout(r, 60000)); // 60 seconds
+
+            // 3. Capture ALL visible text on the page
+            const text = await driver.findElement(By.css("body")).getText();
+
+            // 4. Save to file
+            fs.writeFileSync("output.txt", text);
+
+            // 5. Quit browser
+            await driver.quit();
+          })();
+          EOF
+
+      - name: Upload Result
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-output
+          path: output.txt
