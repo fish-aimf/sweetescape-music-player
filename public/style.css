@@ -6633,7 +6633,13 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 
 }
 
+.billboard-song-item:last-child {
+    border-bottom: none;  /* ADDED */
+}
 
+.billboard-song-item:hover {
+    background: var(--bg-secondary);
+}
 .billboard-rising-item {
     border-left-color: #28a745;
 }
