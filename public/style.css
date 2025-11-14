@@ -6563,3 +6563,188 @@ body.control-bar-hidden .sidebar-songs-list {
 body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     max-height: calc(100vh - 140px);
 }
+/* Billboard Hot 100 Modal */
+.billboard-hot-100-modal {
+    display: block;
+    position: fixed;
+    z-index: 10000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.7);
+    overflow: auto;
+}
+
+.billboard-modal-content {
+    background-color: var(--bg-secondary);
+    margin: 2% auto;
+    padding: 0;
+    width: 90%;
+    max-width: 1200px;
+    border-radius: 12px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.billboard-modal-header {
+    padding: 20px 30px;
+    border-bottom: 2px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, var(--accent-color), var(--hover-color));
+    color: white;
+    border-radius: 12px 12px 0 0;
+}
+
+.billboard-modal-header h2 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.billboard-close-btn {
+    background: none;
+    border: none;
+    font-size: 36px;
+    color: white;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.billboard-songs-container {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.billboard-song-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    margin-bottom: 10px;
+    background: var(--bg-primary);
+    border-radius: 8px;
+    border-left: 4px solid transparent;
+    transition: all 0.2s;
+}
+
+.billboard-song-item:hover {
+    background: var(--bg-secondary);
+    transform: translateX(5px);
+}
+
+.billboard-rising-item {
+    border-left-color: #28a745;
+}
+
+.billboard-falling-item {
+    border-left-color: #dc3545;
+}
+
+.billboard-new {
+    border-left-color: #ffc107;
+}
+
+.billboard-steady-item {
+    border-left-color: #6c757d;
+}
+
+.billboard-position-badge {
+    font-size: 20px;
+    font-weight: bold;
+    min-width: 45px;
+    text-align: center;
+    color: var(--text-primary);
+}
+
+.billboard-position-badge.billboard-peak {
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.billboard-song-thumbnail {
+    width: 60px;
+    height: 60px;
+    border-radius: 6px;
+    object-fit: cover;
+}
+
+.billboard-song-details {
+    flex: 1;
+}
+
+.billboard-song-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.billboard-song-artist {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+
+.billboard-song-stats {
+    display: flex;
+    gap: 15px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.billboard-stat {
+    padding: 2px 8px;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+}
+
+.billboard-song-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.billboard-new-badge {
+    background: #ffc107;
+    color: black;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.billboard-rising {
+    color: #28a745;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.billboard-falling {
+    color: #dc3545;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.billboard-steady {
+    color: #6c757d;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.billboard-play-btn {
+    background: var(--youtube-red);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.billboard-play-btn:hover {
+    background: #cc0000;
+}
