@@ -9843,10 +9843,9 @@ hideSidebar() {
 async loadBillboardHot100Top3() {
     try {
         const { data: top3Songs, error } = await this.supabase
-            .from('billboard_hot_100')
+            .from('billboard_top_3')  // CHANGED from 'billboard_hot_100'
             .select('*')
-            .order('this_week')
-            .limit(3);
+            .order('position');  // CHANGED from 'this_week'
 
         if (error) throw error;
         this.displayBillboardHot100Top3(top3Songs || []);
@@ -9857,6 +9856,30 @@ async loadBillboardHot100Top3() {
     }
 }
 
+displayBillboardHot100Top3(top3Songs) {
+    const container = document.getElementById('topSongsContainer');
+    
+    if (!top3Songs || top3Songs.length === 0) {
+        container.innerHTML = '<div style="color: var(--text-secondary); font-size: 12px;">No Billboard Hot 100 data available</div>';
+        return;
+    }
+
+    container.innerHTML = top3Songs.map(song => {
+        const thumbnailUrl = this.getYouTubeThumbnail(song.youtube_url);
+        return `
+            <div class="recommendation-song-item">
+                <img src="${thumbnailUrl}" 
+                     alt="Thumbnail" 
+                     class="song-thumbnail" 
+                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'40\\' height=\\'30\\' viewBox=\\'0 0 40 30\\'%3E%3Crect fill=\\'%23ddd\\' width=\\'40\\' height=\\'30\\'/%3E%3Ctext x=\\'20\\' y=\\'18\\' text-anchor=\\'middle\\' font-size=\\'8\\' fill=\\'%23666\\'%3E♪%3C/text%3E%3C/svg%3E'">
+                <div class="recommendation-song-info">
+                    <div class="recommendation-song-name">${song.song}</div>
+                    <div class="recommendation-song-author">by ${song.artist}</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
 displayBillboardHot100Top3(top3Songs) {
     const container = document.getElementById('topSongsContainer');
     
