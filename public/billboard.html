@@ -3,27 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Billboard Hot 100</title>
+    <title>Billboard Hot 100 - Top 10</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; }
-        .song { margin: 10px 0; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .update-time {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .chart {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .song {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #f8f9fa, #ffffff);
+            border-radius: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .song:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .rank {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            min-width: 50px;
+            text-align: center;
+        }
+        
+        .info {
+            flex: 1;
+        }
+        
+        .title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .artist {
+            color: #666;
+            font-size: 0.95em;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: white;
+            font-size: 1.2em;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .status {
+            text-align: center;
+            color: white;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+        
+        .setup-instructions {
+            background: #fff3cd;
+            color: #856404;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .setup-instructions h3 {
+            margin-bottom: 10px;
+        }
+        
+        .setup-instructions ol {
+            margin-left: 20px;
+        }
+        
+        .setup-instructions li {
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
-    <h1>Billboard Hot 100 - Top 10</h1>
-    <div id="chart">Loading...</div>
-    <div id="status"></div>
+    <div class="container">
+        <header>
+            <h1>🎵 Billboard Hot 100 🎵</h1>
+            <div class="update-time">Top 10 Songs</div>
+        </header>
+        
+
+        
+        <div class="chart" id="chart">
+            <div class="loading">Loading Billboard Hot 100...</div>
+        </div>
+        
+        <div class="status" id="status"></div>
+    </div>
 
     <script>
         const API_KEY = '13526bb673msh005f132a34f304cp1bd530jsn5e4e1e7411db';
         
         async function fetchBillboardChart() {
             try {
+                // Calculate a date from about a week ago to ensure chart data exists
                 const date = new Date();
                 date.setDate(date.getDate() - 7);
                 const dateStr = date.toISOString().split('T')[0];
                 
                 const url = `https://billboard-api2.p.rapidapi.com/hot-100?date=${dateStr}&range=1-10`;
+                console.log('Fetching:', url);
                 
                 const response = await fetch(url, {
                     method: 'GET',
@@ -37,9 +170,11 @@
                     throw new Error(`API Error: ${response.status}`);
                 }
                 
-                return await response.json();
+                const data = await response.json();
+                console.log('Full API Response:', data);
+                return data;
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Error fetching Billboard data:', error);
                 throw error;
             }
         }
@@ -48,50 +183,82 @@
             const chartDiv = document.getElementById('chart');
             const statusDiv = document.getElementById('status');
             
+            console.log('API Response:', data); // Debug log
+            
+            // Handle the object structure with numbered keys
             let songs = [];
             
             if (data.content) {
-                songs = typeof data.content === 'object' && !Array.isArray(data.content) 
-                    ? Object.values(data.content) 
-                    : data.content;
-            } else if (data.chart) {
+                // Convert object with numbered keys to array
+                if (typeof data.content === 'object' && !Array.isArray(data.content)) {
+                    songs = Object.values(data.content);
+                } else if (Array.isArray(data.content)) {
+                    songs = data.content;
+                }
+            } else if (data.chart && Array.isArray(data.chart)) {
                 songs = data.chart;
-            } else if (data.entries) {
+            } else if (data.entries && Array.isArray(data.entries)) {
                 songs = data.entries;
             } else if (Array.isArray(data)) {
                 songs = data;
             }
             
             if (!songs || songs.length === 0) {
-                chartDiv.innerHTML = 'No chart data available';
+                chartDiv.innerHTML = `<div class="error">
+                    No chart data available<br><br>
+                    <small>Response structure: ${JSON.stringify(Object.keys(data))}</small>
+                </div>`;
                 return;
             }
             
+            const top10 = songs.slice(0, 10);
+            
             let html = '';
-            songs.slice(0, 10).forEach(song => {
-                const rank = song.rank || song.position || '?';
-                const title = song.title || song.song || 'Unknown';
+            top10.forEach(song => {
+                // Handle different property names
+                const rank = song.rank || song.position || song.chartPosition || '?';
+                const title = song.title || song.song || song.name || 'Unknown';
                 const artist = song.artist || song.artists || 'Unknown Artist';
                 
-                html += `<div class="song">${rank}. ${title} - ${artist}</div>`;
+                html += `
+                    <div class="song">
+                        <div class="rank">${rank}</div>
+                        <div class="info">
+                            <div class="title">${title}</div>
+                            <div class="artist">${artist}</div>
+                        </div>
+                    </div>
+                `;
             });
             
             chartDiv.innerHTML = html;
             
-            const chartDate = data.info?.date || data.date || data.week || data.chartDate;
-            const now = new Date().toISOString();
-            statusDiv.textContent = chartDate ? `Chart: ${chartDate} | Fetched: ${now}` : `Fetched: ${now}`;
+            // Display chart date if available
+            const chartDate = data.info?.date || data.date || data.week || data.chartDate || data.issueDate;
+            if (chartDate) {
+                statusDiv.textContent = `Chart Date: ${chartDate}`;
+            }
         }
         
+        function showError(message) {
+            const chartDiv = document.getElementById('chart');
+            chartDiv.innerHTML = `<div class="error">
+                <strong>Error:</strong> ${message}<br><br>
+                Please check your API key and internet connection.
+            </div>`;
+        }
+        
+        // Load chart on page load
         async function init() {
             try {
                 const data = await fetchBillboardChart();
                 displayChart(data);
             } catch (error) {
-                document.getElementById('chart').textContent = `Error: ${error.message}`;
+                showError(error.message);
             }
         }
         
+        // Auto-refresh every 1 hour
         init();
         setInterval(init, 3600000);
     </script>
