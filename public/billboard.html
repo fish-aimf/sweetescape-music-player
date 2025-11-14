@@ -19,12 +19,9 @@
         
         async function fetchBillboardChart() {
             try {
-                // Get most recent Saturday (charts publish weekly on Saturdays)
-                const now = new Date();
-                const day = now.getUTCDay();
-                const daysToSubtract = day === 6 ? 0 : (day + 1) % 7;
-                now.setUTCDate(now.getUTCDate() - daysToSubtract - 7); // Go back to last Saturday
-                const dateStr = now.toISOString().split('T')[0];
+                const date = new Date();
+                date.setDate(date.getDate() - 7);
+                const dateStr = date.toISOString().split('T')[0];
                 
                 const url = `https://billboard-api2.p.rapidapi.com/hot-100?date=${dateStr}&range=1-10`;
                 
