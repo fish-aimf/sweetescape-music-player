@@ -3,96 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Billboard Charts</title>
+    <title>Billboard Hot 100</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; }
-        .song { margin: 10px 0; }
-        button { margin: 5px; padding: 10px; }
+        body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .song { margin: 10px 0; padding: 10px; border-bottom: 1px solid #eee; }
+        .rank { font-weight: bold; color: #666; margin-right: 10px; }
+        button { margin: 10px 0; padding: 10px 20px; }
+        .error { color: red; }
+        .note { background: #fffacd; padding: 10px; margin: 10px 0; border-radius: 5px; }
     </style>
 </head>
 <body>
-    <h1>Billboard Charts - Top 10</h1>
-    <div>
-        <button onclick="loadChart('hot-100')">Hot 100</button>
-        <button onclick="loadChart('artist-100')">Artist 100</button>
+    <h1>Billboard Hot 100 - Top 10</h1>
+    <div class="note">
+        <strong>Note:</strong> This scrapes Billboard's website. Due to CORS restrictions and anti-scraping measures, this may not work reliably. Consider using an official API instead.
     </div>
-    <div id="chart">Select a chart above</div>
+    <button onclick="loadChart()">Load Chart</button>
     <div id="status"></div>
+    <div id="chart"></div>
 
     <script>
-        const API_KEY = '13526bb673msh005f132a34f304cp1bd530jsn5e4e1e7411db';
-        
-        async function fetchChart(chartType) {
+        async function loadChart() {
+            const statusDiv = document.getElementById('status');
+            const chartDiv = document.getElementById('chart');
+            
+            statusDiv.textContent = 'Loading...';
+            chartDiv.innerHTML = '';
+            
             try {
-                const url = `https://billboard-charts-api.p.rapidapi.com/${chartType}.php`;
+                // Using a CORS proxy - this may not work reliably
+                const proxyUrl = 'https://api.allorigins.win/raw?url=';
+                const billboardUrl = encodeURIComponent('https://www.billboard.com/charts/hot-100/');
                 
-                const response = await fetch(url, {
-                    method: 'GET',
-                    headers: {
-                        'X-Rapidapi-Key': API_KEY,
-                        'X-Rapidapi-Host': 'billboard-charts-api.p.rapidapi.com'
-                    }
-                });
+                const response = await fetch(proxyUrl + billboardUrl);
                 
                 if (!response.ok) {
-                    throw new Error(`API Error: ${response.status}`);
+                    throw new Error(`HTTP ${response.status}`);
                 }
                 
-                return await response.json();
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                // Parse the chart data from the HTML
+                const songs = [];
+                
+                // Try to find song elements - Billboard's structure may vary
+                const chartItems = doc.querySelectorAll('li[class*="chart-list__element"]');
+                
+                if (chartItems.length === 0) {
+                    throw new Error('Could not find chart data in page structure');
+                }
+                
+                chartItems.forEach((item, index) => {
+                    if (index >= 10) return; // Only top 10
+                    
+                    const rank = index + 1;
+                    const titleEl = item.querySelector('[class*="title"]');
+                    const artistEl = item.querySelector('[class*="artist"]');
+                    
+                    const title = titleEl ? titleEl.textContent.trim() : 'Unknown';
+                    const artist = artistEl ? artistEl.textContent.trim() : 'Unknown Artist';
+                    
+                    songs.push({ rank, title, artist });
+                });
+                
+                if (songs.length === 0) {
+                    throw new Error('No songs found - page structure may have changed');
+                }
+                
+                displayChart(songs);
+                statusDiv.textContent = `Loaded ${songs.length} songs at ${new Date().toISOString()}`;
+                
             } catch (error) {
-                console.error('Error:', error);
-                throw error;
+                statusDiv.innerHTML = `<span class="error">Error: ${error.message}</span>`;
+                console.error('Full error:', error);
             }
         }
         
-        function displayChart(data, chartType) {
+        function displayChart(songs) {
             const chartDiv = document.getElementById('chart');
-            const statusDiv = document.getElementById('status');
-            
-            console.log('API Response:', data);
-            
-            let songs = [];
-            
-            if (Array.isArray(data)) {
-                songs = data;
-            } else if (data.content) {
-                songs = typeof data.content === 'object' && !Array.isArray(data.content) 
-                    ? Object.values(data.content) 
-                    : data.content;
-            } else if (data.chart) {
-                songs = data.chart;
-            } else if (data.entries) {
-                songs = data.entries;
-            }
-            
-            if (!songs || songs.length === 0) {
-                chartDiv.innerHTML = 'No chart data available';
-                return;
-            }
             
             let html = '';
-            songs.slice(0, 10).forEach(song => {
-                const rank = song.rank || song.position || song['chart-position'] || '?';
-                const title = song.title || song.song || song.name || 'Unknown';
-                const artist = song.artist || song.artists || 'Unknown Artist';
-                
-                html += `<div class="song">${rank}. ${title} - ${artist}</div>`;
+            songs.forEach(song => {
+                html += `
+                    <div class="song">
+                        <span class="rank">${song.rank}.</span>
+                        <strong>${song.title}</strong> - ${song.artist}
+                    </div>
+                `;
             });
             
             chartDiv.innerHTML = html;
-            
-            const now = new Date().toISOString();
-            statusDiv.textContent = `Chart: ${chartType.toUpperCase()} | Fetched: ${now}`;
-        }
-        
-        async function loadChart(chartType) {
-            document.getElementById('chart').textContent = 'Loading...';
-            try {
-                const data = await fetchChart(chartType);
-                displayChart(data, chartType);
-            } catch (error) {
-                document.getElementById('chart').textContent = `Error: ${error.message}`;
-            }
         }
     </script>
 </body>
