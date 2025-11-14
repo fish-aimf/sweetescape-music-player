@@ -970,7 +970,7 @@ Another Playlist{
             <div class="recommendations-panel" id="recommendationsPanel">
                <!-- Top Songs of the Week Section -->
                <div class="recommendation-section">
-                  <h3 class="recommendation-title">🏆 Top Songs This Week</h3>
+                  <h3 class="recommendation-title" style="cursor: pointer;" onclick="musicPlayer.openBillboardHot100Modal()">Billboard Hot 100</h3>
                   <div id="topSongsContainer" class="top-songs-container">
                      <!-- Will be populated by JavaScript -->
                   </div>
@@ -1052,13 +1052,7 @@ Another Playlist{
                      <button id="globalLibraryMassImportBtn" class="global-library-btn">Import Songs</button>
                   </div>
                </div>
-               <!-- Add this as a new control-group in the global-library-controls -->
-               <div class="control-group">
-                  <h4>Manage Top Songs of the Week</h4>
-                  <div id="topSongsManagement">
-                     <!-- Will be populated by JavaScript -->
-                  </div>
-               </div>
+         
                <input type="text" id="globalLibrarySearchBar" class="global-library-search-bar" placeholder="Search playlists and songs...">
                <div id="globalLibraryArtistsContainer"></div>
                <div id="globalLibraryMessages"></div>
