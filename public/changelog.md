@@ -370,3 +370,27 @@
 - script.js initialization improved v46.8.4
 - added more api keys so the gemini will never run out of usage v46.9.0
 - added a hit counter to ping.html so i could observe the supabase getting pinged so it wont sleep. v46.9.1
+-Added billboard hot 100. v47.0.0
+- billboard will be synced every day by automated robot using billboard.html. v47.1.0
+- billboard.html created as bot terminal to update all songs from billboard hot 100 and to use youtube api to get the urls to display the thumbnail. v47.2.0
+- Removed all top songs of the week mentions and replaced with billboard hot 100. v47.3.0
+- added loadbillboard hot 100 top 3 method to check supabase for top songs. v47.4.0
+- added methods in relation to the billboard. v47.5.0
+- added styles. v47.6.0
+- created new sql table for hot 100 containing all information and will be updated daily. v47.7.0
+- updated billboard.html to be more efficient and use less cpu and memory. by making it only shift existing songs and not delete them. v47.8.0
+-  stopped it from updating songs that dont need change v47.8.1
+-  style.css changes. v47.9.0
+-  fullscreened modal. v47.9.1
+-  made margins all smaller to fit more song cards. v47.9.2
+-  made more boxy. v47.9.3
+-  thumbnail is more rectangular and larger. v47.9.4
+-  increased size of arrow. v47.9.5
+-  reduced lag while scrolling. v47.9.6
+-  increased song name size v47.9.7
+-  Changed the loading process to only load the data when clicked and modal opened. by creating a new table which only has the top 3 . v47.10.0
+-  added subtext to the url of billboard.com charts hot-100. v47.10.1
+-  made it such that when adding more data or moving, the ids on supabase doesnt change. v47.10.2
+-  removed margins to fit more cards v47.10.3
+-  made visible by changing to accent colour when hovering. v47.10.4
+-  Updated billboard hot 100 updator. to save resources even more v47.10.5 
