@@ -160,6 +160,30 @@
                 }
                 
                 log('\n=== Update Complete ===', 'success');
+
+                log('\nUpdating top 3 table...', 'info');
+                for (let i = 0; i < 3; i++) {
+                    const song = billboardData.data[i];
+                    const id = i + 1;
+                    
+                    const existing = existingMap.get(id);
+                    let youtubeUrl = existing?.youtube_url;
+                    
+                    if (!existing || existing.song !== song.song || existing.artist !== song.artist || !youtubeUrl) {
+                        youtubeUrl = await searchYouTube(song.song, song.artist);
+                    }
+                    
+                    await supabase
+                        .from('billboard_top_3')
+                        .upsert({
+                            position: i + 1,
+                            song: song.song,
+                            artist: song.artist,
+                            youtube_url: youtubeUrl,
+                            last_updated: new Date().toISOString()
+                        });
+                }
+                log('Top 3 table updated', 'success');
                 
             } catch (error) {
                 log(`\nFATAL ERROR: ${error.message}`, 'error');
