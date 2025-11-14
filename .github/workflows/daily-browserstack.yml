@@ -2,15 +2,17 @@ name: Daily BrowserStack Capture
 
 on:
   schedule:
-    # 18:18 GMT+8 = 10:18 UTC
-    - cron: "18 10 * * *"
-  workflow_dispatch:    # Optional: manual run button
+    - cron: "30 10 * * *"   # Runs daily at 18:30 GMT+8
+  workflow_dispatch:
 
 jobs:
   run-test:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
@@ -19,7 +21,7 @@ jobs:
       - name: Install Selenium
         run: npm install selenium-webdriver
 
-      - name: Run BrowserStack Job
+      - name: Run BrowserStack Script
         run: |
           node - << 'EOF'
           const fs = require("fs");
@@ -44,25 +46,24 @@ jobs:
               .withCapabilities(caps)
               .build();
 
-            // 1. Go to your website
             await driver.get("https://sweetescape.vercel.app/billboard.html");
 
-            // 2. Wait a full minute for everything to load
-            await new Promise(r => setTimeout(r, 60000)); // 60 seconds
+            // Wait 1 minute for the page to fully update
+            await new Promise(r => setTimeout(r, 60000));
 
-            // 3. Capture ALL visible text on the page
+            // Capture all visible text
             const text = await driver.findElement(By.css("body")).getText();
 
-            // 4. Save to file
             fs.writeFileSync("output.txt", text);
 
-            // 5. Quit browser
             await driver.quit();
           })();
           EOF
 
-      - name: Upload Result
-        uses: actions/upload-artifact@v4
-        with:
-          name: daily-output
-          path: output.txt
+      - name: Commit updated output.txt
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add output.txt
+          git commit -m "Daily update $(date)" || echo "No changes to commit"
+          git push
