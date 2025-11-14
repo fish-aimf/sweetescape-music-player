@@ -107,24 +107,55 @@
                 // Get existing data
                 const { data: existingData } = await supabase
                     .from('billboard_hot_100')
-                    .select('id, song, artist, youtube_url');
+                    .select('*');
                 
                 const existingMap = new Map(existingData?.map(item => [item.id, item]) || []);
+                
+                let totalProcessed = 0;
+                let totalUpdated = 0;
+                let totalSkipped = 0;
+                let totalYouTubeSearches = 0;
                 
                 // Process each song
                 for (let i = 0; i < Math.min(billboardData.data.length, 100); i++) {
                     const song = billboardData.data[i];
                     const id = i + 1;
+                    totalProcessed++;
                     
                     log(`\n[${id}/100] Processing: "${song.song}" by ${song.artist}`, 'info');
                     
                     const existing = existingMap.get(id);
                     let youtubeUrl = existing?.youtube_url;
+                    let needsUpdate = false;
                     
-                    // Only search YouTube if song changed or no URL exists
+                    // Check if ANY field changed
+                    if (!existing) {
+                        log(`  New entry - needs full update`, 'info');
+                        needsUpdate = true;
+                    } else {
+                        const changes = [];
+                        if (existing.song !== song.song) changes.push('song');
+                        if (existing.artist !== song.artist) changes.push('artist');
+                        if (existing.this_week !== song.this_week) changes.push('position');
+                        if (existing.last_week !== song.last_week) changes.push('last_week');
+                        if (existing.peak_position !== song.peak_position) changes.push('peak');
+                        if (existing.weeks_on_chart !== song.weeks_on_chart) changes.push('weeks');
+                        
+                        if (changes.length > 0) {
+                            log(`  Changes detected: ${changes.join(', ')}`, 'warning');
+                            needsUpdate = true;
+                        } else {
+                            log(`  No changes - skipping`, 'info');
+                            totalSkipped++;
+                            continue;
+                        }
+                    }
+                    
+                    // Only search YouTube if song/artist changed or no URL exists
                     if (!existing || existing.song !== song.song || existing.artist !== song.artist || !youtubeUrl) {
                         log(`  Searching YouTube...`, 'info');
                         youtubeUrl = await searchYouTube(song.song, song.artist);
+                        totalYouTubeSearches++;
                         
                         if (youtubeUrl) {
                             log(`  Found: ${youtubeUrl}`, 'success');
@@ -137,53 +168,101 @@
                         log(`  Using existing URL`, 'info');
                     }
                     
-                    // Upsert to database
-                    const { error } = await supabase
-                        .from('billboard_hot_100')
-                        .upsert({
-                            id: id,
-                            song: song.song,
-                            artist: song.artist,
-                            this_week: song.this_week,
-                            last_week: song.last_week,
-                            peak_position: song.peak_position,
-                            weeks_on_chart: song.weeks_on_chart,
-                            youtube_url: youtubeUrl,
-                            last_updated: new Date().toISOString()
-                        });
-                    
-                    if (error) {
-                        log(`  Database error: ${error.message}`, 'error');
-                    } else {
-                        log(`  Saved to database`, 'success');
+                    // Only update if needed
+                    if (needsUpdate) {
+                        const { error } = await supabase
+                            .from('billboard_hot_100')
+                            .upsert({
+                                id: id,
+                                song: song.song,
+                                artist: song.artist,
+                                this_week: song.this_week,
+                                last_week: song.last_week,
+                                peak_position: song.peak_position,
+                                weeks_on_chart: song.weeks_on_chart,
+                                youtube_url: youtubeUrl,
+                                last_updated: new Date().toISOString()
+                            });
+                        
+                        if (error) {
+                            log(`  Database error: ${error.message}`, 'error');
+                        } else {
+                            log(`  Updated in database`, 'success');
+                            totalUpdated++;
+                        }
                     }
                 }
                 
-                log('\n=== Update Complete ===', 'success');
-
-                log('\nUpdating top 3 table...', 'info');
+                // Update top 3 table
+                log('\n=== Updating Top 3 Table ===', 'info');
+                
+                const { data: existingTop3 } = await supabase
+                    .from('billboard_top_3')
+                    .select('*')
+                    .order('position');
+                
+                const existingTop3Map = new Map(existingTop3?.map(item => [item.position, item]) || []);
+                
+                let top3Updated = 0;
+                let top3Skipped = 0;
+                
                 for (let i = 0; i < 3; i++) {
                     const song = billboardData.data[i];
-                    const id = i + 1;
+                    const position = i + 1;
                     
-                    const existing = existingMap.get(id);
-                    let youtubeUrl = existing?.youtube_url;
+                    log(`\nTop ${position}: "${song.song}" by ${song.artist}`, 'info');
                     
-                    if (!existing || existing.song !== song.song || existing.artist !== song.artist || !youtubeUrl) {
-                        youtubeUrl = await searchYouTube(song.song, song.artist);
+                    const existing = existingTop3Map.get(position);
+                    let youtubeUrl = null;
+                    let needsUpdate = false;
+                    
+                    // Check if changed
+                    if (!existing || existing.song !== song.song || existing.artist !== song.artist) {
+                        needsUpdate = true;
+                        log(`  Changes detected in top 3`, 'warning');
+                        
+                        // Get YouTube URL from main table
+                        const { data: mainTableData } = await supabase
+                            .from('billboard_hot_100')
+                            .select('youtube_url')
+                            .eq('id', position)
+                            .single();
+                        
+                        youtubeUrl = mainTableData?.youtube_url;
+                    } else {
+                        log(`  No changes in top 3 - skipping`, 'info');
+                        top3Skipped++;
+                        continue;
                     }
                     
-                    await supabase
-                        .from('billboard_top_3')
-                        .upsert({
-                            position: i + 1,
-                            song: song.song,
-                            artist: song.artist,
-                            youtube_url: youtubeUrl,
-                            last_updated: new Date().toISOString()
-                        });
+                    if (needsUpdate) {
+                        const { error } = await supabase
+                            .from('billboard_top_3')
+                            .upsert({
+                                position: position,
+                                song: song.song,
+                                artist: song.artist,
+                                youtube_url: youtubeUrl,
+                                last_updated: new Date().toISOString()
+                            });
+                        
+                        if (error) {
+                            log(`  Top 3 database error: ${error.message}`, 'error');
+                        } else {
+                            log(`  Top 3 updated in database`, 'success');
+                            top3Updated++;
+                        }
+                    }
                 }
-                log('Top 3 table updated', 'success');
+                
+                log('\n=== Update Summary ===', 'success');
+                log(`Total songs processed: ${totalProcessed}`, 'info');
+                log(`Songs updated: ${totalUpdated}`, 'success');
+                log(`Songs skipped (no changes): ${totalSkipped}`, 'info');
+                log(`YouTube searches performed: ${totalYouTubeSearches}`, 'warning');
+                log(`\nTop 3 updated: ${top3Updated}`, 'success');
+                log(`Top 3 skipped: ${top3Skipped}`, 'info');
+                log('\n=== Update Complete ===', 'success');
                 
             } catch (error) {
                 log(`\nFATAL ERROR: ${error.message}`, 'error');
