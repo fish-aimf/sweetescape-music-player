@@ -394,3 +394,4 @@
 -  removed margins to fit more cards v47.10.3
 -  made visible by changing to accent colour when hovering. v47.10.4
 -  Updated billboard hot 100 updator. to save resources even more v47.10.5 
+- need to allow sections to disappear completely in the additional section v47.10.5
