@@ -1246,9 +1246,10 @@ body {
 }
 
 .thumbnail-preview {
-    position: absolute;
-    top: 0;
-    left: calc(100% + 20px); 
+    position: fixed; 
+    top: 20px;        
+    right: 20px;    
+    left: auto;       
     background: rgba(30, 30, 30, 0.9);
     border-radius: 8px;
     padding: 10px;
@@ -1262,8 +1263,8 @@ body {
 
 .thumbnail-preview img {
     max-width: 180px; 
-    border-radius: 4px;
-    margin-bottom: 5px;
+    border-radius: 2px;
+    margin-bottom: 2px;
 }
 
 .thumbnail-close-btn {
