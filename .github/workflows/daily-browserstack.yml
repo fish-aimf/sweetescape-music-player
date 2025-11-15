@@ -1,5 +1,8 @@
 name: Daily BrowserStack Capture
 
+permissions:
+  contents: write
+
 on:
   schedule:
     - cron: "30 10 * * *"
@@ -23,8 +26,7 @@ jobs:
 
       - name: Run BrowserStack Script
         run: |
-          node - << EOF
-
+          node - << 'EOF'
           const fs = require("fs");
           const webdriver = require("selenium-webdriver");
           const { By } = webdriver;
@@ -48,10 +50,8 @@ jobs:
 
             await driver.get("https://sweetescape.vercel.app/billboard.html");
 
-            // 1-minute wait
             await new Promise(r => setTimeout(r, 60000));
 
-            // Capture all visible text
             const text = await driver.findElement(By.css("body")).getText();
 
             fs.writeFileSync("output.txt", text);
@@ -64,6 +64,10 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
+
+          # CRITICAL FIX
+          git pull --rebase
+
           git add output.txt
           git commit -m "Daily update $(date)" || echo "No changes to commit"
           git push
