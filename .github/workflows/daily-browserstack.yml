@@ -26,6 +26,12 @@ jobs:
 
       - name: Run BrowserStack Script
         run: |
+          # Create folder if missing
+          mkdir -p captures
+
+          # Generate filename based on date
+          EXPORT_FILE="captures/billboard-$(date +%F).txt"
+
           node - << 'EOF'
           const fs = require("fs");
           const webdriver = require("selenium-webdriver");
@@ -48,26 +54,30 @@ jobs:
               .withCapabilities(caps)
               .build();
 
+            // Open page
             await driver.get("https://sweetescape.vercel.app/billboard.html");
 
+            // Wait 1 minute
             await new Promise(r => setTimeout(r, 60000));
 
+            // Read full body text
             const text = await driver.findElement(By.css("body")).getText();
 
-            fs.writeFileSync("output.txt", text);
+            // Save result to designated file
+            fs.writeFileSync(process.env.EXPORT_FILE, text);
 
             await driver.quit();
           })();
           EOF
 
-      - name: Commit updated output.txt
+      - name: Commit updated capture file
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-          # CRITICAL FIX
+          # Critical fix: ensure branch is updated
           git pull --rebase
 
-          git add output.txt
-          git commit -m "Daily update $(date)" || echo "No changes to commit"
+          git add captures/*.txt
+          git commit -m "Daily capture $(date +%F)" || echo "No changes to commit"
           git push
