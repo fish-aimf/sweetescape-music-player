@@ -29,8 +29,8 @@ jobs:
           # Create folder if missing
           mkdir -p captures
           
-          # Generate filename based on date and export it
-          export EXPORT_FILE="captures/billboard-$(date +%F).txt"
+          # Generate filename with date and time
+          export EXPORT_FILE="captures/billboard-$(date +%F-%H-%M).txt"
 
           node - << EOF
           const fs = require("fs");
@@ -54,13 +54,16 @@ jobs:
               .withCapabilities(caps)
               .build();
 
+            // Open the page
             await driver.get("https://sweetescape.vercel.app/billboard.html");
 
+            // Wait 1 minute
             await new Promise(r => setTimeout(r, 60000));
 
+            // Capture all visible text
             const text = await driver.findElement(By.css("body")).getText();
 
-            // Save to exported filename
+            // Save to exported filename (with date & time)
             fs.writeFileSync(process.env.EXPORT_FILE, text);
 
             await driver.quit();
@@ -75,5 +78,5 @@ jobs:
           git pull --rebase
 
           git add captures/*.txt
-          git commit -m "Daily capture $(date +%F)" || echo "No changes to commit"
+          git commit -m "Daily capture $(date +%F-%H-%M)" || echo "No changes to commit"
           git push
