@@ -23,7 +23,8 @@ jobs:
 
       - name: Run BrowserStack Script
         run: |
-          node - << 'EOF'
+          node - << EOF
+
           const fs = require("fs");
           const webdriver = require("selenium-webdriver");
           const { By } = webdriver;
