@@ -395,3 +395,6 @@
 -  made visible by changing to accent colour when hovering. v47.10.4
 -  Updated billboard hot 100 updator. to save resources even more v47.10.5 
 - need to allow sections to disappear completely in the additional section v47.10.5
+- fixed a few workflow bugs. v47.10.6
+- made workflow autocommit update message to v47.10.7
+- made commited file have time and date. v47.10.8
