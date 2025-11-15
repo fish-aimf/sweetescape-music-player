@@ -1819,14 +1819,6 @@ body {
     white-space: nowrap;
 }
 
-@media (max-width: 992px) {
-    .thumbnail-preview {
-        position: fixed;
-        left: auto;
-        right: 20px;
-        top: 20px;
-    }
-}
 
 @media screen and (max-width: 768px) {
     #additionalDetails {
