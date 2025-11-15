@@ -28,12 +28,11 @@ jobs:
         run: |
           # Create folder if missing
           mkdir -p captures
-
-          # Generate filename based on date
-          EXPORT_FILE="captures/billboard-$(date +%F).txt"
+          
+          # Generate filename based on date and export it
+          export EXPORT_FILE="captures/billboard-$(date +%F).txt"
 
           node - << EOF
-
           const fs = require("fs");
           const webdriver = require("selenium-webdriver");
           const { By } = webdriver;
@@ -55,16 +54,13 @@ jobs:
               .withCapabilities(caps)
               .build();
 
-            // Open page
             await driver.get("https://sweetescape.vercel.app/billboard.html");
 
-            // Wait 1 minute
             await new Promise(r => setTimeout(r, 60000));
 
-            // Read full body text
             const text = await driver.findElement(By.css("body")).getText();
 
-            // Save result to designated file
+            // Save to exported filename
             fs.writeFileSync(process.env.EXPORT_FILE, text);
 
             await driver.quit();
@@ -76,7 +72,6 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-          # Critical fix: ensure branch is updated
           git pull --rebase
 
           git add captures/*.txt
