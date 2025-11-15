@@ -32,7 +32,8 @@ jobs:
           # Generate filename based on date
           EXPORT_FILE="captures/billboard-$(date +%F).txt"
 
-          node - << 'EOF'
+          node - << EOF
+
           const fs = require("fs");
           const webdriver = require("selenium-webdriver");
           const { By } = webdriver;
