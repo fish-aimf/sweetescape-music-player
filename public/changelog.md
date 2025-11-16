@@ -403,3 +403,4 @@
 - fixed refreshrandom seciton v47.11.1
 - made global library findsongs section fullscreen. v47.11.2
 - shifted styles of global library a bit v47.11.3
+- stopped a few conflicts in naming v47.11.4
