@@ -11078,13 +11078,16 @@ updateSidebarModeToggleIcon() {
     }
 }
 
+
+// Main method to sample a temporary song
 samplePlayTemporarySong(youtubeUrl) {
 	const videoId = this.extractYouTubeId(youtubeUrl);
 	if (!videoId) {
-		alert("Invalid YouTube URL");
+		this.showNotification("Invalid YouTube URL", "error");
 		return;
 	}
 	this.openTemporarySongSampleModal();
+	this.updateTemporarySongUrlDisplay(videoId);
 	this.playTemporarySong(videoId);
 }
 
@@ -11097,6 +11100,14 @@ openTemporarySongSampleModal() {
 	}
 	modal.style.display = "flex";
 	this.isTemporarySongPlaying = true;
+}
+
+// Update URL display in modal
+updateTemporarySongUrlDisplay(videoId) {
+	const urlInput = document.getElementById("tempSongUrlDisplay");
+	if (urlInput) {
+		urlInput.value = `https://www.youtube.com/watch?v=${videoId}`;
+	}
 }
 
 // Close the temporary song modal
@@ -11116,7 +11127,24 @@ createTemporarySongModal() {
 	modal.innerHTML = `
 		<div class="temp-song-modal-content">
 			<button class="temp-song-close-btn" id="closeTempSongBtn">&times;</button>
+			<h3 class="temp-song-title">Song Preview</h3>
 			<div id="tempYtPlayer"></div>
+			<div class="temp-song-url-container">
+				<input type="text" id="tempSongUrlDisplay" class="temp-song-url-input" readonly>
+				<button id="copyTempUrlBtn" class="temp-song-action-btn" title="Copy URL">
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+						<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+					</svg>
+				</button>
+				<button id="openTempUrlBtn" class="temp-song-action-btn" title="Open in YouTube">
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+						<polyline points="15 3 21 3 21 9"></polyline>
+						<line x1="10" y1="14" x2="21" y2="3"></line>
+					</svg>
+				</button>
+			</div>
 		</div>
 	`;
 	document.body.appendChild(modal);
@@ -11133,49 +11161,120 @@ createTemporarySongModal() {
 				left: 0;
 				width: 100%;
 				height: 100%;
-				background: rgba(0, 0, 0, 0.8);
+				background: rgba(0, 0, 0, 0.85);
 				z-index: 10000;
 				justify-content: center;
 				align-items: center;
+				padding: 20px;
+				box-sizing: border-box;
 			}
 			.temp-song-modal-content {
 				position: relative;
 				background: var(--bg-secondary);
-				border-radius: 8px;
-				padding: 20px;
-				max-width: 90%;
-				max-height: 90%;
+				border-radius: 12px;
+				padding: 35px 30px 30px 30px;
+				max-width: 750px;
+				width: 100%;
+				box-shadow: 0 8px 32px var(--shadow-color);
+				border: 1px solid var(--border-color);
+			}
+			.temp-song-title {
+				margin: 0 0 20px 0;
+				color: var(--text-primary);
+				font-size: 22px;
+				font-weight: 600;
+				text-align: center;
 			}
 			.temp-song-close-btn {
 				position: absolute;
-				top: 10px;
-				right: 10px;
+				top: 12px;
+				right: 12px;
 				background: var(--error-color);
 				color: var(--button-text-color);
 				border: none;
 				border-radius: 50%;
-				width: 35px;
-				height: 35px;
+				width: 36px;
+				height: 36px;
 				font-size: 24px;
 				cursor: pointer;
 				display: flex;
 				align-items: center;
 				justify-content: center;
 				z-index: 10001;
-				transition: background 0.3s;
+				transition: all 0.2s;
+				line-height: 1;
 			}
 			.temp-song-close-btn:hover {
 				background: var(--error-hover);
+				transform: scale(1.1);
 			}
 			#tempYtPlayer {
-				width: 640px;
-				height: 360px;
-				max-width: 100%;
+				width: 100%;
+				height: 400px;
+				border-radius: 8px;
+				overflow: hidden;
+				margin-bottom: 20px;
+				box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+			}
+			.temp-song-url-container {
+				display: flex;
+				gap: 10px;
+				align-items: center;
+			}
+			.temp-song-url-input {
+				flex: 1;
+				padding: 12px 15px;
+				border: 2px solid var(--border-color);
+				border-radius: 8px;
+				background: var(--bg-primary);
+				color: var(--text-primary);
+				font-size: 14px;
+				font-family: monospace;
+				cursor: text;
+				transition: border-color 0.2s;
+			}
+			.temp-song-url-input:focus {
+				outline: none;
+				border-color: var(--accent-color);
+			}
+			.temp-song-action-btn {
+				padding: 12px 16px;
+				background: var(--accent-color);
+				color: var(--button-text-color);
+				border: none;
+				border-radius: 8px;
+				cursor: pointer;
+				transition: all 0.2s;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+			}
+			.temp-song-action-btn:hover {
+				background: var(--hover-color);
+				transform: translateY(-1px);
+			}
+			.temp-song-action-btn:active {
+				transform: translateY(0);
 			}
 			@media (max-width: 768px) {
+				.temp-song-modal {
+					padding: 10px;
+				}
+				.temp-song-modal-content {
+					padding: 30px 20px 20px 20px;
+				}
 				#tempYtPlayer {
-					width: 100%;
 					height: 56.25vw;
+					max-height: 300px;
+				}
+				.temp-song-url-container {
+					flex-direction: column;
+				}
+				.temp-song-url-input {
+					width: 100%;
+				}
+				.temp-song-action-btn {
+					width: 100%;
 				}
 			}
 		`;
@@ -11185,6 +11284,22 @@ createTemporarySongModal() {
 	// Setup close button listener
 	document.getElementById("closeTempSongBtn").addEventListener("click", () => {
 		this.closeTemporarySongSampleModal();
+	});
+	
+	// Setup copy URL button
+	document.getElementById("copyTempUrlBtn").addEventListener("click", () => {
+		const urlInput = document.getElementById("tempSongUrlDisplay");
+		urlInput.select();
+		document.execCommand("copy");
+		this.showNotification("URL copied to clipboard!", "success");
+	});
+	
+	// Setup open URL button
+	document.getElementById("openTempUrlBtn").addEventListener("click", () => {
+		const url = document.getElementById("tempSongUrlDisplay").value;
+		if (url) {
+			window.open(url, "_blank");
+		}
 	});
 	
 	// Close on outside click
@@ -11200,8 +11315,8 @@ initializeTemporarySongPlayer() {
 	if (this.tempYtPlayer) return;
 	
 	this.tempYtPlayer = new YT.Player("tempYtPlayer", {
-		height: "360",
-		width: "640",
+		height: "100%",
+		width: "100%",
 		playerVars: {
 			'rel': 0,
 			'showinfo': 1,
@@ -11222,7 +11337,7 @@ initializeTemporarySongPlayer() {
 			},
 			onError: (event) => {
 				console.error("Temporary player error:", event.data);
-				alert("Failed to load video");
+				this.showNotification("Failed to load video", "error");
 			}
 		}
 	});
@@ -11256,7 +11371,6 @@ cleanupTemporarySongPlayer() {
 	}
 	this.isTemporarySongPlaying = false;
 }
-
 	
 
 
