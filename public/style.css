@@ -6745,3 +6745,19 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 .billboard-play-btn:hover {
     background: #cc0000;
 }
+
+
+.billboard-add-btn {
+    background: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 0;
+    cursor: pointer;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.billboard-add-btn:hover {
+    background: var(--hover-color);
+}
