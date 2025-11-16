@@ -404,3 +404,9 @@
 - made global library findsongs section fullscreen. v47.11.2
 - shifted styles of global library a bit v47.11.3
 - stopped a few conflicts in naming v47.11.4
+- added temporarily sample songs. v48.0.0
+- added the copy and open in new tab buttons v48.1.0
+- resolved some z index conflicts v48.1.1
+- changed all the buttons that open youtube links to preview song. v48.2.0
+- the random song recommendations in findsongs can now be clicked and open preview song. v48.3.0
+- cleanup added for findsong v48.3.1
