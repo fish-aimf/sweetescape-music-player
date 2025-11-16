@@ -8815,7 +8815,7 @@ hideSidebar() {
 		container.innerHTML = filteredArtists.map(artist => `
         <div class="global-library-artist-card">
             <div class="global-library-artist-header">
-                <div class="global-library-artist-name">🎵 ${artist.name || 'Unnamed Playlist'}</div>
+                <div class="global-library-artist-name"> ${artist.name || 'Unnamed Playlist'}</div>
                 <button onclick="musicPlayer.deleteGlobalLibraryPlaylist(${artist.id})" class="global-library-btn-small global-library-btn-danger">Delete</button>
             </div>
             <div>
@@ -8826,7 +8826,7 @@ hideSidebar() {
                             <div class="global-library-song-author">by ${song.author || 'Unknown Artist'}</div>
                         </div>
                         <div class="global-library-song-actions">
-                            <button onclick="window.open('${song.youtube_url || ''}', '_blank')" class="global-library-btn-small">▶️</button>
+                            <button onclick="musicPlayer.samplePlayTemporarySong('${song.youtube_url || ''}')" class="global-library-btn-small" title="Play on YouTube">▶</button>
                             <button onclick="musicPlayer.deleteGlobalLibrarySong(${song.id})" class="global-library-btn-small global-library-btn-danger">🗑️</button>
                         </div>
                     </div>
@@ -9044,9 +9044,7 @@ hideSidebar() {
                                 <div class="song-playlist">from playlist: ${song.playlist_name}</div>
                             </div>
                             <div class="song-actions">
-                                <button class="preview-btn" onclick="window.open('${song.youtube_url}', '_blank')" title="Open in YouTube">
-                                    ▶️
-                                </button>
+                                <button class="preview-btn" onclick="musicPlayer.samplePlayTemporarySong('${song.youtube_url}')" title="Play on YouTube">▶</button>
                                 <button class="add-single-song-btn" onclick="musicPlayer.addSingleSongToLocalLibrary('${song.name}', '${song.author || ''}', '${song.youtube_url}')">
                                     Add Song
                                 </button>
@@ -9229,9 +9227,7 @@ hideSidebar() {
                                 <div class="detailed-song-author">by ${song.author || 'Unknown Artist'}</div>
                             </div>
                             <div class="detailed-song-actions">
-                                <button class="preview-btn" onclick="window.open('${song.youtube_url}', '_blank')" title="Open in YouTube">
-                                    ▶️
-                                </button>
+                                <button class="preview-btn" onclick="musicPlayer.samplePlayTemporarySong('${song.youtube_url}')" title="Play on YouTube">▶</button>
                                 <button class="add-single-song-btn" onclick="musicPlayer.addSingleSongToLocalLibrary('${song.name.replace(/'/g, "\\'")}', '${(song.author || '').replace(/'/g, "\\'")}', '${song.youtube_url}')">
                                     Add Song
                                 </button>
@@ -10000,8 +9996,8 @@ createBillboardSongElementInModal(song) {
                         onclick="musicPlayer.addBillboardSongToLibrary('${song.song.replace(/'/g, "\\'")}', '${song.artist.replace(/'/g, "\\'")}', '${song.youtube_url}')"
                         title="Add to Library">+ Add</button>
                 <button class="billboard-play-btn" 
-                        onclick="window.open('${song.youtube_url}', '_blank')"
-                        title="Play on YouTube">▶</button>
+				        onclick="musicPlayer.samplePlayTemporarySong('${song.youtube_url}')"
+				        title="Preview song">▶</button>
             </div>
         </div>
     `;
@@ -11082,6 +11078,184 @@ updateSidebarModeToggleIcon() {
     }
 }
 
+samplePlayTemporarySong(youtubeUrl) {
+	const videoId = this.extractYouTubeId(youtubeUrl);
+	if (!videoId) {
+		alert("Invalid YouTube URL");
+		return;
+	}
+	this.openTemporarySongSampleModal();
+	this.playTemporarySong(videoId);
+}
+
+// Open the temporary song modal
+openTemporarySongSampleModal() {
+	let modal = document.getElementById("tempSongModal");
+	if (!modal) {
+		this.createTemporarySongModal();
+		modal = document.getElementById("tempSongModal");
+	}
+	modal.style.display = "flex";
+	this.isTemporarySongPlaying = true;
+}
+
+// Close the temporary song modal
+closeTemporarySongSampleModal() {
+	const modal = document.getElementById("tempSongModal");
+	if (modal) {
+		modal.style.display = "none";
+	}
+	this.cleanupTemporarySongPlayer();
+}
+
+// Create the modal HTML structure
+createTemporarySongModal() {
+	const modal = document.createElement("div");
+	modal.id = "tempSongModal";
+	modal.className = "temp-song-modal";
+	modal.innerHTML = `
+		<div class="temp-song-modal-content">
+			<button class="temp-song-close-btn" id="closeTempSongBtn">&times;</button>
+			<div id="tempYtPlayer"></div>
+		</div>
+	`;
+	document.body.appendChild(modal);
+	
+	// Add styles
+	if (!document.getElementById("tempSongStyles")) {
+		const style = document.createElement("style");
+		style.id = "tempSongStyles";
+		style.textContent = `
+			.temp-song-modal {
+				display: none;
+				position: fixed;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				background: rgba(0, 0, 0, 0.8);
+				z-index: 10000;
+				justify-content: center;
+				align-items: center;
+			}
+			.temp-song-modal-content {
+				position: relative;
+				background: var(--bg-secondary);
+				border-radius: 8px;
+				padding: 20px;
+				max-width: 90%;
+				max-height: 90%;
+			}
+			.temp-song-close-btn {
+				position: absolute;
+				top: 10px;
+				right: 10px;
+				background: var(--error-color);
+				color: var(--button-text-color);
+				border: none;
+				border-radius: 50%;
+				width: 35px;
+				height: 35px;
+				font-size: 24px;
+				cursor: pointer;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				z-index: 10001;
+				transition: background 0.3s;
+			}
+			.temp-song-close-btn:hover {
+				background: var(--error-hover);
+			}
+			#tempYtPlayer {
+				width: 640px;
+				height: 360px;
+				max-width: 100%;
+			}
+			@media (max-width: 768px) {
+				#tempYtPlayer {
+					width: 100%;
+					height: 56.25vw;
+				}
+			}
+		`;
+		document.head.appendChild(style);
+	}
+	
+	// Setup close button listener
+	document.getElementById("closeTempSongBtn").addEventListener("click", () => {
+		this.closeTemporarySongSampleModal();
+	});
+	
+	// Close on outside click
+	modal.addEventListener("click", (e) => {
+		if (e.target === modal) {
+			this.closeTemporarySongSampleModal();
+		}
+	});
+}
+
+// Initialize temporary player
+initializeTemporarySongPlayer() {
+	if (this.tempYtPlayer) return;
+	
+	this.tempYtPlayer = new YT.Player("tempYtPlayer", {
+		height: "360",
+		width: "640",
+		playerVars: {
+			'rel': 0,
+			'showinfo': 1,
+			'controls': 1,
+			'disablekb': 0,
+			'fs': 1,
+			'modestbranding': 1,
+			'playsinline': 1,
+			'autoplay': 1,
+			'iv_load_policy': 3,
+			'enablejsapi': 1,
+			'origin': window.location.origin
+		},
+		events: {
+			onReady: (event) => {
+				console.log("Temporary YouTube player ready");
+				this.tempYtPlayerReady = true;
+			},
+			onError: (event) => {
+				console.error("Temporary player error:", event.data);
+				alert("Failed to load video");
+			}
+		}
+	});
+}
+
+// Play the temporary song
+playTemporarySong(videoId) {
+	if (!this.tempYtPlayer) {
+		this.initializeTemporarySongPlayer();
+		setTimeout(() => {
+			if (this.tempYtPlayerReady) {
+				this.tempYtPlayer.loadVideoById(videoId);
+			}
+		}, 1000);
+	} else {
+		this.tempYtPlayer.loadVideoById(videoId);
+	}
+}
+
+// Cleanup temporary player
+cleanupTemporarySongPlayer() {
+	if (this.tempYtPlayer) {
+		try {
+			this.tempYtPlayer.stopVideo();
+			this.tempYtPlayer.destroy();
+		} catch (e) {
+			console.warn("Error destroying temp player:", e);
+		}
+		this.tempYtPlayer = null;
+		this.tempYtPlayerReady = false;
+	}
+	this.isTemporarySongPlaying = false;
+}
 
 	
 
