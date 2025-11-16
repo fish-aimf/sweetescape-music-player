@@ -4344,14 +4344,12 @@ body:has(#ytPlayer.fullscreen-video) {
 
 
 /* Add this to your style.css */
-
 /* Subtitles Import Modal Styles */
+
+/* Modal Overlay */
 .subtitles-import-modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   background-color: rgba(0, 0, 0, 0.8);
   z-index: 1000;
   display: flex;
@@ -4365,6 +4363,11 @@ body:has(#ytPlayer.fullscreen-video) {
   opacity: 1;
 }
 
+.subtitles-import-modal-overlay.subtitles-import-modal-show .subtitles-import-modal-content {
+  transform: scale(1);
+}
+
+/* Modal Content */
 .subtitles-import-modal-content {
   background-color: var(--bg-secondary);
   color: var(--text-primary);
@@ -4380,10 +4383,7 @@ body:has(#ytPlayer.fullscreen-video) {
   transition: transform 0.3s ease;
 }
 
-.subtitles-import-modal-overlay.subtitles-import-modal-show .subtitles-import-modal-content {
-  transform: scale(1);
-}
-
+/* Header */
 .subtitles-import-modal-header {
   position: sticky;
   top: 0;
@@ -4401,13 +4401,14 @@ body:has(#ytPlayer.fullscreen-video) {
   margin: 0;
   color: var(--accent-color);
   font-size: 1.4em;
+  font-weight: 700;
 }
 
 .subtitles-import-modal-close {
   font-size: 28px;
+  line-height: 28px;
   cursor: pointer;
   color: var(--text-primary);
-  line-height: 28px;
   transition: color 0.2s;
   user-select: none;
 }
@@ -4416,6 +4417,7 @@ body:has(#ytPlayer.fullscreen-video) {
   color: var(--accent-color);
 }
 
+/* Instructions */
 .subtitles-import-instructions-container {
   margin-bottom: 20px;
 }
@@ -4430,7 +4432,8 @@ body:has(#ytPlayer.fullscreen-video) {
 
 .subtitles-import-instructions-title {
   margin: 0 0 10px 0;
-  font-weight: bold;
+  font-weight: 700;
+  font-size: 1em;
   color: var(--accent-color);
 }
 
@@ -4442,21 +4445,18 @@ body:has(#ytPlayer.fullscreen-video) {
   margin-bottom: 0;
 }
 
-.subtitles-import-button-group {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.subtitles-import-auto-fetch-btn {
+/* Shared Button Styles */
+.subtitles-import-auto-fetch-btn,
+.subtitles-import-youtube-btn,
+.subtitles-import-convert-btn,
+.subtitles-import-save-btn,
+.subtitles-import-cancel-btn {
   padding: 12px;
-  background-color: var(--accent-color);
-  color: var(--button-text-color);
   border: none;
   border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
-  font-weight: bold;
+  font-weight: 700;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
@@ -4464,9 +4464,29 @@ body:has(#ytPlayer.fullscreen-video) {
   gap: 8px;
 }
 
+.subtitles-import-auto-fetch-btn:hover,
+.subtitles-import-youtube-btn:hover,
+.subtitles-import-convert-btn:hover,
+.subtitles-import-save-btn:hover,
+.subtitles-import-cancel-btn:hover {
+  transform: translateY(-2px);
+}
+
+/* Button Group */
+.subtitles-import-button-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* Auto Fetch Button */
+.subtitles-import-auto-fetch-btn {
+  background-color: var(--accent-color);
+  color: var(--button-text-color);
+}
+
 .subtitles-import-auto-fetch-btn:hover {
   background-color: var(--hover-color);
-  transform: translateY(-2px);
 }
 
 .subtitles-import-auto-fetch-btn:disabled {
@@ -4475,95 +4495,34 @@ body:has(#ytPlayer.fullscreen-video) {
   transform: none;
 }
 
+/* YouTube Button */
 .subtitles-import-youtube-btn {
-  padding: 12px;
   background-color: var(--youtube-red);
   color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: bold;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
 }
 
 .subtitles-import-youtube-btn:hover {
   background-color: #cc0000;
-  transform: translateY(-2px);
 }
 
+/* Input Section */
 .subtitles-import-input-section {
   margin-bottom: 20px;
 }
 
-.subtitles-import-input-label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: bold;
-  color: var(--text-primary);
-}
-
-.subtitles-import-transcript-textarea {
-  width: 100%;
-  height: 200px;
-  padding: 12px;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  border: 2px solid var(--border-color);
-  border-radius: 6px;
-  font-size: 14px;
-  font-family: monospace;
-  resize: vertical;
-  line-height: 1.4;
-  transition: border-color 0.3s ease;
-}
-
-.subtitles-import-transcript-textarea:focus {
-  outline: none;
-  border-color: var(--accent-color);
-}
-
-.subtitles-import-convert-btn {
-  width: 100%;
-  padding: 12px;
-  background-color: var(--accent-color);
-  color: var(--button-text-color);
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: bold;
-  margin-top: 15px;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.subtitles-import-convert-btn:hover {
-  background-color: var(--hover-color);
-  transform: translateY(-2px);
-}
-
-.subtitles-import-preview-section {
-  animation: subtitles-import-slide-down 0.3s ease;
-}
-
+.subtitles-import-input-label,
 .subtitles-import-preview-label {
   display: block;
   margin-bottom: 8px;
-  font-weight: bold;
+  font-weight: 700;
+  font-size: 1em;
   color: var(--text-primary);
 }
 
+/* Shared Textarea Styles */
+.subtitles-import-transcript-textarea,
 .subtitles-import-lyrics-textarea {
   width: 100%;
-  height: 300px;
   padding: 12px;
   background-color: var(--bg-primary);
   color: var(--text-primary);
@@ -4576,60 +4535,70 @@ body:has(#ytPlayer.fullscreen-video) {
   transition: border-color 0.3s ease;
 }
 
+.subtitles-import-transcript-textarea:focus,
 .subtitles-import-lyrics-textarea:focus {
   outline: none;
   border-color: var(--accent-color);
 }
 
+.subtitles-import-transcript-textarea {
+  height: 200px;
+}
+
+.subtitles-import-lyrics-textarea {
+  height: 300px;
+}
+
+/* Convert Button */
+.subtitles-import-convert-btn {
+  width: 100%;
+  font-size: 16px;
+  margin-top: 15px;
+  background-color: var(--accent-color);
+  color: var(--button-text-color);
+}
+
+.subtitles-import-convert-btn:hover {
+  background-color: var(--hover-color);
+}
+
+/* Preview Section */
+.subtitles-import-preview-section {
+  animation: subtitles-import-slide-down 0.3s ease;
+}
+
+/* Action Buttons */
 .subtitles-import-action-buttons {
   display: flex;
   gap: 10px;
   margin-top: 15px;
 }
 
+/* Save Button */
 .subtitles-import-save-btn {
   flex: 1;
-  padding: 12px;
+  font-size: 16px;
   background-color: #28a745;
   color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: bold;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
 }
 
 .subtitles-import-save-btn:hover {
   background-color: #218838;
-  transform: translateY(-2px);
 }
 
+/* Cancel Button */
 .subtitles-import-cancel-btn {
   flex: 0 0 120px;
-  padding: 12px;
+  font-size: 16px;
   background-color: #6c757d;
   color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
 }
 
 .subtitles-import-cancel-btn:hover {
   background-color: #5a6268;
-  transform: translateY(-2px);
 }
 
+/* Loading State */
 .subtitles-import-loading {
   text-align: center;
   padding: 20px;
@@ -4645,6 +4614,7 @@ body:has(#ytPlayer.fullscreen-video) {
   font-size: 20px;
 }
 
+/* Animation */
 @keyframes subtitles-import-slide-down {
   from {
     opacity: 0;
@@ -4656,7 +4626,7 @@ body:has(#ytPlayer.fullscreen-video) {
   }
 }
 
-/* Responsive adjustments */
+/* Responsive Design */
 @media (max-width: 768px) {
   .subtitles-import-modal-content {
     width: 95%;
