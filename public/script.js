@@ -9996,12 +9996,49 @@ createBillboardSongElementInModal(song) {
             </div>
             <div class="billboard-song-actions">
                 ${movementIndicator}
+                <button class="billboard-add-btn" 
+                        onclick="musicPlayer.addBillboardSongToLibrary('${song.song.replace(/'/g, "\\'")}', '${song.artist.replace(/'/g, "\\'")}', '${song.youtube_url}')"
+                        title="Add to Library">+ Add</button>
                 <button class="billboard-play-btn" 
                         onclick="window.open('${song.youtube_url}', '_blank')"
                         title="Play on YouTube">▶</button>
             </div>
         </div>
     `;
+}
+
+
+async addBillboardSongToLibrary(songName, artist, youtubeUrl) {
+    const videoId = this.extractYouTubeId(youtubeUrl);
+    if (!videoId) {
+        this.showNotification("Invalid YouTube URL", "error");
+        return;
+    }
+    
+    if (this.songLibrary.some((song) => song.videoId === videoId)) {
+        this.showNotification("This song is already in your library", "error");
+        return;
+    }
+    
+    const newSong = {
+        id: Date.now(),
+        name: songName,
+        author: artist,
+        videoId: videoId,
+        favorite: false,
+    };
+    
+    this.songLibrary.push(newSong);
+    
+    try {
+        await this.saveSongLibrary();
+        this.renderSongLibrary();
+        this.updatePlaylistSelection();
+        this.showNotification(`Added "${songName}" to library!`, "success");
+    } catch (error) {
+        console.error("Error adding song to library:", error);
+        this.showNotification("Failed to save song. Please try again.", "error");
+    }
 }
 
 closeBillboardHot100Modal() {
