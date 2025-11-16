@@ -5089,7 +5089,7 @@ body:has(#ytPlayer.fullscreen-video) {
 }
 
 .recommendation-section {
-    margin-bottom: 24px;
+    margin-bottom: 12px;
 }
 
 .recommendation-section:last-child {
