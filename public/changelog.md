@@ -400,3 +400,6 @@
 - made commited file have time and date. v47.10.8
 - added RLS to the newsupabase databases v47.10.9
 - added add billboard song to library v47.11.0
+- fixed refreshrandom seciton v47.11.1
+- made global library findsongs section fullscreen. v47.11.2
+- shifted styles of global library a bit v47.11.3
