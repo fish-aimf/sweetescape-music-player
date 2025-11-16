@@ -10055,7 +10055,27 @@ closeBillboardHot100Modal() {
 		return videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : '';
 	}
 	
-
+	async refreshRandomRecommendations() {
+		await this.loadRandomRecommendations();
+	}
+	async loadRandomRecommendations() {
+		try {
+			const {
+				data: randomSongs,
+				error
+			} = await this.supabase
+				.from('songs')
+				.select('id, name, author, youtube_url')
+				.limit(100);
+			if (error) throw error;
+			const shuffled = randomSongs.sort(() => 0.5 - Math.random());
+			const selectedSongs = shuffled.slice(0, 3);
+			this.displayRandomRecommendations(selectedSongs);
+		} catch (error) {
+			console.error('Error loading random recommendations:', error);
+			document.getElementById('randomSongsContainer').innerHTML = '<div style="color: var(--text-secondary); font-size: 12px;">Unable to load recommendations</div>';
+		}
+	}
 
 
 	loadKeybinds() {
