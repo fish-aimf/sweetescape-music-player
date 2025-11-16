@@ -464,7 +464,7 @@ body {
     padding: 10px;
     border-radius: 4px;
     margin: 10px 0;
-    z-index: 3;
+    z-index: 1;
 }
 
 .current-playlist-songs {
