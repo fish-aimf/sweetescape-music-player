@@ -398,3 +398,5 @@
 - fixed a few workflow bugs. v47.10.6
 - made workflow autocommit update message to v47.10.7
 - made commited file have time and date. v47.10.8
+- added RLS to the newsupabase databases v47.10.9
+- added add billboard song to library v47.11.0
