@@ -6528,7 +6528,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 .billboard-hot-100-modal {
     display: block;
     position: fixed;
-    z-index: 10000;
+    z-index: 3;
     left: 0;
     top: 0;
     width: 100%;
