@@ -205,7 +205,6 @@ class AdvancedMusicPlayer {
 		this.currentLyricMakerSongId = null;
 		this.lyricMakerCleanup = null; // Store cleanup function
 		
-		
 		// Elements reference
 		this.elements = {};
 		
@@ -6150,34 +6149,35 @@ hideSidebar() {
 		});
 	}
 	openLyricsMakerModal(songId) {
-	const song = this.songLibrary.find((s) => s.id === songId);
-	if (!song) return;
-	
-	if (this.ytPlayer && typeof this.ytPlayer.pauseVideo === "function") {
-		this.ytPlayer.pauseVideo();
-		this.isPlaying = false;
-		this.updatePlayerUI();
-		this.clearAllIntervals();
-	}
-	
-	const modal = document.getElementById('lyricsModal');
-	const titleElement = document.getElementById('lyricsTitle');
-	
-	titleElement.textContent = `Lyrics Maker for: ${song.name}`;
-	
-	// Show modal BEFORE initializing (important for video loading)
-	modal.classList.remove('hidden');
-	
-	// Only reinitialize if it's a different song
-	if (this.currentLyricMakerSongId !== songId) {
-		// Clean up previous song's listeners if they exist
-		if (this.lyricMakerCleanup) {
-			this.lyricMakerCleanup();
+		const song = this.songLibrary.find((s) => s.id === songId);
+		if (!song) return;
+		
+		if (this.ytPlayer && typeof this.ytPlayer.pauseVideo === "function") {
+			this.ytPlayer.pauseVideo();
+			this.isPlaying = false;
+			this.updatePlayerUI();
+			this.clearAllIntervals();
 		}
-		this.currentLyricMakerSongId = songId;
-		this.initLyricMaker(song);
+		
+		const modal = document.getElementById('lyricsModal');
+		const titleElement = document.getElementById('lyricsTitle');
+		const youtubeLink = document.getElementById('youtubeLink');
+		
+		titleElement.textContent = `Lyrics Maker for: ${song.name}`;
+		youtubeLink.value = `https://www.youtube.com/watch?v=${song.videoId}`;
+		
+		// Only reinitialize if it's a different song
+		if (this.currentLyricMakerSongId !== songId) {
+			// Clean up previous song's listeners if they exist
+			if (this.lyricMakerCleanup) {
+				this.lyricMakerCleanup();
+			}
+			this.currentLyricMakerSongId = songId;
+			this.initLyricMaker(song);
+		}
+		
+		modal.classList.remove('hidden');
 	}
-}
 	clearAllIntervals() {
 		if (this.titleScrollInterval) {
 			clearInterval(this.titleScrollInterval);
@@ -6189,488 +6189,378 @@ hideSidebar() {
 			clearInterval(this.lyricsInterval);
 		}
 	}
-	// METHOD 1: openLyricsMakerModal
-openLyricsMakerModal(songId) {
-	const song = this.songLibrary.find((s) => s.id === songId);
-	if (!song) return;
-	
-	if (this.ytPlayer && typeof this.ytPlayer.pauseVideo === "function") {
-		this.ytPlayer.pauseVideo();
-		this.isPlaying = false;
-		this.updatePlayerUI();
-		this.clearAllIntervals();
-	}
-	
-	const modal = document.getElementById('lyricsModal');
-	const titleElement = document.getElementById('lyricsTitle');
-	
-	titleElement.textContent = `Lyrics Maker for: ${song.name}`;
-	
-	// Show modal BEFORE initializing (important for video loading)
-	modal.classList.remove('hidden');
-	
-	// Only reinitialize if it's a different song
-	if (this.currentLyricMakerSongId !== songId) {
-		// Clean up previous song's listeners if they exist
-		if (this.lyricMakerCleanup) {
-			this.lyricMakerCleanup();
-		}
-		this.currentLyricMakerSongId = songId;
-		this.initLyricMaker(song);
-	}
-}
-
-// METHOD 2: initLyricMaker
-initLyricMaker(song) {
-	const modal = document.getElementById('lyricsModal');
-	const closeBtn = document.getElementById('closeLyricsModal');
-	const player = {
-		ytPlayer: null
-	};
-	const state = {
-		lyrics: [],
-		timings: [],
-		currentLineIndex: -1,
-		isRecording: false,
-		timeUpdateInterval: null,
-	};
-	
-	// Close modal function - just hides, doesn't clean up
-	const closeModal = () => {
-		modal.classList.add('hidden');
-		if (state.timeUpdateInterval) {
-			clearInterval(state.timeUpdateInterval);
-		}
-		if (player.ytPlayer) {
-			player.ytPlayer.destroy();
-		}
-		// Don't clean up listeners or reset currentLyricMakerSongId
-	};
-	
-	closeBtn.onclick = closeModal;
-	
-	const showTab = (tabId) => {
-		document.querySelectorAll('.lyrics-tab, .lyrics-nav-item').forEach(el => el.classList.remove('active'));
-		document.getElementById(tabId).classList.add('active');
-		document.querySelectorAll('.lyrics-nav-item').forEach(item => {
-			if (item.dataset.tab === tabId) {
-				item.classList.add('active');
-			}
-		});
-	};
-	
-	// Tab navigation event listeners
-	const tabClickHandler = (tab) => {
-		return () => showTab(tab.dataset.tab);
-	};
-	const tabHandlers = [];
-	document.querySelectorAll('.lyrics-nav-item').forEach(tab => {
-		const handler = tabClickHandler(tab);
-		tabHandlers.push({ element: tab, handler });
-		tab.addEventListener('click', handler);
-	});
-	
-	const loadVideo = () => {
-		const videoId = song.videoId;
-		if (!videoId) return;
-		if (player.ytPlayer) {
-			player.ytPlayer.destroy();
-		}
-		if (typeof YT === "undefined" || typeof YT.Player === "undefined") {
-			if (!document.getElementById("youtube-api")) {
-				const tag = document.createElement("script");
-				tag.id = "youtube-api";
-				tag.src = "https://www.youtube.com/iframe_api";
-				const firstScriptTag = document.getElementsByTagName("script")[0];
-				firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-				window.onYouTubeIframeAPIReady = () => {
-					createYouTubePlayer(videoId);
-				};
-			}
-		} else {
-			createYouTubePlayer(videoId);
-		}
-	};
-	
-	const createYouTubePlayer = (videoId) => {
-		const container = document.getElementById("videoContainer");
-		if (!container) return;
-		if (this.ytPlayer && typeof this.ytPlayer.pauseVideo === "function") {
-			this.ytPlayer.pauseVideo();
-		}
-		
-		player.ytPlayer = new YT.Player(container, {
-			height: "360",
-			width: "640",
-			videoId: videoId,
-			playerVars: {
-				playsinline: 1,
-				controls: 1,
-			},
-			events: {
-				onStateChange: (event) => {
-					if (event.data === YT.PlayerState.PLAYING) {
-						clearInterval(state.timeUpdateInterval);
-						state.timeUpdateInterval = setInterval(() => {
-							if (player.ytPlayer && player.ytPlayer.getCurrentTime) {
-								document.getElementById("currentTime").textContent = formatTime(
-									player.ytPlayer.getCurrentTime()
-								);
-							}
-						}, 100);
-					}
-				},
-			},
-		});
-	};
-	
-	const formatTime = (seconds) => {
-		const minutes = Math.floor(seconds / 60);
-		const remainingSeconds = Math.floor(seconds % 60);
-		return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
-	};
-	
-	const searchAZLyrics = () => {
-		const songName = song.name ? song.name.replace(/\s+/g, '+') : '';
-		const author = song.author ? '+' + song.author.replace(/\s+/g, '+') : '';
-		const url = `https://search.azlyrics.com/search.php?q=${songName}${author}&x=acc029721e541ef4da92207eb06ba181719a67575dcaefe50b401ab43356fc32`;
-		window.open(url, '_blank');
-	};
-	
-	const searchLetras = () => {
-		const songName = song.name ? song.name.replace(/\s+/g, '%20') : '';
-		const author = song.author ? '%20' + song.author.replace(/\s+/g, '%20') : '';
-		const url = `https://www.letras.com/?q=${songName}${author}`;
-		window.open(url, '_blank');
-	};
-	
-	const searchGenius = () => {
-		const songName = song.name ? song.name.replace(/\s+/g, '%20') : '';
-		const author = song.author ? '%20' + song.author.replace(/\s+/g, '%20') : '';
-		const url = `https://genius.com/search?q=${songName}${author}`;
-		window.open(url, '_blank');
-	};
-	
-	const searchGoogle = () => {
-		const songName = song.name ? song.name.replace(/\s+/g, '%20') : '';
-		const author = song.author ? '%20' + song.author.replace(/\s+/g, '%20') : '';
-		const url = `https://www.google.com/search?q=${songName}${author}%20lyrics`;
-		window.open(url, '_blank');
-	};
-	
-	const prepareLyrics = () => {
-		const lyricsText = document.getElementById("lyricsInput").value.trim();
-		if (!lyricsText) {
-			alert("Please enter lyrics");
-			return;
-		}
-		state.lyrics = lyricsText
-			.split("\n")
-			.filter((line) => line.trim() !== "");
-		const progressContainer = document.getElementById("progressContainer");
-		progressContainer.innerHTML = "<h3>Progress</h3>";
-		state.lyrics.forEach((line, index) => {
-			const lineElement = document.createElement("div");
-			lineElement.className = "progress-item";
-			lineElement.innerHTML = `
-				<span>${index + 1}. ${line}</span>
-				<span id="time-${index}">Not timed</span>
-			`;
-			progressContainer.appendChild(lineElement);
-		});
-		state.timings = Array(state.lyrics.length).fill(null);
-		state.currentLineIndex = -1;
-		updateLyricsDisplay();
-		showTab("recordTab");
-	};
-	
-	const updateRedoSkipButtonStates = () => {
-		const redoBtn = document.getElementById("prevLineBtn");
-		const skipBtn = document.getElementById("nextLineBtn");
-		
-		if (!state.isRecording) {
-			redoBtn.disabled = true;
-			skipBtn.disabled = true;
-			return;
-		}
-		
-		// Redo button: enabled when currentLineIndex >= 0 (we're at line 0 or beyond)
-		redoBtn.disabled = state.currentLineIndex < 0;
-		
-		// Skip button: enabled when we have a next line to skip to
-		skipBtn.disabled = state.currentLineIndex >= state.lyrics.length - 1;
-	};
-	
-	const updateLyricsDisplay = () => {
-		const prevLineElement = document.getElementById("prevLine");
-		const currentLineElement = document.getElementById("currentLine");
-		const nextLineElement = document.getElementById("nextLine");
-		
-		if (!state.isRecording) {
-			currentLineElement.textContent = 'Press "Start Recording" when ready';
-			prevLineElement.textContent = "";
-			nextLineElement.textContent = "";
-			updateRedoSkipButtonStates();
-			return;
-		}
-		
-		if (state.currentLineIndex === -1) {
-			currentLineElement.textContent = "[Click 'Mark Line' to start the first lyric]";
-			prevLineElement.textContent = "";
-			nextLineElement.textContent = state.lyrics[0] || "";
-		} else if (state.currentLineIndex >= state.lyrics.length) {
-			currentLineElement.textContent = "Recording complete!";
-			prevLineElement.textContent = state.lyrics[state.lyrics.length - 1] || "";
-			nextLineElement.textContent = "";
-		} else {
-			currentLineElement.textContent = state.lyrics[state.currentLineIndex];
-			if (state.currentLineIndex > 0) {
-				prevLineElement.textContent = state.lyrics[state.currentLineIndex - 1];
-			} else {
-				prevLineElement.textContent = "";
-			}
-			if (state.currentLineIndex < state.lyrics.length - 1) {
-				nextLineElement.textContent = state.lyrics[state.currentLineIndex + 1];
-			} else {
-				nextLineElement.textContent = "";
-			}
-		}
-		
-		updateRedoSkipButtonStates();
-	};
-	
-	const updateProgressItemDisplay = (index) => {
-		const timeElement = document.getElementById(`time-${index}`);
-		if (!timeElement) return;
-		
-		const progressItem = timeElement.parentElement;
-		if (!progressItem) return;
-		
-		if (state.timings[index] !== null) {
-			timeElement.textContent = formatTime(state.timings[index]);
-			progressItem.style.backgroundColor = "#4a4a4a";
-		} else {
-			timeElement.textContent = "Not timed";
-			progressItem.style.backgroundColor = "";
-		}
-	};
-	
-	const startRecording = () => {
-		if (!player.ytPlayer || !state.lyrics.length) {
-			alert("Please load a video and prepare lyrics first");
-			return;
-		}
-		player.ytPlayer.playVideo();
-		state.timings = Array(state.lyrics.length).fill(null);
-		state.currentLineIndex = -1;
-		state.isRecording = true;
-		document.getElementById("startRecording").disabled = true;
-		document.getElementById("markLine").disabled = false;
-		document.getElementById("finishRecording").disabled = false;
-		updateLyricsDisplay();
-	};
-	
-	const markCurrentLine = () => {
-		if (!state.isRecording) return;
-		
-		const currentTime = player.ytPlayer.getCurrentTime();
-		
-		// If we're at -1, move to line 0
-		if (state.currentLineIndex === -1) {
-			state.currentLineIndex = 0;
-		}
-		
-		// Mark the current line with the timestamp (override if already exists)
-		if (state.currentLineIndex < state.lyrics.length) {
-			state.timings[state.currentLineIndex] = currentTime;
-			updateProgressItemDisplay(state.currentLineIndex);
+	initLyricMaker(song) {
+			const modal = document.getElementById('lyricsModal');
+			const closeBtn = document.getElementById('closeLyricsModal');
+			const player = {
+				ytPlayer: null
+			};
+			const state = {
+				lyrics: [],
+				timings: [],
+				currentLineIndex: -1,
+				isRecording: false,
+				timeUpdateInterval: null,
+			};
 			
-			// Move to next line
-			state.currentLineIndex++;
-			
-			// Check if we've finished all lines
-			if (state.currentLineIndex >= state.lyrics.length) {
-				finishRecording();
-				return;
-			}
-			
-			updateLyricsDisplay();
-		}
-	};
-	
-	const lyricMakerRedoPreviousLine = () => {
-		if (!state.isRecording) return;
-		if (state.currentLineIndex < 0) return;
-		
-		// Go back one line
-		state.currentLineIndex--;
-		
-		// Clear the timing for the line we just went back to (if it exists)
-		if (state.currentLineIndex >= 0 && state.currentLineIndex < state.lyrics.length) {
-			state.timings[state.currentLineIndex] = null;
-			updateProgressItemDisplay(state.currentLineIndex);
-		}
-		
-		updateLyricsDisplay();
-	};
-	
-	const lyricMakerSkipCurrentLine = () => {
-		if (!state.isRecording) return;
-		if (state.currentLineIndex >= state.lyrics.length - 1) return;
-		
-		// If we're at -1, move to 0 first
-		if (state.currentLineIndex === -1) {
-			state.currentLineIndex = 0;
-		}
-		
-		// Leave current line as "Not timed" (null)
-		state.timings[state.currentLineIndex] = null;
-		updateProgressItemDisplay(state.currentLineIndex);
-		
-		// Move to next line
-		state.currentLineIndex++;
-		
-		updateLyricsDisplay();
-	};
-	
-	const finishRecording = () => {
-		state.isRecording = false;
-		clearInterval(state.timeUpdateInterval);
-		document.getElementById("startRecording").disabled = false;
-		document.getElementById("markLine").disabled = true;
-		document.getElementById("finishRecording").disabled = true;
-		updateLyricsDisplay();
-		generateExport();
-		showTab("exportTab");
-	};
-	
-	const generateExport = () => {
-		if (!state.lyrics.length || !state.timings.length) {
-			alert("No lyrics or timings available");
-			return;
-		}
-		const previewContainer = document.getElementById("previewContainer");
-		const exportOutput = document.getElementById("exportOutput");
-		previewContainer.innerHTML = "";
-		let exportText = "";
-		for (let i = 0; i < state.lyrics.length; i++) {
-			if (state.timings[i] === null) continue;
-			const timeString = formatTime(state.timings[i]);
-			const formattedLine = `${state.lyrics[i]} [${timeString}]`;
-			const lineElement = document.createElement("div");
-			lineElement.className = "progress-item";
-			lineElement.textContent = formattedLine;
-			previewContainer.appendChild(lineElement);
-			exportText += formattedLine + "\n";
-		}
-		exportOutput.value = exportText;
-	};
-	
-	const copyToClipboard = () => {
-		const exportOutput = document.getElementById("exportOutput");
-		exportOutput.select();
-		document.execCommand("copy");
-		alert("Copied to clipboard!");
-	};
-	
-	const saveLyrics = () => {
-		const lyricsText = document.getElementById("exportOutput").value;
-		if (!lyricsText) {
-			alert("No lyrics to save");
-			return;
-		}
-		this.updateSongDetails(song.id, song.name, song.author, song.videoId, lyricsText)
-			.then(() => {
-				alert("Lyrics saved successfully!");
-				closeModal();
-				if (document.getElementById("lyrics").classList.contains("active")) {
-					this.renderLyricsTab();
+			// Close modal function - just hides, doesn't clean up
+			const closeModal = () => {
+				modal.classList.add('hidden');
+				if (state.timeUpdateInterval) {
+					clearInterval(state.timeUpdateInterval);
 				}
-			})
-			.catch((error) => {
-				console.error("Error saving lyrics:", error);
-				alert("Failed to save lyrics. Please try again.");
+				if (player.ytPlayer) {
+					player.ytPlayer.destroy();
+				}
+				// Don't clean up listeners or reset currentLyricMakerSongId
+			};
+			
+			closeBtn.onclick = closeModal;
+			
+			const showTab = (tabId) => {
+				document.querySelectorAll('.lyrics-tab, .lyrics-nav-item').forEach(el => el.classList.remove('active'));
+				document.getElementById(tabId).classList.add('active');
+				document.querySelectorAll('.lyrics-nav-item').forEach(item => {
+					if (item.dataset.tab === tabId) {
+						item.classList.add('active');
+					}
+				});
+			};
+			
+			// Tab navigation event listeners
+			const tabClickHandler = (tab) => {
+				return () => showTab(tab.dataset.tab);
+			};
+			const tabHandlers = [];
+			document.querySelectorAll('.lyrics-nav-item').forEach(tab => {
+				const handler = tabClickHandler(tab);
+				tabHandlers.push({ element: tab, handler });
+				tab.addEventListener('click', handler);
 			});
-	};
-	
-	// Keyboard handler
-	const handleKeyDown = (e) => {
-		if (e.key === 'Escape') {
-			closeModal();
+			
+			const loadVideo = () => {
+				const videoId = song.videoId;
+				if (!videoId) return;
+				if (player.ytPlayer) {
+					player.ytPlayer.destroy();
+				}
+				if (typeof YT === "undefined" || typeof YT.Player === "undefined") {
+					if (!document.getElementById("youtube-api")) {
+						const tag = document.createElement("script");
+						tag.id = "youtube-api";
+						tag.src = "https://www.youtube.com/iframe_api";
+						const firstScriptTag = document.getElementsByTagName("script")[0];
+						firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+						window.onYouTubeIframeAPIReady = () => {
+							createYouTubePlayer(videoId);
+						};
+					}
+				} else {
+					createYouTubePlayer(videoId);
+				}
+			};
+			
+			const createYouTubePlayer = (videoId) => {
+				const container = document.getElementById("videoContainer");
+				if (!container) return;
+				if (this.ytPlayer && typeof this.ytPlayer.pauseVideo === "function") {
+					this.ytPlayer.pauseVideo();
+				}
+				player.ytPlayer = new YT.Player(container, {
+					height: "360",
+					width: "640",
+					videoId: videoId,
+					playerVars: {
+						playsinline: 1,
+						controls: 1,
+					},
+					events: {
+						onStateChange: (event) => {
+							if (event.data === YT.PlayerState.PLAYING) {
+								clearInterval(state.timeUpdateInterval);
+								state.timeUpdateInterval = setInterval(() => {
+									if (player.ytPlayer && player.ytPlayer.getCurrentTime) {
+										document.getElementById("currentTime").textContent = formatTime(
+											player.ytPlayer.getCurrentTime()
+										);
+									}
+								}, 100);
+							}
+						},
+					},
+				});
+			};
+			
+			const formatTime = (seconds) => {
+				const minutes = Math.floor(seconds / 60);
+				const remainingSeconds = Math.floor(seconds % 60);
+				return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
+			};
+			
+			const searchAZLyrics = () => {
+				const songName = song.name ? song.name.replace(/\s+/g, '+') : '';
+				const author = song.author ? '+' + song.author.replace(/\s+/g, '+') : '';
+				const url = `https://search.azlyrics.com/search.php?q=${songName}${author}&x=acc029721e541ef4da92207eb06ba181719a67575dcaefe50b401ab43356fc32`;
+				window.open(url, '_blank');
+			};
+			
+			const searchLetras = () => {
+				const songName = song.name ? song.name.replace(/\s+/g, '%20') : '';
+				const author = song.author ? '%20' + song.author.replace(/\s+/g, '%20') : '';
+				const url = `https://www.letras.com/?q=${songName}${author}`;
+				window.open(url, '_blank');
+			};
+			
+			const searchGenius = () => {
+				const songName = song.name ? song.name.replace(/\s+/g, '%20') : '';
+				const author = song.author ? '%20' + song.author.replace(/\s+/g, '%20') : '';
+				const url = `https://genius.com/search?q=${songName}${author}`;
+				window.open(url, '_blank');
+			};
+			
+			const searchGoogle = () => {
+				const songName = song.name ? song.name.replace(/\s+/g, '%20') : '';
+				const author = song.author ? '%20' + song.author.replace(/\s+/g, '%20') : '';
+				const url = `https://www.google.com/search?q=${songName}${author}%20lyrics`;
+				window.open(url, '_blank');
+			};
+			
+			const prepareLyrics = () => {
+				const lyricsText = document.getElementById("lyricsInput").value.trim();
+				if (!lyricsText) {
+					alert("Please enter lyrics");
+					return;
+				}
+				state.lyrics = lyricsText
+					.split("\n")
+					.filter((line) => line.trim() !== "");
+				const progressContainer = document.getElementById("progressContainer");
+				progressContainer.innerHTML = "<h3>Progress</h3>";
+				state.lyrics.forEach((line, index) => {
+					const lineElement = document.createElement("div");
+					lineElement.className = "progress-item";
+					lineElement.innerHTML = `
+						<span>${index + 1}. ${line}</span>
+						<span id="time-${index}">Not timed</span>
+					`;
+					progressContainer.appendChild(lineElement);
+				});
+				state.timings = Array(state.lyrics.length).fill(null);
+				state.currentLineIndex = -1;
+				updateLyricsDisplay();
+				showTab("recordTab");
+			};
+			
+			const updateLyricsDisplay = () => {
+				const prevLineElement = document.getElementById("prevLine");
+				const currentLineElement = document.getElementById("currentLine");
+				const nextLineElement = document.getElementById("nextLine");
+				if (!state.isRecording) {
+					currentLineElement.textContent = 'Press "Start Recording" when ready';
+					prevLineElement.textContent = "";
+					nextLineElement.textContent = "";
+					return;
+				}
+				if (state.currentLineIndex === -1) {
+					currentLineElement.textContent = "[Click 'Mark Line' to start the first lyric]";
+					prevLineElement.textContent = "";
+					nextLineElement.textContent = state.lyrics[0] || "";
+				} else if (state.currentLineIndex >= state.lyrics.length) {
+					currentLineElement.textContent = "Recording complete!";
+					prevLineElement.textContent = state.lyrics[state.lyrics.length - 1] || "";
+					nextLineElement.textContent = "";
+				} else {
+					currentLineElement.textContent = state.lyrics[state.currentLineIndex];
+					if (state.currentLineIndex > 0) {
+						prevLineElement.textContent = state.lyrics[state.currentLineIndex - 1];
+					} else {
+						prevLineElement.textContent = "";
+					}
+					if (state.currentLineIndex < state.lyrics.length - 1) {
+						nextLineElement.textContent = state.lyrics[state.currentLineIndex + 1];
+					} else {
+						nextLineElement.textContent = "";
+					}
+				}
+			};
+			
+			const startRecording = () => {
+				if (!player.ytPlayer || !state.lyrics.length) {
+					alert("Please load a video and prepare lyrics first");
+					return;
+				}
+				player.ytPlayer.playVideo();
+				state.timings = Array(state.lyrics.length).fill(null);
+				state.currentLineIndex = -1;
+				state.isRecording = true;
+				document.getElementById("startRecording").disabled = true;
+				document.getElementById("markLine").disabled = false;
+				document.getElementById("finishRecording").disabled = false;
+				updateLyricsDisplay();
+			};
+			
+			const markCurrentLine = () => {
+				if (!state.isRecording) return;
+				const currentTime = player.ytPlayer.getCurrentTime();
+				state.currentLineIndex++;
+				if (state.currentLineIndex < state.lyrics.length) {
+					let lineToMark = state.currentLineIndex;
+					for (let i = 0; i < state.currentLineIndex; i++) {
+						if (state.timings[i] !== null && currentTime < state.timings[i]) {
+							lineToMark = i;
+							break;
+						}
+					}
+					state.timings[lineToMark] = currentTime;
+					const timeElement = document.getElementById(`time-${lineToMark}`);
+					if (timeElement) {
+						timeElement.textContent = formatTime(currentTime);
+					}
+					const progressItem = timeElement.parentElement;
+					if (progressItem) {
+						progressItem.style.backgroundColor = "#4a4a4a";
+					}
+					updateLyricsDisplay();
+				} else {
+					finishRecording();
+				}
+			};
+			
+			const finishRecording = () => {
+				state.isRecording = false;
+				clearInterval(state.timeUpdateInterval);
+				document.getElementById("startRecording").disabled = false;
+				document.getElementById("markLine").disabled = true;
+				document.getElementById("finishRecording").disabled = true;
+				updateLyricsDisplay();
+				generateExport();
+				showTab("exportTab");
+			};
+			
+			const generateExport = () => {
+				if (!state.lyrics.length || !state.timings.length) {
+					alert("No lyrics or timings available");
+					return;
+				}
+				const previewContainer = document.getElementById("previewContainer");
+				const exportOutput = document.getElementById("exportOutput");
+				previewContainer.innerHTML = "";
+				let exportText = "";
+				for (let i = 0; i < state.lyrics.length; i++) {
+					if (state.timings[i] === null) continue;
+					const timeString = formatTime(state.timings[i]);
+					const formattedLine = `${state.lyrics[i]} [${timeString}]`;
+					const lineElement = document.createElement("div");
+					lineElement.className = "progress-item";
+					lineElement.textContent = formattedLine;
+					previewContainer.appendChild(lineElement);
+					exportText += formattedLine + "\n";
+				}
+				exportOutput.value = exportText;
+			};
+			
+			const copyToClipboard = () => {
+				const exportOutput = document.getElementById("exportOutput");
+				exportOutput.select();
+				document.execCommand("copy");
+				alert("Copied to clipboard!");
+			};
+			
+			const saveLyrics = () => {
+				const lyricsText = document.getElementById("exportOutput").value;
+				if (!lyricsText) {
+					alert("No lyrics to save");
+					return;
+				}
+				this.updateSongDetails(song.id, song.name, song.author, song.videoId, lyricsText)
+					.then(() => {
+						alert("Lyrics saved successfully!");
+						closeModal();
+						if (document.getElementById("lyrics").classList.contains("active")) {
+							this.renderLyricsTab();
+						}
+					})
+					.catch((error) => {
+						console.error("Error saving lyrics:", error);
+						alert("Failed to save lyrics. Please try again.");
+					});
+			};
+			
+			// Keyboard handler
+			const handleKeyDown = (e) => {
+				if (e.key === 'Escape') {
+					closeModal();
+				}
+			};
+			
+			// Add event listeners
+			document.getElementById('loadVideoBtn').addEventListener('click', loadVideo);
+			document.getElementById('prepareLyricsBtn').addEventListener('click', prepareLyrics);
+			document.getElementById('nextToRecordBtn').addEventListener('click', () => showTab('recordTab'));
+			document.getElementById('startRecording').addEventListener('click', startRecording);
+			document.getElementById('markLine').addEventListener('click', markCurrentLine);
+			document.getElementById('finishRecording').addEventListener('click', finishRecording);
+			document.getElementById('copyToClipboardBtn').addEventListener('click', copyToClipboard);
+			document.getElementById('saveTranscriptLyricsBtn').addEventListener('click', saveLyrics);
+			document.getElementById('azlyricsBtn').addEventListener('click', searchAZLyrics);
+			document.getElementById('letrasBtn').addEventListener('click', searchLetras);
+			document.getElementById('geniusBtn').addEventListener('click', searchGenius);
+			document.getElementById('googleBtn').addEventListener('click', searchGoogle);
+			document.addEventListener('keydown', handleKeyDown);
+			
+			// Store cleanup function to remove all listeners when switching to a different song
+			this.lyricMakerCleanup = () => {
+				// Remove all event listeners
+				document.getElementById('loadVideoBtn').removeEventListener('click', loadVideo);
+				document.getElementById('prepareLyricsBtn').removeEventListener('click', prepareLyrics);
+				const nextToRecordBtn = document.getElementById('nextToRecordBtn');
+				const recordTabHandler = () => showTab('recordTab');
+				nextToRecordBtn.removeEventListener('click', recordTabHandler);
+				document.getElementById('startRecording').removeEventListener('click', startRecording);
+				document.getElementById('markLine').removeEventListener('click', markCurrentLine);
+				document.getElementById('finishRecording').removeEventListener('click', finishRecording);
+				document.getElementById('copyToClipboardBtn').removeEventListener('click', copyToClipboard);
+				document.getElementById('saveTranscriptLyricsBtn').removeEventListener('click', saveLyrics);
+				document.getElementById('azlyricsBtn').removeEventListener('click', searchAZLyrics);
+				document.getElementById('letrasBtn').removeEventListener('click', searchLetras);
+				document.getElementById('geniusBtn').removeEventListener('click', searchGenius);
+				document.getElementById('googleBtn').removeEventListener('click', searchGoogle);
+				document.addEventListener('keydown', handleKeyDown);
+				
+				// Remove tab handlers
+				tabHandlers.forEach(({ element, handler }) => {
+					element.removeEventListener('click', handler);
+				});
+				
+				// Clean up state
+				if (state.timeUpdateInterval) {
+					clearInterval(state.timeUpdateInterval);
+				}
+				if (player.ytPlayer) {
+					player.ytPlayer.destroy();
+				}
+				
+				// Reset UI
+				state.lyrics = [];
+				state.timings = [];
+				state.currentLineIndex = -1;
+				state.isRecording = false;
+				document.getElementById("lyricsInput").value = '';
+				document.getElementById("exportOutput").value = '';
+				document.getElementById("progressContainer").innerHTML = '<h3>Progress</h3>';
+				document.getElementById("previewContainer").innerHTML = '';
+				document.getElementById("currentTime").textContent = '0:00';
+				document.getElementById("prevLine").textContent = '';
+				document.getElementById("currentLine").textContent = 'Press "Start Recording" when ready';
+				document.getElementById("nextLine").textContent = '';
+				document.getElementById("startRecording").disabled = false;
+				document.getElementById("markLine").disabled = true;
+				document.getElementById("finishRecording").disabled = true;
+				showTab('setupTab');
+			};
+			
+			loadVideo();
 		}
-	};
-	
-	// Add event listeners
-	document.getElementById('prepareLyricsBtn').addEventListener('click', prepareLyrics);
-	document.getElementById('nextToRecordBtn').addEventListener('click', () => showTab('recordTab'));
-	document.getElementById('startRecording').addEventListener('click', startRecording);
-	document.getElementById('markLine').addEventListener('click', markCurrentLine);
-	document.getElementById('prevLineBtn').addEventListener('click', lyricMakerRedoPreviousLine);
-	document.getElementById('nextLineBtn').addEventListener('click', lyricMakerSkipCurrentLine);
-	document.getElementById('finishRecording').addEventListener('click', finishRecording);
-	document.getElementById('copyToClipboardBtn').addEventListener('click', copyToClipboard);
-	document.getElementById('saveTranscriptLyricsBtn').addEventListener('click', saveLyrics);
-	document.getElementById('azlyricsBtn').addEventListener('click', searchAZLyrics);
-	document.getElementById('letrasBtn').addEventListener('click', searchLetras);
-	document.getElementById('geniusBtn').addEventListener('click', searchGenius);
-	document.getElementById('googleBtn').addEventListener('click', searchGoogle);
-	document.addEventListener('keydown', handleKeyDown);
-	
-	// Store cleanup function to remove all listeners when switching to a different song
-	this.lyricMakerCleanup = () => {
-		// Remove all event listeners
-		document.getElementById('prepareLyricsBtn').removeEventListener('click', prepareLyrics);
-		const nextToRecordBtn = document.getElementById('nextToRecordBtn');
-		const recordTabHandler = () => showTab('recordTab');
-		nextToRecordBtn.removeEventListener('click', recordTabHandler);
-		document.getElementById('startRecording').removeEventListener('click', startRecording);
-		document.getElementById('markLine').removeEventListener('click', markCurrentLine);
-		document.getElementById('prevLineBtn').removeEventListener('click', lyricMakerRedoPreviousLine);
-		document.getElementById('nextLineBtn').removeEventListener('click', lyricMakerSkipCurrentLine);
-		document.getElementById('finishRecording').removeEventListener('click', finishRecording);
-		document.getElementById('copyToClipboardBtn').removeEventListener('click', copyToClipboard);
-		document.getElementById('saveTranscriptLyricsBtn').removeEventListener('click', saveLyrics);
-		document.getElementById('azlyricsBtn').removeEventListener('click', searchAZLyrics);
-		document.getElementById('letrasBtn').removeEventListener('click', searchLetras);
-		document.getElementById('geniusBtn').removeEventListener('click', searchGenius);
-		document.getElementById('googleBtn').removeEventListener('click', searchGoogle);
-		document.removeEventListener('keydown', handleKeyDown);
-		
-		// Remove tab handlers
-		tabHandlers.forEach(({ element, handler }) => {
-			element.removeEventListener('click', handler);
-		});
-		
-		// Clean up state
-		if (state.timeUpdateInterval) {
-			clearInterval(state.timeUpdateInterval);
-		}
-		if (player.ytPlayer) {
-			player.ytPlayer.destroy();
-		}
-		
-		// Reset UI
-		state.lyrics = [];
-		state.timings = [];
-		state.currentLineIndex = -1;
-		state.isRecording = false;
-		document.getElementById("lyricsInput").value = '';
-		document.getElementById("exportOutput").value = '';
-		document.getElementById("progressContainer").innerHTML = '<h3>Progress</h3>';
-		document.getElementById("previewContainer").innerHTML = '';
-		document.getElementById("currentTime").textContent = '0:00';
-		document.getElementById("prevLine").textContent = '';
-		document.getElementById("currentLine").textContent = 'Press "Start Recording" when ready';
-		document.getElementById("nextLine").textContent = '';
-		document.getElementById("startRecording").disabled = false;
-		document.getElementById("markLine").disabled = true;
-		document.getElementById("finishRecording").disabled = true;
-		showTab('setupTab');
-	};
-	
-	// AUTO-LOAD VIDEO when modal opens
-	loadVideo();
-}
 	isMobileConnection() {
 		if ("connection" in navigator) {
 			const connection = navigator.connection;
