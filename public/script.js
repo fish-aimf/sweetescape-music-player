@@ -6150,36 +6150,34 @@ hideSidebar() {
 		});
 	}
 	openLyricsMakerModal(songId) {
-		const song = this.songLibrary.find((s) => s.id === songId);
-		if (!song) return;
-		
-		if (this.ytPlayer && typeof this.ytPlayer.pauseVideo === "function") {
-			this.ytPlayer.pauseVideo();
-			this.isPlaying = false;
-			this.updatePlayerUI();
-			this.clearAllIntervals();
-		}
-		
-		const modal = document.getElementById('lyricsModal');
-		const titleElement = document.getElementById('lyricsTitle');
-		const youtubeLink = document.getElementById('youtubeLink');
-		
-		titleElement.textContent = `Lyrics Maker for: ${song.name}`;
-		youtubeLink.value = `https://www.youtube.com/watch?v=${song.videoId}`;
-		
-		// Show modal BEFORE initializing (important for video loading)
-		modal.classList.remove('hidden');
-		
-		// Only reinitialize if it's a different song
-		if (this.currentLyricMakerSongId !== songId) {
-			// Clean up previous song's listeners if they exist
-			if (this.lyricMakerCleanup) {
-				this.lyricMakerCleanup();
-			}
-			this.currentLyricMakerSongId = songId;
-			this.initLyricMaker(song);
-		}
+	const song = this.songLibrary.find((s) => s.id === songId);
+	if (!song) return;
+	
+	if (this.ytPlayer && typeof this.ytPlayer.pauseVideo === "function") {
+		this.ytPlayer.pauseVideo();
+		this.isPlaying = false;
+		this.updatePlayerUI();
+		this.clearAllIntervals();
 	}
+	
+	const modal = document.getElementById('lyricsModal');
+	const titleElement = document.getElementById('lyricsTitle');
+	
+	titleElement.textContent = `Lyrics Maker for: ${song.name}`;
+	
+	// Show modal BEFORE initializing (important for video loading)
+	modal.classList.remove('hidden');
+	
+	// Only reinitialize if it's a different song
+	if (this.currentLyricMakerSongId !== songId) {
+		// Clean up previous song's listeners if they exist
+		if (this.lyricMakerCleanup) {
+			this.lyricMakerCleanup();
+		}
+		this.currentLyricMakerSongId = songId;
+		this.initLyricMaker(song);
+	}
+}
 	clearAllIntervals() {
 		if (this.titleScrollInterval) {
 			clearInterval(this.titleScrollInterval);
@@ -6191,7 +6189,39 @@ hideSidebar() {
 			clearInterval(this.lyricsInterval);
 		}
 	}
-	initLyricMaker(song) {
+	// METHOD 1: openLyricsMakerModal
+openLyricsMakerModal(songId) {
+	const song = this.songLibrary.find((s) => s.id === songId);
+	if (!song) return;
+	
+	if (this.ytPlayer && typeof this.ytPlayer.pauseVideo === "function") {
+		this.ytPlayer.pauseVideo();
+		this.isPlaying = false;
+		this.updatePlayerUI();
+		this.clearAllIntervals();
+	}
+	
+	const modal = document.getElementById('lyricsModal');
+	const titleElement = document.getElementById('lyricsTitle');
+	
+	titleElement.textContent = `Lyrics Maker for: ${song.name}`;
+	
+	// Show modal BEFORE initializing (important for video loading)
+	modal.classList.remove('hidden');
+	
+	// Only reinitialize if it's a different song
+	if (this.currentLyricMakerSongId !== songId) {
+		// Clean up previous song's listeners if they exist
+		if (this.lyricMakerCleanup) {
+			this.lyricMakerCleanup();
+		}
+		this.currentLyricMakerSongId = songId;
+		this.initLyricMaker(song);
+	}
+}
+
+// METHOD 2: initLyricMaker
+initLyricMaker(song) {
 	const modal = document.getElementById('lyricsModal');
 	const closeBtn = document.getElementById('closeLyricsModal');
 	const player = {
@@ -6241,12 +6271,6 @@ hideSidebar() {
 	});
 	
 	const loadVideo = () => {
-		const loadBtn = document.getElementById('loadVideoBtn');
-		if (loadBtn) {
-			loadBtn.textContent = 'Loading...';
-			loadBtn.disabled = true;
-		}
-		
 		const videoId = song.videoId;
 		if (!videoId) return;
 		if (player.ytPlayer) {
@@ -6275,8 +6299,6 @@ hideSidebar() {
 			this.ytPlayer.pauseVideo();
 		}
 		
-		const loadBtn = document.getElementById('loadVideoBtn');
-		
 		player.ytPlayer = new YT.Player(container, {
 			height: "360",
 			width: "640",
@@ -6286,12 +6308,6 @@ hideSidebar() {
 				controls: 1,
 			},
 			events: {
-				onReady: () => {
-					if (loadBtn) {
-						loadBtn.textContent = 'Video Loaded';
-						loadBtn.disabled = true;
-					}
-				},
 				onStateChange: (event) => {
 					if (event.data === YT.PlayerState.PLAYING) {
 						clearInterval(state.timeUpdateInterval);
@@ -6585,7 +6601,6 @@ hideSidebar() {
 	};
 	
 	// Add event listeners
-	document.getElementById('loadVideoBtn').addEventListener('click', loadVideo);
 	document.getElementById('prepareLyricsBtn').addEventListener('click', prepareLyrics);
 	document.getElementById('nextToRecordBtn').addEventListener('click', () => showTab('recordTab'));
 	document.getElementById('startRecording').addEventListener('click', startRecording);
@@ -6604,7 +6619,6 @@ hideSidebar() {
 	// Store cleanup function to remove all listeners when switching to a different song
 	this.lyricMakerCleanup = () => {
 		// Remove all event listeners
-		document.getElementById('loadVideoBtn').removeEventListener('click', loadVideo);
 		document.getElementById('prepareLyricsBtn').removeEventListener('click', prepareLyrics);
 		const nextToRecordBtn = document.getElementById('nextToRecordBtn');
 		const recordTabHandler = () => showTab('recordTab');
