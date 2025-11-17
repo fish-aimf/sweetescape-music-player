@@ -922,22 +922,55 @@ Another Playlist{
                <button id="nextToRecordBtn">Next: Record Timing</button>
             </div>
             <div id="recordTab" class="lyrics-tab">
-               <div id="videoContainer"></div>
-               <div id="prevLine" class="lyrics-box"></div>
-               <div id="currentLine" class="lyrics-box">Press "Start Recording" when ready</div>
-               <div id="nextLine" class="lyrics-box"></div>
-               <div id="currentTime">0:00</div>
-               <div class="lyrics-section">
-                  <button id="startRecording">Start Recording</button>
-                  <button id="redoLineBtn" disabled>↺ Redo Line</button>
-                  <button id="markLine" disabled>Mark Line</button>
-                  <button id="skipLineBtn" disabled>Skip Line →</button>
-                  <button id="finishRecording" disabled>Finish Recording</button>
-               </div>
-               <div id="progressContainer">
-                  <h3>Progress</h3>
+            <!-- Top Section: Video + Visual Progress Timeline -->
+            <div class="lyricmaker-top-container">
+               <!-- Video Container (Left Side) -->
+               <div id="videoContainer" class="lyricmaker-video-box"></div>
+               
+               <!-- Visual Timeline (Right Side) -->
+               <div class="lyricmaker-timeline-container">
+                  <div class="lyricmaker-progress-bar-wrapper">
+                     <div class="lyricmaker-progress-bar">
+                        <div id="lyricmakerProgressFill" class="lyricmaker-progress-fill"></div>
+                     </div>
+                  </div>
+                  
+                  <!-- Multi-level marker lanes -->
+                  <div class="lyricmaker-marker-lanes">
+                     <div id="lyricmakerLane0" class="lyricmaker-marker-lane"></div>
+                     <div id="lyricmakerLane1" class="lyricmaker-marker-lane"></div>
+                     <div id="lyricmakerLane2" class="lyricmaker-marker-lane"></div>
+                     <div id="lyricmakerLane3" class="lyricmaker-marker-lane"></div>
+                     <div id="lyricmakerLane4" class="lyricmaker-marker-lane"></div>
+                  </div>
+                  
+                  <!-- Lyrics preview area under markers -->
+                  <div id="lyricmakerPreviewArea" class="lyricmaker-preview-area"></div>
                </div>
             </div>
+            
+            <!-- Lyrics Display Boxes (Compact) -->
+            <div class="lyricmaker-lyrics-display">
+               <div id="prevLine" class="lyricmaker-line-box lyricmaker-prev"></div>
+               <div id="currentLine" class="lyricmaker-line-box lyricmaker-current">Press "Start Recording" when ready</div>
+               <div id="nextLine" class="lyricmaker-line-box lyricmaker-next"></div>
+            </div>
+            
+            <!-- Controls Row (Flush, Full Width) -->
+            <div class="lyricmaker-controls-row">
+               <button id="startRecording" class="lyricmaker-control-btn">Start Recording</button>
+               <button id="redoLineBtn" class="lyricmaker-control-btn" disabled>↺ Redo</button>
+               <button id="markLine" class="lyricmaker-control-btn lyricmaker-primary" disabled>Mark Line</button>
+               <button id="skipLineBtn" class="lyricmaker-control-btn" disabled>Skip →</button>
+               <button id="finishRecording" class="lyricmaker-control-btn" disabled>Finish</button>
+               <div id="currentTime" class="lyricmaker-time-display">0:00</div>
+            </div>
+            
+            <!-- Progress List (Scrollable) -->
+            <div id="progressContainer" class="lyricmaker-progress-list">
+               <h3>Progress</h3>
+            </div>
+         </div>
             <div id="exportTab" class="lyrics-tab">
                <h2>Export Timed Lyrics</h2>
                <div class="lyrics-section">
