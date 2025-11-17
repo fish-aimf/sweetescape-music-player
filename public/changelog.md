@@ -410,3 +410,4 @@
 - changed all the buttons that open youtube links to preview song. v48.2.0
 - the random song recommendations in findsongs can now be clicked and open preview song. v48.3.0
 - cleanup added for findsong v48.3.1
+- fixed lyric maker cleanup and initialization bugs v48.3.2
