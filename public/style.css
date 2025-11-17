@@ -3505,12 +3505,33 @@ body:has(#ytPlayer.fullscreen-video) {
     text-align: center;
 }
 
-/* ========== PROGRESS LIST ========== */
 .lyricmaker-progress-list {
-    flex: 1;
+    max-height: 250px;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: 15px;
     background: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    margin: 10px 15px;
+}
+
+.lyricmaker-progress-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.lyricmaker-progress-list::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+    border-radius: 4px;
+}
+
+.lyricmaker-progress-list::-webkit-scrollbar-thumb {
+    background: var(--accent-color);
+    border-radius: 4px;
+}
+
+.lyricmaker-progress-list::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-hover);
 }
 
 .lyricmaker-progress-list h3 {
