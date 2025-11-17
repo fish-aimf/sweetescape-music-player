@@ -205,6 +205,7 @@ class AdvancedMusicPlayer {
 		this.currentLyricMakerSongId = null;
 		this.lyricMakerCleanup = null; // Store cleanup function
 		
+		
 		// Elements reference
 		this.elements = {};
 		
@@ -6166,7 +6167,7 @@ hideSidebar() {
 		titleElement.textContent = `Lyrics Maker for: ${song.name}`;
 		youtubeLink.value = `https://www.youtube.com/watch?v=${song.videoId}`;
 		
-		// Show modal FIRST
+		// IMPORTANT: Show modal BEFORE initializing
 		modal.classList.remove('hidden');
 		
 		// Only reinitialize if it's a different song
