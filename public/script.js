@@ -6398,44 +6398,44 @@ hideSidebar() {
 				updateLyricMakerButtonStates();
 				renderLyricMakerVisualTimeline();
 			};
-			
 			const markCurrentLine = () => {
-				if (!state.isRecording) return;
-				
-				const currentTime = player.ytPlayer.getCurrentTime();
-				
-				// If we're at -1, move to line 0
-				if (state.currentLineIndex === -1) {
-					state.currentLineIndex = 0;
-				}
-				
-				// Mark/overwrite the current line's timestamp
-				if (state.currentLineIndex < state.lyrics.length) {
-					state.timings[state.currentLineIndex] = currentTime;
-					
-					// Update progress display
-					const timeElement = document.getElementById(`time-${state.currentLineIndex}`);
-					if (timeElement) {
-						timeElement.textContent = formatTime(currentTime);
-					}
-					const progressItem = timeElement?.parentElement;
-					if (progressItem) {
-						progressItem.classList.add('lyricmaker-timed');
-					}
-					
-					// Move to next line
-					state.currentLineIndex++;
-					
-					// Update UI
-					updateLyricsDisplay();
-					updateLyricMakerButtonStates();
-					renderLyricMakerVisualTimeline();
-					// If we've reached the end, finish recording
-					if (state.currentLineIndex >= state.lyrics.length) {
-						finishRecording();
-					}
-				}
-			};
+	if (!state.isRecording) return;
+	
+	const currentTime = player.ytPlayer.getCurrentTime();
+	state.currentLineIndex++;
+	
+	if (state.currentLineIndex < state.lyrics.length) {
+		let lineToMark = state.currentLineIndex;
+		
+		// ORIGINAL LOGIC: Find correct insertion point
+		for (let i = 0; i < state.currentLineIndex; i++) {
+			if (state.timings[i] !== null && currentTime < state.timings[i]) {
+				lineToMark = i;
+				break;
+			}
+		}
+		
+		state.timings[lineToMark] = currentTime;
+		
+		const timeElement = document.getElementById(`time-${lineToMark}`);
+		if (timeElement) {
+			timeElement.textContent = formatTime(currentTime);
+		}
+		
+		const progressItem = timeElement?.parentElement;
+		if (progressItem) {
+			progressItem.classList.add('lyricmaker-timed');
+		}
+		
+		// NEW UI FEATURES (unchanged)
+		updateLyricsDisplay();
+		updateLyricMakerButtonStates();
+		renderLyricMakerVisualTimeline();
+	} else {
+		finishRecording();
+	}
+};
+			
 			const seekVideoToLyricTime = (timeInSeconds) => {
 				if (player.ytPlayer && typeof player.ytPlayer.seekTo === "function") {
 					player.ytPlayer.seekTo(timeInSeconds, true);
