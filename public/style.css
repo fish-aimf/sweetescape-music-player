@@ -3235,63 +3235,300 @@ body:has(#ytPlayer.fullscreen-video) {
     cursor: not-allowed;
 }
 
-.lyrics-box {
+/* ========== FULLSCREEN MODAL ========== */
+.lyrics-maker-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.98);
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.lyrics-maker-content {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* ========== TOP CONTAINER: VIDEO + TIMELINE ========== */
+.lyricmaker-top-container {
+    display: flex;
+    gap: 15px;
+    padding: 15px;
+    background: var(--bg-primary);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.lyricmaker-video-box {
+    flex-shrink: 0;
+    width: 640px;
+    height: 360px;
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* ========== VISUAL TIMELINE ========== */
+.lyricmaker-timeline-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+}
+
+.lyricmaker-progress-bar-wrapper {
+    width: 100%;
+    height: 30px;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid var(--border-color);
+}
+
+.lyricmaker-progress-bar {
+    width: 100%;
+    height: 100%;
+    background: #2a2a2a;
+    position: relative;
+}
+
+.lyricmaker-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-color), var(--accent-hover));
+    width: 0%;
+    transition: width 0.1s linear;
+}
+
+/* ========== MARKER LANES ========== */
+.lyricmaker-marker-lanes {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    height: 100px;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+}
+
+.lyricmaker-marker-lane {
+    flex: 1;
+    position: relative;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.lyricmaker-marker-lane:last-child {
+    border-bottom: none;
+}
+
+/* ========== TIMELINE MARKERS ========== */
+.lyricmaker-timeline-marker {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 12px solid var(--accent-color);
+    cursor: pointer;
+    transition: all 0.2s;
+    z-index: 10;
+}
+
+.lyricmaker-timeline-marker:hover {
+    border-top-color: var(--accent-hover);
+    transform: translate(-50%, -50%) scale(1.2);
+}
+
+.lyricmaker-timeline-marker.lyricmaker-marker-dragging {
+    border-top-color: #ffeb3b;
+    transform: translate(-50%, -50%) scale(1.3);
+}
+
+/* ========== PREVIEW AREA ========== */
+.lyricmaker-preview-area {
+    height: 60px;
     background: var(--bg-primary);
     border: 2px solid var(--border-color);
     border-radius: 8px;
-    padding: 20px;
-    margin: 10px 0;
-    font-size: 1.2rem;
+    padding: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    position: relative;
+    white-space: nowrap;
+}
+
+.lyricmaker-preview-item {
+    display: inline-block;
+    position: absolute;
+    font-size: 11px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 3px 6px;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+}
+
+.lyricmaker-connector-line {
+    position: absolute;
+    width: 2px;
+    background: var(--accent-color);
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* ========== COMPACT LYRICS DISPLAY ========== */
+.lyricmaker-lyrics-display {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 10px 15px;
+    background: var(--bg-primary);
+}
+
+.lyricmaker-line-box {
+    padding: 8px 15px;
+    font-size: 1rem;
     text-align: center;
-    min-height: 60px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    min-height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-#currentLine {
+.lyricmaker-line-box.lyricmaker-prev {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+}
+
+.lyricmaker-line-box.lyricmaker-current {
     border-color: var(--accent-color);
     background: rgba(var(--accent-rgb), 0.1);
     font-weight: bold;
-    font-size: 1.4rem;
+    font-size: 1.2rem;
+    border-top: 2px solid var(--accent-color);
+    border-bottom: 2px solid var(--accent-color);
 }
 
-#currentTime {
-    text-align: center;
-    font-size: 1.5rem;
+.lyricmaker-line-box.lyricmaker-next {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+}
+
+/* ========== CONTROLS ROW ========== */
+.lyricmaker-controls-row {
+    display: flex;
+    gap: 0;
+    padding: 0 15px 10px 15px;
+    align-items: center;
+    background: var(--bg-primary);
+}
+
+.lyricmaker-control-btn {
+    flex: 1;
+    padding: 12px;
+    background: #444;
+    color: white;
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.2s;
+    margin: 0;
+    border-radius: 0;
+}
+
+.lyricmaker-control-btn:first-child {
+    border-radius: 6px 0 0 6px;
+}
+
+.lyricmaker-control-btn:last-of-type {
+    border-radius: 0 6px 6px 0;
+}
+
+.lyricmaker-control-btn:hover:not(:disabled) {
+    background: #555;
+}
+
+.lyricmaker-control-btn:disabled {
+    background: #2a2a2a;
+    color: #666;
+    cursor: not-allowed;
+}
+
+.lyricmaker-control-btn.lyricmaker-primary {
+    background: var(--accent-color);
+}
+
+.lyricmaker-control-btn.lyricmaker-primary:hover:not(:disabled) {
+    background: var(--accent-hover);
+}
+
+.lyricmaker-time-display {
+    flex-shrink: 0;
+    margin-left: 10px;
+    padding: 12px 20px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 1.2rem;
     font-weight: bold;
     color: var(--accent-color);
-    margin: 20px 0;
-    padding: 10px;
-    background: var(--bg-primary);
-    border-radius: 8px;
+    min-width: 80px;
+    text-align: center;
 }
 
-#videoContainer {
-    text-align: center;
-    margin: 20px 0;
-    background: var(--bg-primary);
-    border-radius: 8px;
-    padding: 20px;
+/* ========== PROGRESS LIST ========== */
+.lyricmaker-progress-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+    background: var(--bg-secondary);
+}
+
+.lyricmaker-progress-list h3 {
+    margin: 0 0 10px 0;
+    color: var(--accent-color);
 }
 
 .progress-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px;
-    margin: 8px 0;
-    background: var(--bg-secondary);
-    border-radius: 6px;
-    border-left: 4px solid var(--border-color);
-    transition: all 0.3s;
+    padding: 8px 12px;
+    margin: 5px 0;
+    background: var(--bg-primary);
+    border-radius: 4px;
+    border-left: 3px solid var(--border-color);
+    font-size: 0.95rem;
 }
 
-.progress-item.completed {
+.progress-item.lyricmaker-timed {
     background: rgba(var(--accent-rgb), 0.1);
     border-left-color: var(--accent-color);
 }
-
 #nextToRecordBtn {
     background: var(--accent-color);
     color: white;
