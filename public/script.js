@@ -6280,6 +6280,7 @@ hideSidebar() {
 										document.getElementById("currentTime").textContent = formatTime(
 											player.ytPlayer.getCurrentTime()
 										);
+										updateLyricMakerVisualTimeline();
 									}
 								}, 100);
 							}
@@ -6395,6 +6396,7 @@ hideSidebar() {
 				document.getElementById("finishRecording").disabled = false;
 				updateLyricsDisplay();
 				updateLyricMakerButtonStates();
+				distributeMarkersToLyricMakerLanes();
 			};
 			
 			const markCurrentLine = () => {
@@ -6418,7 +6420,7 @@ hideSidebar() {
 					}
 					const progressItem = timeElement?.parentElement;
 					if (progressItem) {
-						progressItem.style.backgroundColor = "#4a4a4a";
+						progressItem.classList.add('lyricmaker-timed');
 					}
 					
 					// Move to next line
@@ -6427,7 +6429,7 @@ hideSidebar() {
 					// Update UI
 					updateLyricsDisplay();
 					updateLyricMakerButtonStates();
-					
+					distributeMarkersToLyricMakerLanes();
 					// If we've reached the end, finish recording
 					if (state.currentLineIndex >= state.lyrics.length) {
 						finishRecording();
@@ -6456,7 +6458,126 @@ hideSidebar() {
 				// Skip enabled if there's a next line available
 				skipBtn.disabled = state.currentLineIndex >= state.lyrics.length - 1;
 			};
+			const updateLyricMakerVisualTimeline = () => {
+	if (!player.ytPlayer || !player.ytPlayer.getDuration) return;
+	
+	const duration = player.ytPlayer.getDuration();
+	const currentTime = player.ytPlayer.getCurrentTime();
+	
+	// Update progress bar
+	const progressFill = document.getElementById('lyricmakerProgressFill');
+	if (progressFill && duration > 0) {
+		const percentage = (currentTime / duration) * 100;
+		progressFill.style.width = `${percentage}%`;
+	}
+};
+
+const distributeMarkersToLyricMakerLanes = () => {
+	const lanes = [
+		document.getElementById('lyricmakerLane0'),
+		document.getElementById('lyricmakerLane1'),
+		document.getElementById('lyricmakerLane2'),
+		document.getElementById('lyricmakerLane3'),
+		document.getElementById('lyricmakerLane4')
+	];
+	
+	const previewArea = document.getElementById('lyricmakerPreviewArea');
+	if (!previewArea) return;
+	
+	// Clear existing markers
+	lanes.forEach(lane => lane.innerHTML = '');
+	previewArea.innerHTML = '';
+	
+	if (!player.ytPlayer || !player.ytPlayer.getDuration) return;
+	const duration = player.ytPlayer.getDuration();
+	if (duration === 0) return;
+	
+	const laneAssignments = Array(5).fill().map(() => []);
+	
+	// Distribute markers across lanes to avoid overlap
+	state.timings.forEach((time, index) => {
+		if (time === null) return;
+		
+		const percentage = (time / duration) * 100;
+		
+		// Find lane with least overlap at this position
+		let bestLane = 0;
+		let minConflict = Infinity;
+		
+		for (let l = 0; l < 5; l++) {
+			let conflict = 0;
+			laneAssignments[l].forEach(pos => {
+				if (Math.abs(pos - percentage) < 5) conflict++;
+			});
+			if (conflict < minConflict) {
+				minConflict = conflict;
+				bestLane = l;
+			}
+		}
+		
+		laneAssignments[bestLane].push(percentage);
+		
+		// Create marker triangle
+		const marker = document.createElement('div');
+		marker.className = 'lyricmaker-timeline-marker';
+		marker.style.left = `${percentage}%`;
+		marker.dataset.index = index;
+		marker.dataset.time = time;
+		
+		// Drag functionality
+		let isDragging = false;
+		
+		marker.addEventListener('mousedown', (e) => {
+			isDragging = true;
+			marker.classList.add('lyricmaker-marker-dragging');
+			e.preventDefault();
+		});
+		
+		document.addEventListener('mousemove', (e) => {
+			if (!isDragging) return;
 			
+			const timeline = lanes[0].parentElement;
+			const rect = timeline.getBoundingClientRect();
+			const x = e.clientX - rect.left;
+			const newPercentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+			const newTime = (newPercentage / 100) * duration;
+			
+			marker.style.left = `${newPercentage}%`;
+			state.timings[index] = newTime;
+			
+			// Update progress display
+			const timeElement = document.getElementById(`time-${index}`);
+			if (timeElement) {
+				timeElement.textContent = formatTime(newTime);
+			}
+		});
+		
+		document.addEventListener('mouseup', () => {
+			if (isDragging) {
+				isDragging = false;
+				marker.classList.remove('lyricmaker-marker-dragging');
+			}
+		});
+		
+		lanes[bestLane].appendChild(marker);
+		
+		// Create preview text
+		const preview = document.createElement('div');
+		preview.className = 'lyricmaker-preview-item';
+		preview.style.left = `${percentage}%`;
+		preview.textContent = state.lyrics[index].substring(0, 20);
+		preview.title = state.lyrics[index];
+		previewArea.appendChild(preview);
+		
+		// Connector line from marker to preview
+		const connector = document.createElement('div');
+		connector.className = 'lyricmaker-connector-line';
+		connector.style.left = `${percentage}%`;
+		connector.style.top = `${(bestLane + 1) * 20}px`;
+		connector.style.height = `${100 - (bestLane + 1) * 20 + 10}px`;
+		lanes[bestLane].parentElement.appendChild(connector);
+	});
+};
 			const redoCurrentLyricLine = () => {
 				if (!state.isRecording || state.currentLineIndex <= 0) return;
 				
