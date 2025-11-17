@@ -6394,33 +6394,99 @@ hideSidebar() {
 				document.getElementById("markLine").disabled = false;
 				document.getElementById("finishRecording").disabled = false;
 				updateLyricsDisplay();
+				updateLyricMakerButtonStates();
 			};
 			
 			const markCurrentLine = () => {
 				if (!state.isRecording) return;
+				
 				const currentTime = player.ytPlayer.getCurrentTime();
-				state.currentLineIndex++;
+				
+				// If we're at -1, move to line 0
+				if (state.currentLineIndex === -1) {
+					state.currentLineIndex = 0;
+				}
+				
+				// Mark/overwrite the current line's timestamp
 				if (state.currentLineIndex < state.lyrics.length) {
-					let lineToMark = state.currentLineIndex;
-					for (let i = 0; i < state.currentLineIndex; i++) {
-						if (state.timings[i] !== null && currentTime < state.timings[i]) {
-							lineToMark = i;
-							break;
-						}
-					}
-					state.timings[lineToMark] = currentTime;
-					const timeElement = document.getElementById(`time-${lineToMark}`);
+					state.timings[state.currentLineIndex] = currentTime;
+					
+					// Update progress display
+					const timeElement = document.getElementById(`time-${state.currentLineIndex}`);
 					if (timeElement) {
 						timeElement.textContent = formatTime(currentTime);
 					}
-					const progressItem = timeElement.parentElement;
+					const progressItem = timeElement?.parentElement;
 					if (progressItem) {
 						progressItem.style.backgroundColor = "#4a4a4a";
 					}
+					
+					// Move to next line
+					state.currentLineIndex++;
+					
+					// Update UI
 					updateLyricsDisplay();
-				} else {
-					finishRecording();
+					updateLyricMakerButtonStates();
+					
+					// If we've reached the end, finish recording
+					if (state.currentLineIndex >= state.lyrics.length) {
+						finishRecording();
+					}
 				}
+			};
+			const seekVideoToLyricTime = (timeInSeconds) => {
+				if (player.ytPlayer && typeof player.ytPlayer.seekTo === "function") {
+					player.ytPlayer.seekTo(timeInSeconds, true);
+				}
+			};
+			
+			const updateLyricMakerButtonStates = () => {
+				const redoBtn = document.getElementById("redoLineBtn");
+				const skipBtn = document.getElementById("skipLineBtn");
+				
+				if (!state.isRecording) {
+					redoBtn.disabled = true;
+					skipBtn.disabled = true;
+					return;
+				}
+				
+				// Redo enabled if currentLineIndex > 0 (there's a previous line)
+				redoBtn.disabled = state.currentLineIndex <= 0;
+				
+				// Skip enabled if there's a next line available
+				skipBtn.disabled = state.currentLineIndex >= state.lyrics.length - 1;
+			};
+			
+			const redoCurrentLyricLine = () => {
+				if (!state.isRecording || state.currentLineIndex <= 0) return;
+				
+				// Move back one line
+				state.currentLineIndex--;
+				
+				// If this line was already timed, seek video to that timestamp
+				const previousTimestamp = state.timings[state.currentLineIndex];
+				if (previousTimestamp !== null) {
+					seekVideoToLyricTime(previousTimestamp);
+				}
+				
+				// Update UI
+				updateLyricsDisplay();
+				updateLyricMakerButtonStates();
+			};
+			
+			const skipCurrentLyricLine = () => {
+				if (!state.isRecording) return;
+				if (state.currentLineIndex >= state.lyrics.length - 1) return;
+				
+				// Move to next line without marking timestamp
+				state.currentLineIndex++;
+				
+				// Ensure the skipped line stays as null (not timed)
+				// No need to set it, just move forward
+				
+				// Update UI
+				updateLyricsDisplay();
+				updateLyricMakerButtonStates();
 			};
 			
 			const finishRecording = () => {
@@ -6430,6 +6496,7 @@ hideSidebar() {
 				document.getElementById("markLine").disabled = true;
 				document.getElementById("finishRecording").disabled = true;
 				updateLyricsDisplay();
+				updateLyricMakerButtonStates();
 				generateExport();
 				showTab("exportTab");
 			};
@@ -6496,6 +6563,8 @@ hideSidebar() {
 			document.getElementById('startRecording').addEventListener('click', startRecording);
 			document.getElementById('markLine').addEventListener('click', markCurrentLine);
 			document.getElementById('finishRecording').addEventListener('click', finishRecording);
+			document.getElementById('redoLineBtn').addEventListener('click', redoCurrentLyricLine);
+			document.getElementById('skipLineBtn').addEventListener('click', skipCurrentLyricLine);
 			document.getElementById('copyToClipboardBtn').addEventListener('click', copyToClipboard);
 			document.getElementById('saveTranscriptLyricsBtn').addEventListener('click', saveLyrics);
 			document.getElementById('azlyricsBtn').addEventListener('click', searchAZLyrics);
@@ -6514,6 +6583,8 @@ hideSidebar() {
 				document.getElementById('startRecording').removeEventListener('click', startRecording);
 				document.getElementById('markLine').removeEventListener('click', markCurrentLine);
 				document.getElementById('finishRecording').removeEventListener('click', finishRecording);
+				document.getElementById('redoLineBtn').removeEventListener('click', redoCurrentLyricLine);
+				document.getElementById('skipLineBtn').removeEventListener('click', skipCurrentLyricLine);
 				document.getElementById('copyToClipboardBtn').removeEventListener('click', copyToClipboard);
 				document.getElementById('saveTranscriptLyricsBtn').removeEventListener('click', saveLyrics);
 				document.getElementById('azlyricsBtn').removeEventListener('click', searchAZLyrics);
@@ -6551,6 +6622,8 @@ hideSidebar() {
 				document.getElementById("startRecording").disabled = false;
 				document.getElementById("markLine").disabled = true;
 				document.getElementById("finishRecording").disabled = true;
+				document.getElementById("redoLineBtn").disabled = true;
+				document.getElementById("skipLineBtn").disabled = true;
 				showTab('setupTab');
 			};
 			
