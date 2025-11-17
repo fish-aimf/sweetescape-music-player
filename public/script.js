@@ -6264,8 +6264,8 @@ hideSidebar() {
 					this.ytPlayer.pauseVideo();
 				}
 				player.ytPlayer = new YT.Player(container, {
-					height: "360",
-					width: "640",
+					height: "288",
+					width: "512",
 					videoId: videoId,
 					playerVars: {
 						playsinline: 1,
@@ -6396,7 +6396,7 @@ hideSidebar() {
 				document.getElementById("finishRecording").disabled = false;
 				updateLyricsDisplay();
 				updateLyricMakerButtonStates();
-				distributeMarkersToLyricMakerLanes();
+				renderLyricMakerVisualTimeline();
 			};
 			
 			const markCurrentLine = () => {
@@ -6429,7 +6429,7 @@ hideSidebar() {
 					// Update UI
 					updateLyricsDisplay();
 					updateLyricMakerButtonStates();
-					distributeMarkersToLyricMakerLanes();
+					renderLyricMakerVisualTimeline();
 					// If we've reached the end, finish recording
 					if (state.currentLineIndex >= state.lyrics.length) {
 						finishRecording();
@@ -6464,120 +6464,150 @@ hideSidebar() {
 	const duration = player.ytPlayer.getDuration();
 	const currentTime = player.ytPlayer.getCurrentTime();
 	
-	// Update progress bar
+	if (duration === 0) return;
+	
+	const percentage = (currentTime / duration) * 100;
+	
+	// Update progress fill
 	const progressFill = document.getElementById('lyricmakerProgressFill');
-	if (progressFill && duration > 0) {
-		const percentage = (currentTime / duration) * 100;
+	if (progressFill) {
 		progressFill.style.width = `${percentage}%`;
 	}
+	
+	// Update playback indicator
+	const indicator = document.getElementById('lyricmakerProgressIndicator');
+	if (indicator) {
+		indicator.style.left = `${percentage}%`;
+	}
 };
-
-const distributeMarkersToLyricMakerLanes = () => {
-	const lanes = [
-		document.getElementById('lyricmakerLane0'),
-		document.getElementById('lyricmakerLane1'),
-		document.getElementById('lyricmakerLane2'),
-		document.getElementById('lyricmakerLane3'),
-		document.getElementById('lyricmakerLane4')
-	];
-	
+		const renderLyricMakerVisualTimeline = () => {
+	const singleLane = document.getElementById('lyricmakerSingleLane');
 	const previewArea = document.getElementById('lyricmakerPreviewArea');
-	if (!previewArea) return;
 	
-	// Clear existing markers
-	lanes.forEach(lane => lane.innerHTML = '');
+	if (!singleLane || !previewArea) return;
+	
+	// Clear existing
+	singleLane.innerHTML = '';
 	previewArea.innerHTML = '';
 	
 	if (!player.ytPlayer || !player.ytPlayer.getDuration) return;
 	const duration = player.ytPlayer.getDuration();
 	if (duration === 0) return;
 	
-	const laneAssignments = Array(5).fill().map(() => []);
+	const LAYER_HEIGHT = 16;
+	const TOTAL_LAYERS = 15;
+	const usedPositions = Array(TOTAL_LAYERS).fill().map(() => []);
 	
-	// Distribute markers across lanes to avoid overlap
 	state.timings.forEach((time, index) => {
 		if (time === null) return;
 		
 		const percentage = (time / duration) * 100;
 		
-		// Find lane with least overlap at this position
-		let bestLane = 0;
+		// Find best layer with least overlap
+		let bestLayer = 0;
 		let minConflict = Infinity;
 		
-		for (let l = 0; l < 5; l++) {
+		for (let layer = 0; layer < TOTAL_LAYERS; layer++) {
 			let conflict = 0;
-			laneAssignments[l].forEach(pos => {
-				if (Math.abs(pos - percentage) < 5) conflict++;
+			usedPositions[layer].forEach(pos => {
+				if (Math.abs(pos - percentage) < 8) conflict++;
 			});
 			if (conflict < minConflict) {
 				minConflict = conflict;
-				bestLane = l;
+				bestLayer = layer;
 			}
 		}
 		
-		laneAssignments[bestLane].push(percentage);
+		usedPositions[bestLayer].push(percentage);
 		
-		// Create marker triangle
+		// Create triangle marker (all on single lane)
 		const marker = document.createElement('div');
 		marker.className = 'lyricmaker-timeline-marker';
 		marker.style.left = `${percentage}%`;
 		marker.dataset.index = index;
 		marker.dataset.time = time;
+		marker.dataset.layer = bestLayer;
 		
-		// Drag functionality
-		let isDragging = false;
+		singleLane.appendChild(marker);
 		
-		marker.addEventListener('mousedown', (e) => {
-			isDragging = true;
-			marker.classList.add('lyricmaker-marker-dragging');
-			e.preventDefault();
-		});
-		
-		document.addEventListener('mousemove', (e) => {
-			if (!isDragging) return;
-			
-			const timeline = lanes[0].parentElement;
-			const rect = timeline.getBoundingClientRect();
-			const x = e.clientX - rect.left;
-			const newPercentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
-			const newTime = (newPercentage / 100) * duration;
-			
-			marker.style.left = `${newPercentage}%`;
-			state.timings[index] = newTime;
-			
-			// Update progress display
-			const timeElement = document.getElementById(`time-${index}`);
-			if (timeElement) {
-				timeElement.textContent = formatTime(newTime);
-			}
-		});
-		
-		document.addEventListener('mouseup', () => {
-			if (isDragging) {
-				isDragging = false;
-				marker.classList.remove('lyricmaker-marker-dragging');
-			}
-		});
-		
-		lanes[bestLane].appendChild(marker);
-		
-		// Create preview text
+		// Create text preview (on assigned layer)
 		const preview = document.createElement('div');
 		preview.className = 'lyricmaker-preview-item';
 		preview.style.left = `${percentage}%`;
-		preview.textContent = state.lyrics[index].substring(0, 20);
+		preview.style.top = `${bestLayer * LAYER_HEIGHT}px`;
+		preview.textContent = state.lyrics[index].substring(0, 25);
 		preview.title = state.lyrics[index];
+		preview.dataset.index = index;
+		preview.dataset.layer = bestLayer;
+		
 		previewArea.appendChild(preview);
 		
-		// Connector line from marker to preview
+		// Connector line from marker to text
 		const connector = document.createElement('div');
 		connector.className = 'lyricmaker-connector-line';
 		connector.style.left = `${percentage}%`;
-		connector.style.top = `${(bestLane + 1) * 20}px`;
-		connector.style.height = `${100 - (bestLane + 1) * 20 + 10}px`;
-		lanes[bestLane].parentElement.appendChild(connector);
+		connector.style.top = '30px';
+		connector.style.height = `${bestLayer * LAYER_HEIGHT + 4}px`;
+		connector.dataset.index = index;
+		
+		previewArea.appendChild(connector);
+		
+		// Unified drag handler for marker, connector, and text
+		const setupDragForMarkerGroup = () => {
+			let isDragging = false;
+			let dragStartX = 0;
+			
+			const startDrag = (e) => {
+				isDragging = true;
+				dragStartX = e.clientX;
+				marker.classList.add('lyricmaker-marker-dragging');
+				e.preventDefault();
+			};
+			
+			const doDrag = (e) => {
+				if (!isDragging) return;
+				
+				const timeline = singleLane;
+				const rect = timeline.getBoundingClientRect();
+				const x = e.clientX - rect.left;
+				const newPercentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+				const newTime = (newPercentage / 100) * duration;
+				
+				// Update positions
+				marker.style.left = `${newPercentage}%`;
+				preview.style.left = `${newPercentage}%`;
+				connector.style.left = `${newPercentage}%`;
+				
+				// Update timing data
+				state.timings[index] = newTime;
+				
+				const timeElement = document.getElementById(`time-${index}`);
+				if (timeElement) {
+					timeElement.textContent = formatTime(newTime);
+				}
+			};
+			
+			const stopDrag = () => {
+				if (isDragging) {
+					isDragging = false;
+					marker.classList.remove('lyricmaker-marker-dragging');
+				}
+			};
+			
+			// Attach to all three elements
+			marker.addEventListener('mousedown', startDrag);
+			preview.addEventListener('mousedown', startDrag);
+			connector.addEventListener('mousedown', startDrag);
+			
+			document.addEventListener('mousemove', doDrag);
+			document.addEventListener('mouseup', stopDrag);
+		};
+		
+		setupDragForMarkerGroup();
 	});
 };
+
+
 			const redoCurrentLyricLine = () => {
 				if (!state.isRecording || state.currentLineIndex <= 0) return;
 				
@@ -6594,6 +6624,23 @@ const distributeMarkersToLyricMakerLanes = () => {
 				updateLyricsDisplay();
 				updateLyricMakerButtonStates();
 			};
+
+			const setupLyricMakerProgressBarSeek = () => {
+	const progressBar = document.getElementById('lyricmakerProgressBarClick');
+	if (!progressBar) return;
+	
+	progressBar.addEventListener('click', (e) => {
+		if (!player.ytPlayer || !player.ytPlayer.getDuration) return;
+		
+		const rect = progressBar.getBoundingClientRect();
+		const x = e.clientX - rect.left;
+		const percentage = (x / rect.width) * 100;
+		const duration = player.ytPlayer.getDuration();
+		const seekTime = (percentage / 100) * duration;
+		
+		seekVideoToLyricTime(seekTime);
+	});
+};
 			
 			const skipCurrentLyricLine = () => {
 				if (!state.isRecording) return;
@@ -6749,6 +6796,7 @@ const distributeMarkersToLyricMakerLanes = () => {
 			};
 			
 			setTimeout(() => loadVideo(), 100);
+		setupLyricMakerProgressBarSeek();
 		}
 	isMobileConnection() {
 		if ("connection" in navigator) {
