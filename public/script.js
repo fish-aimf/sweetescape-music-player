@@ -6166,6 +6166,9 @@ hideSidebar() {
 		titleElement.textContent = `Lyrics Maker for: ${song.name}`;
 		youtubeLink.value = `https://www.youtube.com/watch?v=${song.videoId}`;
 		
+		// Show modal FIRST
+		modal.classList.remove('hidden');
+		
 		// Only reinitialize if it's a different song
 		if (this.currentLyricMakerSongId !== songId) {
 			// Clean up previous song's listeners if they exist
@@ -6175,8 +6178,6 @@ hideSidebar() {
 			this.currentLyricMakerSongId = songId;
 			this.initLyricMaker(song);
 		}
-		
-		modal.classList.remove('hidden');
 	}
 	clearAllIntervals() {
 		if (this.titleScrollInterval) {
@@ -6568,7 +6569,6 @@ hideSidebar() {
 		};
 		
 		// Add event listeners
-		document.getElementById('loadVideoBtn').addEventListener('click', loadVideo);
 		document.getElementById('prepareLyricsBtn').addEventListener('click', prepareLyrics);
 		document.getElementById('nextToRecordBtn').addEventListener('click', () => showTab('recordTab'));
 		document.getElementById('startRecording').addEventListener('click', startRecording);
@@ -6587,7 +6587,6 @@ hideSidebar() {
 		// Store cleanup function to remove all listeners when switching to a different song
 		this.lyricMakerCleanup = () => {
 			// Remove all event listeners
-			document.getElementById('loadVideoBtn').removeEventListener('click', loadVideo);
 			document.getElementById('prepareLyricsBtn').removeEventListener('click', prepareLyrics);
 			const nextToRecordBtn = document.getElementById('nextToRecordBtn');
 			const recordTabHandler = () => showTab('recordTab');
@@ -6637,7 +6636,6 @@ hideSidebar() {
 			showTab('setupTab');
 		};
 		
-		loadVideo();
 	}
 	isMobileConnection() {
 		if ("connection" in navigator) {
