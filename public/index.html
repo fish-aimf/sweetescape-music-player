@@ -930,19 +930,14 @@ Another Playlist{
                <!-- Visual Timeline (Right Side) -->
                <div class="lyricmaker-timeline-container">
                   <div class="lyricmaker-progress-bar-wrapper">
-                     <div class="lyricmaker-progress-bar">
+                     <div class="lyricmaker-progress-bar" id="lyricmakerProgressBarClick">
                         <div id="lyricmakerProgressFill" class="lyricmaker-progress-fill"></div>
+                        <div id="lyricmakerProgressIndicator" class="lyricmaker-progress-indicator"></div>
                      </div>
                   </div>
-                  
-                  <!-- Multi-level marker lanes -->
-                  <div class="lyricmaker-marker-lanes">
-                     <div id="lyricmakerLane0" class="lyricmaker-marker-lane"></div>
-                     <div id="lyricmakerLane1" class="lyricmaker-marker-lane"></div>
-                     <div id="lyricmakerLane2" class="lyricmaker-marker-lane"></div>
-                     <div id="lyricmakerLane3" class="lyricmaker-marker-lane"></div>
-                     <div id="lyricmakerLane4" class="lyricmaker-marker-lane"></div>
-                  </div>
+
+                  <!-- Single line for all triangle markers -->
+                  <div class="lyricmaker-marker-lanes" id="lyricmakerSingleLane"></div>
                   
                   <!-- Lyrics preview area under markers -->
                   <div id="lyricmakerPreviewArea" class="lyricmaker-preview-area"></div>
