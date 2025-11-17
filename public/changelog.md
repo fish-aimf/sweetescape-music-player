@@ -411,4 +411,4 @@
 - the random song recommendations in findsongs can now be clicked and open preview song. v48.3.0
 - cleanup added for findsong v48.3.1
 - fixed lyric maker cleanup and initialization bugs v48.3.2
-- improved lyric maker, there is now a redo and skip line button incase of mistimings. v49.0.0
+- removed load video button and made it do so automatically v48.4.0
