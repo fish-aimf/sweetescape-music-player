@@ -410,5 +410,20 @@
 - changed all the buttons that open youtube links to preview song. v48.2.0
 - the random song recommendations in findsongs can now be clicked and open preview song. v48.3.0
 - cleanup added for findsong v48.3.1
-- fixed lyric maker cleanup and initialization bugs v48.3.2
-- removed load video button and made it do so automatically v48.4.0
+- lyric maker model update. v49.0.0
+- fixed lyric maker cleanup and initialization bugs v49.0.1
+- removed load video button and made it do so automatically v49.1.0
+- made redo and skip line functionality v49.2.0
+- made redo seek the music as well v49.3.0
+- css redone to make more compact and to make save space. v49.4.0
+- moved lyric timestamp to next to the buttons to save space v49.5.0
+- removed margins v49.6.0
+- improved aesthetics of the youtube video v49.7.0
+- added the timeline markers to adjust them individually v49.8.0
+- added triangles and lines and the first few words of a lyrics v49.9.0
+- seperated them into different columns to prevent overlapping and confusion v49.10.0
+- dragging the line or the lyrics could now move it. v49.11.0
+- added progress bar inside it under the arrows. and it changes in real time v49.12.0
+- progress bar now can be seeked. v49.13.0
+- emergency bug fixes v49.13.1
+- put progress cards into a scrollable container v49.14.0
