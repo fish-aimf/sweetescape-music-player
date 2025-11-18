@@ -427,3 +427,4 @@
 - progress bar now can be seeked. v49.13.0
 - emergency bug fixes v49.13.1
 - put progress cards into a scrollable container v49.14.0
+- fixed a few styling issues with the expanded playlist mode v49.14.1
