@@ -6542,7 +6542,7 @@ body.playlist-expanded-active .right-banner {
 /* Shift app-container properly when expanded mode is active */
 /* Shift and compress app-container dynamically */
 body.playlist-expanded-active .app-container {
-    margin-left: 331px; /* sidebar width + padding */
+    margin-left: 321px; /* sidebar width + padding */
     margin-right: 0;
     width: calc(100vw - 336px); /* container fills remaining space */
     transition: margin-left 0.3s ease-in-out, width 0.3s ease-in-out;
@@ -6553,7 +6553,7 @@ body.playlist-expanded-active .app-container {
 @media (max-width: 1400px) {
     body.playlist-expanded-active .app-container {
         width: calc(100vw - 321px - 15px); /* precise sidebar width */
-        margin-left: 336px;
+        margin-left: 326px;
     }
 }
 
