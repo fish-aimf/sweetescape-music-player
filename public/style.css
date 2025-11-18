@@ -6523,7 +6523,7 @@ body:has(#ytPlayer.fullscreen-video) {
 .playlist-sidebar.expanded-mode {
     right: auto;
     left: 0;
-    width: 320px;
+    width: 321px;
     padding: 0px;
     box-shadow: 2px 0 10px var(--shadow-color);
     z-index: 0;
@@ -6542,7 +6542,7 @@ body.playlist-expanded-active .right-banner {
 /* Shift app-container properly when expanded mode is active */
 /* Shift and compress app-container dynamically */
 body.playlist-expanded-active .app-container {
-    margin-left: 336px; /* sidebar width + padding */
+    margin-left: 331px; /* sidebar width + padding */
     margin-right: 0;
     width: calc(100vw - 336px); /* container fills remaining space */
     transition: margin-left 0.3s ease-in-out, width 0.3s ease-in-out;
