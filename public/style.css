@@ -6523,7 +6523,7 @@ body:has(#ytPlayer.fullscreen-video) {
 .playlist-sidebar.expanded-mode {
     right: auto;
     left: 0;
-    width: 312px;
+    width: 415px;
     padding: 15px;
     box-shadow: 2px 0 10px var(--shadow-color);
     z-index: 0;
