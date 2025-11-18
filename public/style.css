@@ -6524,7 +6524,7 @@ body:has(#ytPlayer.fullscreen-video) {
     right: auto;
     left: 0;
     width: 321px;
-    padding: 0px;
+    padding: 15px;
     box-shadow: 2px 0 10px var(--shadow-color);
     z-index: 0;
 }
