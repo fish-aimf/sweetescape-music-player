@@ -7018,3 +7018,78 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     transition: all 0.1s ease;
     opacity: 0.9;
 }
+
+/* YouTube Library Search Results */
+.youtube-library-results {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.youtube-library-result-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.youtube-library-result-card:hover {
+    border-color: var(--accent-color);
+    box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.youtube-result-thumbnail {
+    width: 120px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.youtube-result-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.youtube-result-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.youtube-result-channel {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.youtube-result-add-btn {
+    padding: 8px 16px;
+    background: var(--accent-color);
+    color: var(--button-text-color);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: background 0.2s ease;
+    white-space: nowrap;
+}
+
+.youtube-result-add-btn:hover {
+    background: var(--hover-color);
+}
+
+.youtube-result-add-btn i {
+    margin-right: 4px;
+}
