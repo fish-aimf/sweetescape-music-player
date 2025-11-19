@@ -10346,7 +10346,18 @@ displayBillboardHot100Top3(top3Songs) {
 }
 // ADD THIS NEW METHOD:
 getTimeAgo(date) {
-    const seconds = Math.floor((new Date() - date) / 1000);
+    // Ensure we're comparing UTC timestamps
+    const now = new Date();
+    const updateTime = new Date(date);
+    
+    // Calculate difference in seconds
+    const seconds = Math.floor((now - updateTime) / 1000);
+    
+    // Handle negative or very small values
+    if (seconds < 10) {
+        return 'just now';
+    }
+    
     const intervals = {
         year: 31536000,
         month: 2592000,
@@ -10362,7 +10373,8 @@ getTimeAgo(date) {
             return `${interval} ${unit}${interval > 1 ? 's' : ''} ago`;
         }
     }
-    return 'just now';
+    
+    return `${seconds} second${seconds !== 1 ? 's' : ''} ago`;
 }
 async openBillboardHot100Modal() {
     try {
