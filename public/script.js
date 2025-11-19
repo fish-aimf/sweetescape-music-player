@@ -1356,10 +1356,17 @@ class AdvancedMusicPlayer {
 	    const songItems = this.elements.songLibrary.querySelectorAll(".song-item");
 	    const resultsFound = songItems.length > 0;
 	
-	    // REMOVED: YouTube search suggestion when no results
-	    // We'll handle this in the Enter key handler instead
+	    // Show instruction when no results
 	    if (!resultsFound && searchTerm !== "") {
-	        this.hideYouTubeSearchSuggestion();
+	        const instructionMessage = document.createElement('div');
+	        instructionMessage.classList.add('empty-library-message');
+	        instructionMessage.innerHTML = `
+	            No songs found in your library matching "<strong>${this.escapeHtml(searchTerm)}</strong>"<br>
+	            <small style="color: var(--text-secondary); margin-top: 8px; display: block;">Press Enter to search YouTube</small>
+	        `;
+	        this.elements.songLibrary.innerHTML = '';
+	        this.elements.songLibrary.appendChild(instructionMessage);
+	        this.showYouTubeSearchSuggestion(searchTerm);
 	    } else {
 	        this.hideYouTubeSearchSuggestion();
 	    }
@@ -11937,8 +11944,9 @@ async searchYouTubeForLibraryMatches(searchTerm) {
         const apiKey = this.getRandomYouTubeApiKey();
         
         try {
+            // Request snippet AND statistics for views
             const response = await fetch(
-                `${this.YOUTUBE_API_URL}?part=snippet&maxResults=${maxResults}&q=${encodeURIComponent(searchTerm)}&type=video&key=${apiKey}`
+                `${this.YOUTUBE_API_URL}?part=snippet&maxResults=${maxResults}&q=${encodeURIComponent(searchTerm)}&type=video&order=viewCount&key=${apiKey}`
             );
             
             if (!response.ok) {
@@ -11957,7 +11965,12 @@ async searchYouTubeForLibraryMatches(searchTerm) {
                 continue;
             }
             
-            return data.items || [];
+            const items = data.items || [];
+            
+            // Score and sort results
+            const scoredItems = this.scoreYouTubeLibraryResults(items, searchTerm);
+            
+            return scoredItems;
             
         } catch (error) {
             console.error(`YouTube API attempt ${attempt + 1} failed:`, error);
@@ -11981,11 +11994,14 @@ renderYouTubeLibrarySearchResults(results, searchTerm) {
     
     fragment.appendChild(youtubeResultsContainer);
     
-    // Add the "Search on YouTube" suggestion at the bottom
-    const noResultsMessage = document.createElement('div');
-    noResultsMessage.classList.add('empty-library-message');
-    noResultsMessage.textContent = `No songs found in your library matching "${searchTerm}"`;
-    fragment.appendChild(noResultsMessage);
+    // Add the instructional message
+    const instructionMessage = document.createElement('div');
+    instructionMessage.classList.add('empty-library-message');
+    instructionMessage.innerHTML = `
+        No songs found in your library matching "<strong>${this.escapeHtml(searchTerm)}</strong>"<br>
+        <small style="color: var(--text-secondary); margin-top: 8px; display: block;">Press Enter to search YouTube</small>
+    `;
+    fragment.appendChild(instructionMessage);
     
     this.elements.songLibrary.innerHTML = '';
     this.elements.songLibrary.appendChild(fragment);
@@ -11997,7 +12013,11 @@ createYouTubeLibraryResultCard(video) {
     const videoId = video.id.videoId;
     const title = video.snippet.title;
     const channel = video.snippet.channelTitle;
-    const thumbnail = video.snippet.thumbnails.medium.url;
+    const publishedAt = new Date(video.snippet.publishedAt);
+    const thumbnail = video.snippet.thumbnails.high ? video.snippet.thumbnails.high.url : video.snippet.thumbnails.medium.url;
+    
+    // Format upload date
+    const uploadDate = this.formatYouTubeUploadDate(publishedAt);
     
     const card = document.createElement('div');
     card.classList.add('youtube-library-result-card');
@@ -12007,6 +12027,7 @@ createYouTubeLibraryResultCard(video) {
         <div class="youtube-result-info">
             <div class="youtube-result-title">${this.escapeHtml(title)}</div>
             <div class="youtube-result-channel">${this.escapeHtml(channel)}</div>
+            <div class="youtube-result-meta">${uploadDate}</div>
         </div>
         <button class="youtube-result-add-btn" data-video-id="${videoId}" data-title="${this.escapeHtml(title)}" data-channel="${this.escapeHtml(channel)}">
             <i class="fas fa-plus"></i> Add
@@ -12044,8 +12065,71 @@ autofillYouTubeVideoFromSearch(videoId, title, channel) {
     this.elements.librarySearch.value = '';
     this.hideYouTubeSearchSuggestion();
 }
-
-
+scoreYouTubeLibraryResults(items, searchTerm) {
+    const searchTermLower = searchTerm.toLowerCase();
+    
+    const scoredItems = items.map(item => {
+        const title = item.snippet.title.toLowerCase();
+        const channelTitle = item.snippet.channelTitle.toLowerCase();
+        const description = (item.snippet.description || '').toLowerCase();
+        
+        let score = 0;
+        
+        // Exact match
+        if (title === searchTermLower) {
+            score += 50;
+        } else if (title.includes(searchTermLower)) {
+            score += 25;
+        }
+        
+        // Official channels get priority
+        if (channelTitle.includes('vevo') || channelTitle.includes('official')) {
+            score += 30;
+        }
+        
+        // Official videos
+        if (title.includes('official') || title.includes('music video') || title.includes('official video')) {
+            score += 15;
+        }
+        
+        // Penalize covers, remixes, live versions
+        if (title.includes('cover') || title.includes('remix') || title.includes('live')) {
+            score -= 20;
+        }
+        
+        // Word matching
+        const searchWords = searchTermLower.split(/\s+/).filter(word => word.length > 2);
+        const matchedWords = searchWords.filter(word => title.includes(word));
+        score += (matchedWords.length / Math.max(searchWords.length, 1)) * 15;
+        
+        return {
+            ...item,
+            score
+        };
+    });
+    
+    // Sort by score descending
+    scoredItems.sort((a, b) => b.score - a.score);
+    
+    return scoredItems;
+}
+formatYouTubeUploadDate(date) {
+    const now = new Date();
+    const diffTime = Math.abs(now - date);
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const diffMonths = Math.floor(diffDays / 30);
+    const diffYears = Math.floor(diffDays / 365);
+    
+    if (diffYears > 0) {
+        return `${diffYears} year${diffYears > 1 ? 's' : ''} ago`;
+    } else if (diffMonths > 0) {
+        return `${diffMonths} month${diffMonths > 1 ? 's' : ''} ago`;
+    } else if (diffDays > 0) {
+        return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    } else {
+        return 'Today';
+    }
+}
 
 
 
