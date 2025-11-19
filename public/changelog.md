@@ -432,3 +432,6 @@
 - made sure the preview gets killed when library modification is closed. v49.15.1
 - added cleanup to ghost preview v49.15.2
 - added support for custom themes v49.15.3
+- saved api usage for billboard updater v49.15.4
+- fixed the timestamp issues v49.15.5
+- fixed a bug in relation to timezones v49.15.6
