@@ -12022,6 +12022,16 @@ createYouTubeLibraryResultCard(video) {
     const card = document.createElement('div');
     card.classList.add('youtube-library-result-card');
     
+    // Note: View count requires additional API call, so we'll fetch it
+    this.fetchYouTubeViewCount(videoId).then(viewCount => {
+        const metaElement = card.querySelector('.youtube-result-meta');
+        if (metaElement && viewCount) {
+            metaElement.textContent = `${viewCount} • ${uploadDate}`;
+        }
+    }).catch(() => {
+        // If fails, just show upload date
+    });
+    
     card.innerHTML = `
         <img src="${thumbnail}" alt="${this.escapeHtml(title)}" class="youtube-result-thumbnail">
         <div class="youtube-result-info">
@@ -12047,6 +12057,40 @@ setupYouTubeLibraryResultsDelegation() {
         
         this.autofillYouTubeVideoFromSearch(videoId, title, channel);
     });
+}
+
+async fetchYouTubeViewCount(videoId) {
+    try {
+        const apiKey = this.getRandomYouTubeApiKey();
+        const response = await fetch(
+            `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${videoId}&key=${apiKey}`
+        );
+        
+        if (!response.ok) return null;
+        
+        const data = await response.json();
+        const viewCount = data.items?.[0]?.statistics?.viewCount;
+        
+        if (!viewCount) return null;
+        
+        // Format view count (e.g., "1.2M views", "345K views")
+        return this.formatYouTubeViewCount(parseInt(viewCount));
+        
+    } catch (error) {
+        console.error('Failed to fetch view count:', error);
+        return null;
+    }
+}
+formatYouTubeViewCount(count) {
+    if (count >= 1000000000) {
+        return `${(count / 1000000000).toFixed(1)}B views`;
+    } else if (count >= 1000000) {
+        return `${(count / 1000000).toFixed(1)}M views`;
+    } else if (count >= 1000) {
+        return `${(count / 1000).toFixed(1)}K views`;
+    } else {
+        return `${count} views`;
+    }
 }
 autofillYouTubeVideoFromSearch(videoId, title, channel) {
     const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
