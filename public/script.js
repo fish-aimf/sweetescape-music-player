@@ -10316,9 +10316,11 @@ displayBillboardHot100Top3(top3Songs) {
     
     if (!top3Songs || top3Songs.length === 0) {
         container.innerHTML = '<div style="color: var(--text-secondary); font-size: 12px;">No Billboard Hot 100 data available</div>';
+        document.getElementById('billboardLastUpdated').innerHTML = '';
         return;
     }
     
+    // Update timestamp BEFORE setting container content
     if (top3Songs[0]?.last_updated) {
         const lastUpdated = new Date(top3Songs[0].last_updated);
         const timeAgo = this.getTimeAgo(lastUpdated);
@@ -10342,7 +10344,6 @@ displayBillboardHot100Top3(top3Songs) {
         `;
     }).join('');
 }
-
 // ADD THIS NEW METHOD:
 getTimeAgo(date) {
     const seconds = Math.floor((new Date() - date) / 1000);
