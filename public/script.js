@@ -93,7 +93,17 @@ class AdvancedMusicPlayer {
 		this.showDeleteButtons = true;
 		this.showUnfavoriteButtons = true;
 		this.showEditButtons = true;
+
+
+
+		//ghost preview
 		
+		this.isAutofillButtonHovered = false;
+		this.ghostPreviewAbortController = null;
+		this.currentGhostRequestId = null;
+		this.ghostScrollHandler = null;
+		this.ghostResizeHandler = null;
+		this.ghostInteractionHandler = null;
 		// Visualizer
 		this.visualizer = {
 			canvas: null,
@@ -653,9 +663,17 @@ class AdvancedMusicPlayer {
 		}
 		
 		if (this.elements.autofillBtn) {
-			this.elements.autofillBtn.addEventListener('click', handlers.autofillClick);
-			this.elements.autofillBtn.addEventListener('mouseenter', handlers.autofillMouseenter);
-			this.elements.autofillBtn.addEventListener('mouseleave', handlers.autofillMouseleave);
+		    this.elements.autofillBtn.addEventListener('click', handlers.autofillClick);
+		    
+		    this.elements.autofillBtn.addEventListener('mouseenter', (e) => {
+		        this.isAutofillButtonHovered = true;
+		        handlers.autofillMouseenter(e);
+		    });
+		    
+		    this.elements.autofillBtn.addEventListener('mouseleave', () => {
+		        this.isAutofillButtonHovered = false;
+		        handlers.autofillMouseleave();
+		    });
 		}
 		
 		// Current song name styling
@@ -4189,60 +4207,177 @@ hideSidebar() {
         });
 }
 	showGhostPreview(event) {
-    const songUrl = this.elements.songUrlInput.value.trim();
-    if (!songUrl) return;
-    const videoId = this.extractYouTubeId(songUrl);
-    if (!videoId) return;
-    
-    Promise.all([
-        this.fetchYouTubeTitle(videoId),
-        this.fetchYouTubeChannel(videoId)
-    ])
-        .then(([title, channelName]) => {
-            if (title) {
-                const { author, songName } = this.parseVideoTitle(title);
-                const finalAuthor = author || channelName;
-                this.createGhostPreview(songName, finalAuthor, event);
-            }
-        })
-        .catch((error) => {
-            console.warn("Could not fetch title for ghost preview:", error);
-        });
-}
-	createGhostPreview(songName, author, event) {
-		this.removeGhostPreview();
-		const nameInput = this.elements.songNameInput;
-		const authorInput = this.elements.songAuthorInput;
-		if (songName && songName !== nameInput.value) {
-			const nameRect = nameInput.getBoundingClientRect();
-			const nameGhost = document.createElement("div");
-			nameGhost.classList.add("ghost-preview");
-			nameGhost.textContent = songName;
-			nameGhost.style.left = nameRect.left + "px";
-			nameGhost.style.top = nameRect.top + "px";
-			nameGhost.style.width = nameRect.width + "px";
-			nameGhost.style.height = nameRect.height + "px";
-			nameGhost.id = "nameGhost";
-			document.body.appendChild(nameGhost);
-		}
-		if (author && author !== authorInput.value) {
-			const authorRect = authorInput.getBoundingClientRect();
-			const authorGhost = document.createElement("div");
-			authorGhost.classList.add("ghost-preview");
-			authorGhost.textContent = author;
-			authorGhost.style.left = authorRect.left + "px";
-			authorGhost.style.top = authorRect.top + "px";
-			authorGhost.style.width = authorRect.width + "px";
-			authorGhost.style.height = authorRect.height + "px";
-			authorGhost.id = "authorGhost";
-			document.body.appendChild(authorGhost);
-		}
+	    const songUrl = this.elements.songUrlInput.value.trim();
+	    if (!songUrl) {
+	        this.removeGhostPreview();
+	        return;
+	    }
+	    
+	    const videoId = this.extractYouTubeId(songUrl);
+	    if (!videoId) {
+	        this.removeGhostPreview();
+	        return;
+	    }
+	    
+	    // Cancel any pending fetch
+	    if (this.ghostPreviewAbortController) {
+	        this.ghostPreviewAbortController.abort();
+	    }
+	    this.ghostPreviewAbortController = new AbortController();
+	    
+	    // Store the current request ID to prevent race conditions
+	    const requestId = Date.now();
+	    this.currentGhostRequestId = requestId;
+	    
+	    Promise.all([
+	        this.fetchYouTubeTitle(videoId),
+	        this.fetchYouTubeChannel(videoId)
+	    ])
+	        .then(([title, channelName]) => {
+	            // Only show preview if this is still the latest request and button is still hovered
+	            if (this.currentGhostRequestId !== requestId) return;
+	            if (!this.isAutofillButtonHovered) return;
+	            
+	            if (title) {
+	                const { author, songName } = this.parseVideoTitle(title);
+	                const finalAuthor = author || channelName;
+	                this.createGhostPreview(songName, finalAuthor);
+	            }
+	        })
+	        .catch((error) => {
+	            if (error.name === 'AbortError') return;
+	            console.warn("Could not fetch title for ghost preview:", error);
+	        });
+	}
+	createGhostPreview(songName, author) {
+	    this.removeGhostPreview();
+	    
+	    const nameInput = this.elements.songNameInput;
+	    const authorInput = this.elements.songAuthorInput;
+	    
+	    // Create container for all ghosts
+	    const container = document.createElement('div');
+	    container.id = 'ghost-preview-container';
+	    
+	    if (songName && songName !== nameInput.value) {
+	        const nameGhost = this.createGhostElement(songName, nameInput, 'nameGhost');
+	        container.appendChild(nameGhost);
+	    }
+	    
+	    if (author && author !== authorInput.value) {
+	        const authorGhost = this.createGhostElement(author, authorInput, 'authorGhost');
+	        container.appendChild(authorGhost);
+	    }
+	    
+	    // Only add if we have ghosts to show
+	    if (container.children.length > 0) {
+	        document.body.appendChild(container);
+	        
+	        // Setup event listeners for repositioning
+	        this.setupGhostEventListeners();
+	        
+	        // Trigger fade-in animation
+	        requestAnimationFrame(() => {
+	            container.classList.add('visible');
+	        });
+	    }
+	}
+
+	createGhostElement(text, inputEl, id) {
+	    const ghost = document.createElement('div');
+	    ghost.classList.add('ghost-preview');
+	    ghost.textContent = text;
+	    ghost.id = id;
+	    this.positionGhost(ghost, inputEl);
+	    return ghost;
+	}
+	
+	positionGhost(ghost, inputEl) {
+	    const rect = inputEl.getBoundingClientRect();
+	    ghost.style.left = rect.left + window.scrollX + 'px';
+	    ghost.style.top = rect.top + window.scrollY + 'px';
+	    ghost.style.width = rect.width + 'px';
+	    ghost.style.height = rect.height + 'px';
+	}
+	
+	setupGhostEventListeners() {
+	    // Remove old listeners if they exist
+	    this.cleanupGhostEventListeners();
+	    
+	    // Throttle position updates for better performance
+	    let ticking = false;
+	    this.ghostScrollHandler = () => {
+	        if (!ticking) {
+	            window.requestAnimationFrame(() => {
+	                this.updateGhostPositions();
+	                ticking = false;
+	            });
+	            ticking = true;
+	        }
+	    };
+	    
+	    this.ghostResizeHandler = () => {
+	        this.updateGhostPositions();
+	    };
+	    
+	    // Add listeners
+	    window.addEventListener('scroll', this.ghostScrollHandler, { passive: true });
+	    window.addEventListener('resize', this.ghostResizeHandler, { passive: true });
+	    
+	    // Remove on any user interaction
+	    this.ghostInteractionHandler = () => {
+	        this.removeGhostPreview();
+	    };
+	    
+	    document.addEventListener('click', this.ghostInteractionHandler, { once: true });
+	    document.addEventListener('keydown', this.ghostInteractionHandler, { once: true });
+	}
+	
+	cleanupGhostEventListeners() {
+	    if (this.ghostScrollHandler) {
+	        window.removeEventListener('scroll', this.ghostScrollHandler);
+	    }
+	    if (this.ghostResizeHandler) {
+	        window.removeEventListener('resize', this.ghostResizeHandler);
+	    }
+	    if (this.ghostInteractionHandler) {
+	        document.removeEventListener('click', this.ghostInteractionHandler);
+	        document.removeEventListener('keydown', this.ghostInteractionHandler);
+	    }
+	}
+	
+	updateGhostPositions() {
+	    const container = document.getElementById('ghost-preview-container');
+	    if (!container) return;
+	    
+	    const nameGhost = document.getElementById('nameGhost');
+	    const authorGhost = document.getElementById('authorGhost');
+	    
+	    if (nameGhost) this.positionGhost(nameGhost, this.elements.songNameInput);
+	    if (authorGhost) this.positionGhost(authorGhost, this.elements.songAuthorInput);
 	}
 	removeGhostPreview() {
-		const nameGhost = document.getElementById("nameGhost");
-		const authorGhost = document.getElementById("authorGhost");
-		if (nameGhost) nameGhost.remove();
-		if (authorGhost) authorGhost.remove();
+		const container = document.getElementById('ghost-preview-container');
+		if (container) {
+			container.classList.remove('visible');
+			// Wait for fade-out animation before removing
+			setTimeout(() => {
+				if (container.parentNode) {
+					container.remove();
+				}
+			}, 200);
+		}
+		
+		// Cleanup event listeners
+		this.cleanupGhostEventListeners();
+		
+		// Cancel any pending fetches
+		if (this.ghostPreviewAbortController) {
+			this.ghostPreviewAbortController.abort();
+			this.ghostPreviewAbortController = null;
+		}
+		
+		this.currentGhostRequestId = null;
 	}
 	openSongEditModal(songId) {
 		const song = this.songLibrary.find((s) => s.id === songId);
@@ -4512,6 +4647,7 @@ hideSidebar() {
 	}
 	closeLibraryModal() {
 		this.elements.libraryModificationModal.style.display = "none";
+		this.removeGhostPreview();
 	}
 
 	adjustVolume(change) {
