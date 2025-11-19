@@ -104,17 +104,24 @@
                 const billboardData = await response.json();
                 log(`Fetched ${billboardData.data.length} songs`, 'success');
                 
-                // Get existing data
+                // Get existing data from ENTIRE table (not just by position)
                 const { data: existingData } = await supabase
                     .from('billboard_hot_100')
                     .select('*');
                 
-                const existingMap = new Map(existingData?.map(item => [item.id, item]) || []);
+                // Create map by position AND by song+artist for lookup
+                const existingByPosition = new Map(existingData?.map(item => [item.id, item]) || []);
+                const existingBySongArtist = new Map();
+                existingData?.forEach(item => {
+                    const key = `${item.song.toLowerCase()}|||${item.artist.toLowerCase()}`;
+                    existingBySongArtist.set(key, item);
+                });
                 
                 let totalProcessed = 0;
                 let totalUpdated = 0;
                 let totalSkipped = 0;
                 let totalYouTubeSearches = 0;
+                let totalYouTubeReused = 0;
                 
                 // Process each song
                 for (let i = 0; i < Math.min(billboardData.data.length, 100); i++) {
@@ -124,22 +131,22 @@
                     
                     log(`\n[${id}/100] Processing: "${song.song}" by ${song.artist}`, 'info');
                     
-                    const existing = existingMap.get(id);
-                    let youtubeUrl = existing?.youtube_url;
+                    const existingAtPosition = existingByPosition.get(id);
+                    let youtubeUrl = null;
                     let needsUpdate = false;
                     
-                    // Check if ANY field changed
-                    if (!existing) {
-                        log(`  New entry - needs full update`, 'info');
+                    // Check if ANY field changed at this position
+                    if (!existingAtPosition) {
+                        log(`  New entry at position ${id}`, 'info');
                         needsUpdate = true;
                     } else {
                         const changes = [];
-                        if (existing.song !== song.song) changes.push('song');
-                        if (existing.artist !== song.artist) changes.push('artist');
-                        if (existing.this_week !== song.this_week) changes.push('position');
-                        if (existing.last_week !== song.last_week) changes.push('last_week');
-                        if (existing.peak_position !== song.peak_position) changes.push('peak');
-                        if (existing.weeks_on_chart !== song.weeks_on_chart) changes.push('weeks');
+                        if (existingAtPosition.song !== song.song) changes.push('song');
+                        if (existingAtPosition.artist !== song.artist) changes.push('artist');
+                        if (existingAtPosition.this_week !== song.this_week) changes.push('position');
+                        if (existingAtPosition.last_week !== song.last_week) changes.push('last_week');
+                        if (existingAtPosition.peak_position !== song.peak_position) changes.push('peak');
+                        if (existingAtPosition.weeks_on_chart !== song.weeks_on_chart) changes.push('weeks');
                         
                         if (changes.length > 0) {
                             log(`  Changes detected: ${changes.join(', ')}`, 'warning');
@@ -151,9 +158,24 @@
                         }
                     }
                     
-                    // Only search YouTube if song/artist changed or no URL exists
-                    if (!existing || existing.song !== song.song || existing.artist !== song.artist || !youtubeUrl) {
-                        log(`  Searching YouTube...`, 'info');
+                    // Smart YouTube URL lookup
+                    const songArtistKey = `${song.song.toLowerCase()}|||${song.artist.toLowerCase()}`;
+                    const previousEntry = existingBySongArtist.get(songArtistKey);
+                    
+                    if (previousEntry && previousEntry.youtube_url) {
+                        // Song existed before (maybe at different position) - reuse URL
+                        youtubeUrl = previousEntry.youtube_url;
+                        log(`  Reusing YouTube URL from previous position #${previousEntry.id}`, 'info');
+                        totalYouTubeReused++;
+                    } else if (existingAtPosition && existingAtPosition.youtube_url && 
+                               existingAtPosition.song === song.song && 
+                               existingAtPosition.artist === song.artist) {
+                        // Same song at same position - keep URL
+                        youtubeUrl = existingAtPosition.youtube_url;
+                        log(`  Using existing URL`, 'info');
+                    } else {
+                        // Need to search YouTube - new song we've never seen
+                        log(`  New song - searching YouTube...`, 'info');
                         youtubeUrl = await searchYouTube(song.song, song.artist);
                         totalYouTubeSearches++;
                         
@@ -164,8 +186,6 @@
                         }
                         
                         await new Promise(resolve => setTimeout(resolve, 100)); // Rate limit
-                    } else {
-                        log(`  Using existing URL`, 'info');
                     }
                     
                     // Only update if needed
@@ -259,6 +279,7 @@
                 log(`Total songs processed: ${totalProcessed}`, 'info');
                 log(`Songs updated: ${totalUpdated}`, 'success');
                 log(`Songs skipped (no changes): ${totalSkipped}`, 'info');
+                log(`YouTube URLs reused from chart: ${totalYouTubeReused}`, 'success');
                 log(`YouTube searches performed: ${totalYouTubeSearches}`, 'warning');
                 log(`\nTop 3 updated: ${top3Updated}`, 'success');
                 log(`Top 3 skipped: ${top3Skipped}`, 'info');
