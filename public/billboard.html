@@ -224,7 +224,6 @@
                 const existingTop3Map = new Map(existingTop3?.map(item => [item.position, item]) || []);
                 
                 let top3Updated = 0;
-                let top3Skipped = 0;
                 
                 for (let i = 0; i < 3; i++) {
                     const song = billboardData.data[i];
@@ -233,45 +232,39 @@
                     log(`\nTop ${position}: "${song.song}" by ${song.artist}`, 'info');
                     
                     const existing = existingTop3Map.get(position);
-                    let youtubeUrl = null;
-                    let needsUpdate = false;
                     
-                    // Check if changed
+                    // Get YouTube URL from main table
+                    const { data: mainTableData } = await supabase
+                        .from('billboard_hot_100')
+                        .select('youtube_url')
+                        .eq('id', position)
+                        .single();
+                    
+                    const youtubeUrl = mainTableData?.youtube_url;
+                    
+                    // Check if song/artist changed
                     if (!existing || existing.song !== song.song || existing.artist !== song.artist) {
-                        needsUpdate = true;
-                        log(`  Changes detected in top 3`, 'warning');
-                        
-                        // Get YouTube URL from main table
-                        const { data: mainTableData } = await supabase
-                            .from('billboard_hot_100')
-                            .select('youtube_url')
-                            .eq('id', position)
-                            .single();
-                        
-                        youtubeUrl = mainTableData?.youtube_url;
+                        log(`  Song changed - updating`, 'warning');
                     } else {
-                        log(`  No changes in top 3 - skipping`, 'info');
-                        top3Skipped++;
-                        continue;
+                        log(`  Same song - updating timestamp only`, 'info');
                     }
                     
-                    if (needsUpdate) {
-                        const { error } = await supabase
-                            .from('billboard_top_3')
-                            .upsert({
-                                position: position,
-                                song: song.song,
-                                artist: song.artist,
-                                youtube_url: youtubeUrl,
-                                last_updated: new Date().toISOString()
-                            });
-                        
-                        if (error) {
-                            log(`  Top 3 database error: ${error.message}`, 'error');
-                        } else {
-                            log(`  Top 3 updated in database`, 'success');
-                            top3Updated++;
-                        }
+                    // ALWAYS update to refresh last_updated timestamp
+                    const { error } = await supabase
+                        .from('billboard_top_3')
+                        .upsert({
+                            position: position,
+                            song: song.song,
+                            artist: song.artist,
+                            youtube_url: youtubeUrl,
+                            last_updated: new Date().toISOString()
+                        });
+                    
+                    if (error) {
+                        log(`  Top 3 database error: ${error.message}`, 'error');
+                    } else {
+                        log(`  Top 3 updated in database`, 'success');
+                        top3Updated++;
                     }
                 }
                 
@@ -281,8 +274,7 @@
                 log(`Songs skipped (no changes): ${totalSkipped}`, 'info');
                 log(`YouTube URLs reused from chart: ${totalYouTubeReused}`, 'success');
                 log(`YouTube searches performed: ${totalYouTubeSearches}`, 'warning');
-                log(`\nTop 3 updated: ${top3Updated}`, 'success');
-                log(`Top 3 skipped: ${top3Skipped}`, 'info');
+                log(`\nTop 3 always updated: ${top3Updated}`, 'success');
                 log('\n=== Update Complete ===', 'success');
                 
             } catch (error) {
