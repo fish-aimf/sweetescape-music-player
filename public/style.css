@@ -6989,3 +6989,36 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 .billboard-add-btn:hover {
     background: var(--hover-color);
 }
+#autofillBtn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+#ghost-preview-container {
+    opacity: 0;
+    transition: opacity 0.15s ease-in-out;
+}
+
+#ghost-preview-container.visible {
+    opacity: 1;
+}
+
+.ghost-preview {
+    position: absolute;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px dashed var(--accent-color);
+    border-radius: 4px;
+    padding: 8px;
+    font-size: 14px;
+    color: var(--text-primary);
+    pointer-events: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.1s ease;
+}
+
+[data-theme='dark'] .ghost-preview {
+    background: rgba(30, 30, 30, 0.9);
+    color: var(--text-primary);
+}
