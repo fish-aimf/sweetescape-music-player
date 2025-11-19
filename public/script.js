@@ -150,13 +150,6 @@ class AdvancedMusicPlayer {
 		this.closeImportModalBtn = null;
 		this.importSongsBtn = null;
 		this.importSongsTextarea = null;
-		//the ghost preview
-		this.isAutofillButtonHovered = false;
-		this.ghostPreviewAbortController = null;
-		this.currentGhostRequestId = null;
-		this.ghostScrollHandler = null;
-		this.ghostResizeHandler = null;
-		this.ghostInteractionHandler = null;
 		
 		// Keybinds
 		this.defaultKeybinds = {
@@ -660,17 +653,10 @@ class AdvancedMusicPlayer {
 		
 		if (this.elements.autofillBtn) {
 			this.elements.autofillBtn.addEventListener('click', handlers.autofillClick);
-			
-			this.elements.autofillBtn.addEventListener('mouseenter', (e) => {
-				this.isAutofillButtonHovered = true;
-				handlers.autofillMouseenter(e);
-			});
-			
-			this.elements.autofillBtn.addEventListener('mouseleave', () => {
-				this.isAutofillButtonHovered = false;
-				handlers.autofillMouseleave();
-			});
+			this.elements.autofillBtn.addEventListener('mouseenter', handlers.autofillMouseenter);
+			this.elements.autofillBtn.addEventListener('mouseleave', handlers.autofillMouseleave);
 		}
+		
 		// Current song name styling
 		const currentSongName = document.getElementById('currentSongName');
 		if (currentSongName) {
@@ -4217,26 +4203,48 @@ hideSidebar() {
 }
 	showGhostPreview(event) {
 	    const songUrl = this.elements.songUrlInput.value.trim();
-	    if (!songUrl) return;
+	    if (!songUrl) {
+	        this.removeGhostPreview();
+	        return;
+	    }
+	    
 	    const videoId = this.extractYouTubeId(songUrl);
-	    if (!videoId) return;
+	    if (!videoId) {
+	        this.removeGhostPreview();
+	        return;
+	    }
+	    
+	    // Cancel any pending fetch
+	    if (this.ghostPreviewAbortController) {
+	        this.ghostPreviewAbortController.abort();
+	    }
+	    this.ghostPreviewAbortController = new AbortController();
+	    
+	    // Store the current request ID to prevent race conditions
+	    const requestId = Date.now();
+	    this.currentGhostRequestId = requestId;
 	    
 	    Promise.all([
 	        this.fetchYouTubeTitle(videoId),
 	        this.fetchYouTubeChannel(videoId)
 	    ])
 	        .then(([title, channelName]) => {
+	            // Only show preview if this is still the latest request and button is still hovered
+	            if (this.currentGhostRequestId !== requestId) return;
+	            if (!this.isAutofillButtonHovered) return;
+	            
 	            if (title) {
 	                const { author, songName } = this.parseVideoTitle(title);
 	                const finalAuthor = author || channelName;
-	                this.createGhostPreview(songName, finalAuthor, event);
+	                this.createGhostPreview(songName, finalAuthor);
 	            }
 	        })
 	        .catch((error) => {
+	            if (error.name === 'AbortError') return;
 	            console.warn("Could not fetch title for ghost preview:", error);
 	        });
 	}
-		
+	
 	createGhostPreview(songName, author) {
 	    this.removeGhostPreview();
 	    
@@ -4636,7 +4644,6 @@ hideSidebar() {
 	}
 	closeLibraryModal() {
 		this.elements.libraryModificationModal.style.display = "none";
-		this.removeGhostPreview();
 	}
 
 	adjustVolume(change) {
