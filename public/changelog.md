@@ -428,3 +428,7 @@
 - emergency bug fixes v49.13.1
 - put progress cards into a scrollable container v49.14.0
 - fixed a few styling issues with the expanded playlist mode v49.14.1
+- fixed the buggy preview of autofill in libary modification v49.15.0
+- made sure the preview gets killed when library modification is closed. v49.15.1
+- added cleanup to ghost preview v49.15.2
+- added support for custom themes v49.15.3
