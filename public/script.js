@@ -5823,7 +5823,7 @@ hideSidebar() {
 
 			const time = document.createElement("div");
 			time.classList.add("recently-played-time");
-			const timeAgo = this.getTimeAgo(song.timestamp);
+			const timeAgo = this.getTimeAgorecentlyplayedmodel(song.timestamp);
 			time.textContent = timeAgo;
 
 			const removeBtn = document.createElement("button");
@@ -5879,7 +5879,7 @@ hideSidebar() {
 	}
 
 
-	getTimeAgo(timestamp) {
+	getTimeAgorecentlyplayedmodel(timestamp) {
 		const now = Date.now();
 		const diff = now - timestamp;
 		const minutes = Math.floor(diff / (1000 * 60));
