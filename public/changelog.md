@@ -436,3 +436,11 @@
 - fixed the timestamp issues v49.15.5
 - fixed a bug in relation to timezones v49.15.6
 - resolved some naming overlaps v49.15.7
+- pressing enter will now display results inside the website for more comfortability v50.0.0
+- added thumbnails v50.1.0
+- added cards for the youtube api results v50.2.0
+- added time ago v50.3.0
+- added views v50.4.0
+- shows only top 5 results v50.5.0
+- added betterlogic to rank based on keywords like official and viewcount v50.6.0
+- added add button to autofill v50.7.0
