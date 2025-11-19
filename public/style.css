@@ -7007,18 +7007,14 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 .ghost-preview {
     position: absolute;
     z-index: 1000;
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--bg-secondary);
     border: 2px dashed var(--accent-color);
     border-radius: 4px;
     padding: 8px;
     font-size: 14px;
     color: var(--text-primary);
     pointer-events: none;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px var(--shadow-color);
     transition: all 0.1s ease;
-}
-
-[data-theme='dark'] .ghost-preview {
-    background: rgba(30, 30, 30, 0.9);
-    color: var(--text-primary);
+    opacity: 0.9;
 }
