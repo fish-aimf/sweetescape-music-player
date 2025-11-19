@@ -136,6 +136,7 @@ class AdvancedMusicPlayer {
 			'AIzaSyBgNN14Ql_9ZzyNed0mS-KLt1l1ucieI9s'
 		];
 		this.activeYoutubeKeyIndex = 0;
+		this.youtubeLibrarySearchResults = [];
 		this.GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 		this.YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3/search';
 		
@@ -287,6 +288,7 @@ class AdvancedMusicPlayer {
 		this.initializeGlobalLibrary();
 		this.setupChangelogModal();
 		this.loadVersion();
+		this.setupYouTubeLibraryResultsDelegation();
 	}
 	
 	_handleInitializationError(error) {
@@ -544,18 +546,38 @@ class AdvancedMusicPlayer {
 			adsToggle: this.handleAdsToggle.bind(this),
 			
 			// Special handlers with custom logic
-			librarySearchKeydown: (e) => {
-				if (e.key === "Enter") {
-					const searchTerm = this.elements.librarySearch.value.trim();
-					const videoId = this.extractYouTubeId(searchTerm);
-					if (videoId && this.elements.youtubeSearchSuggestion.style.display !== "none") {
-						this.autofillFromUrl(searchTerm);
-					} else if (this.elements.youtubeSearchSuggestion.style.display !== "none") {
-						this.searchYouTube(searchTerm);
-					} else {
-						this.playFirstVisibleSong();
-					}
-				}
+			librarySearchKeydown: async (e) => {
+			    if (e.key === "Enter") {
+			        const searchTerm = this.elements.librarySearch.value.trim();
+			        const videoId = this.extractYouTubeId(searchTerm);
+			        
+			        // If it's a YouTube URL, autofill it
+			        if (videoId && this.elements.youtubeSearchSuggestion.style.display !== "none") {
+			            this.autofillFromUrl(searchTerm);
+			            return;
+			        }
+			        
+			        // Check if there are any visible song items
+			        const visibleSongs = this.elements.songLibrary.querySelectorAll('.song-item');
+			        
+			        if (visibleSongs.length > 0) {
+			            // Play first visible song
+			            this.playFirstVisibleSong();
+			        } else if (searchTerm) {
+			            // No songs found - search YouTube
+			            try {
+			                const results = await this.searchYouTubeForLibraryMatches(searchTerm);
+			                if (results.length > 0) {
+			                    this.renderYouTubeLibrarySearchResults(results, searchTerm);
+			                } else {
+			                    this.showYouTubeSearchSuggestion(searchTerm);
+			                }
+			            } catch (error) {
+			                console.error('YouTube search failed:', error);
+			                this.showYouTubeSearchSuggestion(searchTerm);
+			            }
+			        }
+			    }
 			},
 			songUrlKeydown: (e) => {
 				if (e.key === "Enter") this.addSongToLibrary();
@@ -1317,29 +1339,30 @@ class AdvancedMusicPlayer {
 	}
 
 	filterLibrarySongs() {
-		const searchTerm = this.elements.librarySearch.value.toLowerCase().trim();
-
-		// Check if it's a YouTube URL
-		const videoId = this.extractYouTubeId(searchTerm);
-		if (videoId) {
-			this.showAddToLibrarySuggestion(searchTerm);
-			this.renderSongLibrary(searchTerm); // Re-render with empty results
-			return;
-		}
-
-		// Re-render library with search filter applied
-		this.renderSongLibrary(searchTerm);
-
-		// Check if any results were found
-		const songItems = this.elements.songLibrary.querySelectorAll(".song-item");
-		const resultsFound = songItems.length > 0;
-
-		// Show/hide YouTube search suggestion
-		if (!resultsFound && searchTerm !== "") {
-			this.showYouTubeSearchSuggestion(searchTerm);
-		} else {
-			this.hideYouTubeSearchSuggestion();
-		}
+	    const searchTerm = this.elements.librarySearch.value.toLowerCase().trim();
+	
+	    // Check if it's a YouTube URL
+	    const videoId = this.extractYouTubeId(searchTerm);
+	    if (videoId) {
+	        this.showAddToLibrarySuggestion(searchTerm);
+	        this.renderSongLibrary(searchTerm);
+	        return;
+	    }
+	
+	    // Re-render library with search filter applied
+	    this.renderSongLibrary(searchTerm);
+	
+	    // Check if any results were found
+	    const songItems = this.elements.songLibrary.querySelectorAll(".song-item");
+	    const resultsFound = songItems.length > 0;
+	
+	    // REMOVED: YouTube search suggestion when no results
+	    // We'll handle this in the Enter key handler instead
+	    if (!resultsFound && searchTerm !== "") {
+	        this.hideYouTubeSearchSuggestion();
+	    } else {
+	        this.hideYouTubeSearchSuggestion();
+	    }
 	}
 	showAddToLibrarySuggestion(youtubeUrl) {
 		const querySpan = this.elements.youtubeSearchSuggestion.querySelector(".search-query");
@@ -11900,8 +11923,127 @@ cleanupBillboardAndGlobalLibrary() {
     
     console.log("Billboard and Global Library cleanup complete");
 }
-
-
+getRandomYouTubeApiKey() {
+    return this.YOUTUBE_API_KEYS[this.activeYoutubeKeyIndex];
+}
+rotateYouTubeApiKey() {
+    this.activeYoutubeKeyIndex = (this.activeYoutubeKeyIndex + 1) % this.YOUTUBE_API_KEYS.length;
+    console.log(`Rotated to YouTube API key ${this.activeYoutubeKeyIndex + 1}`);
+}
+async searchYouTubeForLibraryMatches(searchTerm) {
+    const maxResults = 5;
+    
+    for (let attempt = 0; attempt < this.YOUTUBE_API_KEYS.length; attempt++) {
+        const apiKey = this.getRandomYouTubeApiKey();
+        
+        try {
+            const response = await fetch(
+                `${this.YOUTUBE_API_URL}?part=snippet&maxResults=${maxResults}&q=${encodeURIComponent(searchTerm)}&type=video&key=${apiKey}`
+            );
+            
+            if (!response.ok) {
+                if (response.status === 403) {
+                    console.warn(`API key ${this.activeYoutubeKeyIndex + 1} quota exceeded`);
+                    this.rotateYouTubeApiKey();
+                    continue;
+                }
+                throw new Error(`YouTube API error: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.error && data.error.code === 403) {
+                this.rotateYouTubeApiKey();
+                continue;
+            }
+            
+            return data.items || [];
+            
+        } catch (error) {
+            console.error(`YouTube API attempt ${attempt + 1} failed:`, error);
+            this.rotateYouTubeApiKey();
+        }
+    }
+    
+    throw new Error('All YouTube API keys exhausted');
+}
+renderYouTubeLibrarySearchResults(results, searchTerm) {
+    const fragment = document.createDocumentFragment();
+    
+    // Create container for YouTube results
+    const youtubeResultsContainer = document.createElement('div');
+    youtubeResultsContainer.classList.add('youtube-library-results');
+    
+    results.forEach(video => {
+        const card = this.createYouTubeLibraryResultCard(video);
+        youtubeResultsContainer.appendChild(card);
+    });
+    
+    fragment.appendChild(youtubeResultsContainer);
+    
+    // Add the "Search on YouTube" suggestion at the bottom
+    const noResultsMessage = document.createElement('div');
+    noResultsMessage.classList.add('empty-library-message');
+    noResultsMessage.textContent = `No songs found in your library matching "${searchTerm}"`;
+    fragment.appendChild(noResultsMessage);
+    
+    this.elements.songLibrary.innerHTML = '';
+    this.elements.songLibrary.appendChild(fragment);
+    
+    // Show the YouTube search suggestion below
+    this.showYouTubeSearchSuggestion(searchTerm);
+}
+createYouTubeLibraryResultCard(video) {
+    const videoId = video.id.videoId;
+    const title = video.snippet.title;
+    const channel = video.snippet.channelTitle;
+    const thumbnail = video.snippet.thumbnails.medium.url;
+    
+    const card = document.createElement('div');
+    card.classList.add('youtube-library-result-card');
+    
+    card.innerHTML = `
+        <img src="${thumbnail}" alt="${this.escapeHtml(title)}" class="youtube-result-thumbnail">
+        <div class="youtube-result-info">
+            <div class="youtube-result-title">${this.escapeHtml(title)}</div>
+            <div class="youtube-result-channel">${this.escapeHtml(channel)}</div>
+        </div>
+        <button class="youtube-result-add-btn" data-video-id="${videoId}" data-title="${this.escapeHtml(title)}" data-channel="${this.escapeHtml(channel)}">
+            <i class="fas fa-plus"></i> Add
+        </button>
+    `;
+    
+    return card;
+}
+setupYouTubeLibraryResultsDelegation() {
+    this.elements.songLibrary.addEventListener('click', (e) => {
+        const addBtn = e.target.closest('.youtube-result-add-btn');
+        if (!addBtn) return;
+        
+        const videoId = addBtn.dataset.videoId;
+        const title = addBtn.dataset.title;
+        const channel = addBtn.dataset.channel;
+        
+        this.autofillYouTubeVideoFromSearch(videoId, title, channel);
+    });
+}
+autofillYouTubeVideoFromSearch(videoId, title, channel) {
+    const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
+    
+    this.openLibraryModal();
+    
+    // Autofill the form
+    this.elements.songUrlInput.value = youtubeUrl;
+    this.elements.songNameInput.value = title;
+    this.elements.songAuthorInput.value = channel;
+    
+    // Trigger URL paste handler to show thumbnail
+    this.handleUrlPaste();
+    
+    // Clear the library search
+    this.elements.librarySearch.value = '';
+    this.hideYouTubeSearchSuggestion();
+}
 
 
 
