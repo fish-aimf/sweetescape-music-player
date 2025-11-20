@@ -5528,8 +5528,207 @@ if (this.elements.autofillBtn) {
     display: none; /* Initially hidden */
 }
 
-
-/* 1234*/
+.recently-played-modal-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+.recently-played-modal {
+  background-color: var(--bg-secondary);
+  border-radius: 10px;
+  padding: 12px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow: hidden;
+  box-shadow: 0 4px 20px var(--shadow-color);
+  border: 1px solid var(--border-color);
+}
+.recently-played-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.recently-played-header h2 {
+  color: var(--text-primary);
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+.recently-played-settings {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.recently-played-settings-label {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+.recently-played-settings-input {
+  width: 60px;
+  padding: 5px;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  text-align: center;
+}
+.recently-played-close {
+  background: transparent;
+  color: var(--text-secondary);
+  border: none;
+  width: 24px;
+  height: 24px;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s;
+  padding: 0;
+  line-height: 1;
+}
+.recently-played-close:hover {
+  color: var(--error-color);
+}
+.recently-played-content {
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+.recently-played-content::-webkit-scrollbar {
+  width: 8px;
+}
+.recently-played-content::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+  border-radius: 4px;
+}
+.recently-played-content::-webkit-scrollbar-thumb {
+  background: var(--accent-color);
+  border-radius: 4px;
+}
+.recently-played-content::-webkit-scrollbar-thumb:hover {
+  background: var(--hover-color);
+}
+.recently-played-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  margin-bottom: 0;
+  background-color: var(--bg-primary);
+  border-radius: 0;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  position: relative;
+}
+.recently-played-item:first-child {
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+}
+.recently-played-item:last-child {
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+  border-bottom: none;
+}
+.recently-played-item:hover {
+  background-color: var(--hover-color);
+  transform: translateX(2px);
+}
+.recently-played-thumbnail {
+  width: 80px;
+  height: 45px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-right: 12px;
+  border: 1px solid var(--border-color);
+}
+.recently-played-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.recently-played-name {
+  color: var(--text-primary);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.recently-played-time {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+.recently-played-remove {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  background: transparent;
+  color: var(--text-secondary);
+  border: none;
+  width: 20px;
+  height: 20px;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.3s;
+  z-index: 10;
+  padding: 0;
+  line-height: 1;
+}
+.recently-played-item:hover .recently-played-remove {
+  opacity: 1;
+}
+.recently-played-remove:hover {
+  color: var(--error-color);
+  transform: translateY(-50%) scale(1.2);
+}
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .recently-played-modal {
+    width: 95%;
+    padding: 10px;
+  }
+  
+  .recently-played-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  
+  .recently-played-settings {
+    order: -1;
+  }
+  
+  .recently-played-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+  
+  .recently-played-thumbnail {
+    width: 70px;
+    height: 40px;
+  }
+}
 
 
 
