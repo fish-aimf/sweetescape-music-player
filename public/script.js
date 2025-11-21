@@ -113,40 +113,13 @@ class AdvancedMusicPlayer {
 			animationId: null,
 			isActive: false
 		};
+		//api
+		this.currentKeyIndex = 0;
+		this.activeYoutubeKeyIndex = 0;
+		this.GEMINI_API_KEYS_COUNT = 8; // number of Gemini keys i have
+		this.YOUTUBE_API_KEYS_COUNT = 16; // number of YouTube keys i have
 		
-		// API keys and URLs
-		this.GEMINI_API_KEYS = [
-		    'AIzaSyBk6siv7qqObbOnpvq-nzpeeM7GmZIYcQA',
-		    'AIzaSyCeAZAD797nug4__PsVucLCOCpn1sF2rD0',
-		    'AIzaSyDMVsB7Gd455fPn32LUvFB9zkl-kHUot4I',
-		    'AIzaSyBqv0v6nmO8tmsHBsPVZPmlRH28bLdBtYI',
-		    'AIzaSyCaQzhYAt9NfS-V_HnBfHm-P3Ni_MPe5dM',
-		    'AIzaSyBDmRL5uMlUn6ZkFVTp6zcsnJecsjd3shw',
-		    'AIzaSyDB9foBQLmF3Gqv7OSQRuOHqvYnnRImeD0',
-		    'AIzaSyASNm4Qfo6uyLf3uDUR_ahYspzRDGSrXpE'
-		];
-		this.currentKeyIndex = Math.floor(Math.random() * this.GEMINI_API_KEYS.length);
-		this.YOUTUBE_API_KEYS = [
-			'AIzaSyDPT2lmIab9DPC-ltZh4sWrlhapwp0mgTA',
-			'AIzaSyAENxiCNCZPHgPt2-ip4-GUWcLTkxge8tc',
-			'AIzaSyCDKrOQyGllinvpfd-WxT-GLk-0fqeBPg4',
-			'AIzaSyC4j5HXlRifuJr-1kjxbNVxzu_xvVxniqs',
-			'AIzaSyBTm9f2GN9fu1sBnvq9gEW4Scck3-0NIP0',
-			'AIzaSyAxyLInnmvbWI9AnX9kOIHdSsaZFwfEpX4',
-			'AIzaSyBgNN14Ql_9ZzyNed0mS-KLt1l1ucieI9s',
-			'AIzaSyAe1JGGB6cBvw1-qgbiPskHYXoQ8CoJFto', //se 6 after
-			'AIzaSyA8MRjzB7HZrZEUmdaGu4074NfinWCvpd4',
-			'AIzaSyCPOgCyTK88KIqaZGdS_6FVYaM-lnX6iq4',
-			'AIzaSyDpREbL4NN7dufH_UQRYUFW9HGOt2DfnVo',
-			'AIzaSyCjyXoSU6BjVXCDrRNSvjcOdE6DSpp0cng',//4
-			'AIzaSyB9kgCqp9kb85uDJA9I69xl58h98zhMLuQ',//5
-			'AIzaSyDIIVBo7VSZ19C0K5Xb1nOwvTRP2mcU7uw',//6
-			'AIzaSyCbT-rFJnlQeDVl5zKK1J9qvT1YsIYuauM', //7
-			'AIzaSyAdDIElDCplwHxjKnNGEQxGa5BHHTvnT_0' //8
-			
-			
-			
-		];
+		
 		this.activeYoutubeKeyIndex = 0;
 		this.youtubeLibrarySearchResults = [];
 		this.GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
@@ -9901,41 +9874,41 @@ hideSidebar() {
 			generateBtn.textContent = 'Regenerate Song List';
 		}
 	}
-	getNextApiKey() {
-	    const key = this.GEMINI_API_KEYS[this.currentKeyIndex];
-	    this.currentKeyIndex = (this.currentKeyIndex + 1) % this.GEMINI_API_KEYS.length;
-	    return key;
-	}
-	
-	// Add helper method to make API calls with fallback
-	async callGeminiWithFallback(requestBody, maxRetries = this.GEMINI_API_KEYS.length) {
+
+	async callGeminiWithFallback(requestBody, maxRetries = this.GEMINI_API_KEYS_COUNT) {
 	    let lastError = null;
 	    
 	    for (let attempt = 0; attempt < maxRetries; attempt++) {
-	        const apiKey = this.getNextApiKey();
+	        const keyIndex = this.currentKeyIndex;
+	        this.currentKeyIndex = (this.currentKeyIndex + 1) % this.GEMINI_API_KEYS_COUNT;
 	        
 	        try {
-	            const response = await fetch(`${this.GEMINI_API_URL}?key=${apiKey}`, {
+	            const response = await fetch('/api/gemini', {
 	                method: 'POST',
 	                headers: {
 	                    'Content-Type': 'application/json',
 	                },
-	                body: JSON.stringify(requestBody)
+	                body: JSON.stringify({
+	                    requestBody,
+	                    keyIndex
+	                })
 	            });
 	            
-	            if (response.ok) {
-	                return await response.json();
+	            const result = await response.json();
+	            
+	            if (result.status === 200) {
+	                return result.data;
 	            }
 	            
 	            // If quota exceeded (429) or other rate limit, try next key
-	            if (response.status === 429 || response.status === 403) {
+	            if (result.status === 429 || result.status === 403) {
 	                console.warn(`API key ${attempt + 1} quota exceeded, trying next key...`);
-	                lastError = new Error(`API quota exceeded: ${response.status}`);
+	                lastError = new Error(`API quota exceeded: ${result.status}`);
 	                continue;
 	            }
 	            
 	            // For other errors, throw immediately
-	            throw new Error(`Gemini API error: ${response.status}`);
+	            throw new Error(`Gemini API error: ${result.status}`);
 	            
 	        } catch (error) {
 	            lastError = error;
@@ -9950,7 +9923,7 @@ hideSidebar() {
 	    // All keys exhausted
 	    throw new Error(`All API keys exhausted. Last error: ${lastError?.message}`);
 	}
-	
+		
 	// Complete replacement for getSongTitlesFromGemini method
 	async getSongTitlesFromGemini(author, quantity) {
 	    const requiredSongs = this.elements.aiRequiredSongs.value.trim();
@@ -10136,45 +10109,53 @@ hideSidebar() {
 		return songsWithLinks;
 	}
 	getCurrentAPIKey() {
-		return this.YOUTUBE_API_KEYS[this.activeYoutubeKeyIndex];
+	    return this.activeYoutubeKeyIndex;
 	}
+	
 	rotateToNextAPIKey() {
-		this.activeYoutubeKeyIndex = (this.activeYoutubeKeyIndex + 1) % this.YOUTUBE_API_KEYS.length;
-		console.log(`Rotated to API key index: ${this.activeYoutubeKeyIndex}`);
+	    this.activeYoutubeKeyIndex = (this.activeYoutubeKeyIndex + 1) % this.YOUTUBE_API_KEYS_COUNT;
+	    console.log(`Rotated to API key index: ${this.activeYoutubeKeyIndex}`);
 	}
 	async searchYouTubeWithRotation(searchQuery) {
-		for (let keyAttempt = 0; keyAttempt < this.YOUTUBE_API_KEYS.length; keyAttempt++) {
-			const currentKey = this.getCurrentAPIKey();
-			try {
-				const response = await fetch(
-					`${this.YOUTUBE_API_URL}?part=snippet&maxResults=8&q=${encodeURIComponent(searchQuery)}&type=video&key=${currentKey}`
-				);
-				if (!response.ok) {
-					const errorData = await response.text();
-					console.error(`YouTube API error with key ${this.activeYoutubeKeyIndex + 1}:`, response.status, errorData);
-					if (response.status === 403) {
-						console.log(`Key ${this.activeYoutubeKeyIndex + 1} quota exceeded, trying next key...`);
-						this.rotateToNextAPIKey();
-						continue;
-					} else {
-						this.rotateToNextAPIKey();
-						continue;
-					}
-				}
-				const data = await response.json();
-				if (data.error && data.error.code === 403) {
-					console.log(`Key ${this.activeYoutubeKeyIndex + 1} quota exceeded, trying next key...`);
-					this.rotateToNextAPIKey();
-					continue;
-				}
-				return data;
-			} catch (fetchError) {
-				console.error(`Network error with key ${this.activeYoutubeKeyIndex + 1}:`, fetchError);
-				this.rotateToNextAPIKey();
-				continue;
-			}
-		}
-		throw new Error('All API keys failed - try again later when quotas reset');
+	    for (let keyAttempt = 0; keyAttempt < this.YOUTUBE_API_KEYS_COUNT; keyAttempt++) {
+	        const keyIndex = this.getCurrentAPIKey();
+	        
+	        try {
+	            const queryString = `?part=snippet&maxResults=8&q=${encodeURIComponent(searchQuery)}&type=video`;
+	            const response = await fetch(`/api/youtube?query=${encodeURIComponent(queryString)}&keyIndex=${keyIndex}`);
+	            
+	            const result = await response.json();
+	            
+	            if (result.status !== 200) {
+	                console.error(`YouTube API error with key ${this.activeYoutubeKeyIndex + 1}:`, result.status);
+	                if (result.status === 403) {
+	                    console.log(`Key ${this.activeYoutubeKeyIndex + 1} quota exceeded, trying next key...`);
+	                    this.rotateToNextAPIKey();
+	                    continue;
+	                } else {
+	                    this.rotateToNextAPIKey();
+	                    continue;
+	                }
+	            }
+	            
+	            const data = result.data;
+	            
+	            if (data.error && data.error.code === 403) {
+	                console.log(`Key ${this.activeYoutubeKeyIndex + 1} quota exceeded, trying next key...`);
+	                this.rotateToNextAPIKey();
+	                continue;
+	            }
+	            
+	            return data;
+	            
+	        } catch (fetchError) {
+	            console.error(`Network error with key ${this.activeYoutubeKeyIndex + 1}:`, fetchError);
+	            this.rotateToNextAPIKey();
+	            continue;
+	        }
+	    }
+	    
+	    throw new Error('All API keys failed - try again later when quotas reset');
 	}
 	findBestYouTubeMatch(items, songTitle, artist) {
 		const scoredItems = items.map(item => {
@@ -11943,34 +11924,35 @@ cleanupBillboardAndGlobalLibrary() {
     console.log("Billboard and Global Library cleanup complete");
 }
 getRandomYouTubeApiKey() {
-    return this.YOUTUBE_API_KEYS[this.activeYoutubeKeyIndex];
+    return this.activeYoutubeKeyIndex;
 }
+
 rotateYouTubeApiKey() {
-    this.activeYoutubeKeyIndex = (this.activeYoutubeKeyIndex + 1) % this.YOUTUBE_API_KEYS.length;
+    this.activeYoutubeKeyIndex = (this.activeYoutubeKeyIndex + 1) % this.YOUTUBE_API_KEYS_COUNT;
     console.log(`Rotated to YouTube API key ${this.activeYoutubeKeyIndex + 1}`);
 }
 async searchYouTubeForLibraryMatches(searchTerm) {
     const maxResults = 5;
     
-    for (let attempt = 0; attempt < this.YOUTUBE_API_KEYS.length; attempt++) {
-        const apiKey = this.getRandomYouTubeApiKey();
+    for (let attempt = 0; attempt < this.YOUTUBE_API_KEYS_COUNT; attempt++) {
+        const keyIndex = this.getRandomYouTubeApiKey();
         
         try {
-            // Request snippet AND statistics for views
-            const response = await fetch(
-                `${this.YOUTUBE_API_URL}?part=snippet&maxResults=${maxResults}&q=${encodeURIComponent(searchTerm)}&type=video&order=viewCount&key=${apiKey}`
-            );
+            const queryString = `?part=snippet&maxResults=${maxResults}&q=${encodeURIComponent(searchTerm)}&type=video&order=viewCount`;
+            const response = await fetch(`/api/youtube?query=${encodeURIComponent(queryString)}&keyIndex=${keyIndex}`);
             
-            if (!response.ok) {
-                if (response.status === 403) {
+            const result = await response.json();
+            
+            if (result.status !== 200) {
+                if (result.status === 403) {
                     console.warn(`API key ${this.activeYoutubeKeyIndex + 1} quota exceeded`);
                     this.rotateYouTubeApiKey();
                     continue;
                 }
-                throw new Error(`YouTube API error: ${response.status}`);
+                throw new Error(`YouTube API error: ${result.status}`);
             }
             
-            const data = await response.json();
+            const data = result.data;
             
             if (data.error && data.error.code === 403) {
                 this.rotateYouTubeApiKey();
