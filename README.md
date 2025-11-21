@@ -22,8 +22,8 @@ SweetEscape is a **self-contained static website** that:
 
 > Once just a fun Glitch experiment, SweetEscape became something much more —
 > a full-fledged, privacy-friendly, personal music world that runs entirely in your browser.
-> It is also published on product hunt so drop a upvote please? [product hunt](https://www.producthunt.com/products/music-player-website-ultimate)
-
+> [product hunt](https://www.producthunt.com/products/music-player-website-ultimate)
+> [alternative to](https://alternativeto.net/software/sweetescape-music-player/about/)
 ---
 
 ## Key Features
@@ -100,6 +100,7 @@ HTML, CSS, JAVASCRIPT, PY, PYW, MD, YML, TXT. And people who have supported me o
 
 **Target:** 1,000,000 visits
 Help make this project grow by sharing, contributing, or just enjoying the music!
+I would love some sponsors if they enable me to get a custom domain
 
 ---
 
