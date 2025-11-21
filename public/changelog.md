@@ -447,3 +447,5 @@
 - changed styles of recently played v50.8.0
 - added the website demo images v50.9.0
 - added more youtube api keys. v50.9.1
+- put the api keys into the env files. v50.10.0
+- fixing bugs, bugs not fixed v50.10.1
