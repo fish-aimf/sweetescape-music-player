@@ -12058,7 +12058,7 @@ async fetchYouTubeViewCount(videoId) {
         const keyIndex = this.getRandomYouTubeApiKey();
         
         try {
-            const queryString = `?part=statistics&id=${videoId}`;
+            const queryString = `part=statistics&id=${videoId}`;
             const response = await fetch(`/api/youtube?query=${encodeURIComponent(queryString)}&keyIndex=${keyIndex}`);
             
             const result = await response.json();
