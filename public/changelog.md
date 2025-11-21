@@ -444,3 +444,5 @@
 - shows only top 5 results v50.5.0
 - added betterlogic to rank based on keywords like official and viewcount v50.6.0
 - added add button to autofill v50.7.0
+- changed styles of recently played v50.8.0
+- added the website demo images v50.9.0
