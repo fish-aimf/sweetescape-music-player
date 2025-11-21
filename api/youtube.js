@@ -13,30 +13,13 @@ export default async function handler(req, res) {
     }
 
     const YOUTUBE_API_KEYS = process.env.YOUTUBE_API_KEYS.split(',');
+    const YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3/search';
     
     const { query, keyIndex } = req.query;
-    
-    if (!query || keyIndex === undefined) {
-        return res.status(400).json({ error: 'Missing query or keyIndex parameter' });
-    }
-    
     const apiKey = YOUTUBE_API_KEYS[parseInt(keyIndex) % YOUTUBE_API_KEYS.length];
     
     try {
-        // Determine which YouTube API endpoint to use
-        let baseUrl;
-        if (query.includes('part=statistics') || query.includes('part=snippet,statistics')) {
-            // Use videos endpoint for video details/statistics
-            baseUrl = 'https://www.googleapis.com/youtube/v3/videos';
-        } else {
-            // Use search endpoint for searches
-            baseUrl = 'https://www.googleapis.com/youtube/v3/search';
-        }
-        
-        // Build the full URL
-        const fullUrl = `${baseUrl}?${query}&key=${apiKey}`;
-        
-        const response = await fetch(fullUrl);
+        const response = await fetch(`${YOUTUBE_API_URL}${query}&key=${apiKey}`);
         const data = await response.json();
         
         return res.status(response.status).json({
@@ -45,10 +28,6 @@ export default async function handler(req, res) {
         });
         
     } catch (error) {
-        console.error('YouTube API error:', error);
-        return res.status(500).json({ 
-            error: error.message,
-            details: 'Failed to fetch from YouTube API'
-        });
+        return res.status(500).json({ error: error.message });
     }
 }
