@@ -12054,26 +12054,45 @@ setupYouTubeLibraryResultsDelegation() {
 }
 
 async fetchYouTubeViewCount(videoId) {
-    try {
-        const apiKey = this.getRandomYouTubeApiKey();
-        const response = await fetch(
-            `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${videoId}&key=${apiKey}`
-        );
+    for (let attempt = 0; attempt < this.YOUTUBE_API_KEYS_COUNT; attempt++) {
+        const keyIndex = this.getRandomYouTubeApiKey();
         
-        if (!response.ok) return null;
-        
-        const data = await response.json();
-        const viewCount = data.items?.[0]?.statistics?.viewCount;
-        
-        if (!viewCount) return null;
-        
-        // Format view count (e.g., "1.2M views", "345K views")
-        return this.formatYouTubeViewCount(parseInt(viewCount));
-        
-    } catch (error) {
-        console.error('Failed to fetch view count:', error);
-        return null;
+        try {
+            const queryString = `?part=statistics&id=${videoId}`;
+            const response = await fetch(`/api/youtube?query=${encodeURIComponent(queryString)}&keyIndex=${keyIndex}`);
+            
+            const result = await response.json();
+            
+            if (result.status !== 200) {
+                if (result.status === 403) {
+                    console.warn(`API key quota exceeded, trying next key...`);
+                    this.rotateYouTubeApiKey();
+                    continue;
+                }
+                return null;
+            }
+            
+            const data = result.data;
+            
+            if (data.error && data.error.code === 403) {
+                this.rotateYouTubeApiKey();
+                continue;
+            }
+            
+            const viewCount = data.items?.[0]?.statistics?.viewCount;
+            
+            if (!viewCount) return null;
+            
+            // Format view count (e.g., "1.2M views", "345K views")
+            return this.formatYouTubeViewCount(parseInt(viewCount));
+            
+        } catch (error) {
+            console.error('Failed to fetch view count:', error);
+            this.rotateYouTubeApiKey();
+        }
     }
+    
+    return null;
 }
 formatYouTubeViewCount(count) {
     if (count >= 1000000000) {
