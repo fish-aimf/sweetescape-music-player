@@ -133,7 +133,19 @@ class AdvancedMusicPlayer {
 			'AIzaSyC4j5HXlRifuJr-1kjxbNVxzu_xvVxniqs',
 			'AIzaSyBTm9f2GN9fu1sBnvq9gEW4Scck3-0NIP0',
 			'AIzaSyAxyLInnmvbWI9AnX9kOIHdSsaZFwfEpX4',
-			'AIzaSyBgNN14Ql_9ZzyNed0mS-KLt1l1ucieI9s'
+			'AIzaSyBgNN14Ql_9ZzyNed0mS-KLt1l1ucieI9s',
+			'AIzaSyAe1JGGB6cBvw1-qgbiPskHYXoQ8CoJFto', //se 6 after
+			'AIzaSyA8MRjzB7HZrZEUmdaGu4074NfinWCvpd4',
+			'AIzaSyCPOgCyTK88KIqaZGdS_6FVYaM-lnX6iq4',
+			'AIzaSyDpREbL4NN7dufH_UQRYUFW9HGOt2DfnVo',
+			'AIzaSyCjyXoSU6BjVXCDrRNSvjcOdE6DSpp0cng',//4
+			'AIzaSyB9kgCqp9kb85uDJA9I69xl58h98zhMLuQ',//5
+			'AIzaSyDIIVBo7VSZ19C0K5Xb1nOwvTRP2mcU7uw',//6
+			'AIzaSyCbT-rFJnlQeDVl5zKK1J9qvT1YsIYuauM', //7
+			'AIzaSyAdDIElDCplwHxjKnNGEQxGa5BHHTvnT_0' //8
+			
+			
+			
 		];
 		this.activeYoutubeKeyIndex = 0;
 		this.youtubeLibrarySearchResults = [];
