@@ -91,7 +91,7 @@ This repository serves as the **source code** for the deployed site.
 
 Created with love and passion by **[FishAreSmart](https://github.com/fish-aimf)**.
 Every line of code represents passion for the music.
-Special thanks to Youtube, Google developers studio, Google AI studio, Vercel, Gemini, Openai Chatgpt, Claude, Supabase, Amazing counters free hit counters, Youtube API, Spotify, Discord, Google analytics, Twitter, Picsvg, mhollingshead/billboard-hot-100/, supadata API, AADS, Crawlers.
+Special thanks to Youtube, Google developers studio, Google AI studio, Vercel, Gemini, Openai Chatgpt, Claude, Supabase, Amazing counters free hit counters, Youtube API, Spotify, Discord, Google analytics, Twitter, Picsvg, mhollingshead/billboard-hot-100/, supadata API, AADS, Crawlers, apify, browserstack selenium 
 HTML, CSS, JAVASCRIPT, PY, PYW, MD, YML, TXT. And people who have supported me on the way.
 
 ---
