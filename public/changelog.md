@@ -450,3 +450,4 @@
 - put the api keys into the env files. v50.10.0
 - added the sample images. v50.11.0
 - fixing bugs, bugs not fixed v50.10.1
+- made help.html v50.11.0
