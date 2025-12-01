@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SweetEscape Music Player - Help</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #333;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin-bottom: 10px;
+            color: #ffffff;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #aaaaaa;
+        }
+
+        .help-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .feature {
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 1px solid #333;
+        }
+
+        .feature-caption {
+            padding: 15px;
+            font-size: 0.9rem;
+            color: #cccccc;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .help-content {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>SweetEscape Music Player</h1>
+        <p class="subtitle">A comprehensive guide to all features</p>
+    </header>
+    
+    <main class="help-content">
+        <!-- Timer Feature -->
+        <div class="feature">
+            <img src="website-demo-screenshots/timer.png" alt="Timer Feature" class="feature-image">
+            <div class="feature-caption">caption1: timer</div>
+        </div>
+        
+        <!-- YouTube Search Feature -->
+        <div class="feature">
+            <img src="website-demo-screenshots/youtubesearch.png" alt="YouTube Search" class="feature-image">
+            <div class="feature-caption">caption2: youtubesearch</div>
+        </div>
+        
+        <!-- Additional features would go here -->
+        <!-- You can add the rest of your images following the same pattern -->
+    </main>
+    
+    <footer>
+        <p>SweetEscape Music Player &copy; 2025</p>
+    </footer>
+</body>
+</html>
