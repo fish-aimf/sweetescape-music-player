@@ -99,7 +99,7 @@ HTML, CSS, JAVASCRIPT, PY, PYW, MD, YML, TXT. And people who have supported me o
 ## Goal
 
 **Target:** 1,000,000 visits
-Help make this project grow by sharing, contributing, or just enjoying the music!
+Help make this project grow by sharing, [contributing](CONTRIBUTING.md), or just enjoying the music!
 I would love some sponsors if they enable me to get a custom domain
 
 ---
