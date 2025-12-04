@@ -453,3 +453,4 @@
 - made help.html v50.11.0
 - added all of the infrastructure required for collaberators. v51.0.0
 - made the youtube video use tiny 144p to minimize bandwidth v51.0.1
+- fixed some bugs v51.0.2
