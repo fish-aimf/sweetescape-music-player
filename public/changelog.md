@@ -456,3 +456,4 @@
 - fixed some bugs v51.0.2
 - fixed load bug when the fonts will have thousands of console warnings v51.0.3
 - finally added csp headers v51.0.4
+- moved the font awsome locally. v51.1.0
