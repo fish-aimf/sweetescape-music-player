@@ -2541,37 +2541,38 @@ hideSidebar() {
 		firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 	}
 	initializeYouTubePlayer() {
-		this.ytPlayer = new YT.Player("ytPlayer", {
-			height: "1",
-			width: "1",
-			playerVars: {
-				'rel': 0,
-				'showinfo': 0,
-				'controls': 0,
-				'disablekb': 1,
-				'fs': 0,
-				'modestbranding': 1,
-				'playsinline': 1,
-				'autoplay': 0,
-				'iv_load_policy': 3,
-				'cc_load_policy': 0,
-				'cc_lang_pref': 'en',
-				'hl': 'en',
-				'enablejsapi': 1,
-				'origin': window.location.origin,
-				'widget_referrer': window.location.href
-			},
-			events: {
-				onReady: (event) => {
-					this.onPlayerReady(event);
-					this.ytPlayerReady = true; // SET READY FLAG
-					console.log("YouTube player is ready");
-				},
-				onStateChange: this.onPlayerStateChange.bind(this),
-				onError: this.onPlayerError.bind(this)
-			},
-		});
-	}
+    this.ytPlayer = new YT.Player("ytPlayer", {
+        height: "1",
+        width: "1",
+        playerVars: {
+            'rel': 0,
+            'showinfo': 0,
+            'controls': 0,
+            'disablekb': 1,
+            'fs': 0,
+            'modestbranding': 1,
+            'playsinline': 1,
+            'autoplay': 0,
+            'iv_load_policy': 3,
+            'cc_load_policy': 0,
+            'cc_lang_pref': 'en',
+            'hl': 'en',
+            'enablejsapi': 1,
+            'origin': window.location.origin,
+            'widget_referrer': window.location.href,
+            'vq': 'tiny'  // ADD THIS LINE - forces lowest quality (144p)
+        },
+        events: {
+            onReady: (event) => {
+                this.onPlayerReady(event);
+                this.ytPlayerReady = true;
+                console.log("YouTube player is ready");
+            },
+            onStateChange: this.onPlayerStateChange.bind(this),
+            onError: this.onPlayerError.bind(this)
+        },
+    });
+}
 	onPlayerReady(event) {
 		console.log("YouTube player is ready");
 		this.initializeAutoplay();
