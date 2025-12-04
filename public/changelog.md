@@ -451,3 +451,5 @@
 - added the sample images. v50.11.0
 - fixing bugs, bugs not fixed v50.10.1
 - made help.html v50.11.0
+- added all of the infrastructure required for collaberators. v51.0.0
+- made the youtube video use tiny 144p to minimize bandwidth v51.0.1
