@@ -2560,7 +2560,6 @@ hideSidebar() {
             'enablejsapi': 1,
             'origin': window.location.origin,
             'widget_referrer': window.location.href,
-            'vq': 'tiny'  // ADD THIS LINE - forces lowest quality (144p)
         },
         events: {
             onReady: (event) => {
@@ -2574,8 +2573,20 @@ hideSidebar() {
     });
 }
 	onPlayerReady(event) {
-		console.log("YouTube player is ready");
-		this.initializeAutoplay();
+	    console.log("YouTube player is ready");
+	    
+	    try {
+	        const qualities = this.ytPlayer.getAvailableQualityLevels();
+	        if (qualities && qualities.length > 0) {
+	            const lowestQuality = qualities[qualities.length - 1];
+	            this.ytPlayer.setPlaybackQuality(lowestQuality);
+	            console.log(`Set to lowest quality: ${lowestQuality}`);
+	        }
+	    } catch (error) {
+	        console.warn("Could not set video quality:", error);
+	    }
+	    
+	    this.initializeAutoplay();
 	}
 	onPlayerError(event) {
 		console.error("YouTube player error:", event.data);
