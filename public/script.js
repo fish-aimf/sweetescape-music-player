@@ -11950,7 +11950,7 @@ async searchYouTubeForLibraryMatches(searchTerm) {
         const keyIndex = this.getRandomYouTubeApiKey();
         
         try {
-            const queryString = `?part=snippet&maxResults=${maxResults}&q=${encodeURIComponent(searchTerm)}&type=video&order=viewCount`;
+            const queryString = `?part=snippet&maxResults=${maxResults}&q=${encodeURIComponent(searchTerm)}&type=video&order=relevance`;
             const response = await fetch(`/api/youtube?query=${encodeURIComponent(queryString)}&keyIndex=${keyIndex}`);
             
             const result = await response.json();
@@ -11972,11 +11972,9 @@ async searchYouTubeForLibraryMatches(searchTerm) {
             }
             
             const items = data.items || [];
-            
-            // Score and sort results
-            const scoredItems = this.scoreYouTubeLibraryResults(items, searchTerm);
-            
-            return scoredItems;
+
+            // Return results as-is from YouTube
+			return items;
             
         } catch (error) {
             console.error(`YouTube API attempt ${attempt + 1} failed:`, error);
@@ -12134,54 +12132,7 @@ autofillYouTubeVideoFromSearch(videoId, title, channel) {
     this.elements.librarySearch.value = '';
     this.hideYouTubeSearchSuggestion();
 }
-scoreYouTubeLibraryResults(items, searchTerm) {
-    const searchTermLower = searchTerm.toLowerCase();
-    
-    const scoredItems = items.map(item => {
-        const title = item.snippet.title.toLowerCase();
-        const channelTitle = item.snippet.channelTitle.toLowerCase();
-        const description = (item.snippet.description || '').toLowerCase();
-        
-        let score = 0;
-        
-        // Exact match
-        if (title === searchTermLower) {
-            score += 50;
-        } else if (title.includes(searchTermLower)) {
-            score += 25;
-        }
-        
-        // Official channels get priority
-        if (channelTitle.includes('vevo') || channelTitle.includes('official')) {
-            score += 30;
-        }
-        
-        // Official videos
-        if (title.includes('official') || title.includes('music video') || title.includes('official video')) {
-            score += 15;
-        }
-        
-        // Penalize covers, remixes, live versions
-        if (title.includes('cover') || title.includes('remix') || title.includes('live')) {
-            score -= 20;
-        }
-        
-        // Word matching
-        const searchWords = searchTermLower.split(/\s+/).filter(word => word.length > 2);
-        const matchedWords = searchWords.filter(word => title.includes(word));
-        score += (matchedWords.length / Math.max(searchWords.length, 1)) * 15;
-        
-        return {
-            ...item,
-            score
-        };
-    });
-    
-    // Sort by score descending
-    scoredItems.sort((a, b) => b.score - a.score);
-    
-    return scoredItems;
-}
+
 formatYouTubeUploadDate(date) {
     const now = new Date();
     const diffTime = Math.abs(now - date);
