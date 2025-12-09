@@ -7106,3 +7106,39 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 .youtube-result-add-btn i {
     margin-right: 4px;
 }
+    .subtitles-import-action-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.subtitles-import-action-buttons button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.3s ease;
+}
+
+#saveLyricsBtn {
+    background-color: var(--accent-color);
+    color: var(--button-text-color);
+}
+
+#saveLyricsBtn:hover {
+    background-color: var(--hover-color);
+}
+
+.subtitles-import-cancel-btn {
+    background-color: var(--error-color);
+    color: var(--button-text-color);
+}
+
+.subtitles-import-cancel-btn:hover {
+    background-color: var(--error-hover);
+}
