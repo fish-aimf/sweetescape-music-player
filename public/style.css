@@ -7133,12 +7133,3 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 #saveLyricsBtn:hover {
     background-color: var(--hover-color);
 }
-
-.subtitles-import-cancel-btn {
-    background-color: var(--error-color);
-    color: var(--button-text-color);
-}
-
-.subtitles-import-cancel-btn:hover {
-    background-color: var(--error-hover);
-}
