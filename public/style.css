@@ -4432,17 +4432,47 @@ if (this.elements.autofillBtn) {
     border-radius: 8px;
     padding: 15px;
     border: 1px solid var(--border-color);
+    margin-bottom: 8px; 
 }
-
 .global-library-artist-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
     padding-bottom: 8px;
     border-bottom: 1px solid var(--border-color);
+    cursor: pointer; 
 }
 
+
+.global-library-artist-name {
+    font-weight: bold;
+    font-size: 14px;
+    flex-grow: 1;
+}
+
+.global-library-header-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.global-library-songs-container {
+    margin-top: 10px;
+    display: none; /* COLLAPSED BY DEFAULT */
+}
+
+.global-library-songs-container.expanded {
+    display: block;
+}
+
+.global-library-collapse-icon {
+    margin-right: 8px;
+    transition: transform 0.2s;
+    font-size: 12px;
+}
+
+.global-library-collapse-icon.expanded {
+    transform: rotate(90deg);
+}
 .global-library-song-item {
     background: var(--bg-primary);
     padding: 8px;
