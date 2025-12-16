@@ -9285,50 +9285,88 @@ hideSidebar() {
 		}
 	}
 	displayGlobalLibraryArtists() {
-		const container = document.getElementById('globalLibraryArtistsContainer');
-		const searchFilter = (this.globalLibrarySearchFilter || '').toLowerCase();
-		const filteredArtists = this.globalLibraryArtists.filter(artist => {
-			const artistName = (artist.name || '').toLowerCase();
-			if (artistName.includes(searchFilter)) return true;
-			return artist.songs && artist.songs.some(song => {
-				const songName = (song.name || '').toLowerCase();
-				const songAuthor = (song.author || '').toLowerCase();
-				return songName.includes(searchFilter) || songAuthor.includes(searchFilter);
-			});
-		});
-		container.innerHTML = filteredArtists.map(artist => `
-			<div class="global-library-artist-card">
-				<div class="global-library-artist-header" onclick="musicPlayer.toggleGlobalLibraryPlaylist(${artist.id})">
-					<div>
-						<span class="global-library-collapse-icon" id="collapse-icon-${artist.id}">▶</span>
-						<span class="global-library-artist-name">${artist.name || 'Unnamed Playlist'}</span>
-					</div>
-					<div class="global-library-header-actions">
-						<button onclick="event.stopPropagation(); musicPlayer.editGlobalLibraryPlaylist(${artist.id}, '${(artist.name || '').replace(/'/g, "\\'")}');" class="global-library-btn-small">Edit</button>
-						<button onclick="event.stopPropagation(); musicPlayer.deleteGlobalLibraryPlaylist(${artist.id});" class="global-library-btn-small global-library-btn-danger">Delete</button>
-					</div>
-				</div>
-				<div class="global-library-songs-container" id="songs-container-${artist.id}">
-					${(artist.songs || []).map(song => `
-						<div class="global-library-song-item">
-							<div class="global-library-song-content">
-								<div class="global-library-song-name">${song.name || 'Unnamed Song'}</div>
-								<div class="global-library-song-author">by ${song.author || 'Unknown Artist'}</div>
-							</div>
-							<div class="global-library-song-actions">
-								<button onclick="musicPlayer.samplePlayTemporarySong('${song.youtube_url || ''}')" class="global-library-btn-small" title="Play on YouTube">▶</button>
-								<button onclick="musicPlayer.deleteGlobalLibrarySong(${song.id})" class="global-library-btn-small global-library-btn-danger">🗑️</button>
-							</div>
-						</div>
-					`).join('')}
-					<div style="text-align: right; margin-top: 10px; color: var(--text-secondary); font-size: 12px;">
-						${(artist.songs || []).length} songs
-					</div>
-				</div>
-			</div>
-		`).join('');
+	    const container = document.getElementById('globalLibraryArtistsContainer');
+	    const searchFilter = (this.globalLibrarySearchFilter || '').toLowerCase();
+	    
+	    const filteredArtists = this.globalLibraryArtists.filter(artist => {
+	        const artistName = (artist.name || '').toLowerCase();
+	        if (artistName.includes(searchFilter)) return true;
+	        return artist.songs && artist.songs.some(song => {
+	            const songName = (song.name || '').toLowerCase();
+	            const songAuthor = (song.author || '').toLowerCase();
+	            return songName.includes(searchFilter) || songAuthor.includes(searchFilter);
+	        });
+	    });
+	    
+	    container.innerHTML = filteredArtists.map(artist => {
+	        const songs = artist.songs || [];
+	        
+	        return `
+	            <div class="global-library-artist-card" data-artist-id="${artist.id}">
+	                <div class="global-library-artist-header" onclick="musicPlayer.toggleGlobalLibraryPlaylist(${artist.id})">
+	                    <div>
+	                        <span class="global-library-collapse-icon" id="collapse-icon-${artist.id}">▶</span>
+	                        <span class="global-library-artist-name">${artist.name || 'Unnamed Playlist'}</span>
+	                    </div>
+	                    <div class="global-library-header-actions">
+	                        <button onclick="event.stopPropagation(); musicPlayer.editGlobalLibraryPlaylist(${artist.id}, '${(artist.name || '').replace(/'/g, "\\'")}');" class="global-library-btn-small">Edit</button>
+	                        <button onclick="event.stopPropagation(); musicPlayer.deleteGlobalLibraryPlaylist(${artist.id});" class="global-library-btn-small global-library-btn-danger">Delete</button>
+	                    </div>
+	                </div>
+	                <div class="global-library-songs-container" id="songs-container-${artist.id}">
+	                    <div class="global-library-edit-mode" id="edit-mode-${artist.id}">
+	                        ${songs.map((song, index) => `
+	                            <div class="global-library-song-edit-item" data-song-index="${index}" data-song-id="${song.id || ''}">
+	                                <input 
+	                                    type="text" 
+	                                    class="song-name-input" 
+	                                    placeholder="Song Name *" 
+	                                    value="${song.name || ''}"
+	                                    data-artist-id="${artist.id}"
+	                                    data-song-index="${index}"
+	                                    onkeydown="musicPlayer.handleSongInputKeydown(event, ${artist.id}, ${index}, ${songs.length})"
+	                                />
+	                                <input 
+	                                    type="text" 
+	                                    class="song-author-input" 
+	                                    placeholder="Author *" 
+	                                    value="${song.author || ''}"
+	                                />
+	                                <input 
+	                                    type="url" 
+	                                    class="song-url-input" 
+	                                    placeholder="YouTube URL *" 
+	                                    value="${song.youtube_url || ''}"
+	                                />
+	                                <button 
+	                                    class="global-library-song-edit-delete" 
+	                                    onclick="musicPlayer.removeSongEditCard(${artist.id}, ${index})"
+	                                    title="Delete song"
+	                                >🗑️</button>
+	                            </div>
+	                        `).join('')}
+	                    </div>
+	                    <div class="global-library-playlist-actions">
+	                        <button class="global-library-autofill-btn" onclick="musicPlayer.autofillYouTubeUrls(${artist.id})">
+	                            Autofill YouTube URLs
+	                        </button>
+	                        <button class="global-library-autofill-btn" onclick="musicPlayer.autofillAuthors(${artist.id})">
+	                            Autofill Authors
+	                        </button>
+	                        <button class="global-library-save-btn" onclick="musicPlayer.savePlaylistChanges(${artist.id})">
+	                            Save Changes
+	                        </button>
+	                    </div>
+	                    <div id="validation-error-${artist.id}" class="global-library-validation-error"></div>
+	                    <div style="text-align: right; margin-top: 10px; color: var(--text-secondary); font-size: 12px;">
+	                        ${songs.length} songs
+	                    </div>
+	                </div>
+	            </div>
+	        `;
+	    }).join('');
 	}
-	toggleGlobalLibraryPlaylist(artistId) {
+toggleGlobalLibraryPlaylist(artistId) {
     const songsContainer = document.getElementById(`songs-container-${artistId}`);
     const icon = document.getElementById(`collapse-icon-${artistId}`);
     
@@ -9357,6 +9395,268 @@ async editGlobalLibraryPlaylist(artistId, currentName) {
         this.loadGlobalLibraryData();
     }
 }
+
+handleSongInputKeydown(event, artistId, songIndex, totalSongs) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        
+        // Check if this is the last song
+        if (songIndex === totalSongs - 1) {
+            this.addNewSongCard(artistId);
+        }
+    }
+}
+
+addNewSongCard(artistId) {
+    const editModeContainer = document.getElementById(`edit-mode-${artistId}`);
+    const currentSongs = editModeContainer.querySelectorAll('.global-library-song-edit-item');
+    const newIndex = currentSongs.length;
+    
+    const newCard = document.createElement('div');
+    newCard.className = 'global-library-song-edit-item';
+    newCard.setAttribute('data-song-index', newIndex);
+    newCard.setAttribute('data-song-id', '');
+    
+    newCard.innerHTML = `
+        <input 
+            type="text" 
+            class="song-name-input" 
+            placeholder="Song Name *" 
+            value=""
+            data-artist-id="${artistId}"
+            data-song-index="${newIndex}"
+            onkeydown="musicPlayer.handleSongInputKeydown(event, ${artistId}, ${newIndex}, ${newIndex + 1})"
+        />
+        <input 
+            type="text" 
+            class="song-author-input" 
+            placeholder="Author *" 
+            value=""
+        />
+        <input 
+            type="url" 
+            class="song-url-input" 
+            placeholder="YouTube URL *" 
+            value=""
+        />
+        <button 
+            class="global-library-song-edit-delete" 
+            onclick="musicPlayer.removeSongEditCard(${artistId}, ${newIndex})"
+            title="Delete song"
+        >🗑️</button>
+    `;
+    
+    editModeContainer.appendChild(newCard);
+    
+    // Focus on the new song name input
+    const newInput = newCard.querySelector('.song-name-input');
+    newInput.focus();
+    
+    // Update song count
+    const countDisplay = document.querySelector(`#songs-container-${artistId} [style*="text-align: right"]`);
+    if (countDisplay) {
+        countDisplay.textContent = `${newIndex + 1} songs`;
+    }
+}
+
+removeSongEditCard(artistId, songIndex) {
+    const editModeContainer = document.getElementById(`edit-mode-${artistId}`);
+    const songCards = editModeContainer.querySelectorAll('.global-library-song-edit-item');
+    
+    if (songCards.length <= 1) {
+        this.showGlobalLibraryMessage('Cannot delete the last song. Delete the playlist instead.', 'error');
+        return;
+    }
+    
+    songCards[songIndex].remove();
+    
+    // Re-index remaining cards
+    const remainingCards = editModeContainer.querySelectorAll('.global-library-song-edit-item');
+    remainingCards.forEach((card, index) => {
+        card.setAttribute('data-song-index', index);
+        const nameInput = card.querySelector('.song-name-input');
+        nameInput.setAttribute('data-song-index', index);
+        nameInput.setAttribute('onkeydown', `musicPlayer.handleSongInputKeydown(event, ${artistId}, ${index}, ${remainingCards.length})`);
+        
+        const deleteBtn = card.querySelector('.global-library-song-edit-delete');
+        deleteBtn.setAttribute('onclick', `musicPlayer.removeSongEditCard(${artistId}, ${index})`);
+    });
+    
+    // Update count
+    const countDisplay = document.querySelector(`#songs-container-${artistId} [style*="text-align: right"]`);
+    if (countDisplay) {
+        countDisplay.textContent = `${remainingCards.length} songs`;
+    }
+}
+
+async savePlaylistChanges(artistId) {
+    const editModeContainer = document.getElementById(`edit-mode-${artistId}`);
+    const songCards = editModeContainer.querySelectorAll('.global-library-song-edit-item');
+    const errorDiv = document.getElementById(`validation-error-${artistId}`);
+    
+    errorDiv.textContent = '';
+    
+    const songsData = [];
+    let hasError = false;
+    
+    songCards.forEach((card, index) => {
+        const name = card.querySelector('.song-name-input').value.trim();
+        const author = card.querySelector('.song-author-input').value.trim();
+        const url = card.querySelector('.song-url-input').value.trim();
+        
+        if (!name || !author || !url) {
+            hasError = true;
+            errorDiv.textContent = `Song ${index + 1}: All fields (Name, Author, YouTube URL) are required!`;
+            return;
+        }
+        
+        if (!url.includes('youtube.com') && !url.includes('youtu.be')) {
+            hasError = true;
+            errorDiv.textContent = `Song ${index + 1}: Invalid YouTube URL!`;
+            return;
+        }
+        
+        const songId = card.getAttribute('data-song-id');
+        songsData.push({
+            id: songId ? parseInt(songId) : null,
+            name,
+            author,
+            youtube_url: url
+        });
+    });
+    
+    if (hasError) return;
+    
+    try {
+        // Delete all existing songs for this playlist
+        const { error: deleteError } = await this.globalLibrarySupabase
+            .from('songs')
+            .delete()
+            .eq('artist_id', artistId);
+        
+        if (deleteError) throw deleteError;
+        
+        // Insert all songs fresh
+        const songsToInsert = songsData.map(song => ({
+            name: song.name,
+            author: song.author,
+            youtube_url: song.youtube_url,
+            artist_id: artistId,
+            created_by: this.globalLibraryCurrentUser.id
+        }));
+        
+        const { error: insertError } = await this.globalLibrarySupabase
+            .from('songs')
+            .insert(songsToInsert);
+        
+        if (insertError) throw insertError;
+        
+        this.showGlobalLibraryMessage('Playlist saved successfully!', 'success');
+        this.loadGlobalLibraryData();
+        
+    } catch (error) {
+        this.showGlobalLibraryMessage('Error saving playlist: ' + error.message, 'error');
+    }
+}
+
+async autofillYouTubeUrls(artistId) {
+    const editModeContainer = document.getElementById(`edit-mode-${artistId}`);
+    const songCards = editModeContainer.querySelectorAll('.global-library-song-edit-item');
+    
+    const outputContainer = this.elements.aiOutput;
+    let processedCount = 0;
+    
+    for (let card of songCards) {
+        const nameInput = card.querySelector('.song-name-input');
+        const authorInput = card.querySelector('.song-author-input');
+        const urlInput = card.querySelector('.song-url-input');
+        
+        const songName = nameInput.value.trim();
+        const songAuthor = authorInput.value.trim();
+        const currentUrl = urlInput.value.trim();
+        
+        // Skip if URL already exists or name is empty
+        if (currentUrl || !songName) continue;
+        
+        try {
+            processedCount++;
+            outputContainer.innerHTML = `<div class="ai-loading">Searching YouTube for "${songName}" ${songAuthor ? `by ${songAuthor}` : ''} (${processedCount})...</div>`;
+            
+            const searchQuery = songAuthor 
+                ? `"${songName}" "${songAuthor}"`
+                : `"${songName}"`;
+            
+            const data = await this.searchYouTubeWithRotation(searchQuery);
+            
+            if (data.items && data.items.length > 0) {
+                const bestMatch = this.findBestYouTubeMatch(
+                    data.items, 
+                    songName, 
+                    songAuthor || songName
+                );
+                
+                if (bestMatch) {
+                    urlInput.value = `https://www.youtube.com/watch?v=${bestMatch.id.videoId}`;
+                }
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
+        } catch (error) {
+            console.error(`Error autofilling URL for "${songName}":`, error);
+            if (error.message.includes('All API keys failed')) {
+                this.showGlobalLibraryMessage('API keys exhausted. Partial autofill completed.', 'error');
+                break;
+            }
+        }
+    }
+    
+    outputContainer.innerHTML = '';
+    this.showGlobalLibraryMessage(`Autofilled ${processedCount} YouTube URLs!`, 'success');
+}
+
+async autofillAuthors(artistId) {
+    const editModeContainer = document.getElementById(`edit-mode-${artistId}`);
+    const songCards = editModeContainer.querySelectorAll('.global-library-song-edit-item');
+    
+    let processedCount = 0;
+    
+    for (let card of songCards) {
+        const authorInput = card.querySelector('.song-author-input');
+        const urlInput = card.querySelector('.song-url-input');
+        
+        const currentAuthor = authorInput.value.trim();
+        const youtubeUrl = urlInput.value.trim();
+        
+        // Skip if author already exists or URL is empty
+        if (currentAuthor || !youtubeUrl) continue;
+        
+        try {
+            const videoId = this.extractYouTubeId(youtubeUrl);
+            if (!videoId) continue;
+            
+            const [title, channelName] = await Promise.all([
+                this.fetchYouTubeTitle(videoId),
+                this.fetchYouTubeChannel(videoId)
+            ]);
+            
+            if (title) {
+                const { author, songName } = this.parseVideoTitle(title);
+                authorInput.value = author || channelName || '';
+                processedCount++;
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, 200));
+            
+        } catch (error) {
+            console.error(`Error autofilling author for URL ${youtubeUrl}:`, error);
+            continue;
+        }
+    }
+    
+    this.showGlobalLibraryMessage(`Autofilled ${processedCount} authors!`, 'success');
+}
+	
 	updateGlobalLibraryPlaylistSelects() {
 		const select = document.getElementById('globalLibrarySongPlaylistSelect');
 		const massImportSelect = document.getElementById('globalLibraryMassImportSelect');
