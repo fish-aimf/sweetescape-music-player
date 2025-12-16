@@ -7203,8 +7203,29 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     border-left: 3px solid var(--accent-color);
     display: grid;
     grid-template-columns: 1fr 1fr 40px;
+    grid-template-rows: auto auto;
     gap: 8px;
     align-items: center;
+}
+
+.global-library-song-edit-item .song-name-input {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+.global-library-song-edit-item .song-url-input {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.global-library-song-edit-item .song-author-input {
+    grid-column: 1 / 3;
+    grid-row: 2;
+}
+
+.global-library-song-edit-item .global-library-song-edit-delete {
+    grid-column: 3;
+    grid-row: 1 / 3;
 }
 
 .global-library-song-edit-item input {
