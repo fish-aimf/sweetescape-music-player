@@ -7189,3 +7189,78 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 #saveLyricsBtn:hover {
     background-color: var(--hover-color);
 }
+
+
+.global-library-edit-mode {
+    padding: 10px 0;
+}
+
+.global-library-song-edit-item {
+    background: var(--bg-primary);
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 4px;
+    border-left: 3px solid var(--accent-color);
+    display: grid;
+    grid-template-columns: 1fr 1fr 40px;
+    gap: 8px;
+    align-items: center;
+}
+
+.global-library-song-edit-item input {
+    padding: 6px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 12px;
+}
+
+.global-library-song-edit-item input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
+.global-library-song-edit-delete {
+    background: var(--error-color);
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    padding: 6px;
+    font-size: 14px;
+}
+
+.global-library-playlist-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-color);
+}
+
+.global-library-playlist-actions button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.global-library-autofill-btn {
+    background: var(--accent-color);
+    color: var(--button-text-color);
+}
+
+.global-library-save-btn {
+    background: #4CAF50;
+    color: white;
+    margin-left: auto;
+}
+
+.global-library-validation-error {
+    color: var(--error-color);
+    font-size: 11px;
+    margin-top: 5px;
+}
