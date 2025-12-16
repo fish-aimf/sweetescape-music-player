@@ -9297,31 +9297,66 @@ hideSidebar() {
 			});
 		});
 		container.innerHTML = filteredArtists.map(artist => `
-        <div class="global-library-artist-card">
-            <div class="global-library-artist-header">
-                <div class="global-library-artist-name"> ${artist.name || 'Unnamed Playlist'}</div>
-                <button onclick="musicPlayer.deleteGlobalLibraryPlaylist(${artist.id})" class="global-library-btn-small global-library-btn-danger">Delete</button>
-            </div>
-            <div>
-                ${(artist.songs || []).map(song => `
-                    <div class="global-library-song-item">
-                        <div class="global-library-song-content">
-                            <div class="global-library-song-name">${song.name || 'Unnamed Song'}</div>
-                            <div class="global-library-song-author">by ${song.author || 'Unknown Artist'}</div>
-                        </div>
-                        <div class="global-library-song-actions">
-                            <button onclick="musicPlayer.samplePlayTemporarySong('${song.youtube_url || ''}')" class="global-library-btn-small" title="Play on YouTube">▶</button>
-                            <button onclick="musicPlayer.deleteGlobalLibrarySong(${song.id})" class="global-library-btn-small global-library-btn-danger">🗑️</button>
-                        </div>
-                    </div>
-                `).join('')}
-            </div>
-            <div style="text-align: right; margin-top: 10px; color: var(--text-secondary); font-size: 12px;">
-                ${(artist.songs || []).length} songs
-            </div>
-        </div>
-    `).join('');
+			<div class="global-library-artist-card">
+				<div class="global-library-artist-header" onclick="musicPlayer.toggleGlobalLibraryPlaylist(${artist.id})">
+					<div>
+						<span class="global-library-collapse-icon" id="collapse-icon-${artist.id}">▶</span>
+						<span class="global-library-artist-name">${artist.name || 'Unnamed Playlist'}</span>
+					</div>
+					<div class="global-library-header-actions">
+						<button onclick="event.stopPropagation(); musicPlayer.editGlobalLibraryPlaylist(${artist.id}, '${(artist.name || '').replace(/'/g, "\\'")}');" class="global-library-btn-small">Edit</button>
+						<button onclick="event.stopPropagation(); musicPlayer.deleteGlobalLibraryPlaylist(${artist.id});" class="global-library-btn-small global-library-btn-danger">Delete</button>
+					</div>
+				</div>
+				<div class="global-library-songs-container" id="songs-container-${artist.id}">
+					${(artist.songs || []).map(song => `
+						<div class="global-library-song-item">
+							<div class="global-library-song-content">
+								<div class="global-library-song-name">${song.name || 'Unnamed Song'}</div>
+								<div class="global-library-song-author">by ${song.author || 'Unknown Artist'}</div>
+							</div>
+							<div class="global-library-song-actions">
+								<button onclick="musicPlayer.samplePlayTemporarySong('${song.youtube_url || ''}')" class="global-library-btn-small" title="Play on YouTube">▶</button>
+								<button onclick="musicPlayer.deleteGlobalLibrarySong(${song.id})" class="global-library-btn-small global-library-btn-danger">🗑️</button>
+							</div>
+						</div>
+					`).join('')}
+					<div style="text-align: right; margin-top: 10px; color: var(--text-secondary); font-size: 12px;">
+						${(artist.songs || []).length} songs
+					</div>
+				</div>
+			</div>
+		`).join('');
 	}
+	toggleGlobalLibraryPlaylist(artistId) {
+    const songsContainer = document.getElementById(`songs-container-${artistId}`);
+    const icon = document.getElementById(`collapse-icon-${artistId}`);
+    
+    if (songsContainer.classList.contains('expanded')) {
+        songsContainer.classList.remove('expanded');
+        icon.classList.remove('expanded');
+    } else {
+        songsContainer.classList.add('expanded');
+        icon.classList.add('expanded');
+    }
+}
+
+async editGlobalLibraryPlaylist(artistId, currentName) {
+    const newName = prompt('Enter new playlist name:', currentName);
+    if (!newName || newName === currentName) return;
+    
+    const { error } = await this.globalLibrarySupabase
+        .from('artists')
+        .update({ name: newName })
+        .eq('id', artistId);
+    
+    if (error) {
+        this.showGlobalLibraryMessage('Error updating playlist: ' + error.message, 'error');
+    } else {
+        this.showGlobalLibraryMessage('Playlist updated successfully!', 'success');
+        this.loadGlobalLibraryData();
+    }
+}
 	updateGlobalLibraryPlaylistSelects() {
 		const select = document.getElementById('globalLibrarySongPlaylistSelect');
 		const massImportSelect = document.getElementById('globalLibraryMassImportSelect');
