@@ -458,3 +458,20 @@
 - finally added csp headers v51.0.4
 - moved the font awsome locally. v51.1.0
 - fixed the button in the import transcript finally. v51.1.1
+- redid supabase editor page, less cluttered v52.0.0
+- Playlists now collapsed by default with expandable/collapsible accordion functionality v52.1.0
+- Added arrow icon that rotates when expanded v52.2.0
+- reduced card spacing margins 52.3.0
+- put every single playlist into a scrollable container to clear clutter. v52.4.0
+- playlist stack vertically only now and strech full length. v52.5.0
+- added edit button to change playlist names v52.6.0
+- all playlists would display editable textboxes. v52.7.0
+- song cards could have a layout of name and youtube url on toprow and author on bottom row. v52.8.0
+- pressing enter on last song car will create new empty song card in that playlist v52.9.0
+- added individual song card delete button v52.10.0
+- focuses to new card after pressing enter v52.10.1
+- save changes button added, all fields must be filled before saving v52.11.0
+- shows errors for missing fields or invalid urls v52.12.0
+- autofill youtube url button searches youtube api for all empty url fields based on name and picks most appropriate choice. v52.13.0
+- autofill authors, will take the youtube video name and extract the channel name or author. v52.14.0
+- show progress messages for autofill. v52.15.0
