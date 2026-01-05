@@ -49,9 +49,9 @@ def init_discord():
         rpc.connect()
         with discord_lock:
             connected_to_discord = True
-        print("✅ Discord RPC connected")
+        print("Discord RPC connected")
     except Exception as e:
-        print(f"❌ Discord connection failed: {e}")
+        print(f"Discord connection failed: {e}")
         with stats_lock:
             server_stats["errors"] += 1
 
@@ -85,8 +85,8 @@ def update_discord_rpc(song, artist, url):
         
         # Build buttons - reuse list structure
         rpc_data["buttons"] = [
-            {"label": "🎵 Listen on YouTube", "url": url},
-            {"label": "🌐 Open SweetEscape", "url": "https://sweetescape.vercel.app"}
+            {"label": "Listen on YouTube", "url": url},
+            {"label": "Open SweetEscape", "url": "https://sweetescape.vercel.app"}
         ]
         
         # Only add state if artist is not "Unknown Artist"
@@ -120,7 +120,23 @@ def update_discord_rpc(song, artist, url):
         
         return True
     except Exception as e:
-        print(f"❌ Update failed: {e}")
+        print(f"Update failed: {e}")
+        with stats_lock:
+            server_stats["errors"] += 1
+        return False
+
+def shutdown_computer():
+    """Shutdown the computer (requires admin privileges on Windows)"""
+    try:
+        if sys.platform == 'win32':
+            subprocess.run(['shutdown', '/s', '/t', '0', '/f'], check=True)
+            print("Shutdown command executed")
+            return True
+        else:
+            subprocess.run(['shutdown', '-h', 'now'], check=True)
+            return True
+    except Exception as e:
+        print(f"Shutdown failed: {e}")
         with stats_lock:
             server_stats["errors"] += 1
         return False
@@ -139,7 +155,7 @@ def clear_discord_rpc():
         print(f"[{timestamp}] 🔇 Discord presence cleared")
         return True
     except Exception as e:
-        print(f"❌ Clear failed: {e}")
+        print(f"Clear failed: {e}")
         with stats_lock:
             server_stats["errors"] += 1
         return False
@@ -150,7 +166,7 @@ async def handle_client(websocket):
     with stats_lock:
         server_stats["connected_clients"] += 1
     
-    print(f"📱 Client connected (Total: {server_stats['connected_clients']})")
+    print(f"Client connected (Total: {server_stats['connected_clients']})")
     
     if not connected_to_discord:
         discord_thread = threading.Thread(target=init_discord)
@@ -164,6 +180,26 @@ async def handle_client(websocket):
     try:
         async for message in websocket:
             data = json.loads(message)
+            
+            # Check if this is a shutdown signal
+            if data.get('action') == 'shutdown':
+                loop = asyncio.get_event_loop()
+                success = await loop.run_in_executor(None, shutdown_computer)
+                
+                if success:
+                    response = {
+                        "status": "success",
+                        "message": "Shutdown initiated",
+                        "timestamp": datetime.now().isoformat()
+                    }
+                    await websocket.send(json.dumps(response))
+                else:
+                    response = {
+                        "status": "error",
+                        "message": "Could not shutdown computer"
+                    }
+                    await websocket.send(json.dumps(response))
+                return
             
             # Check if this is a disable/clear signal
             if data.get('action') == 'clear' or data.get('enabled') == False:
@@ -209,11 +245,11 @@ async def handle_client(websocket):
     except websockets.exceptions.ConnectionClosed:
         with stats_lock:
             server_stats["connected_clients"] -= 1
-        print(f"📱 Client disconnected (Remaining: {server_stats['connected_clients']})")
+        print(f"Client disconnected (Remaining: {server_stats['connected_clients']})")
         loop = asyncio.get_event_loop()
         await loop.run_in_executor(None, clear_discord_rpc)
     except Exception as e:
-        print(f"❌ Client error: {e}")
+        print(f"Client error: {e}")
         with stats_lock:
             server_stats["errors"] += 1
             server_stats["connected_clients"] -= 1
@@ -230,7 +266,7 @@ async def start_server():
         max_size=10_485_760,
         max_queue=32
     ):
-        print("🚀 Discord RPC Server started on ws://localhost:9112")
+        print("Discord RPC Server started on ws://localhost:9112")
         print("="*60)
         await asyncio.Future()
 
@@ -279,7 +315,7 @@ def get_uptime():
 def show_console(icon, item):
     """Show console window with detailed status"""
     with stats_lock:
-        status = "✅ Connected" if connected_to_discord else "❌ Disconnected"
+        status = "Connected" if connected_to_discord else "Disconnected"
         uptime = get_uptime()
         last_song = server_stats["last_song"] or "None"
         last_artist = server_stats["last_artist"] or "None"
