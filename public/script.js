@@ -7386,7 +7386,14 @@ hideSidebar() {
 		}
 
 		const timerStatus = document.getElementById("timerStatus");
-		const actionText = this.timerAction === 'stopMusic' ? 'Music will stop' : 'App will close';
+		let actionText;
+			if (this.timerAction === 'stopMusic') {
+			    actionText = 'Music will stop';
+			} else if (this.timerAction === 'closeApp') {
+			    actionText = 'App will close';
+			} else if (this.timerAction === 'shutdown') {
+			    actionText = 'PC will shutdown';
+			}
 
 		if (specificEndTime) {
 			const formattedTime = this.timerEndTime.toLocaleTimeString([], {
@@ -7409,8 +7416,10 @@ hideSidebar() {
 		this.appTimer = setTimeout(() => {
 			if (this.timerAction === 'stopMusic') {
 				this.stopMusic();
-			} else {
+			} else if (this.timerAction === 'closeApp') {
 				this.closeApp();
+			} else if (this.timerAction === 'shutdown') {
+				this.shutdownPC();
 			}
 		}, milliseconds);
 
@@ -7456,6 +7465,27 @@ hideSidebar() {
 			}
 		}
 	}
+	shutdownPC() {
+    if (!this.discordWs || this.discordWs.readyState !== WebSocket.OPEN) {
+        console.error('Discord WebSocket not connected - cannot send shutdown command');
+        alert('Cannot shutdown: Desktop app not connected');
+        return;
+    }
+    try {
+        this.discordWs.send(JSON.stringify({
+            action: 'shutdown'
+        }));
+        console.log(' Shutdown command sent to desktop app');
+        document.body.innerHTML = 
+            '<div style="text-align: center; padding: 50px; background: #1a1a1a; color: #fff; position: fixed; top: 0; left: 0; right: 0; bottom: 0;">' +
+            '<h1 style="color: #e74c3c;">Shutting Down</h1>' +
+            '<p>Your computer is shutting down now...</p>' +
+            '</div>';
+    } catch (error) {
+        console.error('Failed to send shutdown command:', error);
+        alert('Failed to send shutdown command');
+    }
+}
 	clearAppTimer() {
 		if (this.appTimer) {
 			clearTimeout(this.appTimer);
@@ -7477,7 +7507,14 @@ hideSidebar() {
 				const minutes = Math.floor(timeLeft / 60000);
 				const seconds = Math.floor((timeLeft % 60000) / 1000);
 				const timerStatus = document.getElementById("timerStatus");
-				const actionText = this.timerAction === 'stopMusic' ? 'Music will stop' : 'App will close';
+				let actionText;
+				if (this.timerAction === 'stopMusic') {
+				    actionText = 'Music will stop';
+				} else if (this.timerAction === 'closeApp') {
+				    actionText = 'App will close';
+				} else if (this.timerAction === 'shutdown') {
+				    actionText = 'PC will shutdown';
+				}
 				timerStatus.textContent = `${actionText} in ${minutes}m ${seconds}s`;
 				const timerDisplay = document.getElementById("timerDisplay");
 				if (minutes > 0) {
@@ -7522,6 +7559,11 @@ hideSidebar() {
 			this.timerAction = 'closeApp';
 			document.querySelectorAll('.action-btn').forEach(btn => btn.classList.remove('active'));
 			document.getElementById("closeAppAction").classList.add('active');
+		});
+		document.getElementById("shutdownAction").addEventListener("click", () => {
+		    this.timerAction = 'shutdown';
+		    document.querySelectorAll('.action-btn').forEach(btn => btn.classList.remove('active'));
+		    document.getElementById("shutdownAction").classList.add('active');
 		});
 
 		document.querySelectorAll(".timer-options button").forEach((button) => {
@@ -11282,7 +11324,7 @@ closeBillboardHot100Modal() {
 			this.discordWs = new WebSocket('ws://localhost:9112');
 
 			this.discordWs.onopen = () => {
-				console.log('✅ Connected to Discord RPC desktop app');
+				console.log(' Connected to Discord RPC desktop app');
 				this.discordConnected = true;
 				this.discordReconnectAttempts = 0;
 				this.updateDiscordButtonUI();
@@ -11293,7 +11335,7 @@ closeBillboardHot100Modal() {
 			};
 
 			this.discordWs.onclose = () => {
-				console.log('❌ Disconnected from Discord RPC desktop app');
+				console.log(' Disconnected from Discord RPC desktop app');
 				this.discordConnected = false;
 				this.updateDiscordButtonUI();
 
