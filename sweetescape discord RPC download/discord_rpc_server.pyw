@@ -2,6 +2,7 @@ import asyncio
 import websockets
 import json
 from pypresence import Presence
+from pypresence.types import ActivityType
 import threading
 import time
 import re
@@ -33,6 +34,7 @@ stats_lock = threading.Lock()
 
 # Optimization: Pre-allocated RPC template to reduce memory allocations
 BASE_RPC_DATA = {
+    "activity_type": ActivityType.LISTENING,
     "small_image": "favicon",
     "small_text": "sweetescape.vercel.app",
 }
@@ -80,8 +82,7 @@ def update_discord_rpc(song, artist, url):
         
         # Optimization: Reuse base template and update only what's needed
         rpc_data = BASE_RPC_DATA.copy()
-        rpc_data["details"] = f"Listening to \"{song}\""
-        rpc_data["large_text"] = f"{song} • {artist}"
+        rpc_data["details"] = f"{song}"
         
         # Build buttons - reuse list structure
         rpc_data["buttons"] = [
@@ -91,7 +92,7 @@ def update_discord_rpc(song, artist, url):
         
         # Only add state if artist is not "Unknown Artist"
         if artist != "Unknown Artist":
-            rpc_data["state"] = f"Song by \"{artist}\""
+            rpc_data["state"] = f"by {artist}"
         
         # Add large_image only if we have a valid video_id
         if video_id:
@@ -114,29 +115,13 @@ def update_discord_rpc(song, artist, url):
             last_log_time = current_time
             timestamp = datetime.now().strftime("%H:%M:%S")
             if artist != "Unknown":
-                print(f"[{timestamp}] 🎵 {song[:40]}... by {artist[:30]}...")
+                print(f"[{timestamp}] {song[:40]}... by {artist[:30]}...")
             else:
-                print(f"[{timestamp}] 🎵 {song[:40]}...")
+                print(f"[{timestamp}] {song[:40]}...")
         
         return True
     except Exception as e:
         print(f"Update failed: {e}")
-        with stats_lock:
-            server_stats["errors"] += 1
-        return False
-
-def shutdown_computer():
-    """Shutdown the computer (requires admin privileges on Windows)"""
-    try:
-        if sys.platform == 'win32':
-            subprocess.run(['shutdown', '/s', '/t', '0', '/f'], check=True)
-            print("Shutdown command executed")
-            return True
-        else:
-            subprocess.run(['shutdown', '-h', 'now'], check=True)
-            return True
-    except Exception as e:
-        print(f"Shutdown failed: {e}")
         with stats_lock:
             server_stats["errors"] += 1
         return False
@@ -152,7 +137,7 @@ def clear_discord_rpc():
             server_stats["last_update"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
         timestamp = datetime.now().strftime("%H:%M:%S")
-        print(f"[{timestamp}] 🔇 Discord presence cleared")
+        print(f"[{timestamp}] Discord presence cleared")
         return True
     except Exception as e:
         print(f"Clear failed: {e}")
@@ -180,26 +165,6 @@ async def handle_client(websocket):
     try:
         async for message in websocket:
             data = json.loads(message)
-            
-            # Check if this is a shutdown signal
-            if data.get('action') == 'shutdown':
-                loop = asyncio.get_event_loop()
-                success = await loop.run_in_executor(None, shutdown_computer)
-                
-                if success:
-                    response = {
-                        "status": "success",
-                        "message": "Shutdown initiated",
-                        "timestamp": datetime.now().isoformat()
-                    }
-                    await websocket.send(json.dumps(response))
-                else:
-                    response = {
-                        "status": "error",
-                        "message": "Could not shutdown computer"
-                    }
-                    await websocket.send(json.dumps(response))
-                return
             
             # Check if this is a disable/clear signal
             if data.get('action') == 'clear' or data.get('enabled') == False:
@@ -333,23 +298,23 @@ print("DISCORD RPC SERVER - LIVE STATUS")
 print("=" * 70)
 print("")
 print("SERVER STATUS:")
-print("  ✓ Server: Running on localhost:9112")
-print("  ✓ Discord: {status}")
-print("  ✓ Uptime: {uptime}")
+print("  Server: Running on localhost:9112")
+print("  Discord: {status}")
+print("  Uptime: {uptime}")
 print("")
 print("STATISTICS:")
-print("  • Total Updates: {total_updates}")
-print("  • Total Clears: {clears}")
-print("  • Active Clients: {clients}")
-print("  • Errors: {errors}")
+print("  Total Updates: {total_updates}")
+print("  Total Clears: {clears}")
+print("  Active Clients: {clients}")
+print("  Errors: {errors}")
 print("")
 print("CURRENT TRACK:")
-print("  • Song: {last_song}")
-print("  • Artist: {last_artist}")
-print("  • Last Updated: {last_update}")
+print("  Song: {last_song}")
+print("  Artist: {last_artist}")
+print("  Last Updated: {last_update}")
 print("")
 print("=" * 70)
-print("💡 Close this window to hide the console")
+print("Close this window to hide the console")
 print("=" * 70)
 input("\\nPress Enter to close...")
 '''
@@ -357,11 +322,11 @@ input("\\nPress Enter to close...")
     else:
         # Linux/macOS
         print("=" * 70)
-        print("🎵 DISCORD RPC SERVER - LIVE STATUS")
+        print("DISCORD RPC SERVER - LIVE STATUS")
         print("=" * 70)
-        print(f"\n SERVER STATUS:\n  ✓ Server: Running on localhost:9112\n  ✓ Discord: {status}\n  ✓ Uptime: {uptime}")
-        print(f"\n STATISTICS:\n  • Total Updates: {total_updates}\n  • Total Clears: {clears}\n  • Active Clients: {clients}\n  • Errors: {errors}")
-        print(f"\n CURRENT TRACK:\n  • Song: {last_song}\n  • Artist: {last_artist}\n  • Last Updated: {last_update}")
+        print(f"\n SERVER STATUS:\n  Server: Running on localhost:9112\n  Discord: {status}\n  Uptime: {uptime}")
+        print(f"\n STATISTICS:\n  Total Updates: {total_updates}\n  Total Clears: {clears}\n  Active Clients: {clients}\n  Errors: {errors}")
+        print(f"\n CURRENT TRACK:\n  Song: {last_song}\n  Artist: {last_artist}\n  Last Updated: {last_update}")
         print("\n" + "=" * 70)
 
 def quit_action(icon, item):
