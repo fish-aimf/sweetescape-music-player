@@ -11,11 +11,7 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self' https://cwhxanbpymkngzpbsshh.supabase.co https://raw.githubusercontent.com; img-src 'self' data: https:; font-src 'self' data:;"
-        },
-        {
-          "key": "Content-Security-Policy-Report-Only",
-          "value": ""
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self' https://cwhxanbpymkngzpbsshh.supabase.co https://raw.githubusercontent.com https://www.googleapis.com; img-src 'self' data: https:; font-src 'self' data:;"
         }
       ]
     },
@@ -24,11 +20,7 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'; font-src * data: blob:; img-src * data: blob:; connect-src *; frame-src *; media-src *;"
-        },
-        {
-          "key": "Content-Security-Policy-Report-Only",
-          "value": ""
+          "value": "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'; font-src * data: blob: https://sweetescape.vercel.app; img-src * data: blob:; connect-src * https://www.googleapis.com; frame-src * https://www.youtube.com https://docs.google.com https://acceptable.a-ads.com; media-src *;"
         }
       ]
     }
