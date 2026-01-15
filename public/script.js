@@ -4838,31 +4838,57 @@ hideSidebar() {
 	}
 	updatePageTitle() {
 		const defaultTitle = "Music";
+		const MAX_TITLE_LENGTH = 60; 
+		const SCROLL_THRESHOLD = 70; 
+		
 		if (
 			!this.isPlaying ||
 			!this.elements.currentSongName.textContent ||
 			this.elements.currentSongName.textContent === "No Song Playing"
 		) {
 			document.title = defaultTitle;
-			return;
-		}
-		const songName = this.elements.currentSongName.textContent;
-		document.title = `Music - ${songName}`;
-		if (songName.length > 30) {
-			let currentPosition = 0;
-			const fullTitle = `Music - ${songName} • `;
 			if (this.titleScrollInterval) {
 				clearInterval(this.titleScrollInterval);
+				this.titleScrollInterval = null;
 			}
+			return;
+		}
+		
+		const songName = this.elements.currentSongName.textContent;
+		const fullTitle = `Music - ${songName}`;
+		
+		// Clear any existing scroll interval
+		if (this.titleScrollInterval) {
+			clearInterval(this.titleScrollInterval);
+			this.titleScrollInterval = null;
+		}
+		
+		// If it fits with "Music - ", use that
+		if (fullTitle.length <= MAX_TITLE_LENGTH) {
+			document.title = fullTitle;
+		}
+		// If removing "Music - " makes it fit (or close), just use song name
+		else if (songName.length <= MAX_TITLE_LENGTH + 5) {
+			document.title = songName.length <= MAX_TITLE_LENGTH 
+				? songName 
+				: songName.substring(0, MAX_TITLE_LENGTH - 3) + '...';
+		}
+		// Only scroll if it's really long
+		else if (songName.length > SCROLL_THRESHOLD) {
+			let currentPosition = 0;
+			const scrollTitle = `${songName} • `;
+			
 			this.titleScrollInterval = setInterval(() => {
-				currentPosition = (currentPosition + 1) % fullTitle.length;
+				currentPosition = (currentPosition + 1) % scrollTitle.length;
 				const scrolledTitle =
-					fullTitle.substring(currentPosition) +
-					fullTitle.substring(0, currentPosition);
+					scrollTitle.substring(currentPosition) +
+					scrollTitle.substring(0, currentPosition);
 				document.title = scrolledTitle;
 			}, 500);
-		} else if (this.titleScrollInterval) {
-			clearInterval(this.titleScrollInterval);
+		}
+		// Otherwise just truncate
+		else {
+			document.title = songName.substring(0, MAX_TITLE_LENGTH - 3) + '...';
 		}
 	}
 	changeFavicon(iconURL) {
