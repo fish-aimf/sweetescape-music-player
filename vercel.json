@@ -1,16 +1,15 @@
 {
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/public/$1" }
+  ],
   "functions": {
     "api/**/*.js": {
       "memory": 1024,
       "maxDuration": 10
     }
   },
-  "rewrites": [
-    {
-      "source": "/api/youtube",
-      "destination": "/api/youtube.js"
-    }
-  ],
   "headers": [
     {
       "source": "/(.*)",
