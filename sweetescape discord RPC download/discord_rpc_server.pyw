@@ -12,6 +12,8 @@ from PIL import Image, ImageDraw
 import subprocess
 import os
 from datetime import datetime
+import atexit
+import signal
 
 # Your Discord Application ID
 CLIENT_ID = "1428031900877983825"
@@ -42,6 +44,33 @@ BASE_RPC_DATA = {
 # Optimization: Cache for log throttling
 last_log_time = 0
 LOG_INTERVAL = 1  # Log at most every 1 second
+
+def cleanup_discord():
+    """Cleanup function to clear and close Discord RPC"""
+    global rpc, connected_to_discord
+    try:
+        if rpc and connected_to_discord:
+            print("\nCleaning up Discord RPC...")
+            rpc.clear()
+            rpc.close()
+            with discord_lock:
+                connected_to_discord = False
+            print("Discord RPC cleaned up successfully")
+    except Exception as e:
+        print(f"Cleanup error: {e}")
+
+# Register cleanup function to run on exit
+atexit.register(cleanup_discord)
+
+def signal_handler(signum, frame):
+    """Handle system signals for graceful shutdown"""
+    print("\nReceived shutdown signal...")
+    cleanup_discord()
+    os._exit(0)
+
+# Register signal handlers
+signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGTERM, signal_handler)
 
 def init_discord():
     """Initialize Discord connection in a separate thread"""
@@ -330,11 +359,24 @@ input("\\nPress Enter to close...")
         print("\n" + "=" * 70)
 
 def quit_action(icon, item):
-    """Quit the application"""
-    if rpc and connected_to_discord:
-        rpc.close()
+    """Quit the application with proper cleanup"""
+    global rpc, connected_to_discord
+    
+    print("\nShutting down...")
+    
+    # Explicitly clear and close RPC before anything else
+    try:
+        if rpc and connected_to_discord:
+            print("Clearing Discord Rich Presence...")
+            rpc.clear()
+            time.sleep(0.5)  # Give Discord time to process the clear
+            rpc.close()
+            print("Discord RPC closed")
+    except Exception as e:
+        print(f"Error during shutdown: {e}")
+    
     icon.stop()
-    os._exit(0)
+    sys.exit(0)
 
 def main():
     # Initialize uptime tracker
