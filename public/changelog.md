@@ -481,3 +481,4 @@
 - fixed the youtube api broken issues. v53.2.0
 - improved billboard updater v53.3.0
 - to save dom updates, the pagetitle will remove the music- prefix so whole song name could be shown. if its 5 characters above limit, it will be cut off, but if really too long, the title will animate and scroll. v53.4.0
+- Fixed csp headers to prevent excessive logs and improve performance. v53.5.0
