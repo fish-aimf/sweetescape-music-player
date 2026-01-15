@@ -480,3 +480,4 @@
 - Made rpc show listening, v53.1.0
 - fixed the youtube api broken issues. v53.2.0
 - improved billboard updater v53.3.0
+- to save dom updates, the pagetitle will remove the music- prefix so whole song name could be shown. if its 5 characters above limit, it will be cut off, but if really too long, the title will animate and scroll. v53.4.0
