@@ -1,4 +1,16 @@
 {
+  "functions": {
+    "api/**/*.js": {
+      "memory": 1024,
+      "maxDuration": 10
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/youtube",
+      "destination": "/api/youtube.js"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
