@@ -479,4 +479,4 @@
 - Shutdown function added for windows for discord rpc. Windows required and admin required. So you can listen to music while drifting off to sleep with your laptop. v53.0.0
 - Made rpc show listening, v53.1.0
 - fixed the youtube api broken issues. v53.2.0
-  
+- improved billboard updater v53.3.0
