@@ -12285,8 +12285,8 @@ async searchYouTubeForLibraryMatches(searchTerm) {
         const keyIndex = this.getRandomYouTubeApiKey();
         
         try {
-            const queryString = `?part=snippet&maxResults=${maxResults}&q=${encodeURIComponent(searchTerm)}&type=video&order=relevance`;
-            const response = await fetch(`/api/youtube?query=${encodeURIComponent(queryString)}&keyIndex=${keyIndex}`);
+            // FIXED: Pass search term directly with type parameter
+            const response = await fetch(`/api/youtube?query=${encodeURIComponent(searchTerm)}&maxResults=${maxResults}&type=search&keyIndex=${keyIndex}`);
             
             const result = await response.json();
             
@@ -12309,7 +12309,7 @@ async searchYouTubeForLibraryMatches(searchTerm) {
             const items = data.items || [];
 
             // Return results as-is from YouTube
-			return items;
+            return items;
             
         } catch (error) {
             console.error(`YouTube API attempt ${attempt + 1} failed:`, error);
@@ -12403,8 +12403,8 @@ async fetchYouTubeViewCount(videoId) {
         const keyIndex = this.getRandomYouTubeApiKey();
         
         try {
-            const queryString = `part=statistics&id=${videoId}`;
-            const response = await fetch(`/api/youtube?query=${encodeURIComponent(queryString)}&keyIndex=${keyIndex}`);
+            // FIXED: Pass videoId directly with type=statistics
+            const response = await fetch(`/api/youtube?query=${encodeURIComponent(videoId)}&type=statistics&keyIndex=${keyIndex}`);
             
             const result = await response.json();
             
