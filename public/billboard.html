@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src *; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'; connect-src *; img-src * data:; font-src * data:;">
     <title>Billboard Hot 100 Updater</title>
-    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: monospace; padding: 20px; background: #1e1e1e; color: #00ff00; }
@@ -23,10 +21,10 @@
     <script>
         const SUPABASE_URL = 'https://cwhxanbpymkngzpbsshh.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3aHhhbmJweW1rbmd6cGJzc2hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4NTQzMTksImV4cCI6MjA2OTQzMDMxOX0.6K3eM1XoWaPmyMHsLYgw0mAnSxYjME4clflL4PxQalQ';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         
         // API keys are now handled by backend
-        const YOUTUBE_API_KEYS_COUNT = 16; // Total number of keys you have
+        const YOUTUBE_API_KEYS_COUNT = 16;
         let activeKeyIndex = 0;
         
         function log(message, type = 'info') {
@@ -41,7 +39,6 @@
             
             for (let attempt = 0; attempt < YOUTUBE_API_KEYS_COUNT; attempt++) {
                 try {
-                    // Use your API endpoint instead of direct YouTube API
                     const response = await fetch(
                         `/api/billboard?query=${encodeURIComponent(query)}&keyIndex=${activeKeyIndex}`
                     );
@@ -101,18 +98,15 @@
             log('=== Starting Billboard Hot 100 Update ===', 'info');
             
             try {
-                // Fetch Billboard data
                 log('Fetching Billboard Hot 100 data...', 'info');
                 const response = await fetch('https://raw.githubusercontent.com/mhollingshead/billboard-hot-100/main/recent.json');
                 const billboardData = await response.json();
                 log(`Fetched ${billboardData.data.length} songs`, 'success');
                 
-                // Get existing data from ENTIRE table (not just by position)
-                const { data: existingData } = await supabase
+                const { data: existingData } = await supabaseClient
                     .from('billboard_hot_100')
                     .select('*');
                 
-                // Create map by position AND by song+artist for lookup
                 const existingByPosition = new Map(existingData?.map(item => [item.id, item]) || []);
                 const existingBySongArtist = new Map();
                 existingData?.forEach(item => {
@@ -126,7 +120,6 @@
                 let totalYouTubeSearches = 0;
                 let totalYouTubeReused = 0;
                 
-                // Process each song
                 for (let i = 0; i < Math.min(billboardData.data.length, 100); i++) {
                     const song = billboardData.data[i];
                     const id = i + 1;
@@ -138,7 +131,6 @@
                     let youtubeUrl = null;
                     let needsUpdate = false;
                     
-                    // Check if ANY field changed at this position
                     if (!existingAtPosition) {
                         log(`  New entry at position ${id}`, 'info');
                         needsUpdate = true;
@@ -161,23 +153,19 @@
                         }
                     }
                     
-                    // Smart YouTube URL lookup
                     const songArtistKey = `${song.song.toLowerCase()}|||${song.artist.toLowerCase()}`;
                     const previousEntry = existingBySongArtist.get(songArtistKey);
                     
                     if (previousEntry && previousEntry.youtube_url) {
-                        // Song existed before (maybe at different position) - reuse URL
                         youtubeUrl = previousEntry.youtube_url;
                         log(`  Reusing YouTube URL from previous position #${previousEntry.id}`, 'info');
                         totalYouTubeReused++;
                     } else if (existingAtPosition && existingAtPosition.youtube_url && 
                                existingAtPosition.song === song.song && 
                                existingAtPosition.artist === song.artist) {
-                        // Same song at same position - keep URL
                         youtubeUrl = existingAtPosition.youtube_url;
                         log(`  Using existing URL`, 'info');
                     } else {
-                        // Need to search YouTube - new song we've never seen
                         log(`  New song - searching YouTube...`, 'info');
                         youtubeUrl = await searchYouTube(song.song, song.artist);
                         totalYouTubeSearches++;
@@ -188,12 +176,11 @@
                             log(`  No match found`, 'warning');
                         }
                         
-                        await new Promise(resolve => setTimeout(resolve, 100)); // Rate limit
+                        await new Promise(resolve => setTimeout(resolve, 100));
                     }
                     
-                    // Only update if needed
                     if (needsUpdate) {
-                        const { error } = await supabase
+                        const { error } = await supabaseClient
                             .from('billboard_hot_100')
                             .upsert({
                                 id: id,
@@ -216,10 +203,9 @@
                     }
                 }
                 
-                // Update top 3 table
                 log('\n=== Updating Top 3 Table ===', 'info');
                 
-                const { data: existingTop3 } = await supabase
+                const { data: existingTop3 } = await supabaseClient
                     .from('billboard_top_3')
                     .select('*')
                     .order('position');
@@ -236,8 +222,7 @@
                     
                     const existing = existingTop3Map.get(position);
                     
-                    // Get YouTube URL from main table
-                    const { data: mainTableData } = await supabase
+                    const { data: mainTableData } = await supabaseClient
                         .from('billboard_hot_100')
                         .select('youtube_url')
                         .eq('id', position)
@@ -245,15 +230,13 @@
                     
                     const youtubeUrl = mainTableData?.youtube_url;
                     
-                    // Check if song/artist changed
                     if (!existing || existing.song !== song.song || existing.artist !== song.artist) {
                         log(`  Song changed - updating`, 'warning');
                     } else {
                         log(`  Same song - updating timestamp only`, 'info');
                     }
                     
-                    // ALWAYS update to refresh last_updated timestamp
-                    const { error } = await supabase
+                    const { error } = await supabaseClient
                         .from('billboard_top_3')
                         .upsert({
                             position: position,
@@ -285,7 +268,6 @@
             }
         }
         
-        // Start update on page load
         updateBillboard();
     </script>
 </body>
