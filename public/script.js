@@ -116,8 +116,8 @@ class AdvancedMusicPlayer {
 		//api
 		this.currentKeyIndex = 0;
 		this.activeYoutubeKeyIndex = 0;
-		this.GEMINI_API_KEYS_COUNT = 8; // number of Gemini keys i have
-		this.YOUTUBE_API_KEYS_COUNT = 16; // number of YouTube keys i have
+		this.GEMINI_API_KEYS_COUNT = 8;
+		this.YOUTUBE_API_KEYS_COUNT = 29; 
 		
 		
 		this.activeYoutubeKeyIndex = 0;
