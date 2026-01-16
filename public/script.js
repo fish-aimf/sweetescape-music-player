@@ -1127,24 +1127,50 @@ class AdvancedMusicPlayer {
 		});
 	}
 	fetchYouTubeChannel(videoId) {
-    return new Promise((resolve, reject) => {
-        const url = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`;
-        fetch(url)
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error("Failed to fetch video info");
-                }
-                return response.json();
-            })
-            .then((data) => {
-                resolve(data.author_name);
-            })
-            .catch((error) => {
-                console.error("Error fetching YouTube channel:", error);
-                reject(error);
-            });
-    });
-}
+	    return new Promise((resolve, reject) => {
+	        const url = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`;
+	        fetch(url)
+	            .then((response) => {
+	                if (!response.ok) {
+	                    throw new Error("Failed to fetch video info");
+	                }
+	                return response.json();
+	            })
+	            .then((data) => {
+	                let channelName = data.author_name;
+	                
+	                // Remove various "Topic" patterns
+	                channelName = channelName
+	                    // Remove "- Topic" or "Topic -" with optional spaces
+	                    .replace(/\s*-\s*Topic\s*$/i, '')
+	                    .replace(/^Topic\s*-\s*/i, '')
+	                    // Remove "[Topic]" or "(Topic)" at start or end
+	                    .replace(/^\[Topic\]\s*/i, '')
+	                    .replace(/\s*\[Topic\]$/i, '')
+	                    .replace(/^\(Topic\)\s*/i, '')
+	                    .replace(/\s*\(Topic\)$/i, '')
+	                    // Remove "Topic" as standalone word at start or end
+	                    .replace(/^Topic\s+/i, '')
+	                    .replace(/\s+Topic$/i, '')
+	                    // Remove vertical bar variations
+	                    .replace(/\s*\|\s*Topic\s*$/i, '')
+	                    .replace(/^Topic\s*\|\s*/i, '')
+	                    // Remove dot variations
+	                    .replace(/\s*\.\s*Topic\s*$/i, '')
+	                    .replace(/^Topic\s*\.\s*/i, '')
+	                    // Remove colon variations
+	                    .replace(/\s*:\s*Topic\s*$/i, '')
+	                    .replace(/^Topic\s*:\s*/i, '')
+	                    .trim();
+	                
+	                resolve(channelName);
+	            })
+	            .catch((error) => {
+	                console.error("Error fetching YouTube channel:", error);
+	                reject(error);
+	            });
+	    });
+	}
 	renderSongLibrary(searchTerm = null) {
 		try {
 			if (!this.elements.songLibrary) return;
