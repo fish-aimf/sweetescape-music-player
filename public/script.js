@@ -1939,26 +1939,31 @@ class AdvancedMusicPlayer {
 		});
 	}
 	addSongToCurrentPlaylist(songName, videoId) {
-		const playlistId = parseInt(
-			this.elements.currentPlaylistName.dataset.playlistId
-		);
-		const playlist = this.playlists.find((p) => p.id === playlistId);
-		if (!playlist) return;
-		playlist.songs.push({
-			name: songName,
-			videoId: videoId,
-			entryId: Date.now(),
-		});
-		this.savePlaylists()
-			.then(() => {
-				this.renderCurrentPlaylistSongs(playlist);
-				this.renderLibrarySearchResults(playlist);
-				this.renderPlaylists();
-			})
-			.catch((error) => {
-				console.error("Error adding song to playlist:", error);
-				alert("Failed to add song to playlist. Please try again.");
-			});
+	  const playlistId = parseInt(
+	    this.elements.currentPlaylistName.dataset.playlistId
+	  );
+	  const playlist = this.playlists.find((p) => p.id === playlistId);
+	  if (!playlist) return;
+	  
+	  const librarySong = this.songLibrary.find(s => s.videoId === videoId);
+	  
+	  playlist.songs.push({
+	    name: songName,
+	    videoId: videoId,
+	    author: librarySong?.author || "", 
+	    entryId: Date.now(),
+	  });
+	  
+	  this.savePlaylists()
+	    .then(() => {
+	      this.renderCurrentPlaylistSongs(playlist);
+	      this.renderLibrarySearchResults(playlist);
+	      this.renderPlaylists();
+	    })
+	    .catch((error) => {
+	      console.error("Error adding song to playlist:", error);
+	      alert("Failed to add song to playlist. Please try again.");
+	    });
 	}
 	addSongToSelectedPlaylist() {
 		const selectedPlaylistId = parseInt(
@@ -5523,25 +5528,35 @@ hideSidebar() {
 		return combined;
 	}
 	updateCurrentSongDisplay() {
-		if (!this.currentSong) {
-			this.hideCurrentSongSection();
-			return;
-		}
-		this.showCurrentSongSection();
-		const thumbnailElement = document.getElementById('currentSongThumbnail');
-		const nameElement = document.getElementById('currentSongName');
-		const authorElement = document.getElementById('currentSongAuthor');
-		if (thumbnailElement) {
-			thumbnailElement.src = this.currentSong.thumbnailUrl ||
-				`https://img.youtube.com/vi/${this.currentSong.videoId}/default.jpg`;
-			thumbnailElement.alt = this.currentSong.name || 'Current Song';
-		}
-		if (nameElement) {
-			nameElement.textContent = this.currentSong.name || '';
-		}
-		if (authorElement) {
-			authorElement.textContent = this.currentSong.author || '';
-		}
+	  if (!this.currentSong) {
+	    this.hideCurrentSongSection();
+	    return;
+	  }
+	  
+	  let displaySong = this.currentSong;
+	  if (this.currentPlaylist) {
+	    const libMatch = this.songLibrary.find(s => s.videoId === this.currentSong.videoId);
+	    if (libMatch) {
+	      displaySong = libMatch;
+	    }
+	  }
+	  
+	  this.showCurrentSongSection();
+	  const thumbnailElement = document.getElementById('currentSongThumbnail');
+	  const nameElement = document.getElementById('currentSongName');
+	  const authorElement = document.getElementById('currentSongAuthor');
+	  
+	  if (thumbnailElement) {
+	    thumbnailElement.src = displaySong.thumbnailUrl ||
+	      `https://img.youtube.com/vi/${displaySong.videoId}/default.jpg`;
+	    thumbnailElement.alt = displaySong.name || 'Current Song';
+	  }
+	  if (nameElement) {
+	    nameElement.textContent = displaySong.name || '';
+	  }
+	  if (authorElement) {
+	    authorElement.textContent = displaySong.author || ''; 
+	  }
 	}
 	showCurrentSongSection() {
 		const currentSongSection = document.getElementById('currentSongSection');
@@ -5559,15 +5574,24 @@ hideSidebar() {
 		this.updateCurrentSongDisplay();
 	}
 	getCurrentSongData() {
-		if (!this.currentSong) return null;
-		return {
-			id: this.currentSong.id,
-			name: this.currentSong.name,
-			author: this.currentSong.author,
-			videoId: this.currentSong.videoId,
-			thumbnailUrl: this.currentSong.thumbnailUrl,
-			duration: this.currentSong.duration,
-		};
+	  if (!this.currentSong) return null;
+	  
+	  let songData = this.currentSong;
+	  if (this.currentPlaylist) {
+	    const libMatch = this.songLibrary.find(s => s.videoId === this.currentSong.videoId);
+	    if (libMatch) {
+	      songData = libMatch;
+	    }
+	  }
+	  
+	  return {
+	    id: songData.id,
+	    name: songData.name,
+	    author: songData.author, 
+	    videoId: songData.videoId,
+	    thumbnailUrl: songData.thumbnailUrl,
+	    duration: songData.duration,
+	  };
 	}
 	formatDuration(seconds) {
 		if (!seconds || seconds <= 0) return "0:00";
@@ -11419,27 +11443,34 @@ closeBillboardHot100Modal() {
 	}
 
 	sendDiscordRPC() {
-		if (!this.discordEnabled || !this.discordConnected || !this.currentSong) {
-			return;
-		}
-
-		if (!this.discordWs || this.discordWs.readyState !== WebSocket.OPEN) {
-			console.warn('Discord WebSocket not ready');
-			return;
-		}
-
-		const data = {
-			song: this.currentSong.name || 'Unknown Song',
-			artist: this.currentSong.author || 'Unknown Artist',
-			url: this.buildYouTubeUrl(this.currentSong.videoId)
-		};
-
-		try {
-			this.discordWs.send(JSON.stringify(data));
-			console.log('Sent to Discord RPC:', data);
-		} catch (error) {
-			console.error('Failed to send Discord RPC update:', error);
-		}
+	  if (!this.discordEnabled || !this.discordConnected || !this.currentSong) {
+	    return;
+	  }
+	  if (!this.discordWs || this.discordWs.readyState !== WebSocket.OPEN) {
+	    console.warn('Discord WebSocket not ready');
+	    return;
+	  }
+	  
+	  let songData = this.currentSong;
+	  if (this.currentPlaylist) {
+	    const libMatch = this.songLibrary.find(s => s.videoId === this.currentSong.videoId);
+	    if (libMatch) {
+	      songData = libMatch; 
+	    }
+	  }
+	  
+	  const data = {
+	    song: songData.name || 'Unknown Song',
+	    artist: songData.author || 'Unknown Artist', 
+	    url: this.buildYouTubeUrl(songData.videoId)
+	  };
+	  
+	  try {
+	    this.discordWs.send(JSON.stringify(data));
+	    console.log('Sent to Discord RPC:', data);
+	  } catch (error) {
+	    console.error('Failed to send Discord RPC update:', error);
+	  }
 	}
 
 	clearDiscordRPC() {
