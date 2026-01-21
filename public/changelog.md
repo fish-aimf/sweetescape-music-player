@@ -484,3 +484,4 @@
 - Fixed csp headers to prevent excessive logs and improve performance. v53.5.0
 - added 12 more youtube api keys so demand will not run out v53.6.0
 - in autofill channel name, "topic" is removed v53.7.0
+- added a smooth migration such that the playlists songs now have an author field. v54.0.0
