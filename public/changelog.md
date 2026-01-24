@@ -485,3 +485,4 @@
 - added 12 more youtube api keys so demand will not run out v53.6.0
 - in autofill channel name, "topic" is removed v53.7.0
 - added a smooth migration such that the playlists songs now have an author field. v54.0.0
+- fixed a small bug in the extract url where 11 letter searches will accidentally be detected as a youtube url. it will be fixed by checking if it has symbols and numbers as well. v54.0.1
