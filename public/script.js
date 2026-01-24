@@ -2927,18 +2927,17 @@ hideSidebar() {
 
 	}
 	extractYouTubeId(url) {
-		if (!url) return null;
-		const patterns = [
-			/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i,
-			/^([^"&?\/\s]{11})$/i,
-		];
-		for (const pattern of patterns) {
-			const match = url.match(pattern);
-			if (match && match[1]) {
-				return match[1];
-			}
-		}
-		return null;
+	    if (!url) return null;
+
+	    const urlPattern = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+	    const urlMatch = url.match(urlPattern);
+	    if (urlMatch) return urlMatch[1];
+	    
+	    if (/^[a-zA-Z0-9_-]{11}$/.test(url) && /[0-9_-]/.test(url)) {
+	        return url;
+	    }
+	    
+	    return null;
 	}
 	updateListeningTimeDisplay() {
 		if (!this.elements.listeningTimeDisplay) return;
