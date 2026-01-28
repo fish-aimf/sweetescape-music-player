@@ -1,0 +1,812 @@
+
+    Billboard Hot 100 Updater
+    [2:53:54 AM] === Starting Billboard Hot 100 Update ===
+[2:53:54 AM] Fetching Billboard Hot 100 data...
+[2:53:54 AM] Fetched 100 songs
+[2:53:55 AM] 
+[1/100] Processing: "I Just Might" by Bruno Mars
+[2:53:55 AM]   Changes detected: last_week, weeks
+[2:53:55 AM]   Reusing YouTube URL from previous position #1
+[2:53:56 AM]   Updated in database
+[2:53:56 AM] 
+[2/100] Processing: "Man I Need" by Olivia Dean
+[2:53:56 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:53:56 AM]   Reusing YouTube URL from previous position #4
+[2:53:56 AM]   Updated in database
+[2:53:56 AM] 
+[3/100] Processing: "The Fate Of Ophelia" by Taylor Swift
+[2:53:56 AM]   Changes detected: song, artist, last_week, weeks
+[2:53:56 AM]   Reusing YouTube URL from previous position #2
+[2:53:57 AM]   Updated in database
+[2:53:57 AM] 
+[4/100] Processing: "Golden" by HUNTR/X: EJAE, Audrey Nuna & REI AMI
+[2:53:57 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:53:57 AM]   Reusing YouTube URL from previous position #3
+[2:53:57 AM]   Updated in database
+[2:53:57 AM] 
+[5/100] Processing: "Ordinary" by Alex Warren
+[2:53:57 AM]   Changes detected: last_week, weeks
+[2:53:57 AM]   Reusing YouTube URL from previous position #5
+[2:53:57 AM]   Updated in database
+[2:53:57 AM] 
+[6/100] Processing: "Choosin' Texas" by Ella Langley
+[2:53:57 AM]   Changes detected: last_week, weeks
+[2:53:57 AM]   Reusing YouTube URL from previous position #6
+[2:53:57 AM]   Updated in database
+[2:53:57 AM] 
+[7/100] Processing: "Back To Friends" by sombr
+[2:53:57 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:53:57 AM]   Reusing YouTube URL from previous position #8
+[2:53:58 AM]   Updated in database
+[2:53:58 AM] 
+[8/100] Processing: "Folded" by Kehlani
+[2:53:58 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:53:58 AM]   Reusing YouTube URL from previous position #9
+[2:53:58 AM]   Updated in database
+[2:53:58 AM] 
+[9/100] Processing: "End Of Beginning" by Djo
+[2:53:58 AM]   Changes detected: song, artist, weeks
+[2:53:58 AM]   Reusing YouTube URL from previous position #7
+[2:53:58 AM]   Updated in database
+[2:53:58 AM] 
+[10/100] Processing: "Opalite" by Taylor Swift
+[2:53:58 AM]   Changes detected: last_week, weeks
+[2:53:58 AM]   Reusing YouTube URL from previous position #10
+[2:53:58 AM]   Updated in database
+[2:53:58 AM] 
+[11/100] Processing: "Mutt" by Leon Thomas
+[2:53:58 AM]   Changes detected: last_week, weeks
+[2:53:58 AM]   Reusing YouTube URL from previous position #11
+[2:53:59 AM]   Updated in database
+[2:53:59 AM] 
+[12/100] Processing: "What You Saying" by Lil Uzi Vert
+[2:53:59 AM]   Changes detected: last_week, weeks
+[2:53:59 AM]   Reusing YouTube URL from previous position #12
+[2:53:59 AM]   Updated in database
+[2:53:59 AM] 
+[13/100] Processing: "Where Is My Husband!" by RAYE
+[2:53:59 AM]   Changes detected: song, artist, last_week, weeks
+[2:53:59 AM]   Reusing YouTube URL from previous position #18
+[2:53:59 AM]   Updated in database
+[2:53:59 AM] 
+[14/100] Processing: "I Got Better" by Morgan Wallen
+[2:53:59 AM]   Changes detected: last_week, weeks
+[2:53:59 AM]   Reusing YouTube URL from previous position #14
+[2:53:59 AM]   Updated in database
+[2:53:59 AM] 
+[15/100] Processing: "Daisies" by Justin Bieber
+[2:53:59 AM]   Changes detected: last_week, weeks
+[2:53:59 AM]   Reusing YouTube URL from previous position #15
+[2:53:59 AM]   Updated in database
+[2:53:59 AM] 
+[16/100] Processing: "wgft" by Gunna Featuring Burna Boy
+[2:53:59 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:53:59 AM]   Reusing YouTube URL from previous position #27
+[2:54:00 AM]   Updated in database
+[2:54:00 AM] 
+[17/100] Processing: "So Easy (To Fall In Love)" by Olivia Dean
+[2:54:00 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:00 AM]   Reusing YouTube URL from previous position #16
+[2:54:00 AM]   Updated in database
+[2:54:00 AM] 
+[18/100] Processing: "20 Cigarettes" by Morgan Wallen
+[2:54:00 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:00 AM]   Reusing YouTube URL from previous position #19
+[2:54:00 AM]   Updated in database
+[2:54:00 AM] 
+[19/100] Processing: "Plastic Cigarette" by Zach Bryan
+[2:54:00 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:00 AM]   Reusing YouTube URL from previous position #13
+[2:54:00 AM]   Updated in database
+[2:54:00 AM] 
+[20/100] Processing: "Die On This Hill" by Sienna Spiro
+[2:54:00 AM]   Changes detected: song, artist, last_week, peak
+[2:54:00 AM]   Reusing YouTube URL from previous position #21
+[2:54:01 AM]   Updated in database
+[2:54:01 AM] 
+[21/100] Processing: "Sleepless In A Hotel Room" by Luke Combs
+[2:54:01 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:01 AM]   Reusing YouTube URL from previous position #17
+[2:54:01 AM]   Updated in database
+[2:54:01 AM] 
+[22/100] Processing: "It Depends" by Chris Brown Featuring Bryson Tiller
+[2:54:01 AM]   Changes detected: last_week, weeks
+[2:54:01 AM]   Reusing YouTube URL from previous position #22
+[2:54:01 AM]   Updated in database
+[2:54:01 AM] 
+[23/100] Processing: "Stay Here 4 Life" by A$AP Rocky Featuring Brent Faiyaz
+[2:54:01 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:01 AM]   New song - searching YouTube...
+[2:54:02 AM]   Found: https://www.youtube.com/watch?v=yxKA0NnNJeo
+[2:54:03 AM]   Updated in database
+[2:54:03 AM] 
+[24/100] Processing: "Helicopter" by A$AP Rocky
+[2:54:03 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:03 AM]   New song - searching YouTube...
+[2:54:03 AM]   Found: https://www.youtube.com/watch?v=g1-46Nu3HxQ
+[2:54:03 AM]   Updated in database
+[2:54:03 AM] 
+[25/100] Processing: "Tit For Tat" by Tate McRae
+[2:54:03 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:03 AM]   Reusing YouTube URL from previous position #23
+[2:54:04 AM]   Updated in database
+[2:54:04 AM] 
+[26/100] Processing: "Nice To Meet You" by Myles Smith
+[2:54:04 AM]   Changes detected: song, artist, last_week, weeks
+[2:54:04 AM]   Reusing YouTube URL from previous position #32
+[2:54:04 AM]   Updated in database
+[2:54:04 AM] 
+[27/100] Processing: "Gabriela" by KATSEYE
+[2:54:04 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:04 AM]   Reusing YouTube URL from previous position #24
+[2:54:04 AM]   Updated in database
+[2:54:04 AM] 
+[28/100] Processing: "Hell At Night" by BigXthaPlug Featuring Ella Langley
+[2:54:04 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:04 AM]   Reusing YouTube URL from previous position #31
+[2:54:04 AM]   Updated in database
+[2:54:04 AM] 
+[29/100] Processing: "Better Me For You (Brown Eyes)" by Max McNown
+[2:54:04 AM]   Changes detected: song, artist, last_week, weeks
+[2:54:04 AM]   Reusing YouTube URL from previous position #36
+[2:54:04 AM]   Updated in database
+[2:54:04 AM] 
+[30/100] Processing: "A Couple Minutes" by Olivia Dean
+[2:54:04 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:04 AM]   Reusing YouTube URL from previous position #26
+[2:54:05 AM]   Updated in database
+[2:54:05 AM] 
+[31/100] Processing: "Yukon" by Justin Bieber
+[2:54:05 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:05 AM]   Reusing YouTube URL from previous position #33
+[2:54:05 AM]   Updated in database
+[2:54:05 AM] 
+[32/100] Processing: "4 Raws" by EsDeeKid
+[2:54:05 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:05 AM]   Reusing YouTube URL from previous position #28
+[2:54:05 AM]   Updated in database
+[2:54:05 AM] 
+[33/100] Processing: "Stole Ya Flow" by A$AP Rocky
+[2:54:05 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:05 AM]   New song - searching YouTube...
+[2:54:06 AM]   Found: https://www.youtube.com/watch?v=7yZSUM-9Ozc
+[2:54:06 AM]   Updated in database
+[2:54:06 AM] 
+[34/100] Processing: "Happen To Me" by Russell Dickerson
+[2:54:06 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:06 AM]   Reusing YouTube URL from previous position #37
+[2:54:06 AM]   Updated in database
+[2:54:06 AM] 
+[35/100] Processing: "Amen" by Shaboozey & Jelly Roll
+[2:54:06 AM]   Changes detected: song, artist, last_week, weeks
+[2:54:06 AM]   Reusing YouTube URL from previous position #45
+[2:54:07 AM]   Updated in database
+[2:54:07 AM] 
+[36/100] Processing: "The Fall" by Cody Johnson
+[2:54:07 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:07 AM]   Reusing YouTube URL from previous position #39
+[2:54:07 AM]   Updated in database
+[2:54:07 AM] 
+[37/100] Processing: "Trap Queen" by Fetty Wap
+[2:54:07 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:07 AM]   New song - searching YouTube...
+[2:54:07 AM]   Found: https://www.youtube.com/watch?v=6wOIQkh_rcM
+[2:54:07 AM]   Updated in database
+[2:54:07 AM] 
+[38/100] Processing: "Purple Rain" by Prince And The Revolution
+[2:54:07 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:07 AM]   Reusing YouTube URL from previous position #30
+[2:54:08 AM]   Updated in database
+[2:54:08 AM] 
+[39/100] Processing: "Stateside" by PinkPantheress With Zara Larsson
+[2:54:08 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:08 AM]   Reusing YouTube URL from previous position #83
+[2:54:08 AM]   Updated in database
+[2:54:08 AM] 
+[40/100] Processing: "Lush Life" by Zara Larsson
+[2:54:08 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:08 AM]   Reusing YouTube URL from previous position #48
+[2:54:08 AM]   Updated in database
+[2:54:08 AM] 
+[41/100] Processing: "FDO" by Pooh Shiesty
+[2:54:08 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:08 AM]   Reusing YouTube URL from previous position #20
+[2:54:08 AM]   Updated in database
+[2:54:08 AM] 
+[42/100] Processing: "House Again" by Hudson Westbrook
+[2:54:08 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:08 AM]   Reusing YouTube URL from previous position #41
+[2:54:09 AM]   Updated in database
+[2:54:09 AM] 
+[43/100] Processing: "Is It A Crime" by Mariah The Scientist & Kali Uchis
+[2:54:09 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:09 AM]   Reusing YouTube URL from previous position #34
+[2:54:09 AM]   Updated in database
+[2:54:09 AM] 
+[44/100] Processing: "Say Why" by Zach Bryan
+[2:54:09 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:09 AM]   Reusing YouTube URL from previous position #25
+[2:54:09 AM]   Updated in database
+[2:54:09 AM] 
+[45/100] Processing: "Favorite Country Song" by HARDY
+[2:54:09 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:09 AM]   Reusing YouTube URL from previous position #52
+[2:54:09 AM]   Updated in database
+[2:54:09 AM] 
+[46/100] Processing: "How Far Does A Goodbye Go" by Jason Aldean
+[2:54:09 AM]   Changes detected: song, artist, last_week, weeks
+[2:54:09 AM]   Reusing YouTube URL from previous position #50
+[2:54:10 AM]   Updated in database
+[2:54:10 AM] 
+[47/100] Processing: "I Thought I Saw Your Face Today" by She & Him
+[2:54:10 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:10 AM]   Reusing YouTube URL from previous position #42
+[2:54:10 AM]   Updated in database
+[2:54:10 AM] 
+[48/100] Processing: "Days Like These" by Luke Combs
+[2:54:10 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:10 AM]   Reusing YouTube URL from previous position #49
+[2:54:10 AM]   Updated in database
+[2:54:10 AM] 
+[49/100] Processing: "12 To 12" by sombr
+[2:54:10 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:10 AM]   Reusing YouTube URL from previous position #54
+[2:54:10 AM]   Updated in database
+[2:54:10 AM] 
+[50/100] Processing: "No Broke Boys" by Disco Lines & Tinashe
+[2:54:10 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:10 AM]   Reusing YouTube URL from previous position #43
+[2:54:10 AM]   Updated in database
+[2:54:10 AM] 
+[51/100] Processing: "Wish I Didn't" by Megan Moroney
+[2:54:10 AM]   Changes detected: song, artist
+[2:54:10 AM]   New song - searching YouTube...
+[2:54:11 AM]   Found: https://www.youtube.com/watch?v=plbNzv3KvWs
+[2:54:11 AM]   Updated in database
+[2:54:11 AM] 
+[52/100] Processing: "Chanel" by Tyla
+[2:54:11 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:11 AM]   Reusing YouTube URL from previous position #47
+[2:54:12 AM]   Updated in database
+[2:54:12 AM] 
+[53/100] Processing: "Travelin' Soldier" by Cody Johnson
+[2:54:12 AM]   Changes detected: last_week, weeks
+[2:54:12 AM]   Reusing YouTube URL from previous position #53
+[2:54:12 AM]   Updated in database
+[2:54:12 AM] 
+[54/100] Processing: "Order Of Protection" by A$AP Rocky
+[2:54:12 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:12 AM]   New song - searching YouTube...
+[2:54:12 AM]   Found: https://www.youtube.com/watch?v=04pidcglf1M
+[2:54:13 AM]   Updated in database
+[2:54:13 AM] 
+[55/100] Processing: "Beautiful Things" by Megan Moroney
+[2:54:13 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:13 AM]   Reusing YouTube URL from previous position #70
+[2:54:13 AM]   Updated in database
+[2:54:13 AM] 
+[56/100] Processing: "Punk Rocky" by A$AP Rocky
+[2:54:13 AM]   Changes detected: song, artist, last_week, weeks
+[2:54:13 AM]   Reusing YouTube URL from previous position #64
+[2:54:13 AM]   Updated in database
+[2:54:13 AM] 
+[57/100] Processing: "When Did You Get Hot?" by Sabrina Carpenter
+[2:54:13 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:13 AM]   Reusing YouTube URL from previous position #62
+[2:54:13 AM]   Updated in database
+[2:54:13 AM] 
+[58/100] Processing: "Gone Gone Gone" by David Guetta, Teddy Swims & Tones And I
+[2:54:13 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:13 AM]   Reusing YouTube URL from previous position #65
+[2:54:14 AM]   Updated in database
+[2:54:14 AM] 
+[59/100] Processing: "Playa" by A$AP Rocky
+[2:54:14 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:14 AM]   New song - searching YouTube...
+[2:54:14 AM]   Found: https://www.youtube.com/watch?v=tVVrj_pYOeE
+[2:54:14 AM]   Updated in database
+[2:54:14 AM] 
+[60/100] Processing: "I Ain't Coming Back" by Morgan Wallen Featuring Post Malone
+[2:54:14 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:14 AM]   Reusing YouTube URL from previous position #67
+[2:54:14 AM]   Updated in database
+[2:54:14 AM] 
+[61/100] Processing: "ErrTime" by Cardi B
+[2:54:15 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:15 AM]   Reusing YouTube URL from previous position #60
+[2:54:15 AM]   Updated in database
+[2:54:15 AM] 
+[62/100] Processing: "Stop Snitching" by A$AP Rocky Featuring Bossman Dlow & Sauce Walka
+[2:54:15 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:15 AM]   New song - searching YouTube...
+[2:54:15 AM]   Found: https://www.youtube.com/watch?v=h9Wq3eAx6OY
+[2:54:15 AM]   Updated in database
+[2:54:15 AM] 
+[63/100] Processing: "Bruce Wayne" by YoungBoy Never Broke Again
+[2:54:15 AM]   Changes detected: song, artist, last_week, weeks
+[2:54:15 AM]   New song - searching YouTube...
+[2:54:16 AM]   Found: https://www.youtube.com/watch?v=Ko74cIOF4YY
+[2:54:16 AM]   Updated in database
+[2:54:16 AM] 
+[64/100] Processing: "You Stole The Show" by Sienna Spiro
+[2:54:16 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:16 AM]   Reusing YouTube URL from previous position #63
+[2:54:17 AM]   Updated in database
+[2:54:17 AM] 
+[65/100] Processing: "No Trespassing" by A$AP Rocky
+[2:54:17 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:17 AM]   New song - searching YouTube...
+[2:54:17 AM]   Found: https://www.youtube.com/watch?v=oSZQzWd-hFo
+[2:54:17 AM]   Updated in database
+[2:54:17 AM] 
+[66/100] Processing: "How It's Done" by HUNTR/X: EJAE, Audrey Nuna & REI AMI
+[2:54:17 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:17 AM]   Reusing YouTube URL from previous position #55
+[2:54:17 AM]   Updated in database
+[2:54:17 AM] 
+[67/100] Processing: "Who Knows" by Daniel Caesar
+[2:54:17 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:18 AM]   Reusing YouTube URL from previous position #79
+[2:54:18 AM]   Updated in database
+[2:54:18 AM] 
+[68/100] Processing: "Bittersweet" by Madison Beer
+[2:54:18 AM]   Changes detected: song, artist, weeks
+[2:54:18 AM]   New song - searching YouTube...
+[2:54:18 AM]   Found: https://www.youtube.com/watch?v=YcpMVsvK8pk
+[2:54:18 AM]   Updated in database
+[2:54:19 AM] 
+[69/100] Processing: "Brunette" by Tucker Wetmore
+[2:54:19 AM]   Changes detected: song, artist, last_week, weeks
+[2:54:19 AM]   Reusing YouTube URL from previous position #85
+[2:54:19 AM]   Updated in database
+[2:54:19 AM] 
+[70/100] Processing: "Dracula" by Tame Impala
+[2:54:19 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:19 AM]   Reusing YouTube URL from previous position #75
+[2:54:19 AM]   Updated in database
+[2:54:19 AM] 
+[71/100] Processing: "Shot Callin" by YoungBoy Never Broke Again
+[2:54:19 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:19 AM]   Reusing YouTube URL from previous position #66
+[2:54:19 AM]   Updated in database
+[2:54:19 AM] 
+[72/100] Processing: "Bloodline" by Alex Warren With Jelly Roll
+[2:54:19 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:19 AM]   Reusing YouTube URL from previous position #92
+[2:54:19 AM]   Updated in database
+[2:54:19 AM] 
+[73/100] Processing: "Don't Be Dumb / Trip Baby" by A$AP Rocky
+[2:54:19 AM]   Changes detected: song, artist
+[2:54:19 AM]   New song - searching YouTube...
+[2:54:20 AM]   Found: https://www.youtube.com/watch?v=qB1ZHXVPeIs
+[2:54:20 AM]   Updated in database
+[2:54:20 AM] 
+[74/100] Processing: "Bad News" by Zach Bryan
+[2:54:20 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:20 AM]   Reusing YouTube URL from previous position #35
+[2:54:21 AM]   Updated in database
+[2:54:21 AM] 
+[75/100] Processing: "Elizabeth Taylor" by Taylor Swift
+[2:54:21 AM]   Changes detected: song, artist, last_week, peak
+[2:54:21 AM]   Reusing YouTube URL from previous position #78
+[2:54:21 AM]   Updated in database
+[2:54:21 AM] 
+[76/100] Processing: "Take Me Thru Dere" by Metro Boomin, Quavo, Breskii & YKNIECE
+[2:54:21 AM]   Changes detected: last_week, weeks
+[2:54:21 AM]   Reusing YouTube URL from previous position #76
+[2:54:21 AM]   Updated in database
+[2:54:21 AM] 
+[77/100] Processing: "Nice To Each Other" by Olivia Dean
+[2:54:21 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:21 AM]   Reusing YouTube URL from previous position #81
+[2:54:21 AM]   Updated in database
+[2:54:21 AM] 
+[78/100] Processing: "Let Alone The One You Love" by Olivia Dean
+[2:54:21 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:21 AM]   Reusing YouTube URL from previous position #84
+[2:54:22 AM]   Updated in database
+[2:54:22 AM] 
+[79/100] Processing: "It Won't Be Long" by George Birge
+[2:54:22 AM]   Changes detected: song, artist, last_week
+[2:54:22 AM]   New song - searching YouTube...
+[2:54:22 AM]   Found: https://www.youtube.com/watch?v=o1cdh3wzWww
+[2:54:22 AM]   Updated in database
+[2:54:22 AM] 
+[80/100] Processing: "Headtap" by YoungBoy Never Broke Again
+[2:54:22 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:22 AM]   New song - searching YouTube...
+[2:54:23 AM]   Found: https://www.youtube.com/watch?v=AOJH59R4ZX8
+[2:54:23 AM]   Updated in database
+[2:54:23 AM] 
+[81/100] Processing: "Air Force (Black Demarco)" by A$AP Rocky
+[2:54:23 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:23 AM]   New song - searching YouTube...
+[2:54:24 AM]   Found: https://www.youtube.com/watch?v=WDacXkHOhZo
+[2:54:24 AM]   Updated in database
+[2:54:24 AM] 
+[82/100] Processing: "Midnight Sun" by Zara Larsson
+[2:54:24 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:24 AM]   New song - searching YouTube...
+[2:54:24 AM]   Found: https://www.youtube.com/watch?v=uvY8fdgezLQ
+[2:54:25 AM]   Updated in database
+[2:54:25 AM] 
+[83/100] Processing: "Another Episode" by YoungBoy Never Broke Again
+[2:54:25 AM]   Changes detected: song, artist, last_week, weeks
+[2:54:25 AM]   New song - searching YouTube...
+[2:54:25 AM]   Found: https://www.youtube.com/watch?v=RzXEvKmPXNM
+[2:54:25 AM]   Updated in database
+[2:54:25 AM] 
+[84/100] Processing: "Appetite" by Zach Bryan
+[2:54:25 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:25 AM]   Reusing YouTube URL from previous position #38
+[2:54:26 AM]   Updated in database
+[2:54:26 AM] 
+[85/100] Processing: "Internet Girl" by KATSEYE
+[2:54:26 AM]   Changes detected: song, artist, last_week, peak
+[2:54:26 AM]   Reusing YouTube URL from previous position #59
+[2:54:26 AM]   Updated in database
+[2:54:26 AM] 
+[86/100] Processing: "Darlin'" by Chase Matthew
+[2:54:26 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:26 AM]   Reusing YouTube URL from previous position #99
+[2:54:26 AM]   Updated in database
+[2:54:26 AM] 
+[87/100] Processing: "Phantom" by EsDeeKid & Rico Ace
+[2:54:26 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:26 AM]   Reusing YouTube URL from previous position #88
+[2:54:26 AM]   Updated in database
+[2:54:26 AM] 
+[88/100] Processing: "Whiskey (Release Me)" by A$AP Rocky Featuring Gorillaz & Westside Gunn
+[2:54:26 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:26 AM]   New song - searching YouTube...
+[2:54:27 AM]   Found: https://www.youtube.com/watch?v=b9JBRhV73cQ
+[2:54:27 AM]   Updated in database
+[2:54:27 AM] 
+[89/100] Processing: "Don't Kill The Party" by Ty Dolla $ign Featuring Quavo & Juicy J
+[2:54:27 AM]   Changes detected: song, artist, weeks
+[2:54:27 AM]   New song - searching YouTube...
+[2:54:28 AM]   Found: https://www.youtube.com/watch?v=4kGmQvmRzSQ
+[2:54:28 AM]   Updated in database
+[2:54:28 AM] 
+[90/100] Processing: "Anti-Social" by YoungBoy Never Broke Again
+[2:54:28 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:28 AM]   New song - searching YouTube...
+[2:54:28 AM]   Found: https://www.youtube.com/watch?v=UgyIOnU5W58
+[2:54:29 AM]   Updated in database
+[2:54:29 AM] 
+[91/100] Processing: "Damn I Love Miami" by Pitbull X Lil Jon
+[2:54:29 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:29 AM]   New song - searching YouTube...
+[2:54:29 AM]   Found: https://www.youtube.com/watch?v=lMutucztEzg
+[2:54:30 AM]   Updated in database
+[2:54:30 AM] 
+[92/100] Processing: "Fame Is A Gun" by Addison Rae
+[2:54:30 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:30 AM]   New song - searching YouTube...
+[2:54:30 AM]   Found: https://www.youtube.com/watch?v=TkwZ2uQu2hE
+[2:54:30 AM]   Updated in database
+[2:54:30 AM] 
+[93/100] Processing: "Mrs. Trendsetter" by Lil Baby
+[2:54:30 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:30 AM]   New song - searching YouTube...
+[2:54:31 AM]   Found: https://www.youtube.com/watch?v=iV1kAoywsrg
+[2:54:31 AM]   Updated in database
+[2:54:31 AM] 
+[94/100] Processing: "Voy A Llevarte Pa PR" by Bad Bunny
+[2:54:31 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:31 AM]   New song - searching YouTube...
+[2:54:32 AM]   Found: https://www.youtube.com/watch?v=X2MGCIDOMZ4
+[2:54:32 AM]   Updated in database
+[2:54:32 AM] 
+[95/100] Processing: "Zoo" by Shakira
+[2:54:32 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:32 AM]   Reusing YouTube URL from previous position #80
+[2:54:32 AM]   Updated in database
+[2:54:32 AM] 
+[96/100] Processing: "What An Awesome God" by Phil Wickham
+[2:54:32 AM]   Changes detected: last_week, weeks
+[2:54:32 AM]   Reusing YouTube URL from previous position #96
+[2:54:33 AM]   Updated in database
+[2:54:33 AM] 
+[97/100] Processing: "Lover, You Should've Come Over" by Jeff Buckley
+[2:54:33 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:33 AM]   New song - searching YouTube...
+[2:54:33 AM]   Found: https://www.youtube.com/watch?v=fdXQucDOed8
+[2:54:33 AM]   Updated in database
+[2:54:33 AM] 
+[98/100] Processing: "Girl, Get Up." by Doechii & SZA
+[2:54:33 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:33 AM]   Reusing YouTube URL from previous position #91
+[2:54:34 AM]   Updated in database
+[2:54:34 AM] 
+[99/100] Processing: "Father Figure" by Taylor Swift
+[2:54:34 AM]   Changes detected: song, artist, last_week, peak, weeks
+[2:54:34 AM]   Reusing YouTube URL from previous position #98
+[2:54:34 AM]   Updated in database
+[2:54:34 AM] 
+[100/100] Processing: "Sienna" by The Marias
+[2:54:34 AM]   Changes detected: song, artist, peak, weeks
+[2:54:34 AM]   New song - searching YouTube...
+[2:54:34 AM]   Found: https://www.youtube.com/watch?v=EiS7cKfuf6w
+[2:54:35 AM]   Updated in database
+[2:54:35 AM] 
+=== Updating Top 3 Table ===
+[2:54:35 AM] 
+Top 1: "I Just Might" by Bruno Mars
+[2:54:35 AM]   Same song - updating timestamp only
+[2:54:35 AM]   Top 3 updated in database
+[2:54:35 AM] 
+Top 2: "Man I Need" by Olivia Dean
+[2:54:36 AM]   Song changed - updating
+[2:54:36 AM]   Top 3 updated in database
+[2:54:36 AM] 
+Top 3: "The Fate Of Ophelia" by Taylor Swift
+[2:54:36 AM]   Song changed - updating
+[2:54:36 AM]   Top 3 updated in database
+[2:54:36 AM] 
+=== Update Summary ===
+[2:54:36 AM] Total songs processed: 100
+[2:54:36 AM] Songs updated: 100
+[2:54:36 AM] Songs skipped (no changes): 0
+[2:54:36 AM] YouTube URLs reused from chart: 74
+[2:54:36 AM] YouTube searches performed: 26
+[2:54:36 AM] 
+Top 3 always updated: 3
+[2:54:36 AM] 
+=== Update Complete ===
+
+    
+    
+        const SUPABASE_URL = 'https://cwhxanbpymkngzpbsshh.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3aHhhbmJweW1rbmd6cGJzc2hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4NTQzMTksImV4cCI6MjA2OTQzMDMxOX0.6K3eM1XoWaPmyMHsLYgw0mAnSxYjME4clflL4PxQalQ';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        // API keys are now handled by backend
+        const YOUTUBE_API_KEYS_COUNT = 16;
+        let activeKeyIndex = 0;
+        
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `<span class="${type}">[${timestamp}] ${message}</span>\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        async function searchYouTube(songTitle, artist) {
+            const query = `${songTitle} ${artist} official`;
+            
+            for (let attempt = 0; attempt < YOUTUBE_API_KEYS_COUNT; attempt++) {
+                try {
+                    const response = await fetch(
+                        `/api/billboard?query=${encodeURIComponent(query)}&keyIndex=${activeKeyIndex}`
+                    );
+                    
+                    const result = await response.json();
+                    
+                    if (result.status !== 200) {
+                        if (result.status === 403) {
+                            log(`Key ${activeKeyIndex + 1} quota exceeded, rotating...`, 'warning');
+                            activeKeyIndex = (activeKeyIndex + 1) % YOUTUBE_API_KEYS_COUNT;
+                            continue;
+                        }
+                        throw new Error(`HTTP ${result.status}`);
+                    }
+                    
+                    const data = result.data;
+                    
+                    if (data.error && data.error.code === 403) {
+                        log(`API quota exceeded, rotating key...`, 'warning');
+                        activeKeyIndex = (activeKeyIndex + 1) % YOUTUBE_API_KEYS_COUNT;
+                        continue;
+                    }
+                    
+                    if (data.items && data.items.length > 0) {
+                        const bestMatch = findBestMatch(data.items, songTitle, artist);
+                        return bestMatch ? `https://www.youtube.com/watch?v=${bestMatch.id.videoId}` : null;
+                    }
+                    return null;
+                } catch (error) {
+                    log(`Error with key ${activeKeyIndex + 1}: ${error.message}`, 'error');
+                    activeKeyIndex = (activeKeyIndex + 1) % YOUTUBE_API_KEYS_COUNT;
+                }
+            }
+            
+            return null;
+        }
+        
+        function findBestMatch(items, songTitle, artist) {
+            const scored = items.map(item => {
+                const title = item.snippet.title.toLowerCase();
+                const channel = item.snippet.channelTitle.toLowerCase();
+                let score = 0;
+                
+                if (title.includes(songTitle.toLowerCase())) score += 30;
+                if (title.includes(artist.toLowerCase())) score += 20;
+                if (channel.includes(artist.toLowerCase()) || channel.includes('vevo') || channel.includes('official')) score += 25;
+                if (title.includes('official')) score += 15;
+                
+                return { ...item, score };
+            });
+            
+            scored.sort((a, b) => b.score - a.score);
+            return scored[0]?.score > 20 ? scored[0] : null;
+        }
+        
+        async function updateBillboard() {
+            log('=== Starting Billboard Hot 100 Update ===', 'info');
+            
+            try {
+                log('Fetching Billboard Hot 100 data...', 'info');
+                const response = await fetch('https://raw.githubusercontent.com/mhollingshead/billboard-hot-100/main/recent.json');
+                const billboardData = await response.json();
+                log(`Fetched ${billboardData.data.length} songs`, 'success');
+                
+                const { data: existingData } = await supabaseClient
+                    .from('billboard_hot_100')
+                    .select('*');
+                
+                const existingByPosition = new Map(existingData?.map(item => [item.id, item]) || []);
+                const existingBySongArtist = new Map();
+                existingData?.forEach(item => {
+                    const key = `${item.song.toLowerCase()}|||${item.artist.toLowerCase()}`;
+                    existingBySongArtist.set(key, item);
+                });
+                
+                let totalProcessed = 0;
+                let totalUpdated = 0;
+                let totalSkipped = 0;
+                let totalYouTubeSearches = 0;
+                let totalYouTubeReused = 0;
+                
+                for (let i = 0; i < Math.min(billboardData.data.length, 100); i++) {
+                    const song = billboardData.data[i];
+                    const id = i + 1;
+                    totalProcessed++;
+                    
+                    log(`\n[${id}/100] Processing: "${song.song}" by ${song.artist}`, 'info');
+                    
+                    const existingAtPosition = existingByPosition.get(id);
+                    let youtubeUrl = null;
+                    let needsUpdate = false;
+                    
+                    if (!existingAtPosition) {
+                        log(`  New entry at position ${id}`, 'info');
+                        needsUpdate = true;
+                    } else {
+                        const changes = [];
+                        if (existingAtPosition.song !== song.song) changes.push('song');
+                        if (existingAtPosition.artist !== song.artist) changes.push('artist');
+                        if (existingAtPosition.this_week !== song.this_week) changes.push('position');
+                        if (existingAtPosition.last_week !== song.last_week) changes.push('last_week');
+                        if (existingAtPosition.peak_position !== song.peak_position) changes.push('peak');
+                        if (existingAtPosition.weeks_on_chart !== song.weeks_on_chart) changes.push('weeks');
+                        
+                        if (changes.length > 0) {
+                            log(`  Changes detected: ${changes.join(', ')}`, 'warning');
+                            needsUpdate = true;
+                        } else {
+                            log(`  No changes - skipping`, 'info');
+                            totalSkipped++;
+                            continue;
+                        }
+                    }
+                    
+                    const songArtistKey = `${song.song.toLowerCase()}|||${song.artist.toLowerCase()}`;
+                    const previousEntry = existingBySongArtist.get(songArtistKey);
+                    
+                    if (previousEntry && previousEntry.youtube_url) {
+                        youtubeUrl = previousEntry.youtube_url;
+                        log(`  Reusing YouTube URL from previous position #${previousEntry.id}`, 'info');
+                        totalYouTubeReused++;
+                    } else if (existingAtPosition && existingAtPosition.youtube_url && 
+                               existingAtPosition.song === song.song && 
+                               existingAtPosition.artist === song.artist) {
+                        youtubeUrl = existingAtPosition.youtube_url;
+                        log(`  Using existing URL`, 'info');
+                    } else {
+                        log(`  New song - searching YouTube...`, 'info');
+                        youtubeUrl = await searchYouTube(song.song, song.artist);
+                        totalYouTubeSearches++;
+                        
+                        if (youtubeUrl) {
+                            log(`  Found: ${youtubeUrl}`, 'success');
+                        } else {
+                            log(`  No match found`, 'warning');
+                        }
+                        
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    }
+                    
+                    if (needsUpdate) {
+                        const { error } = await supabaseClient
+                            .from('billboard_hot_100')
+                            .upsert({
+                                id: id,
+                                song: song.song,
+                                artist: song.artist,
+                                this_week: song.this_week,
+                                last_week: song.last_week,
+                                peak_position: song.peak_position,
+                                weeks_on_chart: song.weeks_on_chart,
+                                youtube_url: youtubeUrl,
+                                last_updated: new Date().toISOString()
+                            });
+                        
+                        if (error) {
+                            log(`  Database error: ${error.message}`, 'error');
+                        } else {
+                            log(`  Updated in database`, 'success');
+                            totalUpdated++;
+                        }
+                    }
+                }
+                
+                log('\n=== Updating Top 3 Table ===', 'info');
+                
+                const { data: existingTop3 } = await supabaseClient
+                    .from('billboard_top_3')
+                    .select('*')
+                    .order('position');
+                
+                const existingTop3Map = new Map(existingTop3?.map(item => [item.position, item]) || []);
+                
+                let top3Updated = 0;
+                
+                for (let i = 0; i < 3; i++) {
+                    const song = billboardData.data[i];
+                    const position = i + 1;
+                    
+                    log(`\nTop ${position}: "${song.song}" by ${song.artist}`, 'info');
+                    
+                    const existing = existingTop3Map.get(position);
+                    
+                    const { data: mainTableData } = await supabaseClient
+                        .from('billboard_hot_100')
+                        .select('youtube_url')
+                        .eq('id', position)
+                        .single();
+                    
+                    const youtubeUrl = mainTableData?.youtube_url;
+                    
+                    if (!existing || existing.song !== song.song || existing.artist !== song.artist) {
+                        log(`  Song changed - updating`, 'warning');
+                    } else {
+                        log(`  Same song - updating timestamp only`, 'info');
+                    }
+                    
+                    const { error } = await supabaseClient
+                        .from('billboard_top_3')
+                        .upsert({
+                            position: position,
+                            song: song.song,
+                            artist: song.artist,
+                            youtube_url: youtubeUrl,
+                            last_updated: new Date().toISOString()
+                        });
+                    
+                    if (error) {
+                        log(`  Top 3 database error: ${error.message}`, 'error');
+                    } else {
+                        log(`  Top 3 updated in database`, 'success');
+                        top3Updated++;
+                    }
+                }
+                
+                log('\n=== Update Summary ===', 'success');
+                log(`Total songs processed: ${totalProcessed}`, 'info');
+                log(`Songs updated: ${totalUpdated}`, 'success');
+                log(`Songs skipped (no changes): ${totalSkipped}`, 'info');
+                log(`YouTube URLs reused from chart: ${totalYouTubeReused}`, 'success');
+                log(`YouTube searches performed: ${totalYouTubeSearches}`, 'warning');
+                log(`\nTop 3 always updated: ${top3Updated}`, 'success');
+                log('\n=== Update Complete ===', 'success');
+                
+            } catch (error) {
+                log(`\nFATAL ERROR: ${error.message}`, 'error');
+            }
+        }
+        
+        updateBillboard();
+    
+
+
