@@ -1340,7 +1340,7 @@ class AdvancedMusicPlayer {
 		};
 	}
 	handleLibrarySearchInput() {
-		this.resetSearchTimeout();
+		this.resetLibrarySearchTimeout();
 		const searchTerm = this.elements.librarySearch.value.trim();
 
 		const videoId = this.extractYouTubeId(searchTerm);
