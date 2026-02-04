@@ -658,9 +658,9 @@ class AdvancedMusicPlayer {
 		    this.elements.librarySearch.addEventListener('input', handlers.librarySearchInput);
 		    this.elements.librarySearch.addEventListener('keydown', handlers.librarySearchKeydown);
 		    this.elements.librarySearch.addEventListener('focus', () => this.resetLibrarySearchTimeout());
-		    this.elements.librarySearch.addEventListener('input', () => this.resetLibrarySearchTimeout());
 		    this.elements.librarySearch.addEventListener('blur', () => {
 		        clearTimeout(this.librarySearchTimeout);
+		        this.librarySearchTimeout = null;
 		    });
 		}
 		
@@ -1340,9 +1340,9 @@ class AdvancedMusicPlayer {
 		};
 	}
 	handleLibrarySearchInput() {
+		this.resetSearchTimeout();
 		const searchTerm = this.elements.librarySearch.value.trim();
 
-		// Check for YouTube URL immediately (no debounce needed)
 		const videoId = this.extractYouTubeId(searchTerm);
 		if (videoId) {
 			this.showAddToLibrarySuggestion(searchTerm);
@@ -12583,7 +12583,7 @@ resetLibrarySearchTimeout() {
         if (this.elements.librarySearch) {
             this.elements.librarySearch.blur();
         }
-    }, 60000);//1 minute 
+    }, 60000);
 }
 
 
