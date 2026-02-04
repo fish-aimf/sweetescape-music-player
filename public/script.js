@@ -137,6 +137,7 @@ class AdvancedMusicPlayer {
 		
 		// Search and filtering
 		this.searchTimeout = null;
+		this.librarySearchTimeout = null;
 		this.currentSearchTerm = "";
 		this.filteredPlaylists = [];
 		this.sidebarSearchDebounceTimer = null;
@@ -654,8 +655,13 @@ class AdvancedMusicPlayer {
 		
 		// Special listeners with complex logic
 		if (this.elements.librarySearch) {
-			this.elements.librarySearch.addEventListener('input', handlers.librarySearchInput);
-			this.elements.librarySearch.addEventListener('keydown', handlers.librarySearchKeydown);
+		    this.elements.librarySearch.addEventListener('input', handlers.librarySearchInput);
+		    this.elements.librarySearch.addEventListener('keydown', handlers.librarySearchKeydown);
+		    this.elements.librarySearch.addEventListener('focus', () => this.resetLibrarySearchTimeout());
+		    this.elements.librarySearch.addEventListener('input', () => this.resetLibrarySearchTimeout());
+		    this.elements.librarySearch.addEventListener('blur', () => {
+		        clearTimeout(this.librarySearchTimeout);
+		    });
 		}
 		
 		if (this.elements.songUrlInput) {
@@ -12566,6 +12572,18 @@ formatYouTubeUploadDate(date) {
     } else {
         return 'Today';
     }
+}
+
+
+
+resetLibrarySearchTimeout() {
+    clearTimeout(this.librarySearchTimeout);
+    
+    this.librarySearchTimeout = setTimeout(() => {
+        if (this.elements.librarySearch) {
+            this.elements.librarySearch.blur();
+        }
+    }, 60000);//1 minute 
 }
 
 
