@@ -523,6 +523,12 @@ class AdvancedMusicPlayer {
 			librarySortToggle: this.handleLibrarySortToggle.bind(this),
 			libraryReverseToggle: this.handleLibraryReverseToggle.bind(this),
 			filterPlaylists: this.filterPlaylists.bind(this),
+			playlistSearchEnter: (e) => {
+			    if (e.key === 'Enter') {
+			        e.preventDefault();
+			        this.playTopPlaylistSearchResult();
+			    }
+			},
 			toggleCreatePlaylistDiv: this.toggleCreatePlaylistDiv.bind(this),
 			openSettings: this.handleOpenSettings.bind(this),
 			closeSettings: this.handleCloseSettings.bind(this),
@@ -530,6 +536,7 @@ class AdvancedMusicPlayer {
 			themeModeChange: this.handleThemeModeChange.bind(this),
 			saveCustomTheme: this.handleSaveCustomTheme.bind(this),
 			adsToggle: this.handleAdsToggle.bind(this),
+			
 			
 			// Special handlers with custom logic
 			librarySearchKeydown: async (e) => {
@@ -626,6 +633,7 @@ class AdvancedMusicPlayer {
 			[this.elements.closeImportModalBtn, 'click', handlers.closeImportModal],
 			[this.elements.importSongsBtn, 'click', handlers.importSongs],
 			[this.elements.playlistSearch, 'input', handlers.filterPlaylists],
+			[this.elements.playlistSearch, 'keypress', handlers.playlistSearchEnter],
 			[this.elements.toggleCreatePlaylistBtn, 'click', handlers.toggleCreatePlaylistDiv],
 			[this.elements.togglePlaylistEditModeBtn, 'click', handlers.togglePlaylistEditMode],
 			[this.elements.settingsButton, 'click', handlers.openSettings],
@@ -1694,6 +1702,30 @@ class AdvancedMusicPlayer {
 		}
 
 		this.renderPlaylists();
+	}
+	playTopPlaylistSearchResult() {
+	    // Get current search term
+	    const searchTerm = this.elements.playlistSearch.value.toLowerCase().trim();
+	    
+	    // Determine which playlists to search through
+	    let targetPlaylists;
+	    if (searchTerm === "") {
+	        targetPlaylists = this.playlists;
+	    } else {
+	        targetPlaylists = this.playlists.filter(playlist =>
+	            playlist.name.toLowerCase().includes(searchTerm)
+	        );
+	    }
+	    
+	    // Check if we have any playlists to play
+	    if (targetPlaylists.length === 0) {
+	        alert("No playlists found");
+	        return;
+	    }
+	    
+	    // Play the first playlist in results
+	    const topPlaylist = targetPlaylists[0];
+	    this.playPlaylist(topPlaylist.id);
 	}
 
 	toggleCreatePlaylistDiv() {
@@ -9316,10 +9348,10 @@ hideSidebar() {
 			artist.name.toLowerCase().includes(searchQuery.toLowerCase())
 		);
 		const optionsHTML = '<option value="">Select Playlist</option>' +
-			filteredOptions.map(artist => `<option value="${artist.id}">🎵 ${artist.name}</option>`).join('');
+			filteredOptions.map(artist => `<option value="${artist.id}"> ${artist.name}</option>`).join('');
 		select.innerHTML = optionsHTML;
 		massImportSelect.innerHTML = '<option value="">Select Playlist for Import</option>' +
-			filteredOptions.map(artist => `<option value="${artist.id}">🎵 ${artist.name}</option>`).join('');
+			filteredOptions.map(artist => `<option value="${artist.id}"> ${artist.name}</option>`).join('');
 	}
 	async globalLibraryLogin() {
 		const email = document.getElementById('globalLibraryEmail').value;
