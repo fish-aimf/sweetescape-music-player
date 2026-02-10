@@ -488,3 +488,4 @@
 - fixed a small bug in the extract url where 11 letter searches will accidentally be detected as a youtube url. it will be fixed by checking if it has symbols and numbers as well. v54.0.1
 - Made the library search bar unfocus after 60 seconds of inactivity. v54.1.0
 - made it efficient. v54.2.0
+- Made it such that keypress enter in playlist search field will play top result. v54.3.0
