@@ -507,3 +507,4 @@
 - you can now share songs and save to library and preview using song.html. song preview website opens if you visit /song/id v56.1.0
 - made it follow theme as well v56.2.0
 - made a server function to follow the twitter tags such that the twitter tag is dynamically generated and is different for every /song/id so preview looks good. v56.3.0
+-fixed slight bugs in the server function v56.3.1
