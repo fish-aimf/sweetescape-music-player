@@ -496,3 +496,4 @@
 - fixed some bugs v55.3.1
 - now have a dedicated karaoke player v55.4.0
 - updated vercel.json to recognize this path. v55.5.0
+- kareoke page now follows the themes from the original website
