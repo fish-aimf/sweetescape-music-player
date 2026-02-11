@@ -36,10 +36,21 @@ export default async function handler(req, res) {
   }
 }
 
+function escapeHtml(unsafe) {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 function generateHTML(title, author, thumbnail, pageUrl, videoId) {
-  // Clean and optimize the display text
-  const cleanTitle = title || 'Unknown Song';
-  const cleanAuthor = author || 'Unknown Artist';
+  // Clean and escape the text
+  const cleanTitle = escapeHtml(title || 'Unknown Song');
+  const cleanAuthor = escapeHtml(author || 'Unknown Artist');
+  const escapedThumbnail = escapeHtml(thumbnail || '');
+  const escapedPageUrl = escapeHtml(pageUrl || '');
   
   // Create descriptions optimized for Discord/social media
   const ogTitle = `${cleanTitle} | SweetEscape`;
@@ -58,21 +69,21 @@ function generateHTML(title, author, thumbnail, pageUrl, videoId) {
     
     <!-- Open Graph / Facebook / Discord -->
     <meta property="og:type" content="music.song">
-    <meta property="og:url" content="${pageUrl}">
+    <meta property="og:url" content="${escapedPageUrl}">
     <meta property="og:site_name" content="SweetEscape">
     <meta property="og:title" content="${ogTitle}">
     <meta property="og:description" content="${ogDescription}">
-    <meta property="og:image" content="${thumbnail}">
+    <meta property="og:image" content="${escapedThumbnail}">
     <meta property="og:image:width" content="1280">
     <meta property="og:image:height" content="720">
     <meta property="og:image:alt" content="${cleanTitle} by ${cleanAuthor}">
     
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:url" content="${pageUrl}">
+    <meta name="twitter:url" content="${escapedPageUrl}">
     <meta name="twitter:title" content="${ogTitle}">
     <meta name="twitter:description" content="${ogDescription}">
-    <meta name="twitter:image" content="${thumbnail}">
+    <meta name="twitter:image" content="${escapedThumbnail}">
     <meta name="twitter:image:alt" content="${cleanTitle} by ${cleanAuthor}">
     
     <!-- Music Specific Meta -->
@@ -82,7 +93,7 @@ function generateHTML(title, author, thumbnail, pageUrl, videoId) {
     <!-- Additional SEO -->
     <meta name="keywords" content="music player, ad-free music, ${cleanTitle}, ${cleanAuthor}, lyrics, karaoke, free music streaming">
     <meta name="author" content="SweetEscape">
-    <link rel="canonical" href="${pageUrl}">
+    <link rel="canonical" href="${escapedPageUrl}">
     
     <!-- Theme Color -->
     <meta name="theme-color" content="#5D9C59">
