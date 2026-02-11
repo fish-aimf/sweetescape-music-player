@@ -504,4 +504,5 @@
 - added the optional stop centering lyrics option in karaoke player. v55.9.0
 - added the button to stop centering lyrics in the main website as well next to the two buttons. v55.10.0
 - added new share song path. /song/id v56.0.0
-- you can now share songs and save to library and preview using song.html. song preview website opens if you visit /song/id 56.1.0
+- you can now share songs and save to library and preview using song.html. song preview website opens if you visit /song/id v56.1.0
+- made it follow theme as well v56.2.0
