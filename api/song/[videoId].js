@@ -20,10 +20,9 @@ export default async function handler(req, res) {
     const author = data.author_name || 'Unknown Artist';
     const thumbnail = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
     const pageUrl = `https://sweetescape.vercel.app/song/${videoId}`;
-    const description = `${title} by ${author}`;
 
     // Generate HTML with proper meta tags
-    const html = generateHTML(title, author, description, thumbnail, pageUrl, videoId);
+    const html = generateHTML(title, author, thumbnail, pageUrl, videoId);
     
     res.setHeader('Content-Type', 'text/html');
     res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate');
@@ -32,21 +31,19 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error('Error:', error);
     // Fallback to basic HTML
-    const html = generateHTML('Song', 'SweetEscape', '', '', '', videoId);
+    const html = generateHTML('Unknown Song', 'Unknown Artist', '', '', videoId);
     res.status(200).send(html);
   }
 }
 
-function generateHTML(title, author, description, thumbnail, pageUrl, videoId) {
+function generateHTML(title, author, thumbnail, pageUrl, videoId) {
   // Clean and optimize the display text
   const cleanTitle = title || 'Unknown Song';
   const cleanAuthor = author || 'Unknown Artist';
   
-  // Create a concise description for social media
-  const socialDescription = `Listen to "${cleanTitle}" by ${cleanAuthor} on SweetEscape - Your ad-free music player with lyrics, playlists, and karaoke mode. Enjoy unlimited music streaming without interruptions.`;
-  
-  // Shorter description for Twitter (280 char limit consideration)
-  const shortDescription = `Listen to "${cleanTitle}" by ${cleanAuthor} on SweetEscape - Ad-free music streaming with lyrics & karaoke mode.`;
+  // Create descriptions optimized for Discord/social media
+  const ogTitle = `${cleanTitle} | SweetEscape`;
+  const ogDescription = `Listen to "${cleanTitle}" by ${cleanAuthor} on SweetEscape - Your ad-free music player with lyrics, playlists, and karaoke mode. Enjoy unlimited music streaming without interruptions.`;
   
   return `<!DOCTYPE html>
 <html lang="en" data-theme="dark">
@@ -57,14 +54,14 @@ function generateHTML(title, author, description, thumbnail, pageUrl, videoId) {
     <!-- Primary Meta Tags -->
     <title>${cleanTitle} - ${cleanAuthor} | SweetEscape</title>
     <meta name="title" content="${cleanTitle} - ${cleanAuthor} | SweetEscape">
-    <meta name="description" content="${socialDescription}">
+    <meta name="description" content="${ogDescription}">
     
     <!-- Open Graph / Facebook / Discord -->
     <meta property="og:type" content="music.song">
     <meta property="og:url" content="${pageUrl}">
     <meta property="og:site_name" content="SweetEscape">
-    <meta property="og:title" content="${cleanTitle}">
-    <meta property="og:description" content="${socialDescription}">
+    <meta property="og:title" content="${ogTitle}">
+    <meta property="og:description" content="${ogDescription}">
     <meta property="og:image" content="${thumbnail}">
     <meta property="og:image:width" content="1280">
     <meta property="og:image:height" content="720">
@@ -73,8 +70,8 @@ function generateHTML(title, author, description, thumbnail, pageUrl, videoId) {
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="${pageUrl}">
-    <meta name="twitter:title" content="${cleanTitle}">
-    <meta name="twitter:description" content="${shortDescription}">
+    <meta name="twitter:title" content="${ogTitle}">
+    <meta name="twitter:description" content="${ogDescription}">
     <meta name="twitter:image" content="${thumbnail}">
     <meta name="twitter:image:alt" content="${cleanTitle} by ${cleanAuthor}">
     
@@ -86,6 +83,9 @@ function generateHTML(title, author, description, thumbnail, pageUrl, videoId) {
     <meta name="keywords" content="music player, ad-free music, ${cleanTitle}, ${cleanAuthor}, lyrics, karaoke, free music streaming">
     <meta name="author" content="SweetEscape">
     <link rel="canonical" href="${pageUrl}">
+    
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#5D9C59">
 
     <style>
         :root {
@@ -300,8 +300,8 @@ function generateHTML(title, author, description, thumbnail, pageUrl, videoId) {
         <div class="message" id="message"></div>
 
         <div class="song-info" id="songInfo">
-            <h2 id="displaySongName">${title}</h2>
-            <p id="displaySongArtist">${author}</p>
+            <h2 id="displaySongName">${cleanTitle}</h2>
+            <p id="displaySongArtist">${cleanAuthor}</p>
         </div>
 
         <div class="controls-section">
@@ -313,7 +313,7 @@ function generateHTML(title, author, description, thumbnail, pageUrl, videoId) {
                     type="text" 
                     id="songName" 
                     placeholder="Enter song name"
-                    value="${title}"
+                    value="${cleanTitle}"
                     required
                 >
             </div>
@@ -324,7 +324,7 @@ function generateHTML(title, author, description, thumbnail, pageUrl, videoId) {
                     type="text" 
                     id="songArtist" 
                     placeholder="Enter artist name (optional)"
-                    value="${author}"
+                    value="${cleanAuthor}"
                 >
             </div>
 
