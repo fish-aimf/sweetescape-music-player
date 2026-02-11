@@ -489,3 +489,7 @@
 - Made the library search bar unfocus after 60 seconds of inactivity. v54.1.0
 - made it efficient. v54.2.0
 - Made it such that keypress enter in playlist search field will play top result. v54.3.0
+- merged repositories. merged the sing kareoke repository with this v55.0.0
+- we can now share kareokes. v55.1.0
+- encoding compresses song lyrics and data into a url. v55.2.0
+- 
