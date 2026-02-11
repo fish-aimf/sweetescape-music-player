@@ -52,7 +52,7 @@ function generateHTML(title, author, thumbnail, pageUrl, videoId) {
   const escapedPageUrl = escapeHtml(pageUrl || '');
   
   // Simple short description
-  const ogDescription = `${cleanAuthor} - Ad-free music player with lyrics and karaoke`;
+  const ogDescription = `by ${cleanAuthor}`;
   
   return `<!DOCTYPE html>
 <html lang="en" data-theme="dark">
@@ -67,7 +67,7 @@ function generateHTML(title, author, thumbnail, pageUrl, videoId) {
     <!-- Open Graph / Facebook / Discord -->
     <meta property="og:type" content="music.song">
     <meta property="og:url" content="${escapedPageUrl}">
-    <meta property="og:site_name" content="SweetEscape">
+    <meta property="og:site_name" content="SweetEscape Music Player">
     <meta property="og:title" content="${cleanTitle}">
     <meta property="og:description" content="${ogDescription}">
     <meta property="og:image" content="${escapedThumbnail}">
