@@ -12,6 +12,7 @@ class AdvancedMusicPlayer {
 		// Player controls
 		this.isPlaying = false;
 		this.isLooping = false;
+		this.autoCenterLyrics = true;
 		this.isPlaylistLooping = true;
 		this.isAutoplayEnabled = true;
 		this.currentSpeed = 1;
@@ -6210,13 +6211,55 @@ hideSidebar() {
 		const floatingButtonsContainer = document.createElement("div");
 		floatingButtonsContainer.style.cssText = `
 			position: absolute;
-			top: 30px;
-			right: 25px;
+			top: 10px;
+			right: 15px;
 			display: flex;
-			gap: 10px;
-			z-index: 10;
+			gap: 7px;
+			z-index: 100;
 			pointer-events: none;
 		`;
+		
+		// Initialize autocenter state if not already set
+		if (this.autoCenterLyrics === undefined) {
+			this.autoCenterLyrics = true;
+		}
+		
+		// Toggle Autocenter button
+		const autoCenterButton = document.createElement("button");
+		autoCenterButton.innerHTML = '<i class="fas fa-align-center"></i>';
+		autoCenterButton.title = this.autoCenterLyrics ? "Auto-center: ON" : "Auto-center: OFF";
+		autoCenterButton.style.cssText = `
+			background: ${this.autoCenterLyrics ? 'rgba(93, 156, 89, 0.25)' : 'rgba(255, 255, 255, 0.15)'};
+			backdrop-filter: blur(10px);
+			border: 1px solid rgba(255, 255, 255, 0.2);
+			border-radius: 50%;
+			width: 25px;
+			height: 25px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			cursor: pointer;
+			transition: all 0.3s ease;
+			color: var(--text-primary);
+			font-size: 10px;
+			pointer-events: auto;
+			opacity: ${this.autoCenterLyrics ? '1' : '0.5'};
+		`;
+		autoCenterButton.addEventListener('mouseenter', () => {
+			autoCenterButton.style.background = this.autoCenterLyrics ? 'rgba(93, 156, 89, 0.35)' : 'rgba(255, 255, 255, 0.25)';
+			autoCenterButton.style.transform = 'scale(1.1)';
+		});
+		autoCenterButton.addEventListener('mouseleave', () => {
+			autoCenterButton.style.background = this.autoCenterLyrics ? 'rgba(93, 156, 89, 0.25)' : 'rgba(255, 255, 255, 0.15)';
+			autoCenterButton.style.transform = 'scale(1)';
+		});
+		autoCenterButton.addEventListener('click', () => {
+			this.autoCenterLyrics = !this.autoCenterLyrics;
+			autoCenterButton.style.background = this.autoCenterLyrics ? 'rgba(93, 156, 89, 0.25)' : 'rgba(255, 255, 255, 0.15)';
+			autoCenterButton.style.opacity = this.autoCenterLyrics ? '1' : '0.5';
+			autoCenterButton.title = this.autoCenterLyrics ? "Auto-center: ON" : "Auto-center: OFF";
+		});
+		floatingButtonsContainer.appendChild(autoCenterButton);
 		
 		// Share button (only show if has timestamps)
 		if (hasTimestamps) {
@@ -6228,15 +6271,15 @@ hideSidebar() {
 				backdrop-filter: blur(10px);
 				border: 1px solid rgba(255, 255, 255, 0.2);
 				border-radius: 50%;
-				width: 36px;
-				height: 36px;
+				width: 25px;
+				height: 25px;
 				display: flex;
 				align-items: center;
 				justify-content: center;
 				cursor: pointer;
 				transition: all 0.3s ease;
 				color: var(--text-primary);
-				font-size: 14px;
+				font-size: 10px;
 				pointer-events: auto;
 			`;
 			shareButton.addEventListener('mouseenter', () => {
@@ -6262,15 +6305,15 @@ hideSidebar() {
 			backdrop-filter: blur(10px);
 			border: 1px solid rgba(255, 255, 255, 0.2);
 			border-radius: 50%;
-			width: 36px;
-			height: 36px;
+			width: 25px;
+			height: 25px;
 			display: flex;
 			align-items: center;
 			justify-content: center;
 			cursor: pointer;
 			transition: all 0.3s ease;
 			color: var(--text-primary);
-			font-size: 14px;
+			font-size: 10px;
 			pointer-events: auto;
 		`;
 		expandButton.addEventListener('mouseenter', () => {
@@ -6304,7 +6347,6 @@ hideSidebar() {
 			}, 100);
 		}
 	}
-
 	generateKaraokeURL(song, lyricsWithTimestamps) {
 		const lines = [];
 		const lyricsArray = lyricsWithTimestamps.split('\n');
@@ -6410,10 +6452,14 @@ hideSidebar() {
 					currentElement.style.fontWeight = "bold";
 					currentElement.style.fontSize = "1.1em";
 					currentElement.style.transform = "scale(1.02)";
-					currentElement.scrollIntoView({
-						behavior: "smooth",
-						block: "center",
-					});
+					
+					// Only auto-scroll if autoCenterLyrics is enabled
+					if (this.autoCenterLyrics !== false) {
+						currentElement.scrollIntoView({
+							behavior: "smooth",
+							block: "center",
+						});
+					}
 				}
 			}
 			this.currentHighlightedLyricIndex = highlightIndex;
