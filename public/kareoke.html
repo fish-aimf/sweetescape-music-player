@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Karaoke Player - SweetEscape</title>
+  <link rel="stylesheet" href="/karaoke-styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="player-container">
+    <!-- Header -->
+    <div class="player-header">
+      <h1 class="app-title">🎤 Karaoke Player</h1>
+      <div class="header-actions">
+        <button id="saveToLibraryBtn" class="save-library-btn" title="Save to SweetEscape Library">
+          <i class="fas fa-bookmark"></i> Save to Library
+        </button>
+        <a href="/" class="back-link">
+          <i class="fas fa-arrow-left"></i> Back to SweetEscape
+        </a>
+      </div>
+    </div>
+
+    <!-- YouTube Player -->
+    <div class="video-section">
+      <div id="ytPlayer"></div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls-section">
+      <div class="progress-container">
+        <input type="range" id="progressBar" class="progress-bar" min="0" max="100" value="0">
+        <div class="time-display" id="timeDisplay">0:00 / 0:00</div>
+      </div>
+
+      <div class="playback-controls">
+        <button id="playPauseBtn" class="control-btn" title="Play/Pause (Space)">
+          <i class="fas fa-play"></i>
+        </button>
+        <button id="restartBtn" class="control-btn" title="Restart">
+          <i class="fas fa-rotate-left"></i>
+        </button>
+        <button id="loopBtn" class="control-btn" title="Loop">
+          <i class="fas fa-repeat"></i>
+        </button>
+        <div class="speed-control">
+          <label for="speedSlider">Speed:</label>
+          <input type="range" id="speedSlider" min="0.5" max="2" step="0.05" value="1">
+          <span id="speedDisplay">1.0x</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lyrics Display -->
+    <div class="lyrics-section">
+      <div class="lyrics-header">
+        <h2>Lyrics</h2>
+        <button id="fullscreenBtn" class="fullscreen-btn" title="Fullscreen Lyrics (F)">
+          <i class="fas fa-expand"></i>
+        </button>
+      </div>
+      <div id="lyricsDisplay" class="lyrics-display"></div>
+    </div>
+
+    <!-- Share Section -->
+    <div class="share-section">
+      <h3>Share This Karaoke</h3>
+      <div class="share-controls">
+        <input type="text" id="shareURL" class="share-input" readonly>
+        <button id="copyURLBtn" class="copy-btn">
+          <i class="fas fa-copy"></i> Copy Link
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fullscreen Lyrics Modal -->
+  <div id="fullscreenModal" class="fullscreen-modal">
+    <button id="exitFullscreenBtn" class="exit-fullscreen">
+      <i class="fas fa-times"></i>
+    </button>
+    <div id="fullscreenLyrics" class="fullscreen-lyrics"></div>
+  </div>
+
+  <!-- Error Modal -->
+  <div id="errorModal" class="error-modal hidden">
+    <div class="error-content">
+      <h2>No Karaoke Data Found</h2>
+      <p>This URL doesn't contain any karaoke data.</p>
+      <a href="/" class="create-btn">Go to SweetEscape</a>
+    </div>
+  </div>
+
+  <!-- Success Toast -->
+  <div id="successToast" class="toast hidden">
+    <i class="fas fa-check-circle"></i>
+    <span id="toastMessage">Saved to library!</span>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script src="/karaoke-encoder.js"></script>
+  <script src="/karaoke-player.js"></script>
+</body>
+</html>
