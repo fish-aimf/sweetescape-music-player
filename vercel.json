@@ -1,4 +1,10 @@
 {
+  "rewrites": [
+    {
+      "source": "/karaoke/:hash",
+      "destination": "/karaoke.html"
+    }
+  ],
   "functions": {
     "api/**/*.js": {
       "memory": 1024,
