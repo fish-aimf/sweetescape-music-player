@@ -38,6 +38,16 @@ export default async function handler(req, res) {
 }
 
 function generateHTML(title, author, description, thumbnail, pageUrl, videoId) {
+  // Clean and optimize the display text
+  const cleanTitle = title || 'Unknown Song';
+  const cleanAuthor = author || 'Unknown Artist';
+  
+  // Create a concise description for social media
+  const socialDescription = `Listen to "${cleanTitle}" by ${cleanAuthor} on SweetEscape - Your ad-free music player with lyrics, playlists, and karaoke mode. Enjoy unlimited music streaming without interruptions.`;
+  
+  // Shorter description for Twitter (280 char limit consideration)
+  const shortDescription = `Listen to "${cleanTitle}" by ${cleanAuthor} on SweetEscape - Ad-free music streaming with lyrics & karaoke mode.`;
+  
   return `<!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
@@ -45,28 +55,38 @@ function generateHTML(title, author, description, thumbnail, pageUrl, videoId) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- Primary Meta Tags -->
-    <title>${title} - SweetEscape</title>
-    <meta name="title" content="${title} - SweetEscape">
-    <meta name="description" content="${description}">
+    <title>${cleanTitle} - ${cleanAuthor} | SweetEscape</title>
+    <meta name="title" content="${cleanTitle} - ${cleanAuthor} | SweetEscape">
+    <meta name="description" content="${socialDescription}">
     
-    <!-- Open Graph / Facebook -->
+    <!-- Open Graph / Facebook / Discord -->
     <meta property="og:type" content="music.song">
     <meta property="og:url" content="${pageUrl}">
-    <meta property="og:title" content="${title}">
-    <meta property="og:description" content="${description}">
-    <meta property="og:image" content="${thumbnail}">
     <meta property="og:site_name" content="SweetEscape">
+    <meta property="og:title" content="${cleanTitle}">
+    <meta property="og:description" content="${socialDescription}">
+    <meta property="og:image" content="${thumbnail}">
+    <meta property="og:image:width" content="1280">
+    <meta property="og:image:height" content="720">
+    <meta property="og:image:alt" content="${cleanTitle} by ${cleanAuthor}">
     
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="${pageUrl}">
-    <meta name="twitter:title" content="${title}">
-    <meta name="twitter:description" content="${description}">
+    <meta name="twitter:title" content="${cleanTitle}">
+    <meta name="twitter:description" content="${shortDescription}">
     <meta name="twitter:image" content="${thumbnail}">
+    <meta name="twitter:image:alt" content="${cleanTitle} by ${cleanAuthor}">
     
     <!-- Music Specific Meta -->
-    <meta property="music:musician" content="${author}">
+    <meta property="music:musician" content="${cleanAuthor}">
+    <meta property="music:song" content="${cleanTitle}">
     
+    <!-- Additional SEO -->
+    <meta name="keywords" content="music player, ad-free music, ${cleanTitle}, ${cleanAuthor}, lyrics, karaoke, free music streaming">
+    <meta name="author" content="SweetEscape">
+    <link rel="canonical" href="${pageUrl}">
+
     <style>
         :root {
             --bg-primary: #f4f4f4;
