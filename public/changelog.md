@@ -500,3 +500,4 @@
 - updated styles. v55.6.1
 - move expand full screen button lyric to top right above the lyrics v55.7.0
 - added share button to compress and copy the share link into files. v55.8.0
+- made buttons translucent and smaller. same z index as the lyrics v55.8.1
