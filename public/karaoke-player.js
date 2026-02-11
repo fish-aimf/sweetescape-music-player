@@ -149,6 +149,10 @@ class KaraokePlayer {
           key: key,
           value: request.result?.value
         });
+        request.onerror = () => resolve({
+          key: key,
+          value: null
+        });
       });
     });
     
@@ -174,6 +178,7 @@ class KaraokePlayer {
         colors[result.key] = result.value || defaults[result.key];
       });
       
+      // Apply all custom colors
       this.applyCustomColors({
         primary: colors.customPrimary,
         background: colors.customBackground,
@@ -191,29 +196,43 @@ class KaraokePlayer {
       });
       
       document.documentElement.setAttribute("data-theme", "custom");
+    }).catch(error => {
+      console.error("Error loading custom theme:", error);
+      document.documentElement.setAttribute("data-theme", "dark");
     });
   }
   
   applyCustomColors(colors) {
-    document.documentElement.style.setProperty('--custom-primary', colors.primary);
-    document.documentElement.style.setProperty('--custom-background', colors.background);
-    document.documentElement.style.setProperty('--custom-secondary', colors.secondary);
-    document.documentElement.style.setProperty('--custom-text-primary', colors.textPrimary);
-    document.documentElement.style.setProperty('--custom-text-secondary', colors.textSecondary);
-    document.documentElement.style.setProperty('--custom-hover', colors.hover);
-    document.documentElement.style.setProperty('--custom-border', colors.border);
-    document.documentElement.style.setProperty('--custom-accent', colors.accent);
-    document.documentElement.style.setProperty('--custom-button-text', colors.buttonText);
-    document.documentElement.style.setProperty('--custom-shadow', colors.shadow);
-    document.documentElement.style.setProperty('--custom-error', colors.error);
-    document.documentElement.style.setProperty('--custom-error-hover', colors.errorHover);
-    document.documentElement.style.setProperty('--custom-youtube-red', colors.youtubeRed);
+    // Set CSS custom properties on the root element
+    const root = document.documentElement;
+    
+    root.style.setProperty('--custom-primary', colors.accent || colors.primary);
+    root.style.setProperty('--custom-background', colors.background);
+    root.style.setProperty('--custom-secondary', colors.secondary);
+    root.style.setProperty('--custom-text-primary', colors.textPrimary);
+    root.style.setProperty('--custom-text-secondary', colors.textSecondary);
+    root.style.setProperty('--custom-hover', colors.hover);
+    root.style.setProperty('--custom-border', colors.border);
+    root.style.setProperty('--custom-accent', colors.accent || colors.primary);
+    root.style.setProperty('--custom-button-text', colors.buttonText);
+    root.style.setProperty('--custom-shadow', colors.shadow);
+    root.style.setProperty('--custom-error', colors.error);
+    root.style.setProperty('--custom-error-hover', colors.errorHover);
+    root.style.setProperty('--custom-youtube-red', colors.youtubeRed);
   }
   
   hexToRgba(hex, opacity) {
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
+    // Handle if hex is already rgba
+    if (hex.startsWith('rgba')) {
+      return hex;
+    }
+    
+    // Remove # if present
+    hex = hex.replace('#', '');
+    
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
     return `rgba(${r}, ${g}, ${b}, ${opacity})`;
   }
   
