@@ -499,3 +499,4 @@
 - kareoke page now follows the themes from the original website v55.6.0
 - updated styles. v55.6.1
 - move expand full screen button lyric to top right above the lyrics v55.7.0
+- added share button to compress and copy the share link into files. v55.8.0
