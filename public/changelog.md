@@ -503,3 +503,4 @@
 - made buttons translucent and smaller. same z index as the lyrics v55.8.1
 - added the optional stop centering lyrics option in karaoke player. v55.9.0
 - added the button to stop centering lyrics in the main website as well next to the two buttons. v55.10.0
+- added new share song path. /song/id v56.0.0
