@@ -495,3 +495,4 @@
 - made encoder.js v55.3.0
 - fixed some bugs v55.3.1
 - now have a dedicated karaoke player v55.4.0
+- updated vercel.json to recognize this path. v55.5.0
