@@ -9,6 +9,7 @@ class KaraokePlayer {
     this.isFullscreen = false;
     this.currentSpeed = 1;
     this.isLooping = false;
+    this.isCentering = true;
     this.lyricsInterval = null;
     this.progressInterval = null;
     this.currentHighlightIndex = -1;
@@ -24,6 +25,7 @@ class KaraokePlayer {
       playPauseBtn: document.getElementById('playPauseBtn'),
       restartBtn: document.getElementById('restartBtn'),
       loopBtn: document.getElementById('loopBtn'),
+      centerBtn: document.getElementById('centerBtn'),
       speedSlider: document.getElementById('speedSlider'),
       speedDisplay: document.getElementById('speedDisplay'),
       progressBar: document.getElementById('progressBar'),
@@ -48,6 +50,7 @@ class KaraokePlayer {
     this.els.playPauseBtn.addEventListener('click', () => this.togglePlayPause());
     this.els.restartBtn.addEventListener('click', () => this.restart());
     this.els.loopBtn.addEventListener('click', () => this.toggleLoop());
+    this.els.centerBtn.addEventListener('click', () => this.toggleCentering());
     this.els.speedSlider.addEventListener('input', (e) => this.changeSpeed(e.target.value));
     this.els.progressBar.addEventListener('input', (e) => this.seek(e.target.value));
     this.els.fullscreenBtn.addEventListener('click', () => this.enterFullscreen());
@@ -64,6 +67,10 @@ class KaraokePlayer {
       if (e.code === 'KeyF' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
         e.preventDefault();
         this.toggleFullscreen();
+      }
+      if (e.code === 'KeyC' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') { // ADD THESE 4 LINES
+        e.preventDefault();
+        this.toggleCentering();
       }
     });
   }
@@ -352,7 +359,18 @@ class KaraokePlayer {
     this.isLooping = !this.isLooping;
     this.els.loopBtn.classList.toggle('active', this.isLooping);
   }
-  
+  toggleCentering() {
+    this.isCentering = !this.isCentering;
+    this.els.centerBtn.classList.toggle('active', this.isCentering);
+    
+    // If turning on centering, immediately center the current lyric
+    if (this.isCentering && this.currentHighlightIndex !== -1) {
+      const currentLine = document.getElementById(`lyric-${this.currentHighlightIndex}`);
+      if (currentLine) {
+        currentLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }
   changeSpeed(speed) {
     this.currentSpeed = parseFloat(speed);
     this.els.speedDisplay.textContent = `${this.currentSpeed.toFixed(1)}x`;
@@ -480,7 +498,10 @@ class KaraokePlayer {
         const currentLine = document.getElementById(`lyric-${highlightIndex}`);
         if (currentLine) {
           currentLine.classList.add('active');
-          currentLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          // Only auto-scroll if centering is enabled
+          if (this.isCentering) {
+            currentLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
         }
       }
       
@@ -543,7 +564,10 @@ class KaraokePlayer {
       const currentLine = document.getElementById(`fullscreen-lyric-${highlightIndex}`);
       if (currentLine) {
         currentLine.classList.add('active');
-        currentLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        if (this.isCentering) {
+          currentLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
       }
     }
   }
