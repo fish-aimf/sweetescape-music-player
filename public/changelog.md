@@ -492,4 +492,4 @@
 - merged repositories. merged the sing kareoke repository with this v55.0.0
 - we can now share kareokes. v55.1.0
 - encoding compresses song lyrics and data into a url. v55.2.0
-- 
+- made encoder.js v55.3.0
