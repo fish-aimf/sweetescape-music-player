@@ -12,8 +12,10 @@ class KaraokePlayer {
     this.lyricsInterval = null;
     this.progressInterval = null;
     this.currentHighlightIndex = -1;
+    this.db = null;
     
     this.initElements();
+    this.initializeDatabase();
     this.loadKaraokeData();
   }
   
@@ -64,6 +66,155 @@ class KaraokePlayer {
         this.toggleFullscreen();
       }
     });
+  }
+  
+  // Database initialization
+  async initializeDatabase() {
+    try {
+      this.db = await this.openDatabase();
+      this.initializeTheme();
+    } catch (error) {
+      console.error('Database initialization error:', error);
+      // Set default theme if DB fails
+      document.documentElement.setAttribute("data-theme", "dark");
+    }
+  }
+  
+  openDatabase() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open('musicPlayerDB', 1);
+      
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve(request.result);
+      
+      request.onupgradeneeded = (event) => {
+        const db = event.target.result;
+        const stores = [
+          { name: 'songLibrary', keyPath: 'id' },
+          { name: 'playlists', keyPath: 'id' },
+          { name: 'settings', keyPath: 'name' },
+          { name: 'recentlyPlayed', keyPath: 'type' },
+          { name: 'userSettings', keyPath: 'category' }
+        ];
+        
+        stores.forEach(({ name, keyPath }) => {
+          if (!db.objectStoreNames.contains(name)) {
+            db.createObjectStore(name, { keyPath });
+          }
+        });
+      };
+    });
+  }
+  
+  // Theme management
+  initializeTheme() {
+    if (!this.db) {
+      document.documentElement.setAttribute("data-theme", "dark");
+      return;
+    }
+    
+    const transaction = this.db.transaction(["settings"], "readonly");
+    const store = transaction.objectStore("settings");
+    const request = store.get("themeMode");
+    
+    request.onsuccess = () => {
+      const savedTheme = request.result ? request.result.value : "dark";
+      if (savedTheme === "custom") {
+        this.loadCustomTheme();
+      } else {
+        document.documentElement.setAttribute("data-theme", savedTheme);
+      }
+    };
+    
+    request.onerror = (event) => {
+      console.error("Error loading theme setting:", event.target.error);
+      document.documentElement.setAttribute("data-theme", "dark");
+    };
+  }
+  
+  loadCustomTheme() {
+    const transaction = this.db.transaction(["settings"], "readonly");
+    const store = transaction.objectStore("settings");
+    const colorKeys = [
+      'customPrimary', 'customBackground', 'customSecondary',
+      'customTextPrimary', 'customTextSecondary', 'customHover',
+      'customBorder', 'customAccent', 'customButtonText',
+      'customShadow', 'customError', 'customErrorHover', 'customYoutubeRed'
+    ];
+    
+    const requests = colorKeys.map(key => {
+      const request = store.get(key);
+      return new Promise(resolve => {
+        request.onsuccess = () => resolve({
+          key: key,
+          value: request.result?.value
+        });
+      });
+    });
+    
+    Promise.all(requests).then((results) => {
+      const colors = {};
+      const defaults = {
+        customPrimary: '#3b82f6',
+        customBackground: '#1e293b',
+        customSecondary: '#334155',
+        customTextPrimary: '#e2e8f0',
+        customTextSecondary: '#94a3b8',
+        customHover: '#2563eb',
+        customBorder: '#475569',
+        customAccent: '#3b82f6',
+        customButtonText: '#ffffff',
+        customShadow: 'rgba(0,0,0,0.4)',
+        customError: '#dc3545',
+        customErrorHover: '#c82333',
+        customYoutubeRed: '#FF0000'
+      };
+      
+      results.forEach(result => {
+        colors[result.key] = result.value || defaults[result.key];
+      });
+      
+      this.applyCustomColors({
+        primary: colors.customPrimary,
+        background: colors.customBackground,
+        secondary: colors.customSecondary,
+        textPrimary: colors.customTextPrimary,
+        textSecondary: colors.customTextSecondary,
+        hover: colors.customHover,
+        border: colors.customBorder,
+        accent: colors.customAccent,
+        buttonText: colors.customButtonText,
+        shadow: colors.customShadow,
+        error: colors.customError,
+        errorHover: colors.customErrorHover,
+        youtubeRed: colors.customYoutubeRed
+      });
+      
+      document.documentElement.setAttribute("data-theme", "custom");
+    });
+  }
+  
+  applyCustomColors(colors) {
+    document.documentElement.style.setProperty('--custom-primary', colors.primary);
+    document.documentElement.style.setProperty('--custom-background', colors.background);
+    document.documentElement.style.setProperty('--custom-secondary', colors.secondary);
+    document.documentElement.style.setProperty('--custom-text-primary', colors.textPrimary);
+    document.documentElement.style.setProperty('--custom-text-secondary', colors.textSecondary);
+    document.documentElement.style.setProperty('--custom-hover', colors.hover);
+    document.documentElement.style.setProperty('--custom-border', colors.border);
+    document.documentElement.style.setProperty('--custom-accent', colors.accent);
+    document.documentElement.style.setProperty('--custom-button-text', colors.buttonText);
+    document.documentElement.style.setProperty('--custom-shadow', colors.shadow);
+    document.documentElement.style.setProperty('--custom-error', colors.error);
+    document.documentElement.style.setProperty('--custom-error-hover', colors.errorHover);
+    document.documentElement.style.setProperty('--custom-youtube-red', colors.youtubeRed);
+  }
+  
+  hexToRgba(hex, opacity) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
   }
   
   loadKaraokeData() {
@@ -427,32 +578,6 @@ class KaraokePlayer {
       console.error('Error saving to library:', error);
       this.showToast('Failed to save. Please try again.', 'error');
     }
-  }
-  
-  openDatabase() {
-    return new Promise((resolve, reject) => {
-      const request = indexedDB.open('musicPlayerDB', 1);
-      
-      request.onerror = () => reject(request.error);
-      request.onsuccess = () => resolve(request.result);
-      
-      request.onupgradeneeded = (event) => {
-        const db = event.target.result;
-        const stores = [
-          { name: 'songLibrary', keyPath: 'id' },
-          { name: 'playlists', keyPath: 'id' },
-          { name: 'settings', keyPath: 'name' },
-          { name: 'recentlyPlayed', keyPath: 'type' },
-          { name: 'userSettings', keyPath: 'category' }
-        ];
-        
-        stores.forEach(({ name, keyPath }) => {
-          if (!db.objectStoreNames.contains(name)) {
-            db.createObjectStore(name, { keyPath });
-          }
-        });
-      };
-    });
   }
   
   findSongByVideoId(db, videoId) {
