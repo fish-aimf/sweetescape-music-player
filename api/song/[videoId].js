@@ -46,15 +46,13 @@ function escapeHtml(unsafe) {
 }
 
 function generateHTML(title, author, thumbnail, pageUrl, videoId) {
-  // Clean and escape the text
   const cleanTitle = escapeHtml(title || 'Unknown Song');
   const cleanAuthor = escapeHtml(author || 'Unknown Artist');
   const escapedThumbnail = escapeHtml(thumbnail || '');
   const escapedPageUrl = escapeHtml(pageUrl || '');
   
-  // Create descriptions optimized for Discord/social media
-  const ogTitle = `${cleanTitle} | SweetEscape`;
-  const ogDescription = `Listen to "${cleanTitle}" by ${cleanAuthor} on SweetEscape - Your ad-free music player with lyrics, playlists, and karaoke mode. Enjoy unlimited music streaming without interruptions.`;
+  // Simple short description
+  const ogDescription = `${cleanAuthor} - Ad-free music player with lyrics and karaoke`;
   
   return `<!DOCTYPE html>
 <html lang="en" data-theme="dark">
@@ -64,40 +62,24 @@ function generateHTML(title, author, thumbnail, pageUrl, videoId) {
     
     <!-- Primary Meta Tags -->
     <title>${cleanTitle} - ${cleanAuthor} | SweetEscape</title>
-    <meta name="title" content="${cleanTitle} - ${cleanAuthor} | SweetEscape">
     <meta name="description" content="${ogDescription}">
     
     <!-- Open Graph / Facebook / Discord -->
     <meta property="og:type" content="music.song">
     <meta property="og:url" content="${escapedPageUrl}">
     <meta property="og:site_name" content="SweetEscape">
-    <meta property="og:title" content="${ogTitle}">
+    <meta property="og:title" content="${cleanTitle}">
     <meta property="og:description" content="${ogDescription}">
     <meta property="og:image" content="${escapedThumbnail}">
     <meta property="og:image:width" content="1280">
     <meta property="og:image:height" content="720">
-    <meta property="og:image:alt" content="${cleanTitle} by ${cleanAuthor}">
     
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:url" content="${escapedPageUrl}">
-    <meta name="twitter:title" content="${ogTitle}">
+    <meta name="twitter:title" content="${cleanTitle}">
     <meta name="twitter:description" content="${ogDescription}">
     <meta name="twitter:image" content="${escapedThumbnail}">
-    <meta name="twitter:image:alt" content="${cleanTitle} by ${cleanAuthor}">
     
-    <!-- Music Specific Meta -->
-    <meta property="music:musician" content="${cleanAuthor}">
-    <meta property="music:song" content="${cleanTitle}">
-    
-    <!-- Additional SEO -->
-    <meta name="keywords" content="music player, ad-free music, ${cleanTitle}, ${cleanAuthor}, lyrics, karaoke, free music streaming">
-    <meta name="author" content="SweetEscape">
-    <link rel="canonical" href="${escapedPageUrl}">
-    
-    <!-- Theme Color -->
-    <meta name="theme-color" content="#5D9C59">
-
     <style>
         :root {
             --bg-primary: #f4f4f4;
@@ -108,10 +90,7 @@ function generateHTML(title, author, thumbnail, pageUrl, videoId) {
             --hover-color: #4A7C59; 
             --border-color: #ddd;
             --button-text-color: #ffffff;
-            --shadow-color: rgba(0,0,0,0.1);
             --error-color: #dc3545;
-            --error-hover: #c82333;
-            --youtube-red: #FF0000;
         }
 
         [data-theme='dark'] {
@@ -300,7 +279,7 @@ function generateHTML(title, author, thumbnail, pageUrl, videoId) {
 </head>
 <body>
     <div class="container">
-        <div class="video-container" id="videoContainer">
+        <div class="video-container">
             <iframe 
                 src="https://www.youtube.com/embed/${videoId}?autoplay=0&controls=1"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -310,9 +289,9 @@ function generateHTML(title, author, thumbnail, pageUrl, videoId) {
 
         <div class="message" id="message"></div>
 
-        <div class="song-info" id="songInfo">
-            <h2 id="displaySongName">${cleanTitle}</h2>
-            <p id="displaySongArtist">${cleanAuthor}</p>
+        <div class="song-info">
+            <h2>${cleanTitle}</h2>
+            <p>${cleanAuthor}</p>
         </div>
 
         <div class="controls-section">
@@ -378,7 +357,6 @@ function generateHTML(title, author, thumbnail, pageUrl, videoId) {
                     this.setupEventListeners();
                 } catch (error) {
                     console.error('Initialization error:', error);
-                    this.showMessage('Failed to initialize page', 'error');
                 }
             }
 
@@ -386,11 +364,7 @@ function generateHTML(title, author, thumbnail, pageUrl, videoId) {
                 return new Promise((resolve, reject) => {
                     const request = indexedDB.open("MusicPlayerDB", 1);
                     
-                    request.onerror = (event) => {
-                        console.error("IndexedDB error:", event.target.error);
-                        reject("Could not open IndexedDB");
-                    };
-                    
+                    request.onerror = () => reject("Could not open IndexedDB");
                     request.onsuccess = (event) => {
                         this.db = event.target.result;
                         resolve();
@@ -428,19 +402,10 @@ function generateHTML(title, author, thumbnail, pageUrl, videoId) {
                     
                     request.onsuccess = () => {
                         this.songLibrary = request.result || [];
-                        this.songLibrary = this.songLibrary.map((song) => {
-                            if (song.favorite === undefined) song.favorite = false;
-                            if (song.lyrics === undefined) song.lyrics = "";
-                            if (song.author === undefined) song.author = "";
-                            return song;
-                        });
                         resolve();
                     };
                     
-                    request.onerror = (event) => {
-                        console.error("Error loading song library:", event.target.error);
-                        reject("Could not load song library");
-                    };
+                    request.onerror = () => reject("Could not load song library");
                 });
             }
 
@@ -456,16 +421,11 @@ function generateHTML(title, author, thumbnail, pageUrl, videoId) {
                     const clearRequest = store.clear();
                     
                     clearRequest.onsuccess = () => {
-                        this.songLibrary.forEach((song) => {
-                            store.add(song);
-                        });
+                        this.songLibrary.forEach((song) => store.add(song));
                     };
 
                     transaction.oncomplete = () => resolve();
-                    transaction.onerror = (event) => {
-                        console.error("Error saving song library:", event.target.error);
-                        reject("Could not save song library");
-                    };
+                    transaction.onerror = () => reject("Could not save song library");
                 });
             }
 
