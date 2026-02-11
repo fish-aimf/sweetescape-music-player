@@ -3,6 +3,10 @@
     {
       "source": "/karaoke/:hash",
       "destination": "/karaoke.html"
+    },
+    {
+      "source": "/song/:videoId",
+      "destination": "/song.html"
     }
   ],
   "functions": {
@@ -17,7 +21,7 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self' https://cwhxanbpymkngzpbsshh.supabase.co https://raw.githubusercontent.com https://www.googleapis.com; img-src 'self' data: https:; font-src 'self' data:;"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self' https://cwhxanbpymkngzpbsshh.supabase.co https://raw.githubusercontent.com https://www.googleapis.com https://www.youtube.com; img-src 'self' data: https:; font-src 'self' data:; frame-src https://www.youtube.com;"
         },
         {
           "key": "Content-Security-Policy-Report-Only",
