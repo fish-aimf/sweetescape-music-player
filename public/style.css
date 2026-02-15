@@ -7285,41 +7285,46 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     font-size: 11px;
     margin-top: 5px;
 }
-
 .library-modification-tab-navigation {
     display: flex;
-    gap: 8px;
+    gap: 0;
     margin-bottom: 20px;
-    border-bottom: 2px solid var(--border-color);
-    padding-bottom: 0;
+    width: 100%;
 }
 
 .library-modification-tab-btn {
-    padding: 8px 16px;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-bottom: none;
-    border-radius: 4px 4px 0 0;
+    flex: 1;
+    padding: 12px 20px;
+    background: var(--bg-primary);
+    border: none;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 500;
     color: var(--text-secondary);
-    transition: all 0.2s ease;
-    white-space: nowrap;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
 }
 
-.library-modification-tab-btn:hover {
-    background: var(--hover-color);
-    color: var(--button-text-color);
+.library-modification-tab-btn:first-child {
+    border-radius: 4px 0 0 0;
+}
+
+.library-modification-tab-btn:last-child {
+    border-radius: 0 4px 0 0;
+}
+
+.library-modification-tab-btn:hover:not(.active) {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
 }
 
 .library-modification-tab-btn.active {
     background: var(--accent-color);
     color: var(--button-text-color);
-    border-color: var(--accent-color);
     font-weight: 600;
+    border-bottom-color: var(--accent-color);
 }
 
 .library-modification-import-export-section {
-    display: none; /* Hidden by default */
+    display: none;
 }
