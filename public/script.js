@@ -351,6 +351,10 @@ class AdvancedMusicPlayer {
 			modifyLibraryBtn: document.getElementById("modifyLibraryBtn"),
 			libraryModificationModal: document.getElementById("libraryModificationModal"),
 			closeLibraryModalBtn: document.getElementById("closeLibraryModal"),
+			libraryModificationTabAddSong: document.getElementById("libraryModificationTabAddSong"),
+			libraryModificationTabImportExport: document.getElementById("libraryModificationTabImportExport"),
+			libraryModificationAddSongSection: document.querySelector(".add-song-section"),
+			libraryModificationImportExportSection: document.querySelector(".import-export-section"),
 			progressBar: document.getElementById("musicProgressBar"),
 			currentSongName: document.getElementById("currentSongName"),
 			nextSongName: document.getElementById("nextSongName"),
@@ -444,6 +448,7 @@ class AdvancedMusicPlayer {
 		// Setup specialized UI handlers
 		this._setupLibraryDropdown();
 		this._setupSpeedButton();
+		this._setupLibraryModificationModalTabs();
 		this._checkControlBarVisibility();
 	}
 	
@@ -470,7 +475,37 @@ class AdvancedMusicPlayer {
 			this.elements.speedBtn.textContent = this.currentSpeed + "x";
 		}
 	}
+	_setupLibraryModificationModalTabs() {
+		if (!this.elements.libraryModificationTabAddSong || !this.elements.libraryModificationTabImportExport) return;
+		
+		// Initialize - show Add Song tab by default
+		this.switchLibraryModificationTab('addSong');
+	}
 	
+	switchLibraryModificationTab(tabName) {
+		if (tabName === 'addSong') {
+			// Activate Add Song Tab
+			this.elements.libraryModificationTabAddSong?.classList.add('active');
+			this.elements.libraryModificationTabImportExport?.classList.remove('active');
+			if (this.elements.libraryModificationAddSongSection) {
+				this.elements.libraryModificationAddSongSection.style.display = 'block';
+			}
+			if (this.elements.libraryModificationImportExportSection) {
+				this.elements.libraryModificationImportExportSection.style.display = 'none';
+			}
+		} else if (tabName === 'importExport') {
+			// Activate Import/Export Tab
+			this.elements.libraryModificationTabAddSong?.classList.remove('active');
+			this.elements.libraryModificationTabImportExport?.classList.add('active');
+			if (this.elements.libraryModificationAddSongSection) {
+				this.elements.libraryModificationAddSongSection.style.display = 'none';
+			}
+			if (this.elements.libraryModificationImportExportSection) {
+				this.elements.libraryModificationImportExportSection.style.display = 'block';
+			}
+		}
+	}
+		
 	_checkControlBarVisibility() {
 		const controlBarVisible = localStorage.getItem("controlBarVisible");
 		if (controlBarVisible === "false") {
@@ -505,6 +540,8 @@ class AdvancedMusicPlayer {
 			toggleAutoplay: this.toggleAutoplay.bind(this),
 			openLibraryModal: this.openLibraryModal.bind(this),
 			closeLibraryModal: this.closeLibraryModal.bind(this),
+			libraryModificationTabAddSongClick: () => this.switchLibraryModificationTab('addSong'),
+			libraryModificationTabImportExportClick: () => this.switchLibraryModificationTab('importExport'),
 			toggleControlBar: this.toggleControlBar.bind(this),
 			toggleTheme: this.toggleTheme.bind(this),
 			toggleSpeedOptions: this.toggleSpeedOptions.bind(this),
@@ -627,6 +664,8 @@ class AdvancedMusicPlayer {
 			[this.elements.closeLibraryModalBtn, 'click', handlers.closeLibraryModal],
 			[this.elements.importLibraryBtn, 'click', handlers.importLibrary],
 			[this.elements.exportLibraryBtn, 'click', handlers.exportLibrary],
+			[this.elements.libraryModificationTabAddSong, 'click', handlers.libraryModificationTabAddSongClick],
+			[this.elements.libraryModificationTabImportExport, 'click', handlers.libraryModificationTabImportExportClick],
 			[this.elements.loopPlaylistBtn, 'click', handlers.togglePlaylistLoop],
 			[this.elements.discordButton, 'click', handlers.discordClick],
 			[this.elements.librarySortToggle, 'change', handlers.librarySortToggle],
