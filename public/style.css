@@ -7295,7 +7295,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 .library-modification-tab-btn {
     flex: 1;
     padding: 12px 20px;
-    background: var(--bg-primary);
+    background: var(--bg-primary) !important;
     border: none;
     cursor: pointer;
     font-size: 15px;
@@ -7303,6 +7303,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     color: var(--text-secondary);
     transition: none;
 }
+
 
 .library-modification-tab-btn:first-child {
     border-radius: 4px 0 0 0;
@@ -7313,7 +7314,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 }
 
 .library-modification-tab-btn.active {
-    background: var(--accent-color);
+    background: var(--accent-color) !important;
     color: var(--button-text-color);
     font-weight: 600;
 }
