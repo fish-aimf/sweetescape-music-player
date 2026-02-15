@@ -7288,7 +7288,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 .library-modification-tab-navigation {
     display: flex;
     gap: 0;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     width: 100%;
 }
 
@@ -7302,7 +7302,6 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     font-weight: 500;
     color: var(--text-secondary);
     transition: all 0.3s ease;
-    border-bottom: 3px solid transparent;
 }
 
 .library-modification-tab-btn:first-child {
@@ -7313,18 +7312,12 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     border-radius: 0 4px 0 0;
 }
 
-.library-modification-tab-btn:hover:not(.active) {
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-}
-
 .library-modification-tab-btn.active {
     background: var(--accent-color);
     color: var(--button-text-color);
     font-weight: 600;
-    border-bottom-color: var(--accent-color);
 }
 
-.library-modification-import-export-section {
+.import-export-section {
     display: none;
 }
