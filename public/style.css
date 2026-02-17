@@ -7322,3 +7322,369 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 .import-export-section {
     display: none;
 }
+.theme-discovery-entry {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+}
+
+#openThemeDiscoveryBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--accent-color);
+  color: var(--button-text-color);
+  border: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: background 0.15s;
+}
+#openThemeDiscoveryBtn:hover {
+  background: var(--hover-color);
+}
+
+/* --- Overlay -------------------------------------------------- */
+.td-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 9000;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+}
+
+.td-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  background: var(--bg-primary);
+  overflow: hidden;
+}
+
+/* --- Header --------------------------------------------------- */
+.td-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 56px;
+  min-height: 56px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  gap: 16px;
+}
+
+.td-header-left {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.td-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+/* Tabs */
+.td-tabs {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--border-color);
+}
+
+.td-tab {
+  padding: 5px 16px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: background 0.12s, color 0.12s;
+}
+.td-tab + .td-tab {
+  border-left: 1px solid var(--border-color);
+}
+.td-tab.active {
+  background: var(--accent-color);
+  color: var(--button-text-color);
+}
+.td-tab:not(.active):hover {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Header right */
+.td-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.td-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.td-search-icon {
+  position: absolute;
+  left: 10px;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  pointer-events: none;
+}
+.td-search {
+  padding: 6px 10px 6px 28px;
+  width: 220px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.td-search:focus {
+  border-color: var(--accent-color);
+}
+
+.td-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.td-close:hover {
+  background: var(--error-color);
+  border-color: var(--error-color);
+  color: #fff;
+}
+
+/* --- Body ----------------------------------------------------- */
+.td-body {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.td-panel {
+  display: none;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+.td-panel.active {
+  display: flex;
+}
+
+/* Tag filter bar */
+.td-tag-bar {
+  display: flex;
+  gap: 6px;
+  padding: 12px 24px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+.td-tag {
+  padding: 3px 10px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.td-tag:hover,
+.td-tag.active {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: var(--button-text-color);
+}
+
+/* --- Grid ----------------------------------------------------- */
+.td-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1px;
+  overflow-y: auto;
+  padding: 24px;
+  gap: 16px;
+  align-content: start;
+}
+
+/* Loading state */
+.td-loading {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 60px;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+/* Empty state (My Themes) */
+.td-local-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 8px;
+  padding: 60px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+.td-local-empty i {
+  font-size: 2rem;
+  margin-bottom: 8px;
+  color: var(--border-color);
+}
+.td-local-empty p {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+/* --- Theme Card ----------------------------------------------- */
+.td-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+.td-card:hover {
+  border-color: var(--accent-color);
+}
+
+.td-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px 8px;
+  gap: 8px;
+}
+
+.td-card-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Active badge on local themes */
+.td-card-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 6px;
+  background: var(--accent-color);
+  color: var(--button-text-color);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Color stripes */
+.td-card-stripes {
+  display: flex;
+  flex-direction: column;
+}
+
+.td-stripe {
+  display: flex;
+  align-items: center;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.td-stripe-swatch {
+  width: 48px;
+  min-width: 48px;
+  height: 100%;
+}
+
+.td-stripe-label {
+  padding: 0 10px;
+  font-size: 0.68rem;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.td-stripe-name {
+  margin-left: auto;
+  padding-right: 10px;
+  font-size: 0.62rem;
+  color: var(--text-secondary);
+  opacity: 0.6;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Card footer */
+.td-card-footer {
+  display: flex;
+  border-top: 1px solid var(--border-color);
+}
+
+.td-card-footer button {
+  flex: 1;
+  padding: 8px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+.td-card-footer button:hover {
+  background: var(--accent-color);
+  color: var(--button-text-color);
+}
+.td-card-footer button + button {
+  border-left: 1px solid var(--border-color);
+}
+
+/* Delete button hover — red */
+.td-card-footer button.td-btn-delete:hover {
+  background: var(--error-color);
+  color: #fff;
+}
