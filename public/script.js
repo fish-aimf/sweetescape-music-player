@@ -276,6 +276,7 @@ class AdvancedMusicPlayer {
 		this.setupChangelogModal();
 		this.loadVersion();
 		this.setupYouTubeLibraryResultsDelegation();
+		this.themeDiscovery = new ThemeDiscovery(this);
 	}
 	
 	_handleInitializationError(error) {
@@ -442,7 +443,14 @@ class AdvancedMusicPlayer {
 			aiOutputSection: document.getElementById("aiOutputSection"),
 			aiOutput: document.getElementById("aiOutput"),
 			openAiGeneratorBtn: document.getElementById("openAiGeneratorBtn"),
-			notFindingSection: document.getElementById("notFindingSection")
+			notFindingSection: document.getElementById("notFindingSection"),
+			themeDiscoveryModal:   document.getElementById("themeDiscoveryModal"),
+			tdSearchInput:         document.getElementById("tdSearchInput"),
+			tdGlobalGrid:          document.getElementById("tdGlobalGrid"),
+			tdLocalGrid:           document.getElementById("tdLocalGrid"),
+			tdLocalEmpty:          document.getElementById("tdLocalEmpty"),
+			tdTagBar:              document.getElementById("tdTagBar"),
+			songNameInput: document.getElementById("songName")
 		};
 		
 		// Setup specialized UI handlers
@@ -13180,6 +13188,483 @@ resetLibrarySearchTimeout() {
 			console.log("No active database connection found");
 		}
 	}
+}
+
+class ThemeDiscovery {
+  constructor(player) {
+    this.player = player;
+    this.globalThemes = [];       // loaded from custom-themes.json on first open
+    this.localThemes = [];        // loaded from IndexedDB
+    this.activeTab = "global";    // "global" | "local"
+    this.activeTag = null;
+    this.searchQuery = "";
+    this.loaded = false;          // prevent re-fetching JSON every open
+    this._boundSearch = this._onSearch.bind(this);
+    this._setupTabListeners();
+  }
+
+  /* ----------------------------------------------------------
+     Public API
+  ---------------------------------------------------------- */
+
+  open() {
+    const modal = document.getElementById("themeDiscoveryModal");
+    modal.style.display = "flex";
+    document.body.style.overflow = "hidden";
+
+    if (!this.loaded) {
+      this._fetchGlobalThemes();
+    }
+    this._loadLocalThemes().then(() => {
+      this._renderActivePanel();
+    });
+
+    // Wire search input
+    const searchEl = document.getElementById("tdSearchInput");
+    searchEl.value = this.searchQuery;
+    searchEl.removeEventListener("input", this._boundSearch);
+    searchEl.addEventListener("input", this._boundSearch);
+  }
+
+  close() {
+    const modal = document.getElementById("themeDiscoveryModal");
+    modal.style.display = "none";
+    document.body.style.overflow = "auto";
+  }
+
+  /* Save the currently active custom colors from the color pickers
+     into IndexedDB as a named local theme. */
+  saveCurrentToCollection() {
+    const el = this.player.elements;
+
+    // Gather from color pickers — mirror handleSaveCustomTheme's approach
+    const shadowColor = el.shadowColorPicker?.value || "#000000";
+    const shadowOpacity = el.shadowOpacity?.value || "0.1";
+
+    const colors = {
+      primary:       el.primaryColorPicker?.value       || "#3b82f6",
+      background:    el.backgroundColorPicker?.value    || "#1e293b",
+      secondary:     el.secondaryColorPicker?.value     || "#334155",
+      textPrimary:   el.textPrimaryColorPicker?.value   || "#e2e8f0",
+      textSecondary: el.textSecondaryColorPicker?.value || "#94a3b8",
+      hover:         el.hoverColorPicker?.value         || "#2563eb",
+      border:        el.borderColorPicker?.value        || "#475569",
+      accent:        el.accentColorPicker?.value        || "#3b82f6",
+      buttonText:    el.buttonTextColorPicker?.value    || "#ffffff",
+      shadow:        shadowColor,
+      shadowOpacity: shadowOpacity,
+      error:         el.errorColorPicker?.value         || "#dc3545",
+      errorHover:    el.errorHoverColorPicker?.value    || "#c82333",
+      youtubeRed:    el.youtubeRedColorPicker?.value    || "#FF0000",
+    };
+
+    // Prompt for a name
+    const name = prompt("Name this theme:");
+    if (!name || !name.trim()) return;
+
+    const theme = {
+      id: "local_" + Date.now(),
+      name: name.trim(),
+      colors,
+      savedAt: Date.now(),
+    };
+
+    this._saveLocalTheme(theme).then(() => {
+      this.player.showNotification("Theme saved to collection!", "success");
+    });
+  }
+
+  /* ----------------------------------------------------------
+     Fetch & render — Global
+  ---------------------------------------------------------- */
+
+  _fetchGlobalThemes() {
+    const grid = document.getElementById("tdGlobalGrid");
+    grid.innerHTML = `<div class="td-loading"><i class="fas fa-circle-notch fa-spin"></i> Loading themes...</div>`;
+
+    fetch("custom-themes.json")
+      .then(r => {
+        if (!r.ok) throw new Error("Failed to load themes");
+        return r.json();
+      })
+      .then(data => {
+        this.globalThemes = this._shuffle(data.themes || []);
+        this.loaded = true;
+        this._buildTagBar();
+        if (this.activeTab === "global") {
+          this._renderGlobalGrid();
+        }
+      })
+      .catch(err => {
+        console.error("ThemeDiscovery: fetch error", err);
+        grid.innerHTML = `<div class="td-loading" style="color:var(--error-color);">
+          <i class="fas fa-exclamation-circle"></i> Failed to load themes.
+        </div>`;
+      });
+  }
+
+  _buildTagBar() {
+    const bar = document.getElementById("tdTagBar");
+    const allTags = new Set();
+    this.globalThemes.forEach(t => (t.tags || []).forEach(tag => allTags.add(tag)));
+
+    bar.innerHTML = "";
+
+    // "All" button
+    const allBtn = this._tagButton("All", null);
+    if (this.activeTag === null) allBtn.classList.add("active");
+    bar.appendChild(allBtn);
+
+    allTags.forEach(tag => {
+      const btn = this._tagButton(tag, tag);
+      if (this.activeTag === tag) btn.classList.add("active");
+      bar.appendChild(btn);
+    });
+  }
+
+  _tagButton(label, value) {
+    const btn = document.createElement("button");
+    btn.className = "td-tag";
+    btn.textContent = label;
+    btn.addEventListener("click", () => {
+      this.activeTag = value;
+      document.querySelectorAll(".td-tag").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      this._renderGlobalGrid();
+    });
+    return btn;
+  }
+
+  _renderGlobalGrid() {
+    const grid = document.getElementById("tdGlobalGrid");
+    const q = this.searchQuery.toLowerCase();
+
+    const filtered = this.globalThemes.filter(t => {
+      const matchTag  = !this.activeTag || (t.tags || []).includes(this.activeTag);
+      const matchSearch = !q || t.name.toLowerCase().includes(q)
+                               || (t.tags || []).some(tag => tag.includes(q));
+      return matchTag && matchSearch;
+    });
+
+    grid.innerHTML = "";
+
+    if (filtered.length === 0) {
+      grid.innerHTML = `<div class="td-loading">No themes match your search.</div>`;
+      return;
+    }
+
+    filtered.forEach(theme => {
+      grid.appendChild(this._buildCard(theme, "global"));
+    });
+  }
+
+  /* ----------------------------------------------------------
+     Load & render — Local
+  ---------------------------------------------------------- */
+
+  _loadLocalThemes() {
+    return new Promise(resolve => {
+      if (!this.player.db) { this.localThemes = []; resolve(); return; }
+
+      const tx = this.player.db.transaction(["settings"], "readonly");
+      const store = tx.objectStore("settings");
+      const req = store.get("localThemeCollection");
+
+      req.onsuccess = () => {
+        this.localThemes = req.result?.value || [];
+        resolve();
+      };
+      req.onerror = () => { this.localThemes = []; resolve(); };
+    });
+  }
+
+  _saveLocalThemeCollection() {
+    return this.player.saveSetting("localThemeCollection", this.localThemes);
+  }
+
+  _saveLocalTheme(theme) {
+    this.localThemes.push(theme);
+    return this._saveLocalThemeCollection();
+  }
+
+  _deleteLocalTheme(id) {
+    this.localThemes = this.localThemes.filter(t => t.id !== id);
+    return this._saveLocalThemeCollection().then(() => {
+      this._renderLocalGrid();
+    });
+  }
+
+  _renderLocalGrid() {
+    const grid = document.getElementById("tdLocalGrid");
+    const empty = document.getElementById("tdLocalEmpty");
+    const q = this.searchQuery.toLowerCase();
+
+    const filtered = this.localThemes.filter(t =>
+      !q || t.name.toLowerCase().includes(q)
+    );
+
+    // Sort newest first
+    filtered.sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
+
+    grid.innerHTML = "";
+
+    if (filtered.length === 0) {
+      empty.style.display = "flex";
+      return;
+    }
+    empty.style.display = "none";
+
+    filtered.forEach(theme => {
+      grid.appendChild(this._buildCard(theme, "local"));
+    });
+  }
+
+  /* ----------------------------------------------------------
+     Card builder
+  ---------------------------------------------------------- */
+
+  _buildCard(theme, source) {
+    const c = theme.colors;
+
+    // Which color slots to display as stripes (in order)
+    const stripes = [
+      { key: "background",    label: c.background,    name: "BG" },
+      { key: "secondary",     label: c.secondary,     name: "Secondary" },
+      { key: "primary",       label: c.primary,       name: "Primary" },
+      { key: "accent",        label: c.accent,        name: "Accent" },
+      { key: "textPrimary",   label: c.textPrimary,   name: "Text" },
+      { key: "textSecondary", label: c.textSecondary, name: "Text 2" },
+      { key: "border",        label: c.border,        name: "Border" },
+    ];
+
+    const card = document.createElement("div");
+    card.className = "td-card";
+
+    /* Header */
+    const header = document.createElement("div");
+    header.className = "td-card-header";
+
+    const name = document.createElement("span");
+    name.className = "td-card-name";
+    name.textContent = theme.name;
+    name.title = theme.name;
+    header.appendChild(name);
+
+    if (source === "local") {
+      const badge = document.createElement("span");
+      badge.className = "td-card-badge";
+      badge.textContent = "Saved";
+      header.appendChild(badge);
+    }
+
+    card.appendChild(header);
+
+    /* Stripes */
+    const stripesEl = document.createElement("div");
+    stripesEl.className = "td-card-stripes";
+
+    stripes.forEach(s => {
+      if (!s.label) return;
+      const row = document.createElement("div");
+      row.className = "td-stripe";
+
+      const swatch = document.createElement("div");
+      swatch.className = "td-stripe-swatch";
+      swatch.style.background = s.label;
+
+      const hex = document.createElement("span");
+      hex.className = "td-stripe-label";
+      hex.textContent = s.label.toUpperCase();
+
+      const roleName = document.createElement("span");
+      roleName.className = "td-stripe-name";
+      roleName.textContent = s.name;
+
+      row.appendChild(swatch);
+      row.appendChild(hex);
+      row.appendChild(roleName);
+      stripesEl.appendChild(row);
+    });
+
+    card.appendChild(stripesEl);
+
+    /* Footer */
+    const footer = document.createElement("div");
+    footer.className = "td-card-footer";
+
+    const applyBtn = document.createElement("button");
+    applyBtn.textContent = "Apply";
+    applyBtn.addEventListener("click", () => this._applyTheme(theme));
+    footer.appendChild(applyBtn);
+
+    if (source === "local") {
+      const delBtn = document.createElement("button");
+      delBtn.className = "td-btn-delete";
+      delBtn.textContent = "Delete";
+      delBtn.addEventListener("click", () => {
+        if (confirm(`Delete "${theme.name}"?`)) {
+          this._deleteLocalTheme(theme.id);
+        }
+      });
+      footer.appendChild(delBtn);
+    }
+
+    card.appendChild(footer);
+    return card;
+  }
+
+  /* ----------------------------------------------------------
+     Apply theme
+  ---------------------------------------------------------- */
+
+  _applyTheme(theme) {
+    const c = theme.colors;
+
+    // Build the shadow rgba if separate components are stored
+    let shadowValue = c.shadow || "rgba(0,0,0,0.3)";
+    if (c.shadow && c.shadow.startsWith("#") && c.shadowOpacity !== undefined) {
+      shadowValue = this.player.hexToRgba(c.shadow, c.shadowOpacity);
+    }
+
+    const colors = {
+      primary:      c.primary,
+      background:   c.background,
+      secondary:    c.secondary,
+      textPrimary:  c.textPrimary,
+      textSecondary:c.textSecondary,
+      hover:        c.hover,
+      border:       c.border,
+      accent:       c.accent,
+      buttonText:   c.buttonText   || "#ffffff",
+      shadow:       shadowValue,
+      error:        c.error        || "#dc3545",
+      errorHover:   c.errorHover   || "#c82333",
+      youtubeRed:   c.youtubeRed   || "#FF0000",
+    };
+
+    // Apply CSS variables
+    this.player.applyCustomColors(colors);
+    document.documentElement.setAttribute("data-theme", "custom");
+
+    // Persist to DB (reuse player's save path)
+    const saves = [
+      this.player.saveSetting("customPrimary",       colors.primary),
+      this.player.saveSetting("customBackground",    colors.background),
+      this.player.saveSetting("customSecondary",     colors.secondary),
+      this.player.saveSetting("customTextPrimary",   colors.textPrimary),
+      this.player.saveSetting("customTextSecondary", colors.textSecondary),
+      this.player.saveSetting("customHover",         colors.hover),
+      this.player.saveSetting("customBorder",        colors.border),
+      this.player.saveSetting("customAccent",        colors.accent),
+      this.player.saveSetting("customButtonText",    colors.buttonText),
+      this.player.saveSetting("customShadow",        colors.shadow),
+      this.player.saveSetting("customError",         colors.error),
+      this.player.saveSetting("customErrorHover",    colors.errorHover),
+      this.player.saveSetting("customYoutubeRed",    colors.youtubeRed),
+      this.player.saveSetting("themeMode",           "custom"),
+    ];
+
+    Promise.all(saves).then(() => {
+      // Sync color pickers in settings modal if they're open
+      this._syncColorPickers(c);
+      this.player.showNotification(`Theme "${theme.name}" applied!`, "success");
+    });
+  }
+
+  _syncColorPickers(c) {
+    const el = this.player.elements;
+    const map = {
+      primaryColorPicker:       c.primary,
+      backgroundColorPicker:    c.background,
+      secondaryColorPicker:     c.secondary,
+      textPrimaryColorPicker:   c.textPrimary,
+      textSecondaryColorPicker: c.textSecondary,
+      hoverColorPicker:         c.hover,
+      borderColorPicker:        c.border,
+      accentColorPicker:        c.accent,
+      buttonTextColorPicker:    c.buttonText,
+      errorColorPicker:         c.error,
+    };
+    Object.entries(map).forEach(([key, val]) => {
+      if (el[key] && val) el[key].value = val;
+    });
+    if (el.shadowColorPicker && c.shadow?.startsWith("#")) {
+      el.shadowColorPicker.value = c.shadow;
+    }
+    if (el.shadowOpacity && c.shadowOpacity !== undefined) {
+      el.shadowOpacity.value = c.shadowOpacity;
+    }
+  }
+
+  /* ----------------------------------------------------------
+     Tab switching
+  ---------------------------------------------------------- */
+
+  _setupTabListeners() {
+    // Use event delegation — modal may not exist at construction time
+    document.addEventListener("click", e => {
+      const btn = e.target.closest("[data-td-tab]");
+      if (!btn) return;
+      const tab = btn.dataset.tdTab;
+      this._switchTab(tab);
+    });
+  }
+
+  _switchTab(tab) {
+    this.activeTab = tab;
+
+    document.querySelectorAll(".td-tab").forEach(b => {
+      b.classList.toggle("active", b.dataset.tdTab === tab);
+    });
+    document.querySelectorAll(".td-panel").forEach(p => {
+      p.classList.remove("active");
+    });
+
+    if (tab === "global") {
+      document.getElementById("tdGlobalPanel").classList.add("active");
+      if (this.loaded) this._renderGlobalGrid();
+    } else {
+      document.getElementById("tdLocalPanel").classList.add("active");
+      this._renderLocalGrid();
+    }
+  }
+
+  _renderActivePanel() {
+    if (this.activeTab === "global") {
+      if (this.loaded) {
+        this._buildTagBar();
+        this._renderGlobalGrid();
+      }
+    } else {
+      this._renderLocalGrid();
+    }
+  }
+
+  /* ----------------------------------------------------------
+     Search
+  ---------------------------------------------------------- */
+
+  _onSearch(e) {
+    this.searchQuery = e.target.value;
+    if (this.activeTab === "global") {
+      this._renderGlobalGrid();
+    } else {
+      this._renderLocalGrid();
+    }
+  }
+
+  /* ----------------------------------------------------------
+     Utility
+  ---------------------------------------------------------- */
+
+  _shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
 }
 
 
