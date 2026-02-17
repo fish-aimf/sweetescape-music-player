@@ -1,0 +1,224 @@
+{
+  "themes": [
+    {
+      "id": "poland-grey",
+      "name": "Poland Grey Palette",
+      "author": "community",
+      "tags": ["grey", "neutral", "minimal"],
+      "colors": {
+        "primary": "#626264",
+        "background": "#262422",
+        "secondary": "#3A3938",
+        "textPrimary": "#9899A1",
+        "textSecondary": "#79797D",
+        "hover": "#4E4D4E",
+        "border": "#4E4D4E",
+        "accent": "#626264",
+        "buttonText": "#ffffff",
+        "shadow": "#000000",
+        "shadowOpacity": "0.3",
+        "error": "#dc3545",
+        "errorHover": "#c82333",
+        "youtubeRed": "#FF0000"
+      }
+    },
+    {
+      "id": "midnight-ocean",
+      "name": "Midnight Ocean",
+      "author": "community",
+      "tags": ["blue", "dark", "cool"],
+      "colors": {
+        "primary": "#4b6281",
+        "background": "#131a25",
+        "secondary": "#273549",
+        "textPrimary": "#e2e8f0",
+        "textSecondary": "#cde1fe",
+        "hover": "#5974b1",
+        "border": "#6c7789",
+        "accent": "#24457b",
+        "buttonText": "#ffffff",
+        "shadow": "#000000",
+        "shadowOpacity": "0.4",
+        "error": "#dc3545",
+        "errorHover": "#c82333",
+        "youtubeRed": "#FF0000"
+      }
+    },
+    {
+      "id": "forest-dusk",
+      "name": "Forest Dusk",
+      "author": "community",
+      "tags": ["green", "dark", "warm"],
+      "colors": {
+        "primary": "#3A6B35",
+        "background": "#0f1a0f",
+        "secondary": "#1a2e1a",
+        "textPrimary": "#c8e6c8",
+        "textSecondary": "#8fbc8f",
+        "hover": "#4D7C46",
+        "border": "#2e4d2e",
+        "accent": "#5D9C59",
+        "buttonText": "#ffffff",
+        "shadow": "#000000",
+        "shadowOpacity": "0.4",
+        "error": "#dc3545",
+        "errorHover": "#c82333",
+        "youtubeRed": "#FF0000"
+      }
+    },
+    {
+      "id": "ember-rose",
+      "name": "Ember Rose",
+      "author": "community",
+      "tags": ["red", "warm", "dark"],
+      "colors": {
+        "primary": "#c0444a",
+        "background": "#1a0f0f",
+        "secondary": "#2e1a1a",
+        "textPrimary": "#f0dada",
+        "textSecondary": "#c09090",
+        "hover": "#a33",
+        "border": "#4d2e2e",
+        "accent": "#e05555",
+        "buttonText": "#ffffff",
+        "shadow": "#000000",
+        "shadowOpacity": "0.4",
+        "error": "#ff6b6b",
+        "errorHover": "#e05555",
+        "youtubeRed": "#FF0000"
+      }
+    },
+    {
+      "id": "slate-terminal",
+      "name": "Slate Terminal",
+      "author": "community",
+      "tags": ["mono", "minimal", "dark"],
+      "colors": {
+        "primary": "#5a7a8a",
+        "background": "#0d1117",
+        "secondary": "#161b22",
+        "textPrimary": "#c9d1d9",
+        "textSecondary": "#8b949e",
+        "hover": "#3d6370",
+        "border": "#30363d",
+        "accent": "#58a6ff",
+        "buttonText": "#ffffff",
+        "shadow": "#000000",
+        "shadowOpacity": "0.5",
+        "error": "#f85149",
+        "errorHover": "#da3633",
+        "youtubeRed": "#FF0000"
+      }
+    },
+    {
+      "id": "lavender-dusk",
+      "name": "Lavender Dusk",
+      "author": "community",
+      "tags": ["purple", "soft", "dark"],
+      "colors": {
+        "primary": "#7c6f9e",
+        "background": "#13111a",
+        "secondary": "#1e1a2e",
+        "textPrimary": "#e8e0f8",
+        "textSecondary": "#b0a0d0",
+        "hover": "#9b88c4",
+        "border": "#3a3050",
+        "accent": "#9d7fe0",
+        "buttonText": "#ffffff",
+        "shadow": "#000000",
+        "shadowOpacity": "0.4",
+        "error": "#dc3545",
+        "errorHover": "#c82333",
+        "youtubeRed": "#FF0000"
+      }
+    },
+    {
+      "id": "amber-coal",
+      "name": "Amber Coal",
+      "author": "community",
+      "tags": ["orange", "warm", "dark"],
+      "colors": {
+        "primary": "#c47a2a",
+        "background": "#151008",
+        "secondary": "#251c0e",
+        "textPrimary": "#f0e0c0",
+        "textSecondary": "#c0a060",
+        "hover": "#d4893a",
+        "border": "#4a3010",
+        "accent": "#e8922a",
+        "buttonText": "#ffffff",
+        "shadow": "#000000",
+        "shadowOpacity": "0.4",
+        "error": "#dc3545",
+        "errorHover": "#c82333",
+        "youtubeRed": "#FF0000"
+      }
+    },
+    {
+      "id": "nord-frost",
+      "name": "Nord Frost",
+      "author": "community",
+      "tags": ["blue", "cool", "muted"],
+      "colors": {
+        "primary": "#5e81ac",
+        "background": "#2e3440",
+        "secondary": "#3b4252",
+        "textPrimary": "#eceff4",
+        "textSecondary": "#d8dee9",
+        "hover": "#81a1c1",
+        "border": "#4c566a",
+        "accent": "#88c0d0",
+        "buttonText": "#2e3440",
+        "shadow": "#000000",
+        "shadowOpacity": "0.3",
+        "error": "#bf616a",
+        "errorHover": "#a5535b",
+        "youtubeRed": "#FF0000"
+      }
+    },
+    {
+      "id": "pure-light",
+      "name": "Pure Light",
+      "author": "community",
+      "tags": ["light", "clean", "minimal"],
+      "colors": {
+        "primary": "#3b82f6",
+        "background": "#f4f4f4",
+        "secondary": "#ffffff",
+        "textPrimary": "#333333",
+        "textSecondary": "#666666",
+        "hover": "#2563eb",
+        "border": "#dddddd",
+        "accent": "#5D9C59",
+        "buttonText": "#ffffff",
+        "shadow": "#000000",
+        "shadowOpacity": "0.1",
+        "error": "#dc3545",
+        "errorHover": "#c82333",
+        "youtubeRed": "#FF0000"
+      }
+    },
+    {
+      "id": "deep-space",
+      "name": "Deep Space",
+      "author": "community",
+      "tags": ["dark", "blue", "space"],
+      "colors": {
+        "primary": "#2a2d4a",
+        "background": "#05060f",
+        "secondary": "#0d0e1f",
+        "textPrimary": "#d0d4f0",
+        "textSecondary": "#8890c0",
+        "hover": "#3d4270",
+        "border": "#1a1d38",
+        "accent": "#4a5aaa",
+        "buttonText": "#ffffff",
+        "shadow": "#000000",
+        "shadowOpacity": "0.6",
+        "error": "#dc3545",
+        "errorHover": "#c82333",
+        "youtubeRed": "#FF0000"
+      }
+    }
+  ]
+}
