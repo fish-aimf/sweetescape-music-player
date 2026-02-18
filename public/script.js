@@ -1500,39 +1500,53 @@ class AdvancedMusicPlayer {
 		}
 	}
 	removeSong(songId) {
-		const song = this.songLibrary.find((song) => song.id === songId);
-		if (!song) return Promise.resolve();
-		const videoId = song.videoId;
-		this.songLibrary = this.songLibrary.filter((song) => song.id !== songId);
-		return this.saveSongLibrary()
-			.then(() => {
-				let favoritesPlaylist = this.playlists.find(
-					(p) =>
-					p.name.toLowerCase() === "favorites" ||
-					p.name.toLowerCase() === "favourite" ||
-					p.name.toLowerCase() === "favourite songs" ||
-					p.name.toLowerCase() === "favorite songs"
-				);
-				if (favoritesPlaylist) {
-					const originalLength = favoritesPlaylist.songs.length;
-					favoritesPlaylist.songs = favoritesPlaylist.songs.filter(
-						(s) => s.videoId !== videoId
-					);
-					if (originalLength !== favoritesPlaylist.songs.length) {
-						return this.savePlaylists();
-					}
-				}
-				return Promise.resolve();
-			})
-			.then(() => {
-				this.renderSongLibrary();
-				this.renderPlaylists();
-				this.updatePlaylistSelection();
-			})
-			.catch((error) => {
-				console.error("Error removing song:", error);
-				alert("Failed to remove song. Please try again.");
-			});
+	    const song = this.songLibrary.find((song) => song.id === songId);
+	    if (!song) return Promise.resolve();
+	    const videoId = song.videoId;
+	
+	    // Stop and skip if currently playing
+	    if (this.currentSong && this.currentSong.id === songId) {
+	        this.playNextSong();
+	    }
+	
+	    // Remove from recentlyPlayedSongs in memory and DB
+	    this.recentlyPlayedSongs = this.recentlyPlayedSongs.filter(s => s.id !== songId);
+	    if (this.db) {
+	        const tx = this.db.transaction(['recentlyPlayed'], 'readwrite');
+	        tx.objectStore('recentlyPlayed').put({ type: 'songs', items: this.recentlyPlayedSongs });
+	    }
+	
+	    this.songLibrary = this.songLibrary.filter((song) => song.id !== songId);
+	    return this.saveSongLibrary()
+	        .then(() => {
+	            let favoritesPlaylist = this.playlists.find(
+	                (p) =>
+	                p.name.toLowerCase() === "favorites" ||
+	                p.name.toLowerCase() === "favourite" ||
+	                p.name.toLowerCase() === "favourite songs" ||
+	                p.name.toLowerCase() === "favorite songs"
+	            );
+	            if (favoritesPlaylist) {
+	                const originalLength = favoritesPlaylist.songs.length;
+	                favoritesPlaylist.songs = favoritesPlaylist.songs.filter(
+	                    (s) => s.videoId !== videoId
+	                );
+	                if (originalLength !== favoritesPlaylist.songs.length) {
+	                    return this.savePlaylists();
+	                }
+	            }
+	            return Promise.resolve();
+	        })
+	        .then(() => {
+	            this.renderSongLibrary();
+	            this.renderPlaylists();
+	            this.updatePlaylistSelection();
+	            this.renderAdditionalDetails();
+	        })
+	        .catch((error) => {
+	            console.error("Error removing song:", error);
+	            alert("Failed to remove song. Please try again.");
+	        });
 	}
 	createPlaylist() {
 		const playlistName = this.elements.newPlaylistName.value.trim();
