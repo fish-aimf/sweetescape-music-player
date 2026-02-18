@@ -509,3 +509,6 @@
 - made a server function to follow the twitter tags such that the twitter tag is dynamically generated and is different for every /song/id so preview looks good. v56.3.0
 - fixed slight bugs in the server function v56.3.1
 - modify library tab is less cluttered, with 2 tabs. v56.4.0
+- Added saving past few themes so users can choose between different theme sets. v57.0.0
+- Users can name their themesets. v57.1.0
+
