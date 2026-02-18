@@ -1504,12 +1504,15 @@ class AdvancedMusicPlayer {
 	    if (!song) return Promise.resolve();
 	    const videoId = song.videoId;
 	
-	    // Stop and skip if currently playing
+	    // Stop playing if this is the current song
 	    if (this.currentSong && this.currentSong.id === songId) {
-	        this.playNextSong();
+	        if (this.ytPlayer) this.ytPlayer.stopVideo();
+	        this.isPlaying = false;
+	        this.currentSong = null;
+	        this.updatePlayerUI();
 	    }
 	
-	    // Remove from recentlyPlayedSongs in memory and DB
+	    // Remove from recentlyPlayedSongs in memory and DB immediately
 	    this.recentlyPlayedSongs = this.recentlyPlayedSongs.filter(s => s.id !== songId);
 	    if (this.db) {
 	        const tx = this.db.transaction(['recentlyPlayed'], 'readwrite');
