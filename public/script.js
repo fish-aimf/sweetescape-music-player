@@ -256,6 +256,9 @@ class AdvancedMusicPlayer {
 		
 		this.syncLibraryDisplayUI();
 		this.syncVisualizerUI();
+		if (this.elements.volumeSlider) {
+		    this.elements.volumeSlider.value = this.savedVolume ?? 100;
+		}
 	}
 	
 	_setupComponents() {
@@ -966,6 +969,16 @@ class AdvancedMusicPlayer {
 						key: "allowDuplicates",
 						default: true,
 						target: "allowDuplicates"
+					},
+					{
+					    key: "volume",
+					    default: 100,
+					    target: "savedVolume"
+					},
+					{
+					    key: "isLooping",
+					    default: false,
+					    target: "isLooping"
 					},
 				];
 				settingsToLoad.forEach((setting) => {
@@ -2694,7 +2707,8 @@ hideSidebar() {
 	    } catch (error) {
 	        console.warn("Could not set video quality:", error);
 	    }
-	    
+	
+	    this.ytPlayer.setVolume(this.savedVolume ?? 100);
 	    this.initializeAutoplay();
 	}
 	onPlayerError(event) {
@@ -2820,14 +2834,16 @@ hideSidebar() {
 	}
 
 	toggleLoop() {
-		this.isLooping = !this.isLooping;
-		this.elements.loopBtn.classList.toggle("active", this.isLooping);
-		this.updatePlayerUI();
+	    this.isLooping = !this.isLooping;
+	    this.elements.loopBtn.classList.toggle("active", this.isLooping);
+	    this.updatePlayerUI();
+	    this.saveSetting("isLooping", this.isLooping);
 	}
 	setVolume(volume) {
-		if (this.ytPlayer) {
-			this.ytPlayer.setVolume(volume);
-		}
+	    if (this.ytPlayer) {
+	        this.ytPlayer.setVolume(volume);
+	    }
+	    this.saveSetting("volume", volume);
 	}
 	toggleAutoplay() {
 		this.isAutoplayEnabled = !this.isAutoplayEnabled;
