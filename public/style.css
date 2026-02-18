@@ -1333,17 +1333,16 @@ body.dark-mode .thumbnail-preview {
     white-space: nowrap;
     padding: 8px 12px;
     border-radius: 4px;
-    background-color: #4a5568;
-    color: white;
-    border: none;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
     cursor: pointer;
     transition: background-color 0.3s;
 }
-
 #modifyLibraryBtn:hover {
-    background-color: #2d3748;
+    background-color: var(--hover-color);
+    color: var(--button-text-color, #fff);
 }
-
 .input-row {
     display: flex;
     align-items: center;
@@ -3804,18 +3803,17 @@ if (this.elements.autofillBtn) {
     white-space: nowrap;
     padding: 8px 12px;
     border-radius: 4px;
-    background-color: #4a5568;
-    color: white;
-    border: none;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
     cursor: pointer;
     transition: background-color 0.3s;
     margin-right: 4px;
 }
-
 .find-songs-btn:hover {
-    background-color: #2d3748;
+    background-color: var(--hover-color);
+    color: var(--button-text-color, #fff);
 }
-
 .find-songs-container {
     position: fixed;
     top: 0;
