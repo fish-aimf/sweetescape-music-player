@@ -246,19 +246,21 @@ class AdvancedMusicPlayer {
 	}
 	
 	_syncInitialUI() {
-		// Sync toggle states
-		if (this.elements.librarySortToggle) {
-			this.elements.librarySortToggle.checked = this.librarySortAlphabetically;
-		}
-		if (this.elements.libraryReverseToggle) {
-			this.elements.libraryReverseToggle.checked = this.libraryReverseOrder;
-		}
-		
-		this.syncLibraryDisplayUI();
-		this.syncVisualizerUI();
-		if (this.elements.volumeSlider) {
-		    this.elements.volumeSlider.value = this.savedVolume ?? 100;
-		}
+	    if (this.elements.librarySortToggle) {
+	        this.elements.librarySortToggle.checked = this.librarySortAlphabetically;
+	    }
+	    if (this.elements.libraryReverseToggle) {
+	        this.elements.libraryReverseToggle.checked = this.libraryReverseOrder;
+	    }
+	    if (this.elements.loopBtn) {
+	        this.elements.loopBtn.classList.toggle("active", this.isLooping);
+	    }
+	    if (this.elements.volumeSlider) {
+	        this.elements.volumeSlider.value = this.savedVolume ?? 100;
+	    }
+	
+	    this.syncLibraryDisplayUI();
+	    this.syncVisualizerUI();
 	}
 	
 	_setupComponents() {
