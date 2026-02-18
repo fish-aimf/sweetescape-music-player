@@ -307,46 +307,6 @@ export const settingsMethods = {
     this.saveSetting("visualizerEnabled", isEnabled);
   },
 
-  // ── Library display (modal toggles only) ─────────────────────────────────
-
-  handleShowLibraryDropdown() {
-    this.elements.libraryOptionsDropdown.classList.add("show");
-  },
-
-  handleHideLibraryDropdown() {
-    this.elements.libraryOptionsDropdown.classList.remove("show");
-  },
-
-  handleToggleDeleteButtons(e) {
-    this.showDeleteButtons = e.target.checked;
-    this.saveLibraryDisplaySettings();
-    this.renderSongLibrary();
-  },
-
-  handleToggleUnfavoriteButtons(e) {
-    this.showUnfavoriteButtons = e.target.checked;
-    this.saveLibraryDisplaySettings();
-    this.renderSongLibrary();
-  },
-
-  handleToggleEditButtons(e) {
-    this.showEditButtons = e.target.checked;
-    this.saveLibraryDisplaySettings();
-    this.renderSongLibrary();
-  },
-
-  saveLibraryDisplaySettings() {
-    if (!this.db) return;
-    this.db.transaction(["userSettings"], "readwrite")
-      .objectStore("userSettings")
-      .put({
-        category:             "libraryDisplay",
-        showDeleteButtons:    this.showDeleteButtons,
-        showUnfavoriteButtons:this.showUnfavoriteButtons,
-        showEditButtons:      this.showEditButtons
-      });
-  },
-
   // ── Library sort / reverse (modal toggles only) ───────────────────────────
 
   handleLibrarySortToggle(event) {
