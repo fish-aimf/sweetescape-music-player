@@ -514,3 +514,4 @@
 - added some missing styles. v57.2.0
 - modify library btn and global library button are now no longer hardcoded in styles. v57.3.0
 - the Volume is now saved in indexed.db v57.4.0
+- Looping status saved in indexed.db v57.5.0
