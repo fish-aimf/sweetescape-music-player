@@ -8225,6 +8225,7 @@ hideSidebar() {
 		this.loadLibrarySortSetting();
 		this.loadLibraryReverseSetting();
 		this.loadKeybindsSettings();
+		this.loadSavedThemesList();
 		console.log("Settings modal opened - all settings loaded");
 	}
 	loadAdvertisementSettingsInModal() {
@@ -8774,6 +8775,119 @@ hideSidebar() {
 		}
 		return `rgba(0, 0, 0, ${opacity})`;
 	}
+	saveNamedTheme() {
+		  const nameInput = document.getElementById('savedThemeName');
+		  const name = nameInput?.value?.trim();
+		  if (!name) { this.showNotification('Enter a theme name first', 'error'); return; }
+		  if (!this.db) { this.showNotification('Database not available', 'error'); return; }
+		
+		  const themeData = {
+			primary:       this.elements.primaryColorPicker?.value       || '#3b82f6',
+			background:    this.elements.backgroundColorPicker?.value    || '#1e293b',
+			secondary:     this.elements.secondaryColorPicker?.value     || '#334155',
+			textPrimary:   this.elements.textPrimaryColorPicker?.value   || '#e2e8f0',
+			textSecondary: this.elements.textSecondaryColorPicker?.value || '#94a3b8',
+			hover:         this.elements.hoverColorPicker?.value         || '#2563eb',
+			border:        this.elements.borderColorPicker?.value        || '#475569',
+			accent:        this.elements.accentColorPicker?.value        || '#3b82f6',
+			buttonText:    this.elements.buttonTextColorPicker?.value    || '#ffffff',
+			shadowHex:     this.elements.shadowColorPicker?.value        || '#000000',
+			shadowOpacity: this.elements.shadowOpacity?.value            || '0.1',
+			error:         this.elements.errorColorPicker?.value         || '#dc3545',
+			errorHover:    this.elements.errorHoverColorPicker?.value    || '#c82333',
+			youtubeRed:    this.elements.youtubeRedColorPicker?.value    || '#FF0000',
+		  };
+		
+		  this._getSavedThemesRecord().then(themes => {
+			themes.push({ id: `st_${Date.now()}`, name, data: themeData, savedAt: Date.now() });
+			this._writeSavedThemes(themes).then(() => {
+			  this.showNotification(`Theme "${name}" saved!`, 'success');
+			  nameInput.value = '';
+			  this.loadSavedThemesList();
+			});
+		  });
+		}
+		
+		loadSavedThemesList() {
+		  const container = document.getElementById('savedThemesList');
+		  if (!container) return;
+		
+		  this._getSavedThemesRecord().then(themes => {
+			if (!themes.length) { container.innerHTML = ''; return; }
+		
+			themes.sort((a, b) => b.savedAt - a.savedAt);
+			container.innerHTML = themes.map(t => {
+			  const d = t.data;
+			  const date = new Date(t.savedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: '2-digit' });
+			  const swatches = [d.background, d.secondary, d.primary, d.accent, d.textPrimary]
+				.map(c => `<div class="saved-theme-swatch" style="background:${c}"></div>`).join('');
+			  const safeName = d.name ? d.name.replace(/</g,'&lt;') : t.name.replace(/</g,'&lt;');
+			  return `
+				<div class="saved-theme-item" data-id="${t.id}">
+				  <div class="saved-theme-swatches">${swatches}</div>
+				  <span class="saved-theme-name">${t.name.replace(/</g,'&lt;')}</span>
+				  <span class="saved-theme-date">${date}</span>
+				  <div class="saved-theme-actions">
+					<button class="load-theme-btn" title="Apply" onclick="musicPlayer.applySavedTheme('${t.id}')"><i class="fa-solid fa-check"></i></button>
+					<button class="delete-theme-btn" title="Delete" onclick="musicPlayer.deleteSavedTheme('${t.id}')"><i class="fa-solid fa-trash"></i></button>
+				  </div>
+				</div>`;
+			}).join('');
+		  });
+		}
+		
+		applySavedTheme(id) {
+		  this._getSavedThemesRecord().then(themes => {
+			const theme = themes.find(t => t.id === id);
+			if (!theme) return;
+			const d = theme.data;
+			const set = (el, v) => { if (this.elements[el]) this.elements[el].value = v; };
+			set('primaryColorPicker',       d.primary);
+			set('backgroundColorPicker',    d.background);
+			set('secondaryColorPicker',     d.secondary);
+			set('textPrimaryColorPicker',   d.textPrimary);
+			set('textSecondaryColorPicker', d.textSecondary);
+			set('hoverColorPicker',         d.hover);
+			set('borderColorPicker',        d.border);
+			set('accentColorPicker',        d.accent);
+			set('buttonTextColorPicker',    d.buttonText);
+			set('errorColorPicker',         d.error);
+			set('errorHoverColorPicker',    d.errorHover);
+			set('youtubeRedColorPicker',    d.youtubeRed);
+			if (this.elements.shadowColorPicker)  this.elements.shadowColorPicker.value  = d.shadowHex     || '#000000';
+			if (this.elements.shadowOpacity)      this.elements.shadowOpacity.value      = d.shadowOpacity || '0.1';
+		
+			this.handleSaveCustomTheme();
+			this.showNotification(`Applied "${theme.name}"`, 'success');
+		  });
+		}
+		
+		deleteSavedTheme(id) {
+		  this._getSavedThemesRecord().then(themes => {
+			this._writeSavedThemes(themes.filter(t => t.id !== id)).then(() => {
+			  this.showNotification('Theme deleted', 'success');
+			  this.loadSavedThemesList();
+			});
+		  });
+		}
+		
+		_getSavedThemesRecord() {
+		  return new Promise(resolve => {
+			if (!this.db) return resolve([]);
+			const req = this.db.transaction(['settings'], 'readonly').objectStore('settings').get('savedThemes');
+			req.onsuccess = () => { try { resolve(JSON.parse(req.result?.value || '[]')); } catch { resolve([]); } };
+			req.onerror = () => resolve([]);
+		  });
+		}
+		
+		_writeSavedThemes(themes) {
+		  return new Promise((resolve, reject) => {
+			const tx = this.db.transaction(['settings'], 'readwrite');
+			tx.objectStore('settings').put({ name: 'savedThemes', value: JSON.stringify(themes) });
+			tx.oncomplete = resolve;
+			tx.onerror = reject;
+		  });
+		}
 	async loadAdvertisementSettings() {
 		try {
 			if (!this.db || !this.db.objectStoreNames.contains("settings")) {
