@@ -7322,3 +7322,196 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 .import-export-section {
     display: none;
 }
+
+/* ── Theme Mode Select ── */
+.setting-group select {
+  appearance: none;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1.5px solid var(--border-color);
+  border-radius: 8px;
+  padding: 7px 32px 7px 11px;
+  font-size: 0.875rem;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%2394a3b8' d='M5 7L0 2h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  transition: border-color 0.2s;
+}
+.setting-group select:hover,
+.setting-group select:focus {
+  border-color: var(--accent-color);
+  outline: none;
+}
+
+/* ── Import / Export Buttons ── */
+.import-export-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.import-export-group button {
+  padding: 7px 13px;
+  border-radius: 7px;
+  border: 1.5px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.import-export-group button:hover {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: var(--button-text-color, #fff);
+}
+
+/* ── Saved Themes Section ── */
+.saved-themes-section {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-color);
+}
+.saved-themes-section h4 {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-secondary);
+  margin: 0 0 10px 0;
+}
+
+/* Name input + save button row */
+.save-theme-row {
+  display: flex;
+  gap: 7px;
+  margin-bottom: 10px;
+}
+.save-theme-row input[type="text"] {
+  flex: 1;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1.5px solid var(--border-color);
+  border-radius: 7px;
+  padding: 7px 10px;
+  font-size: 0.83rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.save-theme-row input[type="text"]::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.55;
+}
+.save-theme-row input[type="text"]:focus {
+  border-color: var(--accent-color);
+}
+.save-theme-row button {
+  padding: 7px 13px;
+  border-radius: 7px;
+  border: none;
+  background: var(--accent-color);
+  color: var(--button-text-color, #fff);
+  font-size: 0.83rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: filter 0.15s;
+}
+.save-theme-row button:hover { filter: brightness(1.15); }
+
+/* Scrollable list */
+.saved-themes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
+.saved-themes-list:empty::after {
+  content: "No saved themes yet.";
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  text-align: center;
+  padding: 10px 0;
+}
+
+/* Individual theme card */
+.saved-theme-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 9px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border-color);
+  background: var(--bg-secondary);
+  transition: border-color 0.15s;
+}
+.saved-theme-item:hover { border-color: var(--accent-color); }
+
+/* Colour swatch strip */
+.saved-theme-swatches {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.saved-theme-swatch {
+  width: 12px;
+  height: 24px;
+  border-radius: 3px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* Name + date */
+.saved-theme-name {
+  flex: 1;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.saved-theme-date {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Action buttons */
+.saved-theme-actions { display: flex; gap: 4px; flex-shrink: 0; }
+.saved-theme-actions button {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1.5px solid var(--border-color);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.saved-theme-actions .load-theme-btn:hover {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: #fff;
+}
+.saved-theme-actions .delete-theme-btn:hover {
+  background: var(--error-color);
+  border-color: var(--error-color);
+  color: #fff;
+}
