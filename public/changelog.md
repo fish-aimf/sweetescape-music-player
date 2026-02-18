@@ -511,4 +511,5 @@
 - modify library tab is less cluttered, with 2 tabs. v56.4.0
 - Added saving past few themes so users can choose between different theme sets. v57.0.0
 - Users can name their themesets. v57.1.0
+- added some missing styles. v57.2.0
 
