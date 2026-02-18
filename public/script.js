@@ -10887,7 +10887,7 @@ closeBillboardHot100Modal() {
 			this.toggleAdditionalDetails();
 		}
 	}
-}
+
 
 	handleShowLibraryDropdown() {
 		this.elements.libraryOptionsDropdown.classList.add("show");
