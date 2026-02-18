@@ -515,3 +515,4 @@
 - modify library btn and global library button are now no longer hardcoded in styles. v57.3.0
 - the Volume is now saved in indexed.db v57.4.0
 - Looping status saved in indexed.db v57.5.0
+- when removing the song from the local playlist, it will stop playing the song AND it will remove the song in the sidebar immediately v57.6.0
