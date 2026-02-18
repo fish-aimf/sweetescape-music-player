@@ -652,6 +652,14 @@ Another Playlist{
                               <textarea id="themeImportText" placeholder="Paste your theme code here..." rows="4"></textarea>
                            </div>
                         </div>
+                        <div class="saved-themes-section">
+                          <h4>Saved Themes</h4>
+                          <div class="save-theme-row">
+                            <input type="text" id="savedThemeName" placeholder="Name this theme…" maxlength="40" />
+                            <button onclick="musicPlayer.saveNamedTheme()">Save Current</button>
+                          </div>
+                          <div class="saved-themes-list" id="savedThemesList"></div>
+                        </div>
                      </div>
                   </div>
                   <!-- Recommendation Tab -->
