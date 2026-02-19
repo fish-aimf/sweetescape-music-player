@@ -1672,24 +1672,22 @@ class AdvancedMusicPlayer {
 	    const card = document.createElement('div');
 	    card.className = 'discovery-card';
 	    card.id = 'discoveryCard';
-	    let pool = [...this.songLibrary];
-		
-		if (this.librarySortAlphabetically !== false) {
-		    pool.sort((a, b) => {
-		        if (a.favorite !== b.favorite) return a.favorite ? -1 : 1;
-		        const result = a.name.localeCompare(b.name);
-		        return this.libraryReverseOrder ? -result : result;
-		    });
-		} else {
-		    if (this.libraryReverseOrder) pool.reverse();
-		}
-		
-		// Shuffle a window of songs so it feels random but still respects sort loosely
-		// — actually: if sorted, just pick a random slice so you see different songs each load
-		const startIndex = Math.floor(Math.random() * Math.max(1, pool.length - 14));
-		const toShow = pool.slice(startIndex, startIndex + 14);
 	
-	    // Header
+	    let pool = [...this.songLibrary];
+	
+	    if (this.librarySortAlphabetically !== false) {
+	        pool.sort((a, b) => {
+	            if (a.favorite !== b.favorite) return a.favorite ? -1 : 1;
+	            const result = a.name.localeCompare(b.name);
+	            return this.libraryReverseOrder ? -result : result;
+	        });
+	    } else {
+	        if (this.libraryReverseOrder) pool.reverse();
+	    }
+	
+	    const shuffled = this._shuffleArray([...pool]);
+	    const toShow = shuffled.slice(0, 14);
+	
 	    const header = document.createElement('div');
 	    header.className = 'discovery-header';
 	
@@ -1726,11 +1724,8 @@ class AdvancedMusicPlayer {
 	                card.appendChild(expList);
 	            }
 	            expList.innerHTML = '';
-	            // Full sorted library excluding favorites (they're in favorites card)
 	            const allSongs = [...this.songLibrary].sort((a, b) => a.name.localeCompare(b.name));
-	            allSongs.forEach(song => {
-	                expList.appendChild(this.createSongElement(song));
-	            });
+	            allSongs.forEach(song => expList.appendChild(this.createSongElement(song)));
 	        } else if (expList) {
 	            expList.innerHTML = '';
 	        }
@@ -1741,9 +1736,10 @@ class AdvancedMusicPlayer {
 	    header.appendChild(left);
 	    header.appendChild(right);
 	
-	    // Grid
 	    const grid = document.createElement('div');
 	    grid.className = 'discovery-grid';
+	    grid.style.gap = '8px';
+	    grid.style.padding = '10px 12px';
 	
 	    if (toShow.length === 0) {
 	        const msg = document.createElement('div');
@@ -1751,16 +1747,14 @@ class AdvancedMusicPlayer {
 	        msg.innerHTML = `<i class="fa fa-music" style="font-size:1.8em;opacity:0.3;display:block;margin-bottom:8px;"></i>Your library is empty.<br><small>Add some songs to get started.</small>`;
 	        grid.appendChild(msg);
 	    } else {
-	        toShow.forEach(song => {
-	            grid.appendChild(this._buildDiscoverySongItem(song));
-	        });
+	        toShow.forEach(song => grid.appendChild(this._buildDiscoverySongItem(song)));
 	    }
 	
 	    card.appendChild(header);
 	    card.appendChild(grid);
 	    return card;
 	}
-	
+		
 	_buildDiscoverySongItem(song) {
 	    const item = document.createElement('div');
 	    item.className = 'discovery-song-item';
