@@ -1421,7 +1421,12 @@ class AdvancedMusicPlayer {
 	filterLibrarySongs() {
 	    const searchTerm = this.elements.librarySearch.value.toLowerCase().trim();
 	
-	    // Check if it's a YouTube URL
+	    if (searchTerm === '') {
+	        this.renderLibraryView();
+	        this.hideYouTubeSearchSuggestion();
+	        return;
+	    }
+	
 	    const videoId = this.extractYouTubeId(searchTerm);
 	    if (videoId) {
 	        this.showAddToLibrarySuggestion(searchTerm);
@@ -1429,14 +1434,11 @@ class AdvancedMusicPlayer {
 	        return;
 	    }
 	
-	    // Re-render library with search filter applied
 	    this.renderSongLibrary(searchTerm);
 	
-	    // Check if any results were found
 	    const songItems = this.elements.songLibrary.querySelectorAll(".song-item");
 	    const resultsFound = songItems.length > 0;
 	
-	    // Show instruction when no results
 	    if (!resultsFound && searchTerm !== "") {
 	        const instructionMessage = document.createElement('div');
 	        instructionMessage.classList.add('empty-library-message');
@@ -1499,12 +1501,300 @@ class AdvancedMusicPlayer {
 			}
 		}
 	}
+
+	renderLibraryView() {
+	    if (!this.elements.songLibrary) return;
+	
+	    const searchTerm = this.elements.librarySearch
+	        ? this.elements.librarySearch.value.toLowerCase().trim()
+	        : '';
+	
+	    if (searchTerm !== '') {
+	        // Full list search mode — existing behaviour
+	        this.renderSongLibrary(searchTerm);
+	        return;
+	    }
+	
+	    // Compact mode
+	    const wrapper = document.createDocumentFragment();
+	    const view = document.createElement('div');
+	    view.className = 'compact-library-view';
+	
+	    view.appendChild(this._buildFavoritesCard());
+	    view.appendChild(this._buildDiscoveryCard());
+	
+	    wrapper.appendChild(view);
+	    this.elements.songLibrary.innerHTML = '';
+	    this.elements.songLibrary.appendChild(wrapper);
+	}
+	
+	// ------------------------------------------------------------------
+	// FAVORITES CARD
+	// ------------------------------------------------------------------
+	_buildFavoritesCard() {
+	    const card = document.createElement('div');
+	    card.className = 'favorites-card';
+	    card.id = 'favoritesCard';
+	
+	    const favorites = this.songLibrary.filter(s => s.favorite);
+	
+	    // ── Thumbnail grid ──
+	    const grid = document.createElement('div');
+	    grid.className = 'favorites-thumbnails';
+	
+	    if (favorites.length === 0) {
+	        // Empty state
+	        const empty = document.createElement('div');
+	        empty.className = 'favorites-empty';
+	        empty.innerHTML = `<i class="fa fa-star-o"></i><span>No favourites yet</span><small>Star a song to see it here</small>`;
+	        grid.appendChild(empty);
+	    } else {
+	        // Shuffle and pick how many to show
+	        const shuffled = this._shuffleArray([...favorites]);
+	        const maxVisible = this._maxThumbsForCount(shuffled.length);
+	        const toShow = shuffled.slice(0, maxVisible);
+	        const countKey = this._gridCountKey(toShow.length);
+	        grid.dataset.count = countKey;
+	
+	        toShow.forEach((song, i) => {
+	            const thumb = this._buildFavThumb(song, i, toShow.length);
+	            grid.appendChild(thumb);
+	        });
+	    }
+	
+	    // ── Right panel ──
+	    const panel = document.createElement('div');
+	    panel.className = 'favorites-panel';
+	
+	    const favPlaylist = this.getFavoritesPlaylist();
+	
+	    panel.innerHTML = `
+	        <div class="favorites-panel-label">Favourites</div>
+	        <div class="favorites-panel-count">${favorites.length}</div>
+	        <div class="favorites-panel-sublabel">song${favorites.length !== 1 ? 's' : ''}</div>
+	    `;
+	
+	    // Play button
+	    const playBtn = document.createElement('button');
+	    playBtn.className = 'fav-panel-btn fav-play-btn';
+	    playBtn.title = 'Play Favourites';
+	    playBtn.innerHTML = `<i class="fa fa-play"></i>`;
+	    playBtn.addEventListener('click', () => {
+	        if (favPlaylist) {
+	            this.playPlaylist(favPlaylist.id);
+	        } else {
+	            alert('No favourites playlist found. Star some songs first!');
+	        }
+	    });
+	
+	    // Expand button
+	    const expandBtn = document.createElement('button');
+	    expandBtn.className = 'fav-panel-btn fav-expand-btn';
+	    expandBtn.title = 'Show all favourites';
+	    expandBtn.innerHTML = `<i class="fa fa-chevron-down"></i>`;
+	    expandBtn.addEventListener('click', () => {
+	        const isExpanded = card.classList.toggle('expanded');
+	        expandBtn.classList.toggle('is-expanded', isExpanded);
+	        expandBtn.title = isExpanded ? 'Collapse' : 'Show all favourites';
+	
+	        // Build or clear the expanded list
+	        let expList = card.querySelector('.favorites-expanded-list');
+	        if (isExpanded) {
+	            if (!expList) {
+	                expList = document.createElement('div');
+	                expList.className = 'favorites-expanded-list';
+	                card.appendChild(expList);
+	            }
+	            // Render all favorite songs into expList using existing song elements
+	            expList.innerHTML = '';
+	            const favSongs = this.songLibrary.filter(s => s.favorite);
+	            if (favSongs.length === 0) {
+	                expList.innerHTML = '<div class="empty-library-message">No favourites yet.</div>';
+	            } else {
+	                favSongs.forEach(song => {
+	                    expList.appendChild(this.createSongElement(song));
+	                });
+	            }
+	        } else if (expList) {
+	            expList.innerHTML = '';
+	        }
+	    });
+	
+	    panel.appendChild(playBtn);
+	    panel.appendChild(expandBtn);
+	
+	    card.appendChild(grid);
+	    card.appendChild(panel);
+	    return card;
+	}
+	
+	_buildFavThumb(song, index, total) {
+	    const thumb = document.createElement('div');
+	    thumb.className = 'fav-thumb';
+	
+	    const thumbUrl = song.thumbnailUrl ||
+	        `https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg`;
+	
+	    const img = document.createElement('img');
+	    img.src = thumbUrl;
+	    img.alt = song.name;
+	    img.loading = 'lazy';
+	    img.onerror = () => { img.src = `https://img.youtube.com/vi/${song.videoId}/default.jpg`; };
+	
+	    const label = document.createElement('div');
+	    label.className = 'fav-thumb-label';
+	    label.innerHTML = `
+	        <div class="fav-thumb-play-icon"><i class="fa fa-play"></i></div>
+	        <span>${this.escapeHtml(song.name)}</span>
+	        ${song.author ? `<small>by ${this.escapeHtml(song.author)}</small>` : ''}
+	    `;
+	
+	    // Highlight if currently playing
+	    if (this.currentSong && this.currentSong.id === song.id) {
+	        thumb.classList.add('is-playing');
+	    }
+	
+	    thumb.appendChild(img);
+	    thumb.appendChild(label);
+	    thumb.addEventListener('click', () => this.playSong(song.id));
+	    return thumb;
+	}
+	
+	// Grid count attribute key — maps song count to CSS data-count value
+	_gridCountKey(n) {
+	    if (n <= 9) return String(n);
+	    return 'many';
+	}
+	
+	// How many thumbnails to actually render given total favorites
+	_maxThumbsForCount(total) {
+	    if (total <= 9) return total;
+	    return 12; // 4×3 grid max visible
+	}
+	
+	// ------------------------------------------------------------------
+	// DISCOVERY CARD
+	// ------------------------------------------------------------------
+	_buildDiscoveryCard() {
+	    const card = document.createElement('div');
+	    card.className = 'discovery-card';
+	    card.id = 'discoveryCard';
+	
+	    // Non-favorite songs, shuffled
+	    const pool = this.songLibrary.filter(s => !s.favorite);
+	    const shuffled = this._shuffleArray([...pool]);
+	    const toShow = shuffled.slice(0, 16); // show up to 16 random songs
+	
+	    // Header
+	    const header = document.createElement('div');
+	    header.className = 'discovery-header';
+	
+	    const left = document.createElement('div');
+	    left.className = 'discovery-header-left';
+	    left.innerHTML = `<span class="discovery-title"><i class="fa fa-music" style="margin-right:5px;"></i>From your library</span>`;
+	
+	    const right = document.createElement('div');
+	    right.style.cssText = 'display:flex;gap:6px;align-items:center;';
+	
+	    const shuffleBtn = document.createElement('button');
+	    shuffleBtn.className = 'discovery-shuffle-btn';
+	    shuffleBtn.innerHTML = `<i class="fa fa-random"></i> Shuffle`;
+	    shuffleBtn.addEventListener('click', () => {
+	        const newCard = this._buildDiscoveryCard();
+	        card.replaceWith(newCard);
+	    });
+	
+	    const expandBtn = document.createElement('button');
+	    expandBtn.className = 'discovery-expand-btn';
+	    expandBtn.innerHTML = `<i class="fa fa-chevron-down"></i> All`;
+	    expandBtn.addEventListener('click', () => {
+	        const isExpanded = card.classList.toggle('expanded');
+	        expandBtn.classList.toggle('is-expanded', isExpanded);
+	        expandBtn.innerHTML = isExpanded
+	            ? `<i class="fa fa-chevron-up"></i> Less`
+	            : `<i class="fa fa-chevron-down"></i> All`;
+	
+	        let expList = card.querySelector('.discovery-expanded-list');
+	        if (isExpanded) {
+	            if (!expList) {
+	                expList = document.createElement('div');
+	                expList.className = 'discovery-expanded-list';
+	                card.appendChild(expList);
+	            }
+	            expList.innerHTML = '';
+	            // Full sorted library excluding favorites (they're in favorites card)
+	            const allSongs = [...this.songLibrary].sort((a, b) => a.name.localeCompare(b.name));
+	            allSongs.forEach(song => {
+	                expList.appendChild(this.createSongElement(song));
+	            });
+	        } else if (expList) {
+	            expList.innerHTML = '';
+	        }
+	    });
+	
+	    right.appendChild(shuffleBtn);
+	    right.appendChild(expandBtn);
+	    header.appendChild(left);
+	    header.appendChild(right);
+	
+	    // Grid
+	    const grid = document.createElement('div');
+	    grid.className = 'discovery-grid';
+	
+	    if (toShow.length === 0) {
+	        const msg = document.createElement('div');
+	        msg.className = 'compact-empty-state';
+	        msg.innerHTML = `<i class="fa fa-music" style="font-size:1.8em;opacity:0.3;display:block;margin-bottom:8px;"></i>Your library is empty.<br><small>Add some songs to get started.</small>`;
+	        grid.appendChild(msg);
+	    } else {
+	        toShow.forEach(song => {
+	            grid.appendChild(this._buildDiscoverySongItem(song));
+	        });
+	    }
+	
+	    card.appendChild(header);
+	    card.appendChild(grid);
+	    return card;
+	}
+	
+	_buildDiscoverySongItem(song) {
+	    const item = document.createElement('div');
+	    item.className = 'discovery-song-item';
+	    if (this.currentSong && this.currentSong.id === song.id) {
+	        item.classList.add('is-playing');
+	    }
+	
+	    const thumbUrl = song.thumbnailUrl ||
+	        `https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg`;
+	
+	    item.innerHTML = `
+	        <div class="discovery-thumb-wrap">
+	            <img src="${thumbUrl}" alt="${this.escapeHtml(song.name)}" loading="lazy"
+	                 onerror="this.src='https://img.youtube.com/vi/${song.videoId}/default.jpg'">
+	            <div class="discovery-play-overlay"><i class="fa fa-play"></i></div>
+	        </div>
+	        <div class="discovery-song-name">${this.escapeHtml(song.name)}</div>
+	    `;
+	
+	    item.addEventListener('click', () => this.playSong(song.id));
+	    return item;
+	}
+	
+	// ------------------------------------------------------------------
+	// UTILITY: Fisher-Yates shuffle
+	// ------------------------------------------------------------------
+	_shuffleArray(arr) {
+	    for (let i = arr.length - 1; i > 0; i--) {
+	        const j = Math.floor(Math.random() * (i + 1));
+	        [arr[i], arr[j]] = [arr[j], arr[i]];
+	    }
+	    return arr;
+	}
 	removeSong(songId) {
 	    const song = this.songLibrary.find((song) => song.id === songId);
 	    if (!song) return Promise.resolve();
 	    const videoId = song.videoId;
 	
-	    // Stop playing if this is the current song
 	    if (this.currentSong && this.currentSong.id === songId) {
 	        if (this.ytPlayer) this.ytPlayer.stopVideo();
 	        this.isPlaying = false;
@@ -1512,7 +1802,6 @@ class AdvancedMusicPlayer {
 	        this.updatePlayerUI();
 	    }
 	
-	    // Remove from recentlyPlayedSongs in memory and DB immediately
 	    this.recentlyPlayedSongs = this.recentlyPlayedSongs.filter(s => s.id !== songId);
 	    if (this.db) {
 	        const tx = this.db.transaction(['recentlyPlayed'], 'readwrite');
@@ -1541,7 +1830,8 @@ class AdvancedMusicPlayer {
 	            return Promise.resolve();
 	        })
 	        .then(() => {
-	            this.renderSongLibrary();
+	            const st = this.elements.librarySearch ? this.elements.librarySearch.value.trim() : '';
+	            st === '' ? this.renderLibraryView() : this.renderSongLibrary(st);
 	            this.renderPlaylists();
 	            this.updatePlaylistSelection();
 	            this.renderAdditionalDetails();
@@ -2993,51 +3283,39 @@ hideSidebar() {
 		});
 	}
 	renderInitialState() {
-		this.renderPlaylists();
-		this.renderSongLibrary();
-		this.updatePlaylistSelection();
-		this.updateListeningTimeDisplay();
-		this.renderAdditionalDetails();
-		document.title = "Music";
-		this.elements.speedBtn.textContent = this.currentSpeed + "x";
-
-		const controlBarVisible = localStorage.getItem("controlBarVisible");
-		const spacerDiv = document.getElementById("controlBarSpacer");
-
-		if (controlBarVisible === "false") {
-			// Use requestAnimationFrame instead of setTimeout for better performance
-			requestAnimationFrame(() => {
-				const controlBar =
-					document
-					.querySelector(".player-controls")
-					.closest(".player-container") ||
-					document.querySelector(".player-controls").parentElement;
-				if (controlBar) {
-					controlBar.style.visibility = "hidden";
-					controlBar.style.position = "absolute";
-					controlBar.style.pointerEvents = "none";
-				}
-				if (spacerDiv) spacerDiv.style.display = "none";
-			});
-		} else {
-			if (spacerDiv) spacerDiv.style.display = "block";
-		}
-
-		this.updateDiscordButtonUI();
-
-		// Discord connection with idle callback for better performance
-		if (this.discordEnabled) {
-			if ('requestIdleCallback' in window) {
-				requestIdleCallback(() => this.initDiscordConnection(), {
-					timeout: 2000
-				});
-			} else {
-				setTimeout(() => this.initDiscordConnection(), 1500);
-			}
-		}
-
-		this.initializeVisibilityTracking();
-
+	    this.renderPlaylists();
+	    this.renderLibraryView(); // ← changed
+	    this.updatePlaylistSelection();
+	    this.updateListeningTimeDisplay();
+	    this.renderAdditionalDetails();
+	    document.title = "Music";
+	    this.elements.speedBtn.textContent = this.currentSpeed + "x";
+	    const controlBarVisible = localStorage.getItem("controlBarVisible");
+	    const spacerDiv = document.getElementById("controlBarSpacer");
+	    if (controlBarVisible === "false") {
+	        requestAnimationFrame(() => {
+	            const controlBar =
+	                document.querySelector(".player-controls").closest(".player-container") ||
+	                document.querySelector(".player-controls").parentElement;
+	            if (controlBar) {
+	                controlBar.style.visibility = "hidden";
+	                controlBar.style.position = "absolute";
+	                controlBar.style.pointerEvents = "none";
+	            }
+	            if (spacerDiv) spacerDiv.style.display = "none";
+	        });
+	    } else {
+	        if (spacerDiv) spacerDiv.style.display = "block";
+	    }
+	    this.updateDiscordButtonUI();
+	    if (this.discordEnabled) {
+	        if ('requestIdleCallback' in window) {
+	            requestIdleCallback(() => this.initDiscordConnection(), { timeout: 2000 });
+	        } else {
+	            setTimeout(() => this.initDiscordConnection(), 1500);
+	        }
+	    }
+	    this.initializeVisibilityTracking();
 	}
 	extractYouTubeId(url) {
 	    if (!url) return null;
@@ -3931,29 +4209,32 @@ hideSidebar() {
 		});
 	}
 	batchFavoriteUpdate(song, isFavorited) {
-		clearTimeout(this.favoriteUpdateTimeout);
-		this.favoriteUpdateTimeout = setTimeout(() => {
-			Promise.all([
-					this.saveSongLibrary(),
-					this.updateFavoritesPlaylist(song, isFavorited),
-				])
-				.then(() => {
-					if (this.shouldReorderLibrary()) {
-						this.renderSongLibrary();
-					}
-				})
-				.catch((error) => {
-					console.error("Error updating favorite:", error);
-					song.favorite = !isFavorited;
-					const favoriteBtn = document.querySelector(
-						`.favorite-btn[data-song-id="${song.id}"]`
-					);
-					if (favoriteBtn) {
-						const icon = favoriteBtn.querySelector("i");
-						icon.className = `fa ${song.favorite ? "fa-star" : "fa-star-o"}`;
-					}
-				});
-		}, 300);
+	    clearTimeout(this.favoriteUpdateTimeout);
+	    this.favoriteUpdateTimeout = setTimeout(() => {
+	        Promise.all([
+	            this.saveSongLibrary(),
+	            this.updateFavoritesPlaylist(song, isFavorited),
+	        ])
+	        .then(() => {
+	            const st = this.elements.librarySearch ? this.elements.librarySearch.value.trim() : '';
+	            if (st === '') {
+	                this.renderLibraryView();
+	            } else if (this.shouldReorderLibrary()) {
+	                this.renderSongLibrary(st);
+	            }
+	        })
+	        .catch((error) => {
+	            console.error("Error updating favorite:", error);
+	            song.favorite = !isFavorited;
+	            const favoriteBtn = document.querySelector(
+	                `.favorite-btn[data-song-id="${song.id}"]`
+	            );
+	            if (favoriteBtn) {
+	                const icon = favoriteBtn.querySelector("i");
+	                icon.className = `fa ${song.favorite ? "fa-star" : "fa-star-o"}`;
+	            }
+	        });
+	    }, 300);
 	}
 	shouldReorderLibrary() {
 		const currentOrder = Array.from(this.elements.songLibrary.children);
