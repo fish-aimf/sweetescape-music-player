@@ -1537,7 +1537,6 @@ class AdvancedMusicPlayer {
 	    card.id = 'favoritesCard';
 	
 	    const favorites = this.songLibrary.filter(s => s.favorite);
-	
 	    const inner = document.createElement('div');
 	    inner.className = 'favorites-card-inner';
 	
@@ -1551,12 +1550,25 @@ class AdvancedMusicPlayer {
 	        grid.appendChild(empty);
 	    } else {
 	        const shuffled = this._shuffleArray([...favorites]);
-	        // Render many — CSS auto-fill clips what doesn't fit
 	        const toShow = shuffled.slice(0, 20);
-	        toShow.forEach(song => grid.appendChild(this._buildFavThumb(song)));
+	        const frag = document.createDocumentFragment();
+	        toShow.forEach(song => frag.appendChild(this._buildFavThumb(song)));
+	        grid.appendChild(frag);
+	
+	        grid.addEventListener('click', (e) => {
+	            const thumb = e.target.closest('.fav-thumb');
+	            if (!thumb) return;
+	            this.playSong(parseInt(thumb.dataset.songId));
+	        });
+	        grid.addEventListener('contextmenu', (e) => {
+	            e.preventDefault();
+	            const thumb = e.target.closest('.fav-thumb');
+	            if (!thumb) return;
+	            const song = this.songLibrary.find(s => s.id === parseInt(thumb.dataset.songId));
+	            if (song) this.addToQueue(song);
+	        });
 	    }
 	
-	    // Panel — top-right corner layout
 	    const panel = document.createElement('div');
 	    panel.className = 'favorites-panel';
 	
@@ -1584,6 +1596,7 @@ class AdvancedMusicPlayer {
 	    const expandBtn = document.createElement('button');
 	    expandBtn.className = 'fav-expand-btn';
 	    expandBtn.innerHTML = `<i class="fa fa-chevron-down"></i> All`;
+	
 	    expandBtn.addEventListener('click', () => {
 	        const isExpanded = card.classList.toggle('expanded');
 	        expandBtn.classList.toggle('is-expanded', isExpanded);
@@ -1603,15 +1616,18 @@ class AdvancedMusicPlayer {
 	            if (favSongs.length === 0) {
 	                expList.innerHTML = '<div class="empty-library-message">No favourites yet.</div>';
 	            } else {
-	                favSongs.forEach(song => expList.appendChild(this.createSongElement(song)));
+	                const frag = document.createDocumentFragment();
+	                favSongs.forEach(song => frag.appendChild(this.createSongElement(song)));
+	                expList.appendChild(frag);
 	            }
 	        } else if (expList) {
 	            expList.innerHTML = '';
 	        }
 	    });
 	
-	    panel.querySelector('.favorites-panel-bottom').appendChild(playBtn);
-	    panel.querySelector('.favorites-panel-bottom').appendChild(expandBtn);
+	    const bottom = panel.querySelector('.favorites-panel-bottom');
+	    bottom.appendChild(playBtn);
+	    bottom.appendChild(expandBtn);
 	
 	    inner.appendChild(grid);
 	    inner.appendChild(panel);
@@ -1629,25 +1645,21 @@ class AdvancedMusicPlayer {
 	    img.src = song.thumbnailUrl || `https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg`;
 	    img.alt = song.name;
 	    img.loading = 'lazy';
+	    img.decoding = 'async';
 	    img.onerror = () => { img.src = `https://img.youtube.com/vi/${song.videoId}/default.jpg`; };
 	
 	    const label = document.createElement('div');
 	    label.className = 'fav-thumb-label';
-	    label.innerHTML = `
-	        <div class="fav-thumb-play-icon"><i class="fa fa-play"></i></div>
-	        <span>${this.escapeHtml(song.name)}</span>
-	    `;
+	    label.innerHTML = `<div class="fav-thumb-play-icon"><i class="fa fa-play"></i></div><span>${this.escapeHtml(song.name)}</span>`;
 	
 	    thumb.appendChild(img);
 	    thumb.appendChild(label);
-	    thumb.addEventListener('click', () => this.playSong(song.id));
-	    thumb.addEventListener('contextmenu', (e) => {
-	        e.preventDefault();
-	        this.addToQueue(song);
-	    });
+	
+	    // Single delegated listener pattern — no anonymous closures per thumb
+	    thumb.dataset.songId = song.id;
 	    return thumb;
 	}
-	
+		
 	// Grid count attribute key — maps song count to CSS data-count value
 	_gridCountKey(n) {
 	    if (n <= 9) return String(n);
@@ -1669,7 +1681,6 @@ class AdvancedMusicPlayer {
 	    card.id = 'discoveryCard';
 	
 	    let pool = [...this.songLibrary];
-	
 	    if (this.librarySortAlphabetically !== false) {
 	        pool.sort((a, b) => {
 	            if (a.favorite !== b.favorite) return a.favorite ? -1 : 1;
@@ -1679,7 +1690,6 @@ class AdvancedMusicPlayer {
 	    } else {
 	        if (this.libraryReverseOrder) pool.reverse();
 	    }
-	
 	    const shuffled = this._shuffleArray([...pool]);
 	
 	    const header = document.createElement('div');
@@ -1708,9 +1718,24 @@ class AdvancedMusicPlayer {
 	    const grid = document.createElement('div');
 	    grid.className = 'discovery-grid';
 	
+	    // Delegated listeners — one per grid, not per song
+	    grid.addEventListener('click', (e) => {
+	        const item = e.target.closest('.discovery-song-item');
+	        if (!item) return;
+	        this.playSong(parseInt(item.dataset.songId));
+	    });
+	    grid.addEventListener('contextmenu', (e) => {
+	        e.preventDefault();
+	        const item = e.target.closest('.discovery-song-item');
+	        if (!item) return;
+	        const song = this.songLibrary.find(s => s.id === parseInt(item.dataset.songId));
+	        if (song) this.addToQueue(song);
+	    });
+	
+	    let rafId = null;
+	
 	    const renderGrid = () => {
 	        grid.innerHTML = '';
-	
 	        if (shuffled.length === 0) {
 	            const msg = document.createElement('div');
 	            msg.className = 'compact-empty-state';
@@ -1718,18 +1743,16 @@ class AdvancedMusicPlayer {
 	            grid.appendChild(msg);
 	            return;
 	        }
-	
-	        // Calculate how many columns fit
 	        const containerWidth = card.offsetWidth || 300;
 	        const cellSize = 80;
 	        const gap = 8;
-	        const padding = 24; // 12px each side
-	        const cols = Math.floor((containerWidth - padding + gap) / (cellSize + gap));
-	        const maxSongs = Math.max(cols, 1) * 2; // 2 rows
+	        const padding = 24;
+	        const cols = Math.max(1, Math.floor((containerWidth - padding + gap) / (cellSize + gap)));
+	        const maxSongs = cols * 2;
 	
-	        shuffled.slice(0, maxSongs).forEach(song => {
-	            grid.appendChild(this._buildDiscoverySongItem(song));
-	        });
+	        const frag = document.createDocumentFragment();
+	        shuffled.slice(0, maxSongs).forEach(song => frag.appendChild(this._buildDiscoverySongItem(song)));
+	        grid.appendChild(frag);
 	    };
 	
 	    shuffleBtn.addEventListener('click', () => {
@@ -1753,7 +1776,9 @@ class AdvancedMusicPlayer {
 	            }
 	            expList.innerHTML = '';
 	            const allSongs = [...this.songLibrary].sort((a, b) => a.name.localeCompare(b.name));
-	            allSongs.forEach(song => expList.appendChild(this.createSongElement(song)));
+	            const frag = document.createDocumentFragment();
+	            allSongs.forEach(song => frag.appendChild(this.createSongElement(song)));
+	            expList.appendChild(frag);
 	        } else if (expList) {
 	            expList.innerHTML = '';
 	        }
@@ -1762,43 +1787,61 @@ class AdvancedMusicPlayer {
 	    card.appendChild(header);
 	    card.appendChild(grid);
 	
-	    // Render after DOM insertion so offsetWidth is available
-	    requestAnimationFrame(() => renderGrid());
-	
-	    // Re-render on resize
+	    // Throttled ResizeObserver — only fires after 100ms of no resizing
+	    let resizeTimer = null;
 	    if (this._discoveryResizeObserver) this._discoveryResizeObserver.disconnect();
 	    this._discoveryResizeObserver = new ResizeObserver(() => {
-	        if (!card.classList.contains('expanded')) renderGrid();
+	        if (card.classList.contains('expanded')) return;
+	        clearTimeout(resizeTimer);
+	        resizeTimer = setTimeout(renderGrid, 100);
 	    });
-	    this._discoveryResizeObserver.observe(card);
+	
+	    // Single rAF, cancelled if card replaced before paint
+	    rafId = requestAnimationFrame(() => {
+	        renderGrid();
+	        this._discoveryResizeObserver.observe(card);
+	    });
+	
+	    // Cleanup if card is removed from DOM
+	    const cleanup = () => {
+	        cancelAnimationFrame(rafId);
+	        clearTimeout(resizeTimer);
+	        if (this._discoveryResizeObserver) this._discoveryResizeObserver.disconnect();
+	    };
+	    card.addEventListener('remove', cleanup, { once: true });
 	
 	    return card;
 	}
-			
 	_buildDiscoverySongItem(song) {
 	    const item = document.createElement('div');
 	    item.className = 'discovery-song-item';
+	    item.dataset.songId = song.id;
 	    if (this.currentSong && this.currentSong.id === song.id) {
 	        item.classList.add('is-playing');
 	    }
 	
-	    const thumbUrl = song.thumbnailUrl ||
-	        `https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg`;
+	    const wrap = document.createElement('div');
+	    wrap.className = 'discovery-thumb-wrap';
 	
-	    item.innerHTML = `
-	        <div class="discovery-thumb-wrap">
-	            <img src="${thumbUrl}" alt="${this.escapeHtml(song.name)}" loading="lazy"
-	                 onerror="this.src='https://img.youtube.com/vi/${song.videoId}/default.jpg'">
-	            <div class="discovery-play-overlay"><i class="fa fa-play"></i></div>
-	        </div>
-	        <div class="discovery-song-name">${this.escapeHtml(song.name)}</div>
-	    `;
+	    const img = document.createElement('img');
+	    img.src = song.thumbnailUrl || `https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg`;
+	    img.alt = song.name;
+	    img.loading = 'lazy';
+	    img.decoding = 'async';
+	    img.onerror = () => { img.src = `https://img.youtube.com/vi/${song.videoId}/default.jpg`; };
 	
-	    item.addEventListener('click', () => this.playSong(song.id));
-	    item.addEventListener('contextmenu', (e) => {
-	        e.preventDefault();
-	        this.addToQueue(song);
-	    });
+	    const overlay = document.createElement('div');
+	    overlay.className = 'discovery-play-overlay';
+	    overlay.innerHTML = `<i class="fa fa-play"></i>`;
+	
+	    const nameEl = document.createElement('div');
+	    nameEl.className = 'discovery-song-name';
+	    nameEl.textContent = song.name; // textContent not innerHTML — no HTML parsing
+	
+	    wrap.appendChild(img);
+	    wrap.appendChild(overlay);
+	    item.appendChild(wrap);
+	    item.appendChild(nameEl);
 	    return item;
 	}
 	
