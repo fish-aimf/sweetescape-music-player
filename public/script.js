@@ -1538,11 +1538,9 @@ class AdvancedMusicPlayer {
 	
 	    const favorites = this.songLibrary.filter(s => s.favorite);
 	
-	    // ── Inner row (thumbnails + panel) ──
 	    const inner = document.createElement('div');
 	    inner.className = 'favorites-card-inner';
 	
-	    // Thumbnail grid
 	    const grid = document.createElement('div');
 	    grid.className = 'favorites-thumbnails';
 	
@@ -1551,14 +1549,17 @@ class AdvancedMusicPlayer {
 	        empty.className = 'favorites-empty';
 	        empty.innerHTML = `<i class="fa fa-star-o"></i><span>No favourites yet</span><small>Star a song to see it here</small>`;
 	        grid.appendChild(empty);
+	        grid.style.minHeight = '90px';
 	    } else {
 	        const shuffled = this._shuffleArray([...favorites]);
-	        const toShow = shuffled.slice(0, 12);
-	        grid.dataset.count = this._gridCountKey(toShow.length);
+	        const toShow = shuffled.slice(0, 6);
+	        const count = toShow.length;
+	        grid.dataset.count = String(count);
+	        grid.style.gap = '3px';
+	        grid.style.padding = '3px';
 	        toShow.forEach(song => grid.appendChild(this._buildFavThumb(song)));
 	    }
 	
-	    // Right panel
 	    const panel = document.createElement('div');
 	    panel.className = 'favorites-panel';
 	
