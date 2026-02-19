@@ -7633,6 +7633,9 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     border-left: 1px solid var(--border-color);
     background: var(--bg-secondary);
     gap: 4px;
+    margin-left: -10px;
+    z-index: 1;
+    position: relative;
 }
 
 .favorites-panel-top {
