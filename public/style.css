@@ -7716,13 +7716,6 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     color: var(--text-primary);
 }
 
-.fav-expand-btn i {
-    transition: transform 0.3s ease;
-}
-
-.fav-expand-btn.is-expanded i {
-    transform: rotate(180deg);
-}
 
 /* Expanded list */
 .favorites-expanded-list {
