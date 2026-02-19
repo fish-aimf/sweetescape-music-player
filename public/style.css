@@ -7532,8 +7532,8 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     overflow: hidden;
     background-color: var(--bg-secondary);
     border: 1px solid var(--border-color);
-    min-height: 160px;
-    max-height: 220px;
+    min-height: 120px;
+    max-height: 160px;
     transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -7654,14 +7654,14 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 
 /* Right Panel */
 .favorites-panel {
-    width: 110px;
+    width: 100px;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    padding: 16px 10px;
+    gap: 6px;
+    padding: 10px 8px;
     border-left: 1px solid var(--border-color);
     background: var(--bg-secondary);
 }
@@ -7676,7 +7676,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 }
 
 .favorites-panel-count {
-    font-size: 1.6em;
+    font-size: 1.3em;
     font-weight: 800;
     color: var(--text-primary);
     line-height: 1;
@@ -7690,15 +7690,15 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 }
 
 .fav-panel-btn {
-    width: 40px;
-    height: 40px;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
     border: none;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.9em;
+    font-size: 0.8em;
     transition: background 0.18s, transform 0.15s;
     outline: none;
 }
@@ -7717,8 +7717,8 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     background: var(--bg-primary);
     color: var(--text-secondary);
     border: 1px solid var(--border-color);
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     font-size: 0.75em;
 }
 
@@ -7748,7 +7748,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 }
 
 .favorites-card.expanded .favorites-thumbnails {
-    max-height: 180px;
+    max-height: 140px;
 }
 
 .favorites-card.expanded .favorites-panel {
