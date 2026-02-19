@@ -1679,11 +1679,22 @@ class AdvancedMusicPlayer {
 	    const card = document.createElement('div');
 	    card.className = 'discovery-card';
 	    card.id = 'discoveryCard';
-	
-	    // Non-favorite songs, shuffled
-	    const pool = this.songLibrary.filter(s => !s.favorite);
-	    const shuffled = this._shuffleArray([...pool]);
-	    const toShow = shuffled.slice(0, 16); // show up to 16 random songs
+	    let pool = [...this.songLibrary];
+		
+		if (this.librarySortAlphabetically !== false) {
+		    pool.sort((a, b) => {
+		        if (a.favorite !== b.favorite) return a.favorite ? -1 : 1;
+		        const result = a.name.localeCompare(b.name);
+		        return this.libraryReverseOrder ? -result : result;
+		    });
+		} else {
+		    if (this.libraryReverseOrder) pool.reverse();
+		}
+		
+		// Shuffle a window of songs so it feels random but still respects sort loosely
+		// — actually: if sorted, just pick a random slice so you see different songs each load
+		const startIndex = Math.floor(Math.random() * Math.max(1, pool.length - 16));
+		const toShow = pool.slice(startIndex, startIndex + 16);
 	
 	    // Header
 	    const header = document.createElement('div');
