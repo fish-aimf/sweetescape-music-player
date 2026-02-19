@@ -1677,7 +1677,6 @@ class AdvancedMusicPlayer {
 	    }
 	
 	    const shuffled = this._shuffleArray([...pool]);
-	    const toShow = shuffled.slice(0, 14);
 	
 	    const header = document.createElement('div');
 	    header.className = 'discovery-header';
@@ -1692,14 +1691,48 @@ class AdvancedMusicPlayer {
 	    const shuffleBtn = document.createElement('button');
 	    shuffleBtn.className = 'discovery-shuffle-btn';
 	    shuffleBtn.innerHTML = `<i class="fa fa-random"></i> Shuffle`;
-	    shuffleBtn.addEventListener('click', () => {
-	        const newCard = this._buildDiscoveryCard();
-	        card.replaceWith(newCard);
-	    });
 	
 	    const expandBtn = document.createElement('button');
 	    expandBtn.className = 'discovery-expand-btn';
 	    expandBtn.innerHTML = `<i class="fa fa-chevron-down"></i> All`;
+	
+	    right.appendChild(shuffleBtn);
+	    right.appendChild(expandBtn);
+	    header.appendChild(left);
+	    header.appendChild(right);
+	
+	    const grid = document.createElement('div');
+	    grid.className = 'discovery-grid';
+	
+	    const renderGrid = () => {
+	        grid.innerHTML = '';
+	
+	        if (shuffled.length === 0) {
+	            const msg = document.createElement('div');
+	            msg.className = 'compact-empty-state';
+	            msg.innerHTML = `<i class="fa fa-music" style="font-size:1.8em;opacity:0.3;display:block;margin-bottom:8px;"></i>Your library is empty.<br><small>Add some songs to get started.</small>`;
+	            grid.appendChild(msg);
+	            return;
+	        }
+	
+	        // Calculate how many columns fit
+	        const containerWidth = card.offsetWidth || 300;
+	        const cellSize = 80;
+	        const gap = 8;
+	        const padding = 24; // 12px each side
+	        const cols = Math.floor((containerWidth - padding + gap) / (cellSize + gap));
+	        const maxSongs = Math.max(cols, 1) * 2; // 2 rows
+	
+	        shuffled.slice(0, maxSongs).forEach(song => {
+	            grid.appendChild(this._buildDiscoverySongItem(song));
+	        });
+	    };
+	
+	    shuffleBtn.addEventListener('click', () => {
+	        this._shuffleArray(shuffled);
+	        renderGrid();
+	    });
+	
 	    expandBtn.addEventListener('click', () => {
 	        const isExpanded = card.classList.toggle('expanded');
 	        expandBtn.classList.toggle('is-expanded', isExpanded);
@@ -1722,30 +1755,22 @@ class AdvancedMusicPlayer {
 	        }
 	    });
 	
-	    right.appendChild(shuffleBtn);
-	    right.appendChild(expandBtn);
-	    header.appendChild(left);
-	    header.appendChild(right);
-	
-	    const grid = document.createElement('div');
-	    grid.className = 'discovery-grid';
-	    grid.style.gap = '8px';
-	    grid.style.padding = '10px 12px';
-	
-	    if (toShow.length === 0) {
-	        const msg = document.createElement('div');
-	        msg.className = 'compact-empty-state';
-	        msg.innerHTML = `<i class="fa fa-music" style="font-size:1.8em;opacity:0.3;display:block;margin-bottom:8px;"></i>Your library is empty.<br><small>Add some songs to get started.</small>`;
-	        grid.appendChild(msg);
-	    } else {
-	        toShow.forEach(song => grid.appendChild(this._buildDiscoverySongItem(song)));
-	    }
-	
 	    card.appendChild(header);
 	    card.appendChild(grid);
+	
+	    // Render after DOM insertion so offsetWidth is available
+	    requestAnimationFrame(() => renderGrid());
+	
+	    // Re-render on resize
+	    if (this._discoveryResizeObserver) this._discoveryResizeObserver.disconnect();
+	    this._discoveryResizeObserver = new ResizeObserver(() => {
+	        if (!card.classList.contains('expanded')) renderGrid();
+	    });
+	    this._discoveryResizeObserver.observe(card);
+	
 	    return card;
 	}
-		
+			
 	_buildDiscoverySongItem(song) {
 	    const item = document.createElement('div');
 	    item.className = 'discovery-song-item';
