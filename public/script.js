@@ -1641,6 +1641,10 @@ class AdvancedMusicPlayer {
 	    thumb.appendChild(img);
 	    thumb.appendChild(label);
 	    thumb.addEventListener('click', () => this.playSong(song.id));
+	    thumb.addEventListener('contextmenu', (e) => {
+	        e.preventDefault();
+	        this.addToQueue(song);
+	    });
 	    return thumb;
 	}
 	
@@ -1791,6 +1795,10 @@ class AdvancedMusicPlayer {
 	    `;
 	
 	    item.addEventListener('click', () => this.playSong(song.id));
+	    item.addEventListener('contextmenu', (e) => {
+	        e.preventDefault();
+	        this.addToQueue(song);
+	    });
 	    return item;
 	}
 	
