@@ -7538,7 +7538,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 .favorites-thumbnails {
     flex: 1;
     display: grid;
-    grid-template-columns: repeat(auto-fill, 88px);
+    grid-template-columns: repeat(auto-fill, minmax(82px, 88px));
     grid-template-rows: 1fr;
     overflow: hidden;
     min-width: 0;
