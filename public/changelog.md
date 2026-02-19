@@ -516,3 +516,23 @@
 - the Volume is now saved in indexed.db v57.4.0
 - Looping status saved in indexed.db v57.5.0
 - when removing the song from the local playlist, it will stop playing the song AND it will remove the song in the sidebar immediately v57.6.0
+- Added compact library view that replaces the full song list on load v58.0.0
+- only renders when searching or expanding v58.1.0
+- Added compact library view — favorites and discovery cards replace the full song list on the home screen, reducing clutter v58.2.0
+- Favorites card shows starred songs as a responsive thumbnail row that fills available screen width automatically v58.3.0
+- Hovering a favorite thumbnail reveals the song name and clicking play v58.4.0
+- right-clicking adds to queue v58.5.0
+- Favorites panel shows song count with Play and Show All buttons v58.6.0
+- Discovery card shows a random selection of songs from your library limited to  2-row grid  v58.7.0
+- reshuffling button v58.8.0
+- Both cards expand to show the full list when clicking "All", and collapse back with "Less" v58.9.0
+- fixed some ui changes v58.9.1
+- fixed issue, where the arrow button doesnt change from up to down v58.9.2
+- Full song list only loads when searching or explicitly expanding thus significantly faster initial load v58.10.1
+- Right-clicking any thumbnail in either card adds the song to the queue v58.11.0
+- various optimization changes v58.12.0
+- allowed for a bit of leeway for the thumbnails, allow up to 10 px of thumbnail to be overlayed by right section v58.13.0
+- displays number of favorite songs v58.14.0
+- new play fav button in library that will play the playlist for favorites. v58.15.0
+- lazyloading thumbnail  and other performance improvements. v58.15.1
+- ui improvements. v58.16.0
