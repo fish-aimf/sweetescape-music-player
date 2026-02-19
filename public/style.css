@@ -7535,8 +7535,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 
 .favorites-card-inner {
     display: flex;
-    min-height: 90px;
-    height: auto;
+    height: 80px;
 }
 
 .favorites-thumbnails {
@@ -7547,12 +7546,13 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     background: var(--bg-primary);
 }
 
-.favorites-thumbnails[data-count="1"] { grid-template-columns: 1fr; grid-template-rows: 1fr; min-height: 90px; }
-.favorites-thumbnails[data-count="2"] { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; min-height: 90px; }
-.favorites-thumbnails[data-count="3"] { grid-template-columns: repeat(3, 1fr); grid-template-rows: 1fr; min-height: 90px; }
-.favorites-thumbnails[data-count="4"] { grid-template-columns: repeat(4, 1fr); grid-template-rows: 1fr; min-height: 90px; }
-.favorites-thumbnails[data-count="5"] { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 90px); }
-.favorites-thumbnails[data-count="6"] { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 90px); }
+.favorites-thumbnails[data-count="1"] { grid-template-columns: 1fr; }
+.favorites-thumbnails[data-count="2"] { grid-template-columns: repeat(2, 1fr); }
+.favorites-thumbnails[data-count="3"] { grid-template-columns: repeat(3, 1fr); }
+.favorites-thumbnails[data-count="4"] { grid-template-columns: repeat(4, 1fr); }
+.favorites-thumbnails[data-count="5"] { grid-template-columns: repeat(5, 1fr); }
+.favorites-thumbnails[data-count="6"] { grid-template-columns: repeat(6, 1fr); }
+
 
 .fav-thumb {
     position: relative;
