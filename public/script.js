@@ -1686,8 +1686,8 @@ class AdvancedMusicPlayer {
 		
 		// Shuffle a window of songs so it feels random but still respects sort loosely
 		// — actually: if sorted, just pick a random slice so you see different songs each load
-		const startIndex = Math.floor(Math.random() * Math.max(1, pool.length - 16));
-		const toShow = pool.slice(startIndex, startIndex + 16);
+		const startIndex = Math.floor(Math.random() * Math.max(1, pool.length - 14));
+		const toShow = pool.slice(startIndex, startIndex + 14);
 	
 	    // Header
 	    const header = document.createElement('div');
