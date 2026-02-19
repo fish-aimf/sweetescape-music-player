@@ -1552,7 +1552,7 @@ class AdvancedMusicPlayer {
 	        grid.style.minHeight = '90px';
 	    } else {
 	        const shuffled = this._shuffleArray([...favorites]);
-	        const toShow = shuffled.slice(0, 6);
+	        const toShow = shuffled.slice(0, 5);
 	        const count = toShow.length;
 	        grid.dataset.count = String(count);
 	        grid.style.gap = '3px';
