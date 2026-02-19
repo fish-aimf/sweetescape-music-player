@@ -7535,7 +7535,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 
 .favorites-card-inner {
     display: flex;
-    height: 80px;
+    height: 88px;
 }
 
 .favorites-thumbnails {
@@ -7613,20 +7613,28 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 
 /* Right Panel */
 .favorites-panel {
-    width: 120px;
+    width: auto;
+    min-width: 100px;
     flex-shrink: 0;
     display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: center;
-    gap: 5px;
-    padding: 10px;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    padding: 0 10px;
     border-left: 1px solid var(--border-color);
     background: var(--bg-secondary);
+    white-space: nowrap;
+}
+
+
+.favorites-panel-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
 }
 
 .favorites-panel-title {
-    font-size: 0.7em;
+    font-size: 0.68em;
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -7634,34 +7642,32 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 }
 
 .favorites-panel-count {
-    font-size: 1.1em;
+    font-size: 1em;
     font-weight: 700;
     color: var(--text-primary);
     line-height: 1.2;
 }
 
 .favorites-panel-sublabel {
-    font-size: 0.65em;
+    font-size: 0.62em;
     color: var(--text-secondary);
-    margin-top: -3px;
-    margin-bottom: 4px;
 }
 
 .fav-play-btn {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 5px;
-    padding: 5px 8px;
+    gap: 4px;
+    padding: 5px 10px;
     background: var(--accent-color);
     color: #fff;
     border: none;
     border-radius: 4px;
-    font-size: 0.72em;
+    font-size: 0.7em;
     font-weight: 600;
     cursor: pointer;
     transition: background 0.15s;
-    width: 100%;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .fav-play-btn:hover {
@@ -7671,17 +7677,17 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 .fav-expand-btn {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 5px;
-    padding: 4px 8px;
+    gap: 4px;
+    padding: 5px 10px;
     background: var(--bg-primary);
     color: var(--text-secondary);
     border: 1px solid var(--border-color);
     border-radius: 4px;
-    font-size: 0.68em;
+    font-size: 0.7em;
     cursor: pointer;
     transition: background 0.15s, color 0.15s;
-    width: 100%;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .fav-expand-btn:hover {
