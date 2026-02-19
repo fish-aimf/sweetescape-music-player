@@ -1541,7 +1541,6 @@ class AdvancedMusicPlayer {
 	    const inner = document.createElement('div');
 	    inner.className = 'favorites-card-inner';
 	
-	    // Thumbnail grid — one row, as many as fit
 	    const grid = document.createElement('div');
 	    grid.className = 'favorites-thumbnails';
 	
@@ -1552,25 +1551,24 @@ class AdvancedMusicPlayer {
 	        grid.appendChild(empty);
 	    } else {
 	        const shuffled = this._shuffleArray([...favorites]);
-	        const toShow = shuffled.slice(0, 5);
-	        grid.dataset.count = String(toShow.length);
-	        grid.style.gap = '3px';
-	        grid.style.padding = '3px';
+	        // Render many — CSS auto-fill clips what doesn't fit
+	        const toShow = shuffled.slice(0, 20);
 	        toShow.forEach(song => grid.appendChild(this._buildFavThumb(song)));
 	    }
 	
-	    // Panel — horizontal layout
+	    // Panel — top-right corner layout
 	    const panel = document.createElement('div');
 	    panel.className = 'favorites-panel';
 	
-	    const info = document.createElement('div');
-	    info.className = 'favorites-panel-info';
-	    info.innerHTML = `
-	        <div class="favorites-panel-title">Favourites</div>
-	        <div class="favorites-panel-count">${favorites.length} <span class="favorites-panel-sublabel">song${favorites.length !== 1 ? 's' : ''}</span></div>
-	    `;
-	
 	    const favPlaylist = this.getFavoritesPlaylist();
+	
+	    panel.innerHTML = `
+	        <div class="favorites-panel-top">
+	            <div class="favorites-panel-title">Favourites</div>
+	            <div class="favorites-panel-count">${favorites.length} <span class="favorites-panel-sublabel">song${favorites.length !== 1 ? 's' : ''}</span></div>
+	        </div>
+	        <div class="favorites-panel-bottom"></div>
+	    `;
 	
 	    const playBtn = document.createElement('button');
 	    playBtn.className = 'fav-play-btn';
@@ -1612,9 +1610,8 @@ class AdvancedMusicPlayer {
 	        }
 	    });
 	
-	    panel.appendChild(info);
-	    panel.appendChild(playBtn);
-	    panel.appendChild(expandBtn);
+	    panel.querySelector('.favorites-panel-bottom').appendChild(playBtn);
+	    panel.querySelector('.favorites-panel-bottom').appendChild(expandBtn);
 	
 	    inner.appendChild(grid);
 	    inner.appendChild(panel);
