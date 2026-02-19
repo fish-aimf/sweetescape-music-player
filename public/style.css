@@ -7838,11 +7838,13 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 
 .discovery-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(72px, 80px));
+    grid-template-rows: repeat(2, 1fr);
+    overflow: hidden;
     gap: 8px;
     padding: 10px 12px;
+    max-height: 200px;
 }
-
 .discovery-song-item {
     display: flex;
     flex-direction: column;
