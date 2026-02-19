@@ -1538,47 +1538,47 @@ class AdvancedMusicPlayer {
 	
 	    const favorites = this.songLibrary.filter(s => s.favorite);
 	
-	    // ── Thumbnail grid ──
+	    // ── Inner row (thumbnails + panel) ──
+	    const inner = document.createElement('div');
+	    inner.className = 'favorites-card-inner';
+	
+	    // Thumbnail grid
 	    const grid = document.createElement('div');
 	    grid.className = 'favorites-thumbnails';
 	
 	    if (favorites.length === 0) {
-	        // Empty state
 	        const empty = document.createElement('div');
 	        empty.className = 'favorites-empty';
 	        empty.innerHTML = `<i class="fa fa-star-o"></i><span>No favourites yet</span><small>Star a song to see it here</small>`;
 	        grid.appendChild(empty);
 	    } else {
-	        // Shuffle and pick how many to show
 	        const shuffled = this._shuffleArray([...favorites]);
-	        const maxVisible = this._maxThumbsForCount(shuffled.length);
-	        const toShow = shuffled.slice(0, maxVisible);
-	        const countKey = this._gridCountKey(toShow.length);
-	        grid.dataset.count = countKey;
-	
-	        toShow.forEach((song, i) => {
-	            const thumb = this._buildFavThumb(song, i, toShow.length);
-	            grid.appendChild(thumb);
-	        });
+	        const toShow = shuffled.slice(0, 12);
+	        grid.dataset.count = this._gridCountKey(toShow.length);
+	        toShow.forEach(song => grid.appendChild(this._buildFavThumb(song)));
 	    }
 	
-	    // ── Right panel ──
+	    // Right panel
 	    const panel = document.createElement('div');
 	    panel.className = 'favorites-panel';
 	
+	    const titleEl = document.createElement('div');
+	    titleEl.className = 'favorites-panel-title';
+	    titleEl.textContent = 'Favourites';
+	
+	    const countEl = document.createElement('div');
+	    countEl.className = 'favorites-panel-count';
+	    countEl.textContent = favorites.length;
+	
+	    const sublabel = document.createElement('div');
+	    sublabel.className = 'favorites-panel-sublabel';
+	    sublabel.textContent = `song${favorites.length !== 1 ? 's' : ''}`;
+	
 	    const favPlaylist = this.getFavoritesPlaylist();
 	
-	    panel.innerHTML = `
-	        <div class="favorites-panel-label">Favourites</div>
-	        <div class="favorites-panel-count">${favorites.length}</div>
-	        <div class="favorites-panel-sublabel">song${favorites.length !== 1 ? 's' : ''}</div>
-	    `;
-	
-	    // Play button
 	    const playBtn = document.createElement('button');
-	    playBtn.className = 'fav-panel-btn fav-play-btn';
-	    playBtn.title = 'Play Favourites';
-	    playBtn.innerHTML = `<i class="fa fa-play"></i>`;
+	    playBtn.className = 'fav-play-btn';
+	    playBtn.innerHTML = `<i class="fa fa-play"></i> Play`;
 	    playBtn.addEventListener('click', () => {
 	        if (favPlaylist) {
 	            this.playPlaylist(favPlaylist.id);
@@ -1587,17 +1587,16 @@ class AdvancedMusicPlayer {
 	        }
 	    });
 	
-	    // Expand button
 	    const expandBtn = document.createElement('button');
-	    expandBtn.className = 'fav-panel-btn fav-expand-btn';
-	    expandBtn.title = 'Show all favourites';
-	    expandBtn.innerHTML = `<i class="fa fa-chevron-down"></i>`;
+	    expandBtn.className = 'fav-expand-btn';
+	    expandBtn.innerHTML = `<i class="fa fa-chevron-down"></i> Show all`;
 	    expandBtn.addEventListener('click', () => {
 	        const isExpanded = card.classList.toggle('expanded');
 	        expandBtn.classList.toggle('is-expanded', isExpanded);
-	        expandBtn.title = isExpanded ? 'Collapse' : 'Show all favourites';
+	        expandBtn.innerHTML = isExpanded
+	            ? `<i class="fa fa-chevron-up"></i> Collapse`
+	            : `<i class="fa fa-chevron-down"></i> Show all`;
 	
-	        // Build or clear the expanded list
 	        let expList = card.querySelector('.favorites-expanded-list');
 	        if (isExpanded) {
 	            if (!expList) {
@@ -1605,38 +1604,38 @@ class AdvancedMusicPlayer {
 	                expList.className = 'favorites-expanded-list';
 	                card.appendChild(expList);
 	            }
-	            // Render all favorite songs into expList using existing song elements
 	            expList.innerHTML = '';
 	            const favSongs = this.songLibrary.filter(s => s.favorite);
 	            if (favSongs.length === 0) {
 	                expList.innerHTML = '<div class="empty-library-message">No favourites yet.</div>';
 	            } else {
-	                favSongs.forEach(song => {
-	                    expList.appendChild(this.createSongElement(song));
-	                });
+	                favSongs.forEach(song => expList.appendChild(this.createSongElement(song)));
 	            }
 	        } else if (expList) {
 	            expList.innerHTML = '';
 	        }
 	    });
 	
+	    panel.appendChild(titleEl);
+	    panel.appendChild(countEl);
+	    panel.appendChild(sublabel);
 	    panel.appendChild(playBtn);
 	    panel.appendChild(expandBtn);
 	
-	    card.appendChild(grid);
-	    card.appendChild(panel);
+	    inner.appendChild(grid);
+	    inner.appendChild(panel);
+	    card.appendChild(inner);
 	    return card;
 	}
-	
-	_buildFavThumb(song, index, total) {
+	_buildFavThumb(song) {
 	    const thumb = document.createElement('div');
 	    thumb.className = 'fav-thumb';
-	
-	    const thumbUrl = song.thumbnailUrl ||
-	        `https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg`;
+	    if (this.currentSong && this.currentSong.id === song.id) {
+	        thumb.classList.add('is-playing');
+	    }
 	
 	    const img = document.createElement('img');
-	    img.src = thumbUrl;
+	    img.src = song.thumbnailUrl || `https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg`;
 	    img.alt = song.name;
 	    img.loading = 'lazy';
 	    img.onerror = () => { img.src = `https://img.youtube.com/vi/${song.videoId}/default.jpg`; };
@@ -1646,13 +1645,7 @@ class AdvancedMusicPlayer {
 	    label.innerHTML = `
 	        <div class="fav-thumb-play-icon"><i class="fa fa-play"></i></div>
 	        <span>${this.escapeHtml(song.name)}</span>
-	        ${song.author ? `<small>by ${this.escapeHtml(song.author)}</small>` : ''}
 	    `;
-	
-	    // Highlight if currently playing
-	    if (this.currentSong && this.currentSong.id === song.id) {
-	        thumb.classList.add('is-playing');
-	    }
 	
 	    thumb.appendChild(img);
 	    thumb.appendChild(label);
