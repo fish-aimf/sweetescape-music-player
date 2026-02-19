@@ -7513,3 +7513,481 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   border-color: var(--error-color);
   color: #fff;
 }
+
+/* ============================================
+   COMPACT LIBRARY VIEW — Favorites & Discovery Cards
+   ============================================ */
+
+.compact-library-view {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 4px 0;
+}
+
+/* ── Favorites Card ── */
+.favorites-card {
+    display: flex;
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    min-height: 160px;
+    max-height: 220px;
+    transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.favorites-card.expanded {
+    max-height: none;
+    flex-direction: column;
+}
+
+/* Thumbnail Grid Area */
+.favorites-thumbnails {
+    flex: 1;
+    display: grid;
+    overflow: hidden;
+    position: relative;
+    min-width: 0;
+    background: var(--bg-primary);
+}
+
+/* Dynamic grid layouts based on song count */
+.favorites-thumbnails[data-count="1"] {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+}
+.favorites-thumbnails[data-count="2"] {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr;
+}
+.favorites-thumbnails[data-count="3"] {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+}
+.favorites-thumbnails[data-count="3"] .fav-thumb:first-child {
+    grid-row: 1 / 3;
+}
+.favorites-thumbnails[data-count="4"] {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+}
+.favorites-thumbnails[data-count="5"],
+.favorites-thumbnails[data-count="6"] {
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+}
+.favorites-thumbnails[data-count="7"],
+.favorites-thumbnails[data-count="8"],
+.favorites-thumbnails[data-count="9"] {
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+}
+.favorites-thumbnails[data-count="many"] {
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: 1fr 1fr 1fr;
+}
+
+.fav-thumb {
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.fav-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.25s ease, filter 0.25s ease;
+}
+
+.fav-thumb:hover img {
+    transform: scale(1.07);
+    filter: brightness(0.55);
+}
+
+.fav-thumb-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    text-align: center;
+    pointer-events: none;
+}
+
+.fav-thumb:hover .fav-thumb-label {
+    opacity: 1;
+}
+
+.fav-thumb-label span {
+    color: #fff;
+    font-size: 0.72em;
+    font-weight: 600;
+    line-height: 1.3;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+    max-width: 100%;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.fav-thumb-label small {
+    color: rgba(255,255,255,0.75);
+    font-size: 0.62em;
+    margin-top: 2px;
+    display: block;
+}
+
+.fav-thumb-play-icon {
+    font-size: 1.4em;
+    color: #fff;
+    margin-bottom: 5px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+}
+
+/* Right Panel */
+.favorites-panel {
+    width: 110px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 16px 10px;
+    border-left: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+}
+
+.favorites-panel-label {
+    font-size: 0.72em;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.favorites-panel-count {
+    font-size: 1.6em;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1;
+}
+
+.favorites-panel-sublabel {
+    font-size: 0.65em;
+    color: var(--text-secondary);
+    text-align: center;
+    margin-top: -6px;
+}
+
+.fav-panel-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9em;
+    transition: background 0.18s, transform 0.15s;
+    outline: none;
+}
+
+.fav-play-btn {
+    background: var(--accent-color);
+    color: #fff;
+}
+
+.fav-play-btn:hover {
+    background: var(--hover-color);
+    transform: scale(1.08);
+}
+
+.fav-expand-btn {
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    width: 32px;
+    height: 32px;
+    font-size: 0.75em;
+}
+
+.fav-expand-btn:hover {
+    background: var(--border-color);
+    color: var(--text-primary);
+    transform: scale(1.05);
+}
+
+.fav-expand-btn i {
+    transition: transform 0.3s ease;
+}
+
+.fav-expand-btn.is-expanded i {
+    transform: rotate(180deg);
+}
+
+/* Expanded favorites list */
+.favorites-expanded-list {
+    display: none;
+    padding: 8px 0 4px;
+    border-top: 1px solid var(--border-color);
+}
+
+.favorites-card.expanded .favorites-expanded-list {
+    display: block;
+}
+
+.favorites-card.expanded .favorites-thumbnails {
+    max-height: 180px;
+}
+
+.favorites-card.expanded .favorites-panel {
+    justify-content: flex-start;
+    padding-top: 20px;
+}
+
+/* Empty favorites state */
+.favorites-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: var(--text-secondary);
+    font-size: 0.82em;
+    text-align: center;
+    padding: 20px;
+}
+
+.favorites-empty i {
+    font-size: 2em;
+    color: var(--border-color);
+}
+
+/* ── Discovery Card ── */
+.discovery-card {
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.discovery-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px 8px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.discovery-header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.discovery-title {
+    font-size: 0.75em;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+}
+
+.discovery-shuffle-btn {
+    background: none;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    font-size: 0.7em;
+    padding: 3px 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: background 0.15s, color 0.15s;
+}
+
+.discovery-shuffle-btn:hover {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.discovery-expand-btn {
+    background: none;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    font-size: 0.7em;
+    padding: 3px 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: background 0.15s, color 0.15s;
+}
+
+.discovery-expand-btn:hover {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.discovery-expand-btn i {
+    transition: transform 0.3s ease;
+}
+
+.discovery-expand-btn.is-expanded i {
+    transform: rotate(180deg);
+}
+
+.discovery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    gap: 8px;
+    padding: 10px 12px;
+}
+
+.discovery-song-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    border-radius: 7px;
+    padding: 6px 4px;
+    transition: background 0.15s;
+}
+
+.discovery-song-item:hover {
+    background: var(--bg-primary);
+}
+
+.discovery-thumb-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 5px;
+    overflow: hidden;
+    background: var(--bg-primary);
+}
+
+.discovery-thumb-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: filter 0.2s;
+}
+
+.discovery-song-item:hover .discovery-thumb-wrap img {
+    filter: brightness(0.6);
+}
+
+.discovery-play-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+    color: #fff;
+    font-size: 1.2em;
+}
+
+.discovery-song-item:hover .discovery-play-overlay {
+    opacity: 1;
+}
+
+.discovery-song-name {
+    font-size: 0.62em;
+    color: var(--text-primary);
+    text-align: center;
+    line-height: 1.3;
+    max-width: 100%;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    word-break: break-word;
+}
+
+/* Expanded discovery shows full song list */
+.discovery-expanded-list {
+    display: none;
+    border-top: 1px solid var(--border-color);
+}
+
+.discovery-card.expanded .discovery-expanded-list {
+    display: block;
+}
+
+.discovery-card.expanded .discovery-grid {
+    display: none;
+}
+
+/* ── No favorites / empty states ── */
+.compact-empty-state {
+    text-align: center;
+    padding: 30px 20px;
+    color: var(--text-secondary);
+    font-size: 0.85em;
+}
+
+/* ── Currently playing highlight ── */
+.fav-thumb.is-playing::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 2px solid var(--accent-color);
+    border-radius: 1px;
+    pointer-events: none;
+}
+
+.discovery-song-item.is-playing .discovery-thumb-wrap {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 1px;
+}
+
+/* ── Animations ── */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.compact-library-view {
+    animation: fadeInUp 0.22s ease;
+}
+
+.fav-thumb {
+    animation: fadeInUp 0.2s ease backwards;
+}
+.fav-thumb:nth-child(1) { animation-delay: 0.03s; }
+.fav-thumb:nth-child(2) { animation-delay: 0.06s; }
+.fav-thumb:nth-child(3) { animation-delay: 0.09s; }
+.fav-thumb:nth-child(4) { animation-delay: 0.12s; }
+.fav-thumb:nth-child(5) { animation-delay: 0.15s; }
+.fav-thumb:nth-child(6) { animation-delay: 0.18s; }
+
+.discovery-song-item {
+    animation: fadeInUp 0.2s ease backwards;
+}
+.discovery-song-item:nth-child(1) { animation-delay: 0.04s; }
+.discovery-song-item:nth-child(2) { animation-delay: 0.07s; }
+.discovery-song-item:nth-child(3) { animation-delay: 0.10s; }
+.discovery-song-item:nth-child(4) { animation-delay: 0.13s; }
+.discovery-song-item:nth-child(5) { animation-delay: 0.16s; }
+.discovery-song-item:nth-child(6) { animation-delay: 0.19s; }
+.discovery-song-item:nth-child(7) { animation-delay: 0.22s; }
+.discovery-song-item:nth-child(8) { animation-delay: 0.25s; }
