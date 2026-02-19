@@ -1541,39 +1541,34 @@ class AdvancedMusicPlayer {
 	    const inner = document.createElement('div');
 	    inner.className = 'favorites-card-inner';
 	
+	    // Thumbnail grid — one row, as many as fit
 	    const grid = document.createElement('div');
 	    grid.className = 'favorites-thumbnails';
 	
 	    if (favorites.length === 0) {
 	        const empty = document.createElement('div');
 	        empty.className = 'favorites-empty';
-	        empty.innerHTML = `<i class="fa fa-star-o"></i><span>No favourites yet</span><small>Star a song to see it here</small>`;
+	        empty.innerHTML = `<i class="fa fa-star-o"></i><span>No favourites yet</span>`;
 	        grid.appendChild(empty);
-	        grid.style.minHeight = '90px';
 	    } else {
 	        const shuffled = this._shuffleArray([...favorites]);
 	        const toShow = shuffled.slice(0, 5);
-	        const count = toShow.length;
-	        grid.dataset.count = String(count);
+	        grid.dataset.count = String(toShow.length);
 	        grid.style.gap = '3px';
 	        grid.style.padding = '3px';
 	        toShow.forEach(song => grid.appendChild(this._buildFavThumb(song)));
 	    }
 	
+	    // Panel — horizontal layout
 	    const panel = document.createElement('div');
 	    panel.className = 'favorites-panel';
 	
-	    const titleEl = document.createElement('div');
-	    titleEl.className = 'favorites-panel-title';
-	    titleEl.textContent = 'Favourites';
-	
-	    const countEl = document.createElement('div');
-	    countEl.className = 'favorites-panel-count';
-	    countEl.textContent = favorites.length;
-	
-	    const sublabel = document.createElement('div');
-	    sublabel.className = 'favorites-panel-sublabel';
-	    sublabel.textContent = `song${favorites.length !== 1 ? 's' : ''}`;
+	    const info = document.createElement('div');
+	    info.className = 'favorites-panel-info';
+	    info.innerHTML = `
+	        <div class="favorites-panel-title">Favourites</div>
+	        <div class="favorites-panel-count">${favorites.length} <span class="favorites-panel-sublabel">song${favorites.length !== 1 ? 's' : ''}</span></div>
+	    `;
 	
 	    const favPlaylist = this.getFavoritesPlaylist();
 	
@@ -1590,13 +1585,13 @@ class AdvancedMusicPlayer {
 	
 	    const expandBtn = document.createElement('button');
 	    expandBtn.className = 'fav-expand-btn';
-	    expandBtn.innerHTML = `<i class="fa fa-chevron-down"></i> Show all`;
+	    expandBtn.innerHTML = `<i class="fa fa-chevron-down"></i> All`;
 	    expandBtn.addEventListener('click', () => {
 	        const isExpanded = card.classList.toggle('expanded');
 	        expandBtn.classList.toggle('is-expanded', isExpanded);
 	        expandBtn.innerHTML = isExpanded
-	            ? `<i class="fa fa-chevron-up"></i> Collapse`
-	            : `<i class="fa fa-chevron-down"></i> Show all`;
+	            ? `<i class="fa fa-chevron-up"></i> Less`
+	            : `<i class="fa fa-chevron-down"></i> All`;
 	
 	        let expList = card.querySelector('.favorites-expanded-list');
 	        if (isExpanded) {
@@ -1617,9 +1612,7 @@ class AdvancedMusicPlayer {
 	        }
 	    });
 	
-	    panel.appendChild(titleEl);
-	    panel.appendChild(countEl);
-	    panel.appendChild(sublabel);
+	    panel.appendChild(info);
 	    panel.appendChild(playBtn);
 	    panel.appendChild(expandBtn);
 	
