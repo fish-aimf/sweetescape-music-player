@@ -7535,7 +7535,8 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 
 .favorites-card-inner {
     display: flex;
-    height: 130px;
+    min-height: 90px;
+    height: auto;
 }
 
 .favorites-thumbnails {
@@ -7546,21 +7547,18 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     background: var(--bg-primary);
 }
 
-.favorites-thumbnails[data-count="1"] { grid-template-columns: 1fr; grid-template-rows: 1fr; }
-.favorites-thumbnails[data-count="2"] { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; }
-.favorites-thumbnails[data-count="3"] { grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr; }
-.favorites-thumbnails[data-count="4"] { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
-.favorites-thumbnails[data-count="5"],
-.favorites-thumbnails[data-count="6"] { grid-template-columns: repeat(3, 1fr); grid-template-rows: 1fr 1fr; }
-.favorites-thumbnails[data-count="7"],
-.favorites-thumbnails[data-count="8"],
-.favorites-thumbnails[data-count="9"] { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); }
-.favorites-thumbnails[data-count="many"] { grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(3, 1fr); }
+.favorites-thumbnails[data-count="1"] { grid-template-columns: 1fr; grid-template-rows: 1fr; min-height: 90px; }
+.favorites-thumbnails[data-count="2"] { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; min-height: 90px; }
+.favorites-thumbnails[data-count="3"] { grid-template-columns: repeat(3, 1fr); grid-template-rows: 1fr; min-height: 90px; }
+.favorites-thumbnails[data-count="4"] { grid-template-columns: repeat(4, 1fr); grid-template-rows: 1fr; min-height: 90px; }
+.favorites-thumbnails[data-count="5"] { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 90px); }
+.favorites-thumbnails[data-count="6"] { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 90px); }
 
 .fav-thumb {
     position: relative;
     overflow: hidden;
     cursor: pointer;
+    aspect-ratio: 1;
 }
 
 .fav-thumb img {
