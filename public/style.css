@@ -6854,6 +6854,11 @@ if (this.elements.autofillBtn) {
     padding-top: 14px; margin-top: 4px;
 }
 .discord-modal-footer .discord-btn-primary { margin-left: auto; }
+.discord-last-update {
+    font-size: 10.5px; color: var(--text-secondary);
+    display: flex; align-items: center; gap: 4px; margin-top: 3px;
+    opacity: 0.7;
+}
 
 /* Expanded Playlist Sidebar Mode */
 .playlist-sidebar.expanded-mode {
