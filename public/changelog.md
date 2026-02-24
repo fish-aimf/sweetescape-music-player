@@ -550,3 +550,4 @@
 - allowed custom changes to all fields v59.10.0
 - added reset and send button v59.11.0
 - added a little mockup of how it would look like in discord v59.12.0
+- delegated send rpc for optimization changes v59.13.0
