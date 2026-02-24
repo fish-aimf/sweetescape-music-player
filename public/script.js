@@ -784,6 +784,8 @@ class AdvancedMusicPlayer {
 		document.getElementById('discordResetBtn')?.addEventListener('click',   () => this._discordResetFields());
 		document.getElementById('discordSendNowBtn')?.addEventListener('click', () => this._discordSendNow());
 		document.getElementById('discordRpcModal')?.addEventListener('click',   (e) => { if (e.target.id === 'discordRpcModal') this.closeDiscordModal(); });
+		document.getElementById('discordRetryBtn')?.addEventListener('click', () => { this._discordRetry(); });
+		document.getElementById('discordConnectBtn')?.addEventListener('click', () => { this._discordRetry(); });
 		['discordEditSong','discordEditArtist','discordEditThumb'].forEach(id => {
 		    document.getElementById(id)?.addEventListener('input', () => this._discordOnFieldEdit());
 		});
@@ -12619,6 +12621,30 @@ closeBillboardHot100Modal() {
 	    clearInterval(this._discordUpdateTickInterval);
 	    this._discordUpdateTickInterval = null;
 	}
+	_discordRetry() {
+    if (!this.discordEnabled) {
+        this.discordEnabled = true;
+        this.saveDiscordSettings();
+    }
+    // Kill existing socket completely before retrying
+    if (this.discordWs) {
+        this.discordWs.onclose = null;
+        this.discordWs.onerror = null;
+        this.discordWs.close();
+        this.discordWs = null;
+    }
+    clearTimeout(this.discordReconnectTimer);
+    this.discordReconnectTimer = null;
+    this.discordReconnectAttempts = 0;
+    this._discordConnecting = false;
+    this.discordConnected = false;
+    this._discordWsOk = false;
+    this._discordApiOk = false;
+    this._discordAppFound = false;
+    this._discordLastError = null;
+    this.initDiscordConnection();
+    this._discordRefreshModal();
+}
 
 
 	
