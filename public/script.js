@@ -195,6 +195,7 @@ class AdvancedMusicPlayer {
 		this._discordOverrides = {};
 		this._discordLastUpdate = null;
 		this._discordUpdateTickInterval = null;
+		this._discordSendTimer = null;
 		// Library display settings
 		this.librarySortAlphabetically = true;
 		this.libraryReverseOrder = false;
@@ -2649,9 +2650,7 @@ class AdvancedMusicPlayer {
 		this.saveRecentlyPlayedSong(song);
 		this.updateCurrentSongDisplay();
 
-		if (this.discordEnabled && this.discordConnected) {
-			this.sendDiscordRPC();
-		}
+		this._discordScheduleSend();
 
 		if (
 			document.getElementById("lyrics") &&
@@ -2728,11 +2727,7 @@ class AdvancedMusicPlayer {
 			}
 			this.updateProgressBar();
 			this.updatePageTitle();
-			setTimeout(() => {
-				if (this.discordEnabled && this.discordConnected) {
-					this.sendDiscordRPC();
-				}
-			}, 1000);
+			this._discordScheduleSend();
 		} catch (error) {
 			console.error("Error playing song with ID " + videoId + ":", error);
 			alert("Failed to play the video. Please try again.");
@@ -2786,9 +2781,7 @@ class AdvancedMusicPlayer {
 			this.updateCurrentSongDisplay();
 
 			// Send Discord RPC update
-			if (this.discordEnabled && this.discordConnected) {
-				this.sendDiscordRPC();
-			}
+			this._discordScheduleSend();
 			return;
 		}
 		const source = this.currentPlaylist ? this.currentPlaylist.songs : this.songLibrary;
@@ -2817,9 +2810,7 @@ class AdvancedMusicPlayer {
 		this.updateCurrentSongDisplay();
 
 		// Send Discord RPC update
-		if (this.discordEnabled && this.discordConnected) {
-			this.sendDiscordRPC();
-		}
+		this._discordScheduleSend();
 	}
 
 	// Complete playPreviousSong method with Discord RPC
@@ -2863,9 +2854,7 @@ class AdvancedMusicPlayer {
 		this.updateCurrentSongDisplay();
 
 		// Send Discord RPC update
-		if (this.discordEnabled && this.discordConnected) {
-			this.sendDiscordRPC();
-		}
+		this._discordScheduleSend();
 	}
 
 	// Complete playCurrentSong method with Discord RPC
@@ -2882,9 +2871,7 @@ class AdvancedMusicPlayer {
 		this.updateCurrentSongDisplay();
 
 		// Send Discord RPC update
-		if (this.discordEnabled && this.discordConnected) {
-			this.sendDiscordRPC();
-		}
+		this._discordScheduleSend();
 	}
 
 	// Complete playSongFromPlaylist method with Discord RPC
@@ -2903,9 +2890,7 @@ class AdvancedMusicPlayer {
 		this.updateCurrentSongDisplay();
 
 		// Send Discord RPC update
-		if (this.discordEnabled && this.discordConnected) {
-			this.sendDiscordRPC();
-		}
+		this._discordScheduleSend();
 	}
 	async saveSetting(key, value) {
 		if (!this.db) return;
@@ -12564,7 +12549,13 @@ closeBillboardHot100Modal() {
 	    btn.innerHTML = '<i class="fas fa-check"></i> Sent!';
 	    setTimeout(() => { btn.innerHTML = orig; }, 1800);
 	}
-	
+	_discordScheduleSend() {
+	    // Cancel any pending send — only the last one fires
+	    clearTimeout(this._discordSendTimer);
+	    this._discordSendTimer = setTimeout(() => {
+	        this.sendDiscordRPC();
+	    }, 1500);
+	}
 	// ── Data helpers ──────────────────────────────────────────────────────────────
 	_discordGetAuto() {
 	    const s = this.currentSong;
