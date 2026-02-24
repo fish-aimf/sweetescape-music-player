@@ -6508,286 +6508,204 @@ if (this.elements.autofillBtn) {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-/* ─── Discord Status Dot (on the toolbar button) ─────────────────── */
+/* ── Discord toolbar dot ────────────────────────────────────────────── */
 #discordButton { position: relative; }
 .discord-status-dot {
-    position: absolute;
-    top: 4px; right: 4px;
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: transparent;
+    position: absolute; top: 4px; right: 4px;
+    width: 7px; height: 7px; border-radius: 50%;
     border: 2px solid var(--bg-secondary);
-    transition: background 0.3s ease;
+    background: transparent; transition: background 0.3s;
 }
-.discord-status-dot.is-connected   { background: #57F287; }
-.discord-status-dot.is-error       { background: #ED4245; }
-.discord-status-dot.is-connecting  { background: #FEE75C; animation: discordDotPulse 1s infinite; }
+.discord-status-dot.is-connected  { background: #57F287; }
+.discord-status-dot.is-error      { background: #ED4245; }
+.discord-status-dot.is-connecting { background: #FEE75C; animation: discordDotPulse 1s infinite; }
 @keyframes discordDotPulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+@keyframes discordSpin     { to { transform: rotate(360deg); } }
+@keyframes discordModalIn  {
+    from { opacity:0; transform:scale(0.97) translateY(8px); }
+    to   { opacity:1; transform:scale(1) translateY(0); }
+}
 
-/* ─── Modal Overlay ───────────────────────────────────────────────── */
+/* ── Overlay ────────────────────────────────────────────────────────── */
 .discord-rpc-modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(5px);
-    z-index: 9999;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+    z-index: 9999; align-items: center; justify-content: center; padding: 20px;
 }
 .discord-rpc-modal-overlay.active { display: flex; }
 
-/* ─── Modal Box ───────────────────────────────────────────────────── */
+/* ── Modal box ──────────────────────────────────────────────────────── */
 .discord-rpc-modal {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 16px;
-    width: 100%;
-    max-width: 500px;
-    max-height: 88vh;
-    overflow-y: auto;
+    background: var(--bg-secondary); border: 1px solid var(--border-color);
+    border-radius: 16px; width: 100%; max-width: 720px;
+    max-height: 88vh; overflow-y: auto;
     animation: discordModalIn 220ms cubic-bezier(0.4,0,0.2,1);
-    scrollbar-width: thin;
-    scrollbar-color: var(--border-color) transparent;
-    /* Override the generic .modal-content styles */
-    margin: 0;
-    padding: 0;
-}
-@keyframes discordModalIn {
-    from { opacity:0; transform: scale(0.97) translateY(8px); }
-    to   { opacity:1; transform: scale(1) translateY(0); }
+    scrollbar-width: thin; scrollbar-color: var(--border-color) transparent;
+    margin: 0; padding: 0;
 }
 
-/* ─── Header ──────────────────────────────────────────────────────── */
+/* ── Header ─────────────────────────────────────────────────────────── */
 .discord-modal-header {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 20px 20px 0;
+    display: flex; align-items: center; gap: 14px; padding: 20px 20px 0;
 }
 .discord-modal-logo {
-    width: 42px; height: 42px;
-    background: #5865F2;
-    border-radius: 12px;
+    width: 42px; height: 42px; background: #5865F2; border-radius: 12px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 20px; color: #fff;
-    flex-shrink: 0;
+    font-size: 20px; color: #fff; flex-shrink: 0;
     box-shadow: 0 4px 14px rgba(88,101,242,0.4);
 }
-.discord-modal-header-text h2 {
-    font-size: 16px; font-weight: 600;
-    color: var(--text-primary);
-    margin: 0;
-}
-.discord-modal-header-text p {
-    font-size: 12px; color: var(--text-secondary); margin: 2px 0 0;
-}
+.discord-modal-header-text h2 { font-size: 16px; font-weight: 600; color: var(--text-primary); margin: 0; }
+.discord-modal-header-text p  { font-size: 12px; color: var(--text-secondary); margin: 2px 0 0; }
 .discord-modal-close {
-    margin-left: auto;
-    background: none; border: none; cursor: pointer;
-    color: var(--text-secondary); font-size: 16px;
-    padding: 6px; border-radius: 6px;
-    transition: 0.2s ease;
-    line-height: 1;
+    margin-left: auto; background: none; border: none; cursor: pointer;
+    color: var(--text-secondary); font-size: 16px; padding: 6px;
+    border-radius: 6px; transition: 0.2s; line-height: 1;
 }
 .discord-modal-close:hover { background: var(--bg-primary); color: var(--text-primary); }
 
-/* ─── Body ────────────────────────────────────────────────────────── */
-.discord-modal-body { padding: 16px 20px; }
+/* ── Body ───────────────────────────────────────────────────────────── */
+.discord-modal-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; }
 
-/* ─── Enable Toggle Row ───────────────────────────────────────────── */
+/* ── Enable toggle ──────────────────────────────────────────────────── */
 .discord-enable-row {
     display: flex; align-items: center; justify-content: space-between;
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    padding: 12px 14px;
-    margin-bottom: 12px;
+    background: var(--bg-primary); border: 1px solid var(--border-color);
+    border-radius: 10px; padding: 12px 14px;
 }
-.discord-enable-label strong {
-    display: block; font-size: 13.5px;
-    color: var(--text-primary); font-weight: 500;
-}
-.discord-enable-label span {
-    font-size: 11.5px; color: var(--text-secondary);
-}
+.discord-enable-label strong { display: block; font-size: 13.5px; color: var(--text-primary); font-weight: 500; }
+.discord-enable-label span   { font-size: 11.5px; color: var(--text-secondary); }
 .discord-switch { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
 .discord-switch input { opacity: 0; width: 0; height: 0; }
-.discord-slider {
-    position: absolute; inset: 0;
-    background: var(--border-color);
-    border-radius: 22px; cursor: pointer;
-    transition: 0.2s ease;
-}
+.discord-slider { position: absolute; inset: 0; background: var(--border-color); border-radius: 22px; cursor: pointer; transition: 0.2s; }
 .discord-slider::before {
-    content: ''; position: absolute;
-    width: 15px; height: 15px; left: 3px; top: 3px;
-    background: var(--text-secondary);
-    border-radius: 50%; transition: 0.2s ease;
+    content: ''; position: absolute; width: 15px; height: 15px;
+    left: 3px; top: 3px; background: var(--text-secondary); border-radius: 50%; transition: 0.2s;
 }
 .discord-switch input:checked + .discord-slider { background: #5865F2; }
 .discord-switch input:checked + .discord-slider::before { transform: translateX(18px); background: #fff; }
 
-/* ─── Error Banner ────────────────────────────────────────────────── */
-.discord-error-banner {
-    display: none;
-    align-items: flex-start; gap: 8px;
-    background: rgba(237,66,69,0.08);
-    border: 1px solid rgba(237,66,69,0.25);
-    border-radius: 8px;
-    padding: 10px 13px;
-    font-size: 12px; color: #ED4245;
-    margin-bottom: 12px;
+/* ── Banners ────────────────────────────────────────────────────────── */
+.discord-error-banner, .discord-success-banner, .discord-install-hint {
+    display: none; align-items: flex-start; gap: 8px;
+    border-radius: 8px; padding: 10px 13px; font-size: 12px; line-height: 1.5;
 }
-.discord-error-banner.visible { display: flex; }
-.discord-error-banner i { margin-top: 1px; flex-shrink: 0; }
-
-/* ─── Install Hint ────────────────────────────────────────────────── */
-.discord-install-hint {
-    display: none;
-    align-items: flex-start; gap: 10px;
-    background: rgba(88,101,242,0.08);
-    border: 1px solid rgba(88,101,242,0.2);
-    border-radius: 8px;
-    padding: 11px 13px;
-    margin-bottom: 12px;
-    font-size: 12px; color: var(--text-secondary);
-    line-height: 1.5;
-}
-.discord-install-hint.visible { display: flex; }
-.discord-install-hint i { color: #5865F2; margin-top: 2px; flex-shrink: 0; }
-.discord-install-hint strong { display: block; color: var(--text-primary); margin-bottom: 2px; font-size: 12.5px; }
-.discord-install-hint a { color: #5865F2; text-decoration: none; }
+.discord-error-banner.visible   { display: flex; background: rgba(237,66,69,0.08);  border: 1px solid rgba(237,66,69,0.25);  color: #ED4245; }
+.discord-success-banner.visible { display: flex; background: rgba(87,242,135,0.08); border: 1px solid rgba(87,242,135,0.25); color: #57F287; }
+.discord-install-hint.visible   { display: flex; background: rgba(88,101,242,0.08); border: 1px solid rgba(88,101,242,0.2);  color: var(--text-secondary); }
+.discord-error-banner i, .discord-success-banner i { margin-top: 1px; flex-shrink: 0; }
+.discord-install-hint i    { color: #5865F2; margin-top: 2px; flex-shrink: 0; }
+.discord-install-hint strong { display: block; color: var(--text-primary); margin-bottom: 2px; }
+.discord-install-hint a    { color: #5865F2; text-decoration: none; }
 .discord-install-hint a:hover { text-decoration: underline; }
 
-/* ─── Status Card ─────────────────────────────────────────────────── */
+/* ── 2-column grid ──────────────────────────────────────────────────── */
+.discord-modal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    align-items: start;
+}
+.discord-modal-col-left,
+.discord-modal-col-right { display: flex; flex-direction: column; gap: 10px; }
+
+/* Collapse to single column on narrow modal/screens */
+@media (max-width: 560px) {
+    .discord-modal-grid  { grid-template-columns: 1fr; }
+    .discord-rpc-modal   { max-width: 100%; border-radius: 12px; }
+}
+
+/* ── Status card ────────────────────────────────────────────────────── */
 .discord-status-card {
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    padding: 14px;
-    margin-bottom: 14px;
+    background: var(--bg-primary); border: 1px solid var(--border-color);
+    border-radius: 10px; padding: 14px;
+    display: flex; flex-direction: column; gap: 10px;
 }
 .discord-status-card-header {
     display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 12px;
-    font-size: 11px; font-weight: 600;
-    color: var(--text-secondary);
+    font-size: 11px; font-weight: 600; color: var(--text-secondary);
     text-transform: uppercase; letter-spacing: 0.7px;
 }
 .discord-retry-btn {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    padding: 4px 10px;
-    font-size: 11.5px; color: var(--text-secondary);
-    cursor: pointer; transition: 0.2s ease;
+    background: var(--bg-secondary); border: 1px solid var(--border-color);
+    border-radius: 6px; padding: 4px 10px; font-size: 11.5px;
+    color: var(--text-secondary); cursor: pointer; transition: 0.2s;
     display: flex; align-items: center; gap: 5px;
 }
 .discord-retry-btn:hover { color: var(--text-primary); border-color: var(--accent-color); }
 
-/* ─── Status Badge ────────────────────────────────────────────────── */
+/* ── Badge ──────────────────────────────────────────────────────────── */
 .discord-badge {
     display: flex; align-items: center; gap: 10px;
     padding: 10px 13px; border-radius: 8px;
-    border: 1px solid var(--border-color);
-    background: var(--bg-secondary);
-    margin-bottom: 12px;
+    border: 1px solid var(--border-color); background: var(--bg-secondary);
 }
-.discord-badge.state-connected    { background: rgba(87,242,135,0.07); border-color: rgba(87,242,135,0.3); }
-.discord-badge.state-disconnected { background: rgba(237,66,69,0.07);  border-color: rgba(237,66,69,0.3); }
-.discord-badge.state-connecting   { background: rgba(254,231,92,0.07); border-color: rgba(254,231,92,0.3); }
-.discord-badge.state-disabled     { background: var(--bg-secondary);   border-color: var(--border-color); }
-
+.discord-badge.state-connected    { background: rgba(87,242,135,0.07);  border-color: rgba(87,242,135,0.3); }
+.discord-badge.state-disconnected { background: rgba(237,66,69,0.07);   border-color: rgba(237,66,69,0.3); }
+.discord-badge.state-connecting   { background: rgba(254,231,92,0.07);  border-color: rgba(254,231,92,0.3); }
+.discord-badge.state-disabled     { background: var(--bg-secondary);    border-color: var(--border-color); }
 .discord-badge-icon { font-size: 20px; flex-shrink: 0; }
 .discord-badge.state-connected    .discord-badge-icon { color: #57F287; }
 .discord-badge.state-disconnected .discord-badge-icon { color: #ED4245; }
 .discord-badge.state-connecting   .discord-badge-icon { color: #FEE75C; animation: discordDotPulse 1s infinite; }
 .discord-badge.state-disabled     .discord-badge-icon { color: var(--text-secondary); }
-
 .discord-badge strong { display: block; font-size: 13px; color: var(--text-primary); font-weight: 600; }
 .discord-badge span   { font-size: 11.5px; color: var(--text-secondary); }
 
-/* ─── Steps ───────────────────────────────────────────────────────── */
+/* ── Steps ──────────────────────────────────────────────────────────── */
 .discord-steps { display: flex; flex-direction: column; gap: 6px; }
 .discord-step {
     display: flex; align-items: center; gap: 10px;
     padding: 9px 12px; border-radius: 8px;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    transition: 0.2s ease;
+    background: var(--bg-secondary); border: 1px solid var(--border-color);
+    transition: border-color 0.2s, background 0.2s;
 }
 .discord-step-icon {
     width: 24px; height: 24px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     font-size: 10px; flex-shrink: 0;
-    background: var(--bg-primary);
-    color: var(--text-secondary);
-    transition: 0.2s ease;
+    background: var(--bg-primary); color: var(--text-secondary);
+    transition: background 0.2s, color 0.2s;
 }
-.discord-step.step-ok   .discord-step-icon { background: rgba(87,242,135,0.15); color: #57F287; }
-.discord-step.step-fail .discord-step-icon { background: rgba(237,66,69,0.15);  color: #ED4245; }
-.discord-step.step-pending .discord-step-icon { background: rgba(254,231,92,0.1); color: #FEE75C; }
-
+.discord-step.step-ok      .discord-step-icon { background: rgba(87,242,135,0.15); color: #57F287; }
+.discord-step.step-fail    .discord-step-icon { background: rgba(237,66,69,0.15);  color: #ED4245; }
+.discord-step.step-pending .discord-step-icon { background: rgba(254,231,92,0.1);  color: #FEE75C; }
 .discord-step-text strong { font-size: 12.5px; color: var(--text-primary); font-weight: 500; display: block; }
 .discord-step-text small  { font-size: 11px; color: var(--text-secondary); }
-
 .discord-step-spinner {
     width: 13px; height: 13px; margin-left: auto; flex-shrink: 0;
-    border: 2px solid rgba(254,231,92,0.2);
-    border-top-color: #FEE75C;
-    border-radius: 50%;
-    animation: discordSpin 0.7s linear infinite;
+    border: 2px solid rgba(254,231,92,0.2); border-top-color: #FEE75C;
+    border-radius: 50%; animation: discordSpin 0.7s linear infinite;
 }
-@keyframes discordSpin { to { transform: rotate(360deg); } }
 
-/* ─── Section Label ───────────────────────────────────────────────── */
+/* ── Section label ──────────────────────────────────────────────────── */
 .discord-section-label {
     font-size: 11px; font-weight: 600; color: var(--text-secondary);
     text-transform: uppercase; letter-spacing: 0.7px;
-    margin-bottom: 8px;
     display: flex; align-items: center; gap: 8px;
 }
-.discord-section-label::after {
-    content: ''; flex: 1; height: 1px; background: var(--border-color);
-}
+.discord-section-label::after { content: ''; flex: 1; height: 1px; background: var(--border-color); }
 
-/* ─── Now Playing Preview ─────────────────────────────────────────── */
+/* ── Preview ────────────────────────────────────────────────────────── */
 .discord-preview {
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    padding: 13px;
-    display: flex; gap: 12px; align-items: center;
+    background: var(--bg-primary); border: 1px solid var(--border-color);
+    border-radius: 10px; padding: 13px; display: flex; gap: 12px; align-items: center;
 }
 .discord-preview-thumb {
     width: 52px; height: 52px; border-radius: 8px;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
+    background: var(--bg-secondary); border: 1px solid var(--border-color);
     display: flex; align-items: center; justify-content: center;
-    color: var(--text-secondary); font-size: 20px;
-    flex-shrink: 0; overflow: hidden;
+    color: var(--text-secondary); font-size: 20px; flex-shrink: 0; overflow: hidden;
 }
 .discord-preview-thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 7px; }
-.discord-preview-song {
-    font-size: 13px; font-weight: 600; color: var(--text-primary);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.discord-preview-artist {
-    font-size: 12px; color: var(--text-secondary); margin-top: 2px;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.discord-preview-url {
-    display: block; font-size: 10.5px; color: #5865F2;
-    margin-top: 3px; text-decoration: none;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
+.discord-preview-info { flex: 1; min-width: 0; }
+.discord-preview-song   { font-size: 13px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.discord-preview-artist { font-size: 12px; color: var(--text-secondary); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.discord-preview-url    { display: block; font-size: 10.5px; color: #5865F2; margin-top: 3px; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .discord-preview-url:hover { text-decoration: underline; }
+.discord-last-update    { font-size: 10.5px; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; margin-top: 3px; opacity: 0.7; }
 
-/* ─── Editable Fields ─────────────────────────────────────────────── */
-.discord-fields { display: flex; flex-direction: column; gap: 9px; }
-.discord-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+/* ── Fields ─────────────────────────────────────────────────────────── */
+.discord-fields { display: flex; flex-direction: column; gap: 8px; }
 .discord-field-group { display: flex; flex-direction: column; gap: 5px; }
 .discord-field-group label {
     font-size: 11px; font-weight: 600; color: var(--text-secondary);
@@ -6795,70 +6713,44 @@ if (this.elements.autofillBtn) {
     display: flex; align-items: center; gap: 6px;
 }
 .discord-field-group input {
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 7px; padding: 8px 11px;
-    font-size: 12.5px; color: var(--text-primary);
-    font-family: inherit; outline: none;
-    transition: 0.2s ease; width: 100%;
+    background: var(--bg-primary); border: 1px solid var(--border-color);
+    border-radius: 7px; padding: 8px 11px; font-size: 12.5px;
+    color: var(--text-primary); font-family: inherit; outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s; width: 100%;
 }
-.discord-field-group input:focus {
-    border-color: #5865F2;
-    box-shadow: 0 0 0 3px rgba(88,101,242,0.12);
-}
+.discord-field-group input:focus { border-color: #5865F2; box-shadow: 0 0 0 3px rgba(88,101,242,0.12); }
 .discord-field-group input::placeholder { color: var(--text-secondary); opacity: 0.6; }
 .discord-field-group.is-modified input { border-color: rgba(254,231,92,0.5); }
 .discord-field-hint { font-size: 10.5px; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; }
-
 .discord-auto-badge {
     display: inline-flex; align-items: center; gap: 3px;
     background: rgba(88,101,242,0.1); color: #5865F2;
-    border-radius: 4px; padding: 1px 6px;
-    font-size: 10px; font-weight: 600;
+    border-radius: 4px; padding: 1px 6px; font-size: 10px; font-weight: 600;
     text-transform: none; letter-spacing: 0;
 }
-.discord-field-group.is-modified .discord-auto-badge {
-    background: rgba(254,231,92,0.1); color: #FEE75C;
-}
+.discord-field-group.is-modified .discord-auto-badge { background: rgba(254,231,92,0.1); color: #FEE75C; }
+.discord-fields-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 2px; }
 
-.discord-fields-actions {
-    display: flex; justify-content: flex-end; gap: 8px; margin-top: 2px;
-}
-
-/* ─── Buttons ─────────────────────────────────────────────────────── */
+/* ── Buttons ────────────────────────────────────────────────────────── */
 .discord-btn {
     border: none; border-radius: 7px; padding: 9px 16px;
-    font-size: 13px; font-weight: 600; cursor: pointer;
-    transition: 0.2s ease; display: inline-flex;
-    align-items: center; gap: 6px; font-family: inherit;
+    font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s;
+    display: inline-flex; align-items: center; gap: 6px; font-family: inherit;
 }
 .discord-btn-sm { padding: 6px 12px; font-size: 12px; }
 .discord-btn-primary { background: #5865F2; color: #fff; }
 .discord-btn-primary:hover { background: #4752C4; }
-.discord-btn-ghost {
-    background: var(--bg-primary); color: var(--text-secondary);
-    border: 1px solid var(--border-color);
-}
+.discord-btn-ghost { background: var(--bg-primary); color: var(--text-secondary); border: 1px solid var(--border-color); }
 .discord-btn-ghost:hover { color: var(--text-primary); border-color: var(--accent-color); }
-.discord-btn-danger {
-    background: rgba(237,66,69,0.1); color: #ED4245;
-    border: 1px solid rgba(237,66,69,0.25);
-}
+.discord-btn-danger { background: rgba(237,66,69,0.1); color: #ED4245; border: 1px solid rgba(237,66,69,0.25); }
 .discord-btn-danger:hover { background: rgba(237,66,69,0.2); }
 
-/* ─── Footer ──────────────────────────────────────────────────────── */
+/* ── Footer ─────────────────────────────────────────────────────────── */
 .discord-modal-footer {
-    padding: 0 20px 20px;
     display: flex; align-items: center; gap: 8px;
-    border-top: 1px solid var(--border-color);
-    padding-top: 14px; margin-top: 4px;
+    padding: 14px 20px 20px; border-top: 1px solid var(--border-color);
 }
 .discord-modal-footer .discord-btn-primary { margin-left: auto; }
-.discord-last-update {
-    font-size: 10.5px; color: var(--text-secondary);
-    display: flex; align-items: center; gap: 4px; margin-top: 3px;
-    opacity: 0.7;
-}
 
 /* Expanded Playlist Sidebar Mode */
 .playlist-sidebar.expanded-mode {
