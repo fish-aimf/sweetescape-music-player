@@ -556,3 +556,4 @@
 - For extra friendly ui, if its disabled, pressing reload will enable it v59.16.0
 - revamped discord button so there will be a coloured dot to indicate whether its active or not v59.17.0
 - fixed some minor bugs v59.17.1
+- updated url to get python server v59.18.0
