@@ -537,3 +537,4 @@
 - lazyloading thumbnail  and other performance improvements. v58.15.1
 - ui improvements. v58.16.0
 - revamped discord rp system v59.0.0
+- no longer bugged refresh button now works v59.1.0
