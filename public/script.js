@@ -186,6 +186,22 @@ class AdvancedMusicPlayer {
 		this.discordReconnectTimer = null;
 		this.discordReconnectAttempts = 0;
 		this.maxDiscordReconnectAttempts = 3;
+		// Discord progress tracking
+		this.discordSteps = {
+		    app: { elementId: 'step-discord-app', status: 'pending' },
+		    server: { elementId: 'step-local-server', status: 'pending' },
+		    auth: { elementId: 'step-authenticate', status: 'pending' },
+		    presence: { elementId: 'step-presence', status: 'pending' }
+		};
+		this.discordError = null;
+		this.discordConnecting = false;
+		this.discordModalVisible = false;
+		this.discordStats = {
+		    uptime: '-',
+		    totalUpdates: 0,
+		    clients: 0,
+		    lastUpdate: '-'
+		};
 		
 		// Library display settings
 		this.librarySortAlphabetically = true;
@@ -415,6 +431,33 @@ class AdvancedMusicPlayer {
 			recentlyPlayedPlaylistsLimit: document.getElementById("recentlyPlayedPlaylistsLimit"),
 			saveDiscoverMoreSettings: document.getElementById("saveDiscoverMoreSettings"),
 			discordButton: document.getElementById("discordButton"),
+			discordModal: document.getElementById('discordModal'),
+		    discordSteps: {
+		        app: document.getElementById('step-discord-app'),
+		        server: document.getElementById('step-local-server'),
+		        auth: document.getElementById('step-authenticate'),
+		        presence: document.getElementById('step-presence')
+		    },
+		    discordErrorMessage: document.getElementById('discordErrorMessage'),
+		    discordStatsSection: document.getElementById('discordStatsSection'),
+		    discordUptime: document.getElementById('discordUptime'),
+		    discordTotalUpdates: document.getElementById('discordTotalUpdates'),
+		    discordClients: document.getElementById('discordClients'),
+		    discordLastUpdate: document.getElementById('discordLastUpdate'),
+		    discordSongName: document.getElementById('discordSongName'),
+		    discordArtist: document.getElementById('discordArtist'),
+		    discordUrl: document.getElementById('discordUrl'),
+		    discordThumbnail: document.getElementById('discordThumbnail'),
+		    discordThumbnailPreview: document.getElementById('discordThumbnailPreview'),
+		    discordPreviewSong: document.getElementById('discordPreviewSong'),
+		    discordPreviewArtist: document.getElementById('discordPreviewArtist'),
+		    discordEnableToggle: document.getElementById('discordEnableToggle'),
+		    discordToggleLabel: document.getElementById('discordToggleLabel'),
+		    discordReconnectBtn: document.getElementById('discordReconnectBtn'),
+		    discordClearBtn: document.getElementById('discordClearBtn'),
+		    discordUpdateBtn: document.getElementById('discordUpdateBtn'),
+		    discordCloseModalBtn: document.getElementById('discordCloseModalBtn'),
+		    discordCloseModalBtnAlt: document.querySelector('.discord-close-modal'), 
 			visualizerToggle: document.getElementById("visualizerToggle"),
 			findSongsBtn: document.getElementById("findSongsBtn"),
 			closeFindSongs: document.getElementById("closeFindSongs"),
@@ -765,6 +808,42 @@ class AdvancedMusicPlayer {
 		const refreshBtn = document.getElementById('refreshRandomBtn');
 		if (refreshBtn) {
 			refreshBtn.addEventListener('click', handlers.refreshRandomRecommendations);
+		}
+		// Discord modal events
+		if (this.elements.discordReconnectBtn) {
+		    this.elements.discordReconnectBtn.addEventListener('click', () => this.reconnectDiscord());
+		}
+		if (this.elements.discordClearBtn) {
+		    this.elements.discordClearBtn.addEventListener('click', () => this.clearDiscordRPC());
+		}
+		if (this.elements.discordUpdateBtn) {
+		    this.elements.discordUpdateBtn.addEventListener('click', () => this.sendCustomDiscordRPC());
+		}
+		if (this.elements.discordEnableToggle) {
+		    this.elements.discordEnableToggle.addEventListener('change', (e) => this.toggleDiscordRPCFromModal(e.target.checked));
+		}
+		if (this.elements.discordCloseModalBtn) {
+		    this.elements.discordCloseModalBtn.addEventListener('click', () => this.closeDiscordModal());
+		}
+		if (this.elements.discordCloseModalBtnAlt) {
+		    this.elements.discordCloseModalBtnAlt.addEventListener('click', () => this.closeDiscordModal());
+		}
+		// Close modal when clicking outside content
+		window.addEventListener('click', (event) => {
+		    if (event.target === this.elements.discordModal) {
+		        this.closeDiscordModal();
+		    }
+		});
+		
+		// Live preview on input changes
+		if (this.elements.discordSongName) {
+		    this.elements.discordSongName.addEventListener('input', () => this.updateDiscordPreview());
+		}
+		if (this.elements.discordArtist) {
+		    this.elements.discordArtist.addEventListener('input', () => this.updateDiscordPreview());
+		}
+		if (this.elements.discordThumbnail) {
+		    this.elements.discordThumbnail.addEventListener('input', () => this.updateDiscordPreview());
 		}
 		
 		// Delegated event listeners
@@ -12189,56 +12268,84 @@ closeBillboardHot100Modal() {
 	}
 
 	initDiscordConnection() {
-		if (this.discordWs && this.discordWs.readyState === WebSocket.OPEN) {
-			return;
-		}
-
-		try {
-			this.discordWs = new WebSocket('ws://localhost:9112');
-
-			this.discordWs.onopen = () => {
-				console.log('✅ Connected to Discord RPC desktop app');
-				this.discordConnected = true;
-				this.discordReconnectAttempts = 0;
-				this.updateDiscordButtonUI();
-
-				if (this.currentSong && this.isPlaying) {
-					this.sendDiscordRPC();
-				}
-			};
-
-			this.discordWs.onclose = () => {
-				console.log('❌ Disconnected from Discord RPC desktop app');
-				this.discordConnected = false;
-				this.updateDiscordButtonUI();
-
-				if (this.discordEnabled && this.discordReconnectAttempts < this.maxDiscordReconnectAttempts) {
-					this.discordReconnectAttempts++;
-					this.discordReconnectTimer = setTimeout(() => {
-						this.initDiscordConnection();
-					}, 3000);
-				}
-			};
-
-			this.discordWs.onerror = (error) => {
-				console.error('Discord RPC WebSocket error:', error);
-				this.discordConnected = false;
-				this.updateDiscordButtonUI();
-			};
-
-			this.discordWs.onmessage = (event) => {
-				try {
-					const response = JSON.parse(event.data);
-					console.log('Discord RPC response:', response);
-				} catch (error) {
-					console.log('Discord RPC message:', event.data);
-				}
-			};
-		} catch (error) {
-			console.error('Failed to initialize Discord connection:', error);
-			this.discordConnected = false;
-			this.updateDiscordButtonUI();
-		}
+	    if (this.discordWs && this.discordWs.readyState === WebSocket.OPEN) {
+	        return;
+	    }
+	
+	    this.discordConnecting = true;
+	    // ADD: Set initial step
+	    this.setStepActive('app');
+	
+	    try {
+	        this.discordWs = new WebSocket('ws://localhost:9112');
+	
+	        this.discordWs.onopen = () => {
+	            console.log('✅ Connected to Discord RPC desktop app');
+	            this.discordConnected = true;
+	            this.discordConnecting = false;
+	            this.discordReconnectAttempts = 0;
+	            
+	            // ADD: Update steps
+	            this.setStepCompleted('app');
+	            this.setStepCompleted('server');
+	            this.setStepActive('auth');   // waiting for Discord auth
+	            
+	            if (this.currentSong && this.isPlaying) {
+	                this.sendDiscordRPC();
+	            }
+	        };
+	
+	        this.discordWs.onclose = () => {
+	            console.log('❌ Disconnected from Discord RPC desktop app');
+	            this.discordConnected = false;
+	            this.discordConnecting = false;
+	            // ADD: Update steps
+	            this.setStepError('server', 'Connection lost. Click Reconnect.');
+	            
+	            if (this.discordEnabled && this.discordReconnectAttempts < this.maxDiscordReconnectAttempts) {
+	                this.discordReconnectAttempts++;
+	                this.discordReconnectTimer = setTimeout(() => {
+	                    this.initDiscordConnection();
+	                }, 3000);
+	            }
+	        };
+	
+	        this.discordWs.onerror = (error) => {
+	            console.error('Discord RPC WebSocket error:', error);
+	            this.discordConnected = false;
+	            this.discordConnecting = false;
+	            // ADD: Update steps
+	            this.setStepError('server', 'Cannot connect to local RPC server. Is the app running?');
+	        };
+	
+	        this.discordWs.onmessage = (event) => {
+	            try {
+	                const response = JSON.parse(event.data);
+	                console.log('Discord RPC response:', response);
+	                
+	                // ADD: Update steps based on response
+	                if (response.status === 'success') {
+	                    this.setStepCompleted('auth');
+	                    this.setStepCompleted('presence');
+	                } else if (response.status === 'error') {
+	                    this.setStepError('auth', response.message || 'Authentication failed');
+	                }
+	                
+	                // ADD: If we get stats, update them
+	                if (response.stats) {
+	                    this.updateDiscordStats(response.stats);
+	                }
+	            } catch (error) {
+	                console.log('Discord RPC message:', event.data);
+	            }
+	        };
+	    } catch (error) {
+	        console.error('Failed to initialize Discord connection:', error);
+	        this.discordConnected = false;
+	        this.discordConnecting = false;
+	        // ADD: Update steps
+	        this.setStepError('server', 'Failed to initialize connection');
+	    }
 	}
 
 	closeDiscordConnection() {
@@ -12281,35 +12388,55 @@ closeBillboardHot100Modal() {
 		return `https://www.youtube.com/watch?v=${extractedId || videoId}`;
 	}
 
-	sendDiscordRPC() {
-	  if (!this.discordEnabled || !this.discordConnected || !this.currentSong) {
-	    return;
-	  }
-	  if (!this.discordWs || this.discordWs.readyState !== WebSocket.OPEN) {
-	    console.warn('Discord WebSocket not ready');
-	    return;
-	  }
-	  
-	  let songData = this.currentSong;
-	  if (this.currentPlaylist) {
-	    const libMatch = this.songLibrary.find(s => s.videoId === this.currentSong.videoId);
-	    if (libMatch) {
-	      songData = libMatch; 
+	sendDiscordRPC(customData = null) {
+	    if (!this.discordEnabled || !this.discordConnected || !this.currentSong) {
+	        return;
 	    }
-	  }
-	  
-	  const data = {
-	    song: songData.name || 'Unknown Song',
-	    artist: songData.author || 'Unknown Artist', 
-	    url: this.buildYouTubeUrl(songData.videoId)
-	  };
-	  
-	  try {
-	    this.discordWs.send(JSON.stringify(data));
-	    console.log('Sent to Discord RPC:', data);
-	  } catch (error) {
-	    console.error('Failed to send Discord RPC update:', error);
-	  }
+	    if (!this.discordWs || this.discordWs.readyState !== WebSocket.OPEN) {
+	        console.warn('Discord WebSocket not ready');
+	        return;
+	    }
+	    
+	    let songData = this.currentSong;
+	    if (this.currentPlaylist) {
+	        const libMatch = this.songLibrary.find(s => s.videoId === this.currentSong.videoId);
+	        if (libMatch) songData = libMatch;
+	    }
+	    
+	    // Use custom data if provided, otherwise build from current song
+	    let data;
+	    if (customData) {
+	        data = customData;
+	    } else {
+	        data = {
+	            song: songData.name || 'Unknown Song',
+	            artist: songData.author || 'Unknown Artist',
+	            url: this.buildYouTubeUrl(songData.videoId)
+	        };
+	    }
+	    
+	    try {
+	        this.discordWs.send(JSON.stringify(data));
+	        console.log('Sent to Discord RPC:', data);
+	        
+	        // ADD: If modal is open, update preview to match sent data
+	        if (this.discordModalVisible) {
+	            if (this.elements.discordSongName) this.elements.discordSongName.value = data.song;
+	            if (this.elements.discordArtist) this.elements.discordArtist.value = data.artist;
+	            if (this.elements.discordUrl) this.elements.discordUrl.value = data.url;
+	            if (data.large_image && this.elements.discordThumbnail) {
+	                this.elements.discordThumbnail.value = data.large_image;
+	            }
+	            this.updateDiscordPreview();
+	        }
+	        
+	        // ADD: Mark presence step as active, will become completed on response
+	        this.setStepActive('presence');
+	    } catch (error) {
+	        console.error('Failed to send Discord RPC update:', error);
+	        // ADD: Update step on error
+	        this.setStepError('presence', 'Failed to send update');
+	    }
 	}
 
 	clearDiscordRPC() {
@@ -12347,29 +12474,22 @@ closeBillboardHot100Modal() {
 	}
 
 	updateDiscordButtonUI() {
-		const discordBtn = this.elements.discordButton;
-		if (!discordBtn) return;
-
-		const icon = discordBtn.querySelector('i');
-		if (!icon) return;
-
-		icon.classList.remove('discord-enabled', 'discord-disabled', 'discord-connected', 'discord-disconnected');
-
-		if (this.discordEnabled) {
-			icon.classList.add('discord-enabled');
-			if (this.discordConnected) {
-				icon.classList.add('discord-connected');
-				discordBtn.title = 'Discord RPC: Connected (Click to disable)';
-			} else {
-				icon.classList.add('discord-disconnected');
-				discordBtn.title = 'Discord RPC: Enabled but not connected (Click to disable)';
-			}
-		} else {
-			icon.classList.add('discord-disabled');
-			discordBtn.title = 'Discord RPC: Disabled (Click to enable)';
-		}
+	    const discordBtn = this.elements.discordButton;
+	    if (!discordBtn) return;
+	
+	    const icon = discordBtn.querySelector('i');
+	    if (!icon) return;
+	
+	    // Remove all color classes
+	    icon.classList.remove('discord-enabled', 'discord-disabled', 'discord-connected', 'discord-disconnected');
+	
+	    // Just set title based on enabled state
+	    if (this.discordEnabled) {
+	        discordBtn.title = this.discordConnected ? 'Discord RPC: Connected' : 'Discord RPC: Enabled (connecting)';
+	    } else {
+	        discordBtn.title = 'Discord RPC: Disabled';
+	    }
 	}
-
 	async checkDiscordAppRunning() {
 	return new Promise((resolve) => {
 		const testWs = new WebSocket('ws://localhost:9112');
@@ -12393,45 +12513,256 @@ closeBillboardHot100Modal() {
 }
 
 	async handleDiscordClick() {
-	const status = await this.checkDiscordAppInstalled();
-
-	if (!status.installed) {
-		// App not installed at all
-		const userWantsDownload = confirm(
-			'Discord RPC app is not installed.\n\n' +
-			'Would you like to download and install it?\n\n' +
-			'Click OK to open the download page.'
-		);
-
-		if (userWantsDownload) {
-			window.open('https://sweetescape.vercel.app/download', '_blank');
-		}
-		return;
+	    // Check if app is installed (optional)
+	    const status = await this.checkDiscordAppInstalled();
+	    
+	    this.openDiscordModal();
+	    
+	    // If app not installed, show error step
+	    if (!status.installed) {
+	        this.setStepError('app', 'Discord RPC app not installed. <a href="https://sweetescape.vercel.app/download" target="_blank">Download it</a>');
+	    } else if (!status.running) {
+	        this.setStepError('server', 'App installed but not running. Please launch it from your system tray.');
+	    } else {
+	        // App seems running, try to connect if not already
+	        if (!this.discordConnected && !this.discordConnecting) {
+	            this.initDiscordConnection();
+	        }
+	    }
 	}
-
-	if (!status.running && !this.discordEnabled) {
-		// App installed but not running
-		const userWantsLaunch = confirm(
-			'Discord RPC app is installed but not running.\n\n' +
-			'Would you like to launch it?\n\n' +
-			'Click OK to start the app, or Cancel to continue without Discord RPC.'
-		);
-
-		if (userWantsLaunch) {
-			// Try to launch via protocol
-			window.location.href = 'sweetescape://launch';
-			
-			// Wait a moment and try to connect
-			setTimeout(() => {
-				this.toggleDiscordRPC();
-			}, 2000);
-		}
-		return;
+	/**
+	 * Open the Discord modal and populate fields
+	 */
+	openDiscordModal() {
+	    if (!this.elements.discordModal) return;
+	    this.discordModalVisible = true;
+	    this.elements.discordModal.style.display = 'flex';
+	    
+	    this.populateDiscordModalFields();
+	    this.updateDiscordPreview();
+	    
+	    if (this.elements.discordEnableToggle) {
+	        this.elements.discordEnableToggle.checked = this.discordEnabled;
+	    }
+	    if (this.elements.discordToggleLabel) {
+	        this.elements.discordToggleLabel.textContent = this.discordEnabled ? 'Disable Discord RPC' : 'Enable Discord RPC';
+	    }
+	    
+	    this.resetDiscordSteps();
+	    if (this.discordConnected) {
+	        this.setStepCompleted('app');
+	        this.setStepCompleted('server');
+	        this.setStepCompleted('auth');
+	        this.setStepActive('presence');
+	    } else if (this.discordConnecting) {
+	        this.setStepActive('app');
+	    }
+	    
+	    if (this.elements.discordErrorMessage) {
+	        this.elements.discordErrorMessage.style.display = 'none';
+	    }
 	}
-
-	// App is running, just toggle
-	this.toggleDiscordRPC();
-}
+	
+	/**
+	 * Close the Discord modal
+	 */
+	closeDiscordModal() {
+	    if (!this.elements.discordModal) return;
+	    this.discordModalVisible = false;
+	    this.elements.discordModal.style.display = 'none';
+	}
+	
+	/**
+	 * Populate modal fields with current song details
+	 */
+	populateDiscordModalFields() {
+	    if (!this.currentSong) return;
+	    
+	    let song = this.currentSong;
+	    if (this.currentPlaylist) {
+	        const libMatch = this.songLibrary.find(s => s.videoId === song.videoId);
+	        if (libMatch) song = libMatch;
+	    }
+	    
+	    if (this.elements.discordSongName) {
+	        this.elements.discordSongName.value = song.name || '';
+	    }
+	    if (this.elements.discordArtist) {
+	        this.elements.discordArtist.value = song.author || '';
+	    }
+	    if (this.elements.discordUrl) {
+	        this.elements.discordUrl.value = this.buildYouTubeUrl(song.videoId) || '';
+	    }
+	    if (this.elements.discordThumbnail) {
+	        const videoId = song.videoId;
+	        if (videoId) {
+	            this.elements.discordThumbnail.value = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+	        } else {
+	            this.elements.discordThumbnail.value = '';
+	        }
+	    }
+	}
+	
+	/**
+	 * Update the live preview (right column)
+	 */
+	updateDiscordPreview() {
+	    if (this.elements.discordPreviewSong) {
+	        this.elements.discordPreviewSong.textContent = this.elements.discordSongName.value.trim() || '-';
+	    }
+	    if (this.elements.discordPreviewArtist) {
+	        this.elements.discordPreviewArtist.textContent = this.elements.discordArtist.value.trim() || '-';
+	    }
+	    if (this.elements.discordThumbnailPreview) {
+	        const thumbUrl = this.elements.discordThumbnail.value.trim();
+	        if (thumbUrl) {
+	            this.elements.discordThumbnailPreview.src = thumbUrl;
+	            this.elements.discordThumbnailPreview.style.display = 'block';
+	            this.elements.discordThumbnailPreview.onerror = () => {
+	                this.elements.discordThumbnailPreview.style.display = 'none';
+	            };
+	        } else {
+	            this.elements.discordThumbnailPreview.style.display = 'none';
+	        }
+	    }
+	}
+	
+	/**
+	 * Reset all steps to 'pending'
+	 */
+	resetDiscordSteps() {
+	    for (let key in this.discordSteps) {
+	        const stepEl = this.elements.discordSteps[key];
+	        if (stepEl) {
+	            stepEl.classList.remove('completed', 'active', 'error');
+	            stepEl.classList.add('pending');
+	        }
+	        this.discordSteps[key].status = 'pending';
+	    }
+	    if (this.elements.discordErrorMessage) {
+	        this.elements.discordErrorMessage.style.display = 'none';
+	    }
+	}
+	
+	/**
+	 * Mark a step as active (in progress)
+	 */
+	setStepActive(stepKey) {
+	    const step = this.discordSteps[stepKey];
+	    if (!step) return;
+	    step.status = 'active';
+	    const el = this.elements.discordSteps[stepKey];
+	    if (el) {
+	        el.classList.remove('pending', 'completed', 'error');
+	        el.classList.add('active');
+	    }
+	}
+	
+	/**
+	 * Mark a step as completed
+	 */
+	setStepCompleted(stepKey) {
+	    const step = this.discordSteps[stepKey];
+	    if (!step) return;
+	    step.status = 'completed';
+	    const el = this.elements.discordSteps[stepKey];
+	    if (el) {
+	        el.classList.remove('pending', 'active', 'error');
+	        el.classList.add('completed');
+	    }
+	}
+	
+	/**
+	 * Mark a step as error and display an optional message
+	 */
+	setStepError(stepKey, errorMessage) {
+	    const step = this.discordSteps[stepKey];
+	    if (!step) return;
+	    step.status = 'error';
+	    const el = this.elements.discordSteps[stepKey];
+	    if (el) {
+	        el.classList.remove('pending', 'active', 'completed');
+	        el.classList.add('error');
+	    }
+	    if (errorMessage && this.elements.discordErrorMessage) {
+	        this.elements.discordErrorMessage.innerHTML = errorMessage;
+	        this.elements.discordErrorMessage.style.display = 'block';
+	    }
+	}
+	
+	/**
+	 * Send a custom RPC update using modal field values
+	 */
+	sendCustomDiscordRPC() {
+	    if (!this.discordEnabled || !this.discordConnected || !this.discordWs) {
+	        this.setStepError('presence', 'Discord not connected or disabled. Enable and reconnect.');
+	        return;
+	    }
+	    
+	    const song = this.elements.discordSongName.value.trim() || 'Unknown Song';
+	    const artist = this.elements.discordArtist.value.trim() || 'Unknown Artist';
+	    const url = this.elements.discordUrl.value.trim() || '';
+	    const thumbnail = this.elements.discordThumbnail.value.trim() || '';
+	    
+	    const data = { song, artist, url };
+	    if (thumbnail) {
+	        data.large_image = thumbnail;
+	    }
+	    
+	    try {
+	        this.discordWs.send(JSON.stringify(data));
+	        console.log('Custom Discord RPC sent:', data);
+	        this.setStepCompleted('presence');
+	    } catch (error) {
+	        console.error('Failed to send custom RPC:', error);
+	        this.setStepError('presence', 'Failed to send update. Check connection.');
+	    }
+	}
+	
+	/**
+	 * Reconnect Discord (called from modal)
+	 */
+	reconnectDiscord() {
+	    this.closeDiscordConnection();  // closes and clears reconnect timer
+	    this.discordConnecting = true;
+	    this.resetDiscordSteps();
+	    this.setStepActive('app');
+	    this.initDiscordConnection();
+	}
+	
+	/**
+	 * Toggle Discord RPC from modal switch
+	 */
+	toggleDiscordRPCFromModal(checked) {
+	    this.discordEnabled = checked;
+	    this.saveDiscordSettings();
+	    
+	    if (this.elements.discordToggleLabel) {
+	        this.elements.discordToggleLabel.textContent = checked ? 'Disable Discord RPC' : 'Enable Discord RPC';
+	    }
+	    
+	    if (checked) {
+	        this.reconnectDiscord();
+	    } else {
+	        this.closeDiscordConnection();
+	        this.resetDiscordSteps();
+	    }
+	}
+	
+	/**
+	 * Update Discord stats in modal (if server sends stats)
+	 */
+	updateDiscordStats(stats) {
+	    if (!stats) return;
+	    if (this.elements.discordUptime) this.elements.discordUptime.textContent = stats.uptime || '-';
+	    if (this.elements.discordTotalUpdates) this.elements.discordTotalUpdates.textContent = stats.total_updates || 0;
+	    if (this.elements.discordClients) this.elements.discordClients.textContent = stats.connected_clients || 0;
+	    if (this.elements.discordLastUpdate) this.elements.discordLastUpdate.textContent = stats.last_update || '-';
+	    
+	    if (this.elements.discordStatsSection) {
+	        this.elements.discordStatsSection.style.display = 'block';
+	    }
+	}
 	initializeVisibilityTracking() {
 		this.handleVisibilityChange = () => {
 			const wasVisible = this.isTabVisible;
