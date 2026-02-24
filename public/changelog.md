@@ -541,3 +541,6 @@
 - RPC code updated so it would not break if it opens before discord is opened, works flawlessly now v59.2.0
 - new discord rpc model v59.3.0
 - new ui to display more information on connection v59.4.0
+- fixed a few bugs v59.4.1
+- fixed RPC python code such that it will detect if its connected v59.5.0
+- added last sent timestamps v59.6.0
