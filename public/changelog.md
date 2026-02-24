@@ -552,3 +552,4 @@
 - added a little mockup of how it would look like in discord v59.12.0
 - delegated send rpc for optimization changes v59.13.0
 - changed ui such that it will be side by side on wide screens and ontop of each other on narrow screens v59.14.0
+- added disable and close button for extra user friendly v59.15.0
