@@ -538,3 +538,4 @@
 - ui improvements. v58.16.0
 - revamped discord rp system v59.0.0
 - no longer bugged refresh button now works v59.1.0
+- RPC code updated so it would not break if it opens before discord is opened, works flawlessly now v59.2.0
