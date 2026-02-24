@@ -540,3 +540,4 @@
 - no longer bugged refresh button now works v59.1.0
 - RPC code updated so it would not break if it opens before discord is opened, works flawlessly now v59.2.0
 - new discord rpc model v59.3.0
+- new ui to display more information on connection v59.4.0
