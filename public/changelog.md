@@ -547,4 +547,4 @@
 - added helpful subtitles such that its easier to understand what to do and what is going wrong v59.7.0
 - added recommendations to download if don't have v59.8.0
 - added the what's being sent tab and shown all details v59.9.0
-- 
+- allowed custom changes to all fields v59.10.0
