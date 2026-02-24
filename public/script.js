@@ -193,7 +193,8 @@ class AdvancedMusicPlayer {
 		this._discordAppFound = false;
 		this._discordLastError = null;
 		this._discordOverrides = {};
-				
+		this._discordLastUpdate = null;
+		this._discordUpdateTickInterval = null;
 		// Library display settings
 		this.librarySortAlphabetically = true;
 		this.libraryReverseOrder = false;
@@ -12251,31 +12252,39 @@ closeBillboardHot100Modal() {
 	        this.discordWs = new WebSocket('ws://localhost:9112');
 	
 	        this.discordWs.onopen = () => {
-	            this._discordConnecting = false;
-	            this._discordWsOk = true;
-	            this._discordApiOk = true;
-	            this._discordAppFound = true;
-	            this.discordConnected = true;
-	            this.discordReconnectAttempts = 0;
-	            this._discordLastError = null;
-	            this._discordShowSuccess('Connected to Discord RPC successfully!');
-	            this._discordRefreshModal();
-	            this.updateDiscordButtonUI();
-	            if (this.currentSong && this.isPlaying) this.sendDiscordRPC();
-	        };
-	
-	        this.discordWs.onclose = () => {
-	            this._discordConnecting = false;
-	            this.discordConnected = false;
-	            this._discordWsOk = false;
-	            this._discordApiOk = false;
-	            this._discordRefreshModal();
-	            this.updateDiscordButtonUI();
-	            if (this.discordEnabled && this.discordReconnectAttempts < this.maxDiscordReconnectAttempts) {
-	                this.discordReconnectAttempts++;
-	                this.discordReconnectTimer = setTimeout(() => this.initDiscordConnection(), 3000);
-	            }
-	        };
+				this._discordConnecting = false;
+				this._discordWsOk = true;
+				this._discordApiOk = false;      
+				this._discordAppFound = true;
+				this.discordConnected = false;   
+				this.discordReconnectAttempts = 0;
+				this._discordLastError = null;
+				this._discordRefreshModal();
+				this.updateDiscordButtonUI();
+			};
+
+			this.discordWs.onclose = () => {
+			    // Ignore close if we're already intentionally disconnected
+			    if (!this.discordEnabled) return;
+			
+			    this._discordConnecting = false;
+			    this.discordConnected = false;
+			    this._discordWsOk = false;
+			    this._discordApiOk = false;
+			    this._discordStopLastUpdateTick();
+			    this._discordRefreshModal();
+			    this.updateDiscordButtonUI();
+			
+			    // Only reconnect if still enabled and under attempt limit
+			    if (this.discordReconnectAttempts < this.maxDiscordReconnectAttempts) {
+			        this.discordReconnectAttempts++;
+			        // Clear any existing timer first to prevent doubles
+			        clearTimeout(this.discordReconnectTimer);
+			        this.discordReconnectTimer = setTimeout(() => {
+			            if (this.discordEnabled) this.initDiscordConnection();
+			        }, 3000);
+			    }
+			};
 	
 	        this.discordWs.onerror = () => {
 	            this._discordConnecting = false;
@@ -12290,19 +12299,49 @@ closeBillboardHot100Modal() {
 	        };
 	
 	        this.discordWs.onmessage = (event) => {
-	            try {
-	                const r = JSON.parse(event.data);
-	                if (r.status === 'error') {
-	                    this._discordApiOk = false;
-	                    this._discordLastError = r.message || 'Discord API error';
-	                    this._discordShowError(this._discordLastError);
-	                } else if (r.status === 'success') {
-	                    this._discordApiOk = true;
-	                    this._discordLastError = null;
-	                }
-	                this._discordRefreshModal();
-	            } catch(e) {}
-	        };
+			    try {
+			        const r = JSON.parse(event.data);
+			
+			        if (r.status === 'app_ready') {
+			            // Step 2 green, step 3 still pending
+			            this._discordWsOk = true;
+			            this._discordAppFound = true;
+			            this._discordApiOk = false;
+			            this.discordConnected = false;
+			
+			        } else if (r.status === 'discord_ready') {
+			            // All green
+			            this._discordApiOk = true;
+			            this.discordConnected = true;
+			            this._discordLastError = null;
+			            this._discordLastUpdate = null; // reset last update timer
+			            this._discordShowSuccess('Connected to Discord RPC!');
+			            this.updateDiscordButtonUI();
+			            if (this.currentSong && this.isPlaying) this.sendDiscordRPC();
+			
+			        } else if (r.status === 'success') {
+			            // RPC update acknowledged — record timestamp
+			            this._discordLastUpdate = Date.now();
+			            this._discordStartLastUpdateTick();
+			
+			        } else if (r.status === 'error') {
+			            if (r.stage === 'discord') {
+			                // App running but Discord closed
+			                this._discordWsOk = true;
+			                this._discordApiOk = false;
+			                this.discordConnected = false;
+			                this._discordLastError = r.message;
+			            } else {
+			                this._discordApiOk = false;
+			                this._discordLastError = r.message || 'Discord API error';
+			            }
+			            this._discordShowError(this._discordLastError);
+			            this.updateDiscordButtonUI();
+			        }
+			
+			        this._discordRefreshModal();
+			    } catch(e) {}
+			};
 	
 	    } catch(e) {
 	        this._discordConnecting = false;
@@ -12389,6 +12428,7 @@ closeBillboardHot100Modal() {
 	
 	    // Preview
 	    this._discordSyncPreview();
+		this._discordSyncLastUpdate();
 	
 	    // Footer buttons
 	    const cb = document.getElementById('discordConnectBtn');
@@ -12544,6 +12584,40 @@ closeBillboardHot100Modal() {
 	        url:       o.url       ?? a.url,
 	        thumbnail: o.thumbnail ?? a.thumbnail
 	    };
+	}
+	_discordSyncLastUpdate() {
+	    const el = document.getElementById('discordLastUpdate');
+	    const txt = document.getElementById('discordLastUpdateText');
+	    if (!el || !txt) return;
+	    if (!this._discordLastUpdate || !this.discordConnected) {
+	        el.style.display = 'none';
+	        return;
+	    }
+	    el.style.display = 'flex';
+	    const secs = Math.floor((Date.now() - this._discordLastUpdate) / 1000);
+	    if (secs < 10)        txt.textContent = 'Last sent just now';
+	    else if (secs < 60)   txt.textContent = `Last sent ${secs}s ago`;
+	    else if (secs < 3600) txt.textContent = `Last sent ${Math.floor(secs/60)}m ago`;
+	    else                  txt.textContent = `Last sent ${Math.floor(secs/3600)}h ago`;
+	}
+	
+	_discordStartLastUpdateTick() {
+	    this._discordStopLastUpdateTick();
+	    // Only ticks when modal is open — zero cost otherwise
+	    this._discordUpdateTickInterval = setInterval(() => {
+	        const modal = document.getElementById('discordRpcModal');
+	        if (modal?.classList.contains('active')) {
+	            this._discordSyncLastUpdate();
+	        } else {
+	            // Modal closed — stop ticking, zero waste
+	            this._discordStopLastUpdateTick();
+	        }
+	    }, 15000); // every 15s is plenty for "X mins ago"
+	}
+	
+	_discordStopLastUpdateTick() {
+	    clearInterval(this._discordUpdateTickInterval);
+	    this._discordUpdateTickInterval = null;
 	}
 
 
