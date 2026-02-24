@@ -548,3 +548,4 @@
 - added recommendations to download if don't have v59.8.0
 - added the what's being sent tab and shown all details v59.9.0
 - allowed custom changes to all fields v59.10.0
+- added reset and send button v59.11.0
