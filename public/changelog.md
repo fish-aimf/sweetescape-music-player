@@ -544,3 +544,4 @@
 - fixed a few bugs v59.4.1
 - fixed RPC python code such that it will detect if its connected v59.5.0
 - added last sent timestamps v59.6.0
+- added helpful subtitles such that its easier to understand what to do and what is going wrong v59.7.0
