@@ -536,3 +536,4 @@
 - new play fav button in library that will play the playlist for favorites. v58.15.0
 - lazyloading thumbnail  and other performance improvements. v58.15.1
 - ui improvements. v58.16.0
+- revamped discord rp system v59.0.0
