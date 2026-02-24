@@ -216,166 +216,144 @@
             </div>
          </div>
          <div id="discordRpcModal" class="modal discord-rpc-modal-overlay">
-           <div class="modal-content discord-rpc-modal">
-         
-             <!-- Header -->
-             <div class="discord-modal-header">
-               <div class="discord-modal-logo">
-                 <i class="fab fa-discord"></i>
-               </div>
-               <div class="discord-modal-header-text">
-                 <h2>Discord Rich Presence</h2>
-                 <p>Broadcast your listening activity to Discord</p>
-               </div>
-               <button class="discord-modal-close" id="closeDiscordModal">
-                 <i class="fas fa-times"></i>
-               </button>
-             </div>
-         
-             <div class="discord-modal-body">
-         
-               <!-- Enable toggle -->
-               <div class="discord-enable-row">
-                 <div class="discord-enable-label">
-                   <strong>Enable Rich Presence</strong>
-                   <span id="discordToggleDesc">Shows your current song on Discord</span>
-                 </div>
-                 <label class="discord-switch">
-                   <input type="checkbox" id="discordEnabledToggle">
-                   <span class="discord-slider"></span>
-                 </label>
-               </div>
-         
-               <!-- Error banner -->
-               <div class="discord-error-banner" id="discordErrorBanner">
-                 <i class="fas fa-exclamation-circle"></i>
-                 <span id="discordErrorText">Error connecting.</span>
-               </div>
-         
-               <!-- Install hint -->
-               <div class="discord-install-hint" id="discordInstallHint">
-                 <i class="fas fa-info-circle"></i>
-                 <div>
-                   <strong>Desktop App Required</strong>
-                   Discord RPC needs the SweetEscape desktop app running.
-                   <a href="https://sweetescape.vercel.app/download" target="_blank">Download →</a>
-                 </div>
-               </div>
-         
-               <!-- Status card -->
-               <div class="discord-status-card">
-                 <div class="discord-status-card-header">
-                   <span>Connection Status</span>
-                   <button class="discord-retry-btn" id="discordRetryBtn">
-                     <i class="fas fa-rotate-right"></i> Retry
-                   </button>
-                 </div>
-         
-                 <!-- Big badge -->
-                 <div class="discord-badge" id="discordBadge">
-                   <span class="discord-badge-icon" id="discordBadgeIcon">
-                     <i class="fas fa-circle-minus"></i>
-                   </span>
-                   <div>
-                     <strong id="discordBadgeTitle">Disabled</strong>
-                     <span id="discordBadgeSubtitle">Toggle the switch above to enable</span>
-                   </div>
-                 </div>
-         
-                 <!-- 3 steps -->
-                 <div class="discord-steps">
-                   <div class="discord-step" id="discordStep1">
-                     <div class="discord-step-icon"><i class="fas fa-toggle-on"></i></div>
-                     <div class="discord-step-text">
-                       <strong>Rich Presence Enabled</strong>
-                       <small id="discordStep1Desc">Feature is disabled</small>
-                     </div>
-                   </div>
-                   <div class="discord-step" id="discordStep2">
-                     <div class="discord-step-icon"><i class="fas fa-plug"></i></div>
-                     <div class="discord-step-text">
-                       <strong>Desktop App (ws://localhost:9112)</strong>
-                       <small id="discordStep2Desc">Waiting</small>
-                     </div>
-                   </div>
-                   <div class="discord-step" id="discordStep3">
-                     <div class="discord-step-icon"><i class="fab fa-discord"></i></div>
-                     <div class="discord-step-text">
-                       <strong>Discord API</strong>
-                       <small id="discordStep3Desc">Waiting</small>
-                     </div>
-                   </div>
-                 </div>
-               </div>
-         
-               <!-- Now playing preview -->
-               <div class="discord-section-label">What's Being Sent</div>
-               <div class="discord-preview" id="discordPreview">
-                 <div class="discord-preview-thumb" id="discordPreviewThumb">
-                   <i class="fas fa-music"></i>
-                 </div>
-                 <div class="discord-preview-info">
-                   <div class="discord-preview-song" id="discordPreviewSong">No song playing</div>
-                   <div class="discord-preview-artist" id="discordPreviewArtist">—</div>
-                   <a class="discord-preview-url" id="discordPreviewUrl" href="#" target="_blank">—</a>
-                    
-                  <div class="discord-last-update" id="discordLastUpdate" style="display:none">
-                      <i class="fas fa-clock"></i> <span id="discordLastUpdateText">—</span>
-                  </div>
-                 </div>
-               </div>
-         
-               <!-- Editable fields -->
-               <div class="discord-section-label" style="margin-top:16px">Customize What's Sent</div>
-               <div class="discord-fields">
-         
-                 <div class="discord-field-group" id="discordFieldSong">
-                   <label>Song Title <span class="discord-auto-badge" id="discordBadgeSong"><i class="fas fa-wand-magic-sparkles"></i> Auto</span></label>
-                   <input type="text" id="discordEditSong" placeholder="Song name…" autocomplete="off">
-                 </div>
-         
-                 <div class="discord-field-row">
-                   <div class="discord-field-group" id="discordFieldArtist">
-                     <label>Artist <span class="discord-auto-badge" id="discordBadgeArtist"><i class="fas fa-wand-magic-sparkles"></i> Auto</span></label>
-                     <input type="text" id="discordEditArtist" placeholder="Artist name…" autocomplete="off">
-                   </div>
-                   <div class="discord-field-group" id="discordFieldUrl">
-                     <label>YouTube URL <span class="discord-auto-badge" id="discordBadgeUrl"><i class="fas fa-wand-magic-sparkles"></i> Auto</span></label>
-                     <input type="text" id="discordEditUrl" placeholder="https://youtube.com/…" autocomplete="off">
-                   </div>
-                 </div>
-         
-                 <div class="discord-field-group" id="discordFieldThumb">
-                   <label>Thumbnail URL <span class="discord-auto-badge" id="discordBadgeThumb"><i class="fas fa-wand-magic-sparkles"></i> Auto</span></label>
-                   <input type="text" id="discordEditThumb" placeholder="https://img.youtube.com/…" autocomplete="off">
-                   <span class="discord-field-hint"><i class="fas fa-circle-info"></i> Auto-pulled from YouTube. Paste any image URL to override.</span>
-                 </div>
-         
-                 <div class="discord-fields-actions">
-                   <button class="discord-btn discord-btn-ghost discord-btn-sm" id="discordResetBtn">
-                     <i class="fas fa-arrow-rotate-left"></i> Reset to Auto
-                   </button>
-                   <button class="discord-btn discord-btn-primary discord-btn-sm" id="discordSendNowBtn">
-                     <i class="fas fa-paper-plane"></i> Send Now
-                   </button>
-                 </div>
-               </div>
-         
-             </div><!-- /body -->
-         
-             <!-- Footer -->
-             <div class="discord-modal-footer">
-               <button class="discord-btn discord-btn-danger discord-btn-sm" id="discordDisableBtn">
-                 <i class="fas fa-power-off"></i> Disable
-               </button>
-               <button class="discord-btn discord-btn-ghost discord-btn-sm" id="discordCloseBtn2">Close</button>
-               <button class="discord-btn discord-btn-primary discord-btn-sm" id="discordConnectBtn">
-                 <i class="fas fa-plug"></i> Connect
-               </button>
-             </div>
-         
-           </div>
-         </div>
+  <div class="modal-content discord-rpc-modal">
+
+    <!-- Header -->
+    <div class="discord-modal-header">
+      <div class="discord-modal-logo"><i class="fab fa-discord"></i></div>
+      <div class="discord-modal-header-text">
+        <h2>Discord Rich Presence</h2>
+        <p>Broadcast your listening activity to Discord</p>
+      </div>
+      <button class="discord-modal-close" id="closeDiscordModal"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div class="discord-modal-body">
+
+      <!-- Enable toggle -->
+      <div class="discord-enable-row">
+        <div class="discord-enable-label">
+          <strong>Enable Rich Presence</strong>
+          <span id="discordToggleDesc">Shows your current song on Discord</span>
+        </div>
+        <label class="discord-switch">
+          <input type="checkbox" id="discordEnabledToggle">
+          <span class="discord-slider"></span>
+        </label>
+      </div>
+
+      <!-- Banners -->
+      <div class="discord-error-banner" id="discordErrorBanner">
+        <i class="fas fa-exclamation-circle"></i>
+        <span id="discordErrorText"></span>
+      </div>
+      <div class="discord-success-banner" id="discordSuccessBanner">
+        <i class="fas fa-circle-check"></i>
+        <span id="discordSuccessText"></span>
+      </div>
+      <div class="discord-install-hint" id="discordInstallHint">
+        <i class="fas fa-info-circle"></i>
+        <div>
+          <strong>Desktop App Required</strong>
+          Discord RPC needs the SweetEscape desktop app running.
+          <a href="https://sweetescape.vercel.app/download" target="_blank">Download →</a>
+        </div>
+      </div>
+
+      <!-- 2-column grid -->
+      <div class="discord-modal-grid">
+
+        <!-- LEFT: connection status -->
+        <div class="discord-modal-col-left">
+          <div class="discord-status-card">
+            <div class="discord-status-card-header">
+              <span>Connection Status</span>
+              <button class="discord-retry-btn" id="discordRetryBtn">
+                <i class="fas fa-rotate-right"></i> Retry
+              </button>
+            </div>
+            <div class="discord-badge" id="discordBadge">
+              <span class="discord-badge-icon" id="discordBadgeIcon"><i class="fas fa-circle-minus"></i></span>
+              <div>
+                <strong id="discordBadgeTitle">Disabled</strong>
+                <span id="discordBadgeSubtitle">Toggle the switch above to enable</span>
+              </div>
+            </div>
+            <div class="discord-steps">
+              <div class="discord-step" id="discordStep1">
+                <div class="discord-step-icon"><i class="fas fa-toggle-on"></i></div>
+                <div class="discord-step-text">
+                  <strong>Rich Presence Enabled</strong>
+                  <small id="discordStep1Desc">Feature is disabled</small>
+                </div>
+              </div>
+              <div class="discord-step" id="discordStep2">
+                <div class="discord-step-icon"><i class="fas fa-plug"></i></div>
+                <div class="discord-step-text">
+                  <strong>Desktop App</strong>
+                  <small id="discordStep2Desc">ws://localhost:9112</small>
+                </div>
+              </div>
+              <div class="discord-step" id="discordStep3">
+                <div class="discord-step-icon"><i class="fab fa-discord"></i></div>
+                <div class="discord-step-text">
+                  <strong>Discord API</strong>
+                  <small id="discordStep3Desc">Waiting</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: preview + customize -->
+        <div class="discord-modal-col-right">
+
+          <div class="discord-section-label">What's Being Sent</div>
+          <div class="discord-preview">
+            <div class="discord-preview-thumb" id="discordPreviewThumb"><i class="fas fa-music"></i></div>
+            <div class="discord-preview-info">
+              <div class="discord-preview-song" id="discordPreviewSong">No song playing</div>
+              <div class="discord-preview-artist" id="discordPreviewArtist">—</div>
+              <a class="discord-preview-url" id="discordPreviewUrl" href="#" target="_blank">—</a>
+              <div class="discord-last-update" id="discordLastUpdate" style="display:none">
+                <i class="fas fa-clock"></i> <span id="discordLastUpdateText">—</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="discord-section-label">Customize</div>
+          <div class="discord-fields">
+            <div class="discord-field-group" id="discordFieldSong">
+              <label>Song <span class="discord-auto-badge" id="discordBadgeSong"><i class="fas fa-wand-magic-sparkles"></i> Auto</span></label>
+              <input type="text" id="discordEditSong" placeholder="Song name…" autocomplete="off">
+            </div>
+            <div class="discord-field-group" id="discordFieldArtist">
+              <label>Artist <span class="discord-auto-badge" id="discordBadgeArtist"><i class="fas fa-wand-magic-sparkles"></i> Auto</span></label>
+              <input type="text" id="discordEditArtist" placeholder="Artist name…" autocomplete="off">
+            </div>
+            <div class="discord-field-group" id="discordFieldThumb">
+              <label>Thumbnail <span class="discord-auto-badge" id="discordBadgeThumb"><i class="fas fa-wand-magic-sparkles"></i> Auto</span></label>
+              <input type="text" id="discordEditThumb" placeholder="https://img.youtube.com/…" autocomplete="off">
+            </div>
+            <div class="discord-fields-actions">
+              <button class="discord-btn discord-btn-ghost discord-btn-sm" id="discordResetBtn"><i class="fas fa-arrow-rotate-left"></i> Reset</button>
+              <button class="discord-btn discord-btn-primary discord-btn-sm" id="discordSendNowBtn"><i class="fas fa-paper-plane"></i> Send Now</button>
+            </div>
+          </div>
+
+        </div>
+      </div><!-- /grid -->
+
+    </div><!-- /body -->
+
+    <div class="discord-modal-footer">
+      <button class="discord-btn discord-btn-danger discord-btn-sm" id="discordDisableBtn"><i class="fas fa-power-off"></i> Disable</button>
+      <button class="discord-btn discord-btn-ghost discord-btn-sm" id="discordCloseBtn2">Close</button>
+      <button class="discord-btn discord-btn-primary discord-btn-sm" id="discordConnectBtn"><i class="fas fa-plug"></i> Connect</button>
+    </div>
+
+  </div>
+</div>
         <div id="libraryModificationModal" class="modal">
             <div class="modal-content">
                <span id="closeLibraryModal" class="close-btn">&times;</span>
