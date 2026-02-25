@@ -151,29 +151,31 @@ class AdvancedMusicPlayer {
 		
 		// Keybinds
 		this.defaultKeybinds = {
-			togglePlayPause: 'Space',
-			togglePlayPause2: 'KeyK',
-			previousSong: 'ArrowLeft',
-			previousSong2: 'KeyA',
-			nextSong: 'ArrowRight',
-			nextSong2: 'KeyD',
-			volumeUp: 'ArrowUp',
-			volumeDown: 'ArrowDown',
-			toggleLoop: 'KeyL',
-			restartSong: 'KeyR',
-			toggleTheme: 'KeyP',
-			openTimer: 'KeyT',
-			volumeUpFine: 'Equal',
-			volumeDownFine: 'Minus',
-			toggleControlBar: 'KeyH',
-			togglePlaylistSidebar: 'KeyM',
-			togglePlaylistSidebar2: 'Tab',
-			cycleTab: 'KeyQ',
-			toggleVideoFullscreen: 'KeyU',
-			showQueue: 'KeyY',
-			cycleFavicon: 'KeyB',
-			toggleWebEmbed: 'KeyN',
-			toggleMusicExplorer: 'KeyO'
+		    togglePlayPause: 'Space',
+		    togglePlayPause2: 'KeyK',
+		    previousSong: 'KeyA',
+		    previousSong2: 'Digit9',
+		    nextSong: 'KeyD',
+		    nextSong2: 'Digit0',
+		    seekBackward: 'ArrowLeft',
+		    seekForward: 'ArrowRight',
+		    volumeUp: 'ArrowUp',
+		    volumeDown: 'ArrowDown',
+		    toggleLoop: 'KeyL',
+		    restartSong: 'KeyR',
+		    toggleTheme: 'KeyP',
+		    openTimer: 'KeyT',
+		    volumeUpFine: 'Equal',
+		    volumeDownFine: 'Minus',
+		    toggleControlBar: 'KeyH',
+		    togglePlaylistSidebar: 'KeyM',
+		    togglePlaylistSidebar2: 'Tab',
+		    cycleTab: 'KeyQ',
+		    toggleVideoFullscreen: 'KeyU',
+		    showQueue: 'KeyY',
+		    cycleFavicon: 'KeyB',
+		    toggleWebEmbed: 'KeyN',
+		    toggleMusicExplorer: 'KeyO'
 		};
 		this.currentKeybinds = { ...this.defaultKeybinds };
 		this.isRecordingKeybind = false;
@@ -11928,6 +11930,11 @@ closeBillboardHot100Modal() {
 		} else if (code === k.toggleMusicExplorer && k.toggleMusicExplorer !== '') {
 			this.toggleAdditionalDetails();
 		}
+		} else if (code === k.seekBackward && k.seekBackward !== '') {
+		    if (this.ytPlayer) this.ytPlayer.seekTo(this.ytPlayer.getCurrentTime() - 5, true);
+		} else if (code === k.seekForward && k.seekForward !== '') {
+		    if (this.ytPlayer) this.ytPlayer.seekTo(this.ytPlayer.getCurrentTime() + 5, true);
+		}
 	}
 
 	loadKeybindsSettings() {
@@ -12018,7 +12025,9 @@ closeBillboardHot100Modal() {
 			showQueue: 'Show Queue',
 			cycleFavicon: 'Cycle Favicon',
 			toggleWebEmbed: 'Toggle Web Embed',
-			toggleMusicExplorer: 'Toggle Music Explorer' // NEW: Add this line
+			toggleMusicExplorer: 'Toggle Music Explorer' 
+			seekBackward: 'Seek Backward (5s)',
+			seekForward: 'Seek Forward (5s)'
 		};
 
 		return actionNames[action] || action;
