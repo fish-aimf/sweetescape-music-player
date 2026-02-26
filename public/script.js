@@ -6669,17 +6669,11 @@ hideSidebar() {
 			lineElement.classList.add("lyric-line");
 			lineElement.textContent = lyricsArray[i];
 			lineElement.id = `lyric-${i}`;
-			lineElement.style.padding = "8px 10px";
-			lineElement.style.margin = "5px 0";
-			lineElement.style.borderRadius = "3px";
-			lineElement.style.transition = "all 0.3s ease";
-			lineElement.style.color = "var(--text-secondary)";
 			lyricsDisplay.appendChild(lineElement);
 		}
 		
 		lyricsPlayer.appendChild(lyricsDisplay);
-		
-		// ========== NEW: FLOATING BUTTONS OVERLAY ==========
+
 		const floatingButtonsContainer = document.createElement("div");
 		floatingButtonsContainer.style.cssText = `
 			position: absolute;
@@ -6896,46 +6890,40 @@ hideSidebar() {
 		this.showNotification('Karaoke URL copied to clipboard!', 'success');
 	}
 	updateHighlightedLyric(currentTime, lyrics, timings) {
-		if (!lyrics.length || !timings.length || timings.length !== lyrics.length) return;
-		let highlightIndex = -1;
-		for (let i = 0; i < timings.length; i++) {
-			if (currentTime >= timings[i]) {
-				if (i === timings.length - 1 || currentTime < timings[i + 1]) {
-					highlightIndex = i;
-				}
-			}
-		}
-		if (highlightIndex !== this.currentHighlightedLyricIndex) {
-			const allLines = document.querySelectorAll(".lyric-line");
-			allLines.forEach((line) => {
-				line.classList.remove("active");
-				line.style.backgroundColor = "";
-				line.style.color = "var(--text-secondary)";
-				line.style.fontWeight = "normal";
-				line.style.fontSize = "";
-				line.style.transform = "";
-			});
-			if (highlightIndex !== -1) {
-				const currentElement = document.getElementById(`lyric-${highlightIndex}`);
-				if (currentElement) {
-					currentElement.classList.add("active");
-					currentElement.style.backgroundColor = "var(--accent-color)";
-					currentElement.style.color = "var(--text-primary)";
-					currentElement.style.fontWeight = "bold";
-					currentElement.style.fontSize = "1.1em";
-					currentElement.style.transform = "scale(1.02)";
-					
-					// Only auto-scroll if autoCenterLyrics is enabled
-					if (this.autoCenterLyrics !== false) {
-						currentElement.scrollIntoView({
-							behavior: "smooth",
-							block: "center",
-						});
-					}
-				}
-			}
-			this.currentHighlightedLyricIndex = highlightIndex;
-		}
+	    if (!lyrics.length || !timings.length || timings.length !== lyrics.length) return;
+	
+	    let highlightIndex = -1;
+	    for (let i = 0; i < timings.length; i++) {
+	        if (currentTime >= timings[i]) {
+	            if (i === timings.length - 1 || currentTime < timings[i + 1]) {
+	                highlightIndex = i;
+	            }
+	        }
+	    }
+	
+	    if (highlightIndex !== this.currentHighlightedLyricIndex) {
+	        // Remove active from previous element only — no querySelectorAll loop
+	        if (this.currentHighlightedLyricIndex !== undefined && this.currentHighlightedLyricIndex !== -1) {
+	            const prevElement = document.getElementById(`lyric-${this.currentHighlightedLyricIndex}`);
+	            if (prevElement) prevElement.classList.remove("active");
+	        }
+	
+	        if (highlightIndex !== -1) {
+	            const currentElement = document.getElementById(`lyric-${highlightIndex}`);
+	            if (currentElement) {
+	                currentElement.classList.add("active");
+	
+	                if (this.autoCenterLyrics !== false) {
+	                    currentElement.scrollIntoView({
+	                        behavior: "smooth",
+	                        block: "center",
+	                    });
+	                }
+	            }
+	        }
+	
+	        this.currentHighlightedLyricIndex = highlightIndex;
+	    }
 	}
 	openLyricsLibraryModal() {
 		const modal = document.createElement("div");
