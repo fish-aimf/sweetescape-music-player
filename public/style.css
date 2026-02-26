@@ -8157,3 +8157,22 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 .discovery-song-item:nth-child(6) { animation-delay: 0.19s; }
 .discovery-song-item:nth-child(7) { animation-delay: 0.22s; }
 .discovery-song-item:nth-child(8) { animation-delay: 0.25s; }
+.lyric-line {
+    padding: 8px 10px;
+    margin: 5px 0;
+    border-radius: 3px;
+    transition: all 0.3s ease;
+    color: var(--text-secondary);
+    font-weight: normal;
+    font-size: 1em;
+    transform: scale(1);
+    background-color: transparent;
+}
+
+.lyric-line.active {
+    background-color: var(--accent-color);
+    color: var(--text-primary);
+    font-weight: bold;
+    font-size: 1.1em;
+    transform: scale(1.02);
+}
