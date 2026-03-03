@@ -557,3 +557,4 @@
 - revamped discord button so there will be a coloured dot to indicate whether its active or not v59.17.0
 - fixed some minor bugs v59.17.1
 - updated url to get python server v59.18.0
+- improved loading speed by 100%. realized the ad scripts were loaded even when disabled causing sigificant lag. I apologize. v59.19.0
