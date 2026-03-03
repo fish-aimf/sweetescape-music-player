@@ -2869,8 +2869,8 @@ if (this.elements.autofillBtn) {
 
 
 
-.left-banner,
-.right-banner {
+.left-advertisement-banner,
+.right-advertisement-banner {
     position: fixed;
     top: 0;
     width: calc((100vw - 1040px) / 2);
@@ -2879,21 +2879,21 @@ if (this.elements.autofillBtn) {
     display: none;
 }
 
-.left-banner {
+.left-advertisement-banner {
     left: 0;
 }
 
-.right-banner {
+.right-advertisement-banner {
     right: 0;
 }
 
-.ads-enabled .left-banner,
-.ads-enabled .right-banner {
+.ads-enabled .left-advertisement-banner,
+.ads-enabled .right-advertisement-banner {
     display: block;
 }
 
-.ads-enabled .left-banner.expanded,
-.ads-enabled .right-banner.expanded {
+.ads-enabled .left-advertisement-banner.expanded,
+.ads-enabled .right-advertisement-banner.expanded {
     height: 100vh;
 }
 
@@ -4211,8 +4211,8 @@ if (this.elements.autofillBtn) {
 }
 
 @media (max-width: 1080px) {
-    .left-banner,
-    .right-banner {
+    .left-advertisement-banner,
+    .right-advertisement-banner {
         display: none !important;
     }
 }
@@ -6767,8 +6767,8 @@ if (this.elements.autofillBtn) {
 }
 
 /* Hide banners when expanded mode is active */
-body.playlist-expanded-active .left-banner,
-body.playlist-expanded-active .right-banner {
+body.playlist-expanded-active .left-advertisement-banner,
+body.playlist-expanded-active .right-advertisement-banner {
     display: none !important;
 }
 
