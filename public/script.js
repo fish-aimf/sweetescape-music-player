@@ -5260,8 +5260,8 @@ hideSidebar() {
 		document.querySelector(".player-controls").parentElement;
 	const layoutToggleBtn = document.querySelector(".layout-toggle-button");
 	const isVisible = targetElement.style.visibility !== "hidden";
-	const leftBanner = document.querySelector('.left-banner');
-	const rightBanner = document.querySelector('.right-banner');
+	const leftBanner = document.querySelector('.left-advertisement-banner');
+	const rightBanner = document.querySelector('.right-advertisement-banner');
 	const spacerDiv = document.getElementById("controlBarSpacer");
 	
 	// Playlist sidebar spacers
@@ -9383,28 +9383,29 @@ hideSidebar() {
 		console.log(`Advertisements ${this.adsEnabled ? 'enabled' : 'disabled'}`);
 	}
 	updateAdvertisementDisplay() {
-		if (this.adsEnabled) {
-			document.body.classList.add('ads-enabled');
-		} else {
-			document.body.classList.remove('ads-enabled');
-		}
-		if (this.elements.adsToggle) {
-			this.elements.adsToggle.checked = this.adsEnabled;
-		}
-		if (this.adsEnabled) {
-			this.refreshAdvertisements();
-		}
+	    const leftBanner = document.querySelector('.left-advertisement-banner');
+	    const rightBanner = document.querySelector('.right-advertisement-banner');
+	
+	    if (this.adsEnabled) {
+	        document.body.classList.add('ads-enabled');
+	
+	        if (leftBanner && !leftBanner.querySelector('iframe')) {
+	            leftBanner.innerHTML = `<iframe data-aa='2404119' src='//acceptable.a-ads.com/2404119' style='border:0px; padding:0; width:100%; height:100%; overflow:hidden; background-color: transparent;'></iframe>`;
+	        }
+	        if (rightBanner && !rightBanner.querySelector('iframe')) {
+	            rightBanner.innerHTML = `<iframe data-aa='2404119' src='//acceptable.a-ads.com/2404119' style='border:0px; padding:0; width:100%; height:100%; overflow:hidden; background-color: transparent;'></iframe>`;
+	        }
+	    } else {
+	        document.body.classList.remove('ads-enabled');
+	        if (leftBanner) leftBanner.innerHTML = '';
+	        if (rightBanner) rightBanner.innerHTML = '';
+	    }
+	
+	    if (this.elements.adsToggle) {
+	        this.elements.adsToggle.checked = this.adsEnabled;
+	    }
 	}
-	refreshAdvertisements() {
-		const adFrames = document.querySelectorAll('.left-banner iframe, .right-banner iframe');
-		adFrames.forEach(frame => {
-			const src = frame.src;
-			frame.src = '';
-			setTimeout(() => {
-				frame.src = src;
-			}, 100);
-		});
-	}
+	
 	initializeAdvertisementSettings() {
 		this.loadAdvertisementSettings().catch(error => {
 			console.error("Failed to load advertisement settings:", error);
