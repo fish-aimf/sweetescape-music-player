@@ -9453,6 +9453,13 @@ hideSidebar() {
 		document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
 		event.target.closest('.settings-tab-btn').classList.add('active');
 		document.getElementById(targetTab + 'Panel').classList.add('active');
+	
+	    if (targetTab === 'feedback') {
+	        const iframe = document.querySelector('#feedbackPanel iframe');
+	        if (iframe && !iframe.src) {
+	            iframe.src = iframe.dataset.src;
+	        }
+	    }
 	}
 	handleVisualizerToggle(event) {
 		const isEnabled = event.target.checked;
