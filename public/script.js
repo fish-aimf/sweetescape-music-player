@@ -1839,7 +1839,16 @@ class AdvancedMusicPlayer {
 	                card.appendChild(expList);
 	            }
 	            expList.innerHTML = '';
-	            const allSongs = [...this.songLibrary].sort((a, b) => a.name.localeCompare(b.name));
+	            let allSongs = [...this.songLibrary];
+				if (this.librarySortAlphabetically !== false) {
+				    allSongs.sort((a, b) => {
+				        if (a.favorite !== b.favorite) return a.favorite ? -1 : 1;
+				        const result = a.name.localeCompare(b.name);
+				        return this.libraryReverseOrder ? -result : result;
+				    });
+				} else {
+				    if (this.libraryReverseOrder) allSongs.reverse();
+				}
 	            const frag = document.createDocumentFragment();
 	            allSongs.forEach(song => frag.appendChild(this.createSongElement(song)));
 	            expList.appendChild(frag);
