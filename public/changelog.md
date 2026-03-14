@@ -559,3 +559,6 @@
 -  updated url to get python server v59.18.0
 - improved loading speed by 100%. realized the ad scripts were loaded even when disabled causing sigificant lag. I apologize. v59.19.0
 - improved loading speed by 100% again, realized docs.google.com scripts were running loading lots of useless fonts. v59.20.0
+- remove dependency on external visitor counter, it now uses vercel database. improves page load speed by not relying on external javascript. v59.21.0
+- improved css for the visitor counter and added font awsome icon. v59.22.0
+- the dropdownlist in compact view now sorts by the usersetting. v59.23.0
