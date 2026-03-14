@@ -108,15 +108,6 @@
              <span id="visitor-count">...</span> visits
            </span>
          </div>
-            
-            <script>
-            fetch('/api/count')
-              .then(r => r.json())
-              .then(d => {
-                document.getElementById('visitor-count').textContent =
-                  d.count.toLocaleString()
-              })
-            </script>
 
          </div>
          <!-- Main container for side-by-side layout -->
@@ -1290,6 +1281,16 @@ Another Playlist{
 
       <script src="/karaoke-encoder.js"></script>
       <script src="script.js"></script>
+         <script>
+      fetch('/api/count')
+        .then(r => r.json())
+        .then(d => {
+          document.getElementById('visitor-count').textContent =
+            d.count.toLocaleString()
+        })
+      </script>
+
+      
       <div id="ytPlayer"></div>
    </body>
 </html>
