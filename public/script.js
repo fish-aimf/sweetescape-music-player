@@ -9606,10 +9606,10 @@ hideSidebar() {
 		
 	setDefaultDiscoverMoreValues() {
 	    this.recentlyPlayedLimit = this.recentlyPlayedLimit || 20;
-	    this.recentlyPlayedDisplayLimit = 3;
-	    this.suggestedSongsDisplayLimit = 2;
-	    this.yourPicksDisplayLimit = 2;
-	    this.recentlyPlayedPlaylistsDisplayLimit = 1;
+	    this.recentlyPlayedDisplayLimit = 4;
+	    this.suggestedSongsDisplayLimit = 0;
+	    this.yourPicksDisplayLimit = 0;
+	    this.recentlyPlayedPlaylistsDisplayLimit = 4;
 	    this.sectionOrder = this._getDefaultSectionOrder().map(s => s.key);
 	}
 
@@ -9623,10 +9623,10 @@ hideSidebar() {
 	}
 	setDefaultDiscoverMoreValuesOnStartup() {
 	    this.recentlyPlayedLimit = this.recentlyPlayedLimit || 20;
-	    this.recentlyPlayedDisplayLimit = 3;
-	    this.suggestedSongsDisplayLimit = 2;
-	    this.yourPicksDisplayLimit = 2;
-	    this.recentlyPlayedPlaylistsDisplayLimit = 1;
+	    this.recentlyPlayedDisplayLimit = 4;
+	    this.suggestedSongsDisplayLimit = 0;
+	    this.yourPicksDisplayLimit = 0;
+	    this.recentlyPlayedPlaylistsDisplayLimit = 4;
 	    this.sectionOrder = this._getDefaultSectionOrder().map(s => s.key);
 	}
 
