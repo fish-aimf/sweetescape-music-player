@@ -5924,93 +5924,123 @@ hideSidebar() {
 		}
 	}
 	renderAdditionalDetails() {
-	    if (!this.elements.additionalDetails) return;
-	    if (this.isAdditionalDetailsHidden) return;
-	
-	    this.elements.additionalDetails.innerHTML = '';
-	
-	    // Header
-	    const headerContainer = document.createElement('div');
-	    headerContainer.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border-color);flex-shrink:0;';
-	
-	    const headerText = document.createElement('h3');
-	    headerText.className = 'additional-details-header';
-	    headerText.textContent = 'Music Explorer';
-	    headerText.style.cssText = 'margin:0;border:none;padding-bottom:0;';
-	
-	    const hideBtn = document.createElement('button');
-	    hideBtn.className = 'hide-details-btn';
-	    hideBtn.innerHTML = '−';
-	    const keybindKey = this.currentKeybinds.toggleMusicExplorer || 'KeyO';
-	    hideBtn.title = `[${this.getKeyDisplayName(keybindKey)}] Hide Music Explorer`;
-	    hideBtn.style.cssText = `background:transparent;border:none;color:var(--bg-primary);font-size:1.2rem;cursor:pointer;padding:4px 8px;border-radius:4px;transition:all 0.2s ease;line-height:1;font-weight:bold;flex-shrink:0;`;
-	    hideBtn.addEventListener('mouseenter', () => { hideBtn.style.color = 'var(--hover-color)'; hideBtn.style.background = 'var(--bg-secondary)'; });
-	    hideBtn.addEventListener('mouseleave', () => { hideBtn.style.color = 'var(--bg-primary)'; hideBtn.style.background = 'transparent'; });
-	    hideBtn.addEventListener('click', () => { this.toggleAdditionalDetails(); });
-	
-	    headerContainer.appendChild(headerText);
-	    headerContainer.appendChild(hideBtn);
-	    this.elements.additionalDetails.appendChild(headerContainer);
-	
-	    // Now Playing
-	    const currentSongDiv = document.createElement('div');
-	    currentSongDiv.id = 'currentSongSection';
-	    currentSongDiv.className = 'current-song-section';
-	    currentSongDiv.style.display = 'none';
-	    currentSongDiv.innerHTML = `
-	        <h4 class="current-song-title">Now Playing</h4>
-	        <div class="current-song-container">
-	            <div class="current-song-thumbnail"><img id="currentSongThumbnail" src="" alt="Current Song" /></div>
-	            <div class="current-song-info">
-	                <div class="current-song-name" id="currentSongName"></div>
-	                <div class="current-song-author" id="currentSongAuthor"></div>
-	            </div>
-	        </div>`;
-	    this.elements.additionalDetails.appendChild(currentSongDiv);
-	    this.updateCurrentSongDisplay();
-	
-	    // Ordered sections — skip any with limit === 0
-	    const defs = this._getDefaultSectionOrder();
-	    const order = this.sectionOrder || defs.map(s => s.key);
-	
-	    order.forEach(key => {
-	        switch (key) {
-	            case "recentlyListened": {
-	                const limit = this.recentlyPlayedDisplayLimit;
-	                if (!limit || limit <= 0) return;
-	                const items = this.getCombinedRecentlyPlayed();
-	                if (items.length > 0) {
-	                    this.createDetailsSection("Recently Listened To", items.slice(0, limit), "mixed");
-	                }
-	                break;
-	            }
-	            case "suggested": {
-	                const limit = this.suggestedSongsDisplayLimit;
-	                if (!limit || limit <= 0) return;
-	                if (this.songLibrary.length > 0) {
-	                    this.createDetailsSection("Suggested", this.getRandomItems(this.songLibrary, limit), "song");
-	                }
-	                break;
-	            }
-	            case "yourPicks": {
-	                const limit = this.yourPicksDisplayLimit;
-	                if (!limit || limit <= 0) return;
-	                const favoriteSongs = this.songLibrary.filter(s => s.favorite);
-	                if (favoriteSongs.length > 0) {
-	                    this.createDetailsSection("Your Picks", this.getRandomItems(favoriteSongs, limit), "song");
-	                }
-	                break;
-	            }
-	            case "recentPlaylists": {
-	                const limit = this.recentlyPlayedPlaylistsDisplayLimit;
-	                if (!limit || limit <= 0) return;
-	                if (this.recentlyPlayedPlaylists.length > 0) {
-	                    this.createDetailsSection("Recently Played Playlists", this.recentlyPlayedPlaylists.slice(0, limit), "playlist");
-	                }
-	                break;
-	            }
-	        }
-	    });
+		if (!this.elements.additionalDetails) return;
+
+		// Check if hidden - if so, skip rendering to save resources
+		if (this.isAdditionalDetailsHidden) {
+			return;
+		}
+
+		this.elements.additionalDetails.innerHTML = '';
+
+		// Create header container with hide button
+		const headerContainer = document.createElement('div');
+		headerContainer.style.display = 'flex';
+		headerContainer.style.justifyContent = 'space-between';
+		headerContainer.style.alignItems = 'center';
+		headerContainer.style.marginBottom = '6px';
+		headerContainer.style.paddingBottom = '6px';
+		headerContainer.style.borderBottom = '1px solid var(--border-color)';
+		headerContainer.style.flexShrink = '0';
+
+		const headerText = document.createElement('h3');
+		headerText.className = 'additional-details-header';
+		headerText.textContent = 'Music Explorer';
+		headerText.style.margin = '0';
+		headerText.style.border = 'none';
+		headerText.style.paddingBottom = '0';
+
+		const hideBtn = document.createElement('button');
+		hideBtn.className = 'hide-details-btn';
+		hideBtn.innerHTML = '−';
+		const keybindKey = this.currentKeybinds.toggleMusicExplorer || 'KeyO';
+		hideBtn.title = `[${this.getKeyDisplayName(keybindKey)}] Hide Music Explorer`;
+		hideBtn.style.cssText = `
+            background: transparent;
+            border: none;
+            color: var(--bg-primary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            line-height: 1;
+            font-weight: bold;
+            flex-shrink: 0;
+        `;
+
+		hideBtn.addEventListener('mouseenter', () => {
+			hideBtn.style.color = 'var(--hover-color)';
+			hideBtn.style.background = 'var(--bg-secondary)';
+		});
+
+		hideBtn.addEventListener('mouseleave', () => {
+			hideBtn.style.color = 'var(--bg-primary)';
+			hideBtn.style.background = 'transparent';
+		});
+
+		hideBtn.addEventListener('click', () => {
+			this.toggleAdditionalDetails();
+		});
+
+		headerContainer.appendChild(headerText);
+		headerContainer.appendChild(hideBtn);
+		this.elements.additionalDetails.appendChild(headerContainer);
+
+		// Create current song section
+		const currentSongDiv = document.createElement('div');
+		currentSongDiv.id = 'currentSongSection';
+		currentSongDiv.className = 'current-song-section';
+		currentSongDiv.style.display = 'none';
+		currentSongDiv.innerHTML = `
+            <h4 class="current-song-title">Now Playing</h4>
+            <div class="current-song-container">
+                <div class="current-song-thumbnail">
+                    <img id="currentSongThumbnail" src="" alt="Current Song" />
+                </div>
+                <div class="current-song-info">
+                    <div class="current-song-name" id="currentSongName"></div>
+                    <div class="current-song-author" id="currentSongAuthor"></div>
+                </div>
+            </div>
+        `;
+		this.elements.additionalDetails.appendChild(currentSongDiv);
+
+		this.updateCurrentSongDisplay();
+
+		const recentlyListenedItems = this.getCombinedRecentlyPlayed();
+		if (recentlyListenedItems.length > 0) {
+			this.createDetailsSection(
+				"Recently Listened To",
+				recentlyListenedItems.slice(0, this.recentlyPlayedDisplayLimit || 3),
+				"mixed"
+			);
+		}
+
+		if (this.songLibrary.length > 0) {
+			this.createDetailsSection(
+				"Suggested",
+				this.getRandomItems(this.songLibrary, this.suggestedSongsDisplayLimit || 2),
+				"song"
+			);
+		}
+
+		const favoriteSongs = this.songLibrary.filter((song) => song.favorite);
+		if (favoriteSongs.length > 0) {
+			this.createDetailsSection(
+				"Your Picks",
+				this.getRandomItems(favoriteSongs, this.yourPicksDisplayLimit || 2),
+				"song"
+			);
+		}
+
+		if (this.recentlyPlayedPlaylists.length > 0) {
+			this.createDetailsSection(
+				"Recently Played Playlists",
+				this.recentlyPlayedPlaylists.slice(0, this.recentlyPlayedPlaylistsDisplayLimit || 1),
+				"playlist"
+			);
+		}
 	}
 	getCombinedRecentlyPlayed() {
 		const combined = [];
@@ -9516,211 +9546,177 @@ hideSidebar() {
 		});
 	}
 	async loadDiscoverMoreSettings() {
-	    try {
-	        if (this.elements.recentlyPlayedStorageLimit) {
-	            this.elements.recentlyPlayedStorageLimit.value = this.recentlyPlayedLimit || 20;
-	        }
-	        this._renderSectionOrderUI();
-	    } catch (error) {
-	        console.error("Error syncing discover more settings with DOM:", error);
-	        this.setDefaultDiscoverMoreValues();
-	    }
-	}
-	_renderSectionOrderUI() {
-	    const container = document.getElementById("sectionOrderList");
-	    if (!container) return;
-	    container.innerHTML = "";
-	
-	    const defs = this._getDefaultSectionOrder();
-	    const order = this.sectionOrder || defs.map(s => s.key);
-	
-	    // Build rows in current order
-	    order.forEach((key, index) => {
-	        const def = defs.find(d => d.key === key);
-	        if (!def) return;
-	
-	        const currentLimit = this[def.limitKey] ?? 0;
-	
-	        const row = document.createElement("div");
-	        row.className = "section-order-row";
-	        row.dataset.key = key;
-	
-	        // Up/down buttons
-	        const btns = document.createElement("div");
-	        btns.className = "section-order-btns";
-	
-	        const upBtn = document.createElement("button");
-	        upBtn.textContent = "▲";
-	        upBtn.disabled = index === 0;
-	        upBtn.addEventListener("click", () => {
-	            this._moveSectionOrderRow(key, -1);
-	        });
-	
-	        const downBtn = document.createElement("button");
-	        downBtn.textContent = "▼";
-	        downBtn.disabled = index === order.length - 1;
-	        downBtn.addEventListener("click", () => {
-	            this._moveSectionOrderRow(key, 1);
-	        });
-	
-	        btns.appendChild(upBtn);
-	        btns.appendChild(downBtn);
-	
-	        // Label
-	        const label = document.createElement("label");
-	        label.textContent = def.label;
-	
-	        // Number input
-	        const input = document.createElement("input");
-	        input.type = "number";
-	        input.min = 0;
-	        input.max = def.max;
-	        input.value = currentLimit;
-	        input.id = `sectionLimit_${key}`;
-	        input.className = "section-limit-input";
-	
-	        // Suffix
-	        const suffix = document.createElement("span");
-	        suffix.className = "input-suffix";
-	        suffix.textContent = def.suffix;
-	
-	        row.appendChild(btns);
-	        row.appendChild(label);
-	        row.appendChild(input);
-	        row.appendChild(suffix);
-	        container.appendChild(row);
-	    });
-	}
-	_moveSectionOrderRow(key, direction) {
-	    const order = [...(this.sectionOrder || this._getDefaultSectionOrder().map(s => s.key))];
-	    const index = order.indexOf(key);
-	    if (index === -1) return;
-	    const newIndex = index + direction;
-	    if (newIndex < 0 || newIndex >= order.length) return;
-	    // Swap
-	    [order[index], order[newIndex]] = [order[newIndex], order[index]];
-	    this.sectionOrder = order;
-	    this._renderSectionOrderUI();
+		try {
+			if (this.elements.recentlyPlayedStorageLimit) {
+				this.elements.recentlyPlayedStorageLimit.value = this.recentlyPlayedLimit || 20;
+			}
+			if (this.elements.recentlyPlayedDisplayLimit) {
+				this.elements.recentlyPlayedDisplayLimit.value = this.recentlyPlayedDisplayLimit || 3;
+			}
+			if (this.elements.suggestedSongsDisplayLimit) {
+				this.elements.suggestedSongsDisplayLimit.value = this.suggestedSongsDisplayLimit || 2;
+			}
+			if (this.elements.yourPicksDisplayLimit) {
+				this.elements.yourPicksDisplayLimit.value = this.yourPicksDisplayLimit || 2;
+			}
+			if (this.elements.recentlyPlayedPlaylistsLimit) {
+				this.elements.recentlyPlayedPlaylistsLimit.value = this.recentlyPlayedPlaylistsDisplayLimit || 1;
+			}
+			console.log("Discover More settings synced with DOM elements");
+		} catch (error) {
+			console.error("Error syncing discover more settings with DOM:", error);
+			this.setDefaultDiscoverMoreValues();
+		}
 	}
 	setDefaultDiscoverMoreValues() {
-	    this.recentlyPlayedLimit = this.recentlyPlayedLimit || 20;
-	    this.recentlyPlayedDisplayLimit = 3;
-	    this.suggestedSongsDisplayLimit = 2;
-	    this.yourPicksDisplayLimit = 2;
-	    this.recentlyPlayedPlaylistsDisplayLimit = 1;
-	    this.sectionOrder = this._getDefaultSectionOrder().map(s => s.key);
-	}
-	getDefaultSectionOrder() {
-	    return [
-	        { key: "recentlyListened",  label: "Recently Listened To",      limitKey: "recentlyPlayedDisplayLimit",        max: 10, suffix: "items" },
-	        { key: "suggested",         label: "Suggested",                  limitKey: "suggestedSongsDisplayLimit",        max: 10, suffix: "songs" },
-	        { key: "yourPicks",         label: "Your Picks",                 limitKey: "yourPicksDisplayLimit",             max: 10, suffix: "songs" },
-	        { key: "recentPlaylists",   label: "Recently Played Playlists",  limitKey: "recentlyPlayedPlaylistsDisplayLimit", max: 5, suffix: "playlists" },
-	    ];
+		this.recentlyPlayedLimit = this.recentlyPlayedLimit || 20;
+		this.recentlyPlayedDisplayLimit = 3;
+		this.suggestedSongsDisplayLimit = 2;
+		this.yourPicksDisplayLimit = 2;
+		this.recentlyPlayedPlaylistsDisplayLimit = 1;
+		if (this.elements.recentlyPlayedStorageLimit) {
+			this.elements.recentlyPlayedStorageLimit.value = this.recentlyPlayedLimit;
+		}
+		if (this.elements.recentlyPlayedDisplayLimit) {
+			this.elements.recentlyPlayedDisplayLimit.value = this.recentlyPlayedDisplayLimit;
+		}
+		if (this.elements.suggestedSongsDisplayLimit) {
+			this.elements.suggestedSongsDisplayLimit.value = this.suggestedSongsDisplayLimit;
+		}
+		if (this.elements.yourPicksDisplayLimit) {
+			this.elements.yourPicksDisplayLimit.value = this.yourPicksDisplayLimit;
+		}
+		if (this.elements.recentlyPlayedPlaylistsLimit) {
+			this.elements.recentlyPlayedPlaylistsLimit.value = this.recentlyPlayedPlaylistsDisplayLimit;
+		}
 	}
 	setDefaultDiscoverMoreValuesOnStartup() {
-	    this.recentlyPlayedLimit = this.recentlyPlayedLimit || 20;
-	    this.recentlyPlayedDisplayLimit = 3;
-	    this.suggestedSongsDisplayLimit = 2;
-	    this.yourPicksDisplayLimit = 2;
-	    this.recentlyPlayedPlaylistsDisplayLimit = 1;
-	    this.sectionOrder = this._getDefaultSectionOrder().map(s => s.key);
+		this.recentlyPlayedLimit = this.recentlyPlayedLimit || 20;
+		this.recentlyPlayedDisplayLimit = 3;
+		this.suggestedSongsDisplayLimit = 2;
+		this.yourPicksDisplayLimit = 2;
+		this.recentlyPlayedPlaylistsDisplayLimit = 1;
 	}
-
 	async handleSaveDiscoverMoreSettings() {
-	    try {
-	        const recentlyPlayedStorageLimit = parseInt(this.elements.recentlyPlayedStorageLimit?.value) || 20;
-	
-	        if (recentlyPlayedStorageLimit < 1 || recentlyPlayedStorageLimit > 100) {
-	            this.showNotification("Recently played storage limit must be between 1 and 100", "error");
-	            return;
-	        }
-	
-	        // Read limits from the dynamic rows
-	        const defs = this._getDefaultSectionOrder();
-	        const newLimits = {};
-	        for (const def of defs) {
-	            const input = document.getElementById(`sectionLimit_${def.key}`);
-	            const val = input ? parseInt(input.value) : null;
-	            if (val === null || isNaN(val) || val < 0 || val > def.max) {
-	                this.showNotification(`"${def.label}" limit must be between 0 and ${def.max}`, "error");
-	                return;
-	            }
-	            newLimits[def.limitKey] = val;
-	        }
-	
-	        const oldRecentlyPlayedLimit = this.recentlyPlayedLimit;
-	        this.recentlyPlayedLimit = recentlyPlayedStorageLimit;
-	        this.recentlyPlayedDisplayLimit           = newLimits["recentlyPlayedDisplayLimit"];
-	        this.suggestedSongsDisplayLimit           = newLimits["suggestedSongsDisplayLimit"];
-	        this.yourPicksDisplayLimit                = newLimits["yourPicksDisplayLimit"];
-	        this.recentlyPlayedPlaylistsDisplayLimit  = newLimits["recentlyPlayedPlaylistsDisplayLimit"];
-	
-	        await Promise.all([
-	            this.saveSetting("recentlyPlayedLimit",                 recentlyPlayedStorageLimit),
-	            this.saveSetting("recentlyPlayedDisplayLimit",          this.recentlyPlayedDisplayLimit),
-	            this.saveSetting("suggestedSongsDisplayLimit",          this.suggestedSongsDisplayLimit),
-	            this.saveSetting("yourPicksDisplayLimit",               this.yourPicksDisplayLimit),
-	            this.saveSetting("recentlyPlayedPlaylistsDisplayLimit", this.recentlyPlayedPlaylistsDisplayLimit),
-	            this.saveSetting("sectionOrder",                        this.sectionOrder),
-	        ]);
-	
-	        // Trim stored recently played if limit shrank
-	        if (oldRecentlyPlayedLimit !== recentlyPlayedStorageLimit && this.recentlyPlayedSongs.length > recentlyPlayedStorageLimit) {
-	            this.recentlyPlayedSongs = this.recentlyPlayedSongs.slice(0, recentlyPlayedStorageLimit);
-	            if (this.db) {
-	                const transaction = this.db.transaction(["recentlyPlayed"], "readwrite");
-	                const store = transaction.objectStore("recentlyPlayed");
-	                store.put({ type: "songs", items: this.recentlyPlayedSongs });
-	            }
-	        }
-	
-	        this.renderAdditionalDetails();
-	        this.showNotification("Recommendation settings saved!", "success");
-	    } catch (error) {
-	        console.error("Error saving Discover More settings:", error);
-	        this.showNotification("Error saving Discover More settings", "error");
-	    }
+		try {
+			const recentlyPlayedStorageLimit = parseInt(this.elements.recentlyPlayedStorageLimit?.value) || 20;
+			const recentlyPlayedDisplayLimit = parseInt(this.elements.recentlyPlayedDisplayLimit?.value) || 3;
+			const suggestedSongsDisplayLimit = parseInt(this.elements.suggestedSongsDisplayLimit?.value) || 2;
+			const yourPicksDisplayLimit = parseInt(this.elements.yourPicksDisplayLimit?.value) || 2;
+			const recentlyPlayedPlaylistsDisplayLimit = parseInt(this.elements.recentlyPlayedPlaylistsLimit?.value) || 1;
+			if (recentlyPlayedStorageLimit < 1 || recentlyPlayedStorageLimit > 100) {
+				this.showNotification("Recently played storage limit must be between 1 and 100", "error");
+				return;
+			}
+			if (recentlyPlayedDisplayLimit < 1 || recentlyPlayedDisplayLimit > 10) {
+				this.showNotification("Recently played display limit must be between 1 and 10", "error");
+				return;
+			}
+			if (suggestedSongsDisplayLimit < 1 || suggestedSongsDisplayLimit > 10) {
+				this.showNotification("Suggested songs display limit must be between 1 and 10", "error");
+				return;
+			}
+			if (yourPicksDisplayLimit < 1 || yourPicksDisplayLimit > 10) {
+				this.showNotification("Your picks display limit must be between 1 and 10", "error");
+				return;
+			}
+			if (recentlyPlayedPlaylistsDisplayLimit < 1 || recentlyPlayedPlaylistsDisplayLimit > 5) {
+				this.showNotification("Recently played playlists limit must be between 1 and 5", "error");
+				return;
+			}
+			const oldRecentlyPlayedLimit = this.recentlyPlayedLimit;
+			this.recentlyPlayedLimit = recentlyPlayedStorageLimit;
+			this.recentlyPlayedDisplayLimit = recentlyPlayedDisplayLimit;
+			this.suggestedSongsDisplayLimit = suggestedSongsDisplayLimit;
+			this.yourPicksDisplayLimit = yourPicksDisplayLimit;
+			this.recentlyPlayedPlaylistsDisplayLimit = recentlyPlayedPlaylistsDisplayLimit;
+			const savePromises = [
+				this.saveSetting("recentlyPlayedLimit", recentlyPlayedStorageLimit),
+				this.saveSetting("recentlyPlayedDisplayLimit", recentlyPlayedDisplayLimit),
+				this.saveSetting("suggestedSongsDisplayLimit", suggestedSongsDisplayLimit),
+				this.saveSetting("yourPicksDisplayLimit", yourPicksDisplayLimit),
+				this.saveSetting("recentlyPlayedPlaylistsDisplayLimit", recentlyPlayedPlaylistsDisplayLimit)
+			];
+			await Promise.all(savePromises);
+			if (oldRecentlyPlayedLimit !== recentlyPlayedStorageLimit && this.recentlyPlayedSongs.length > recentlyPlayedStorageLimit) {
+				this.recentlyPlayedSongs = this.recentlyPlayedSongs.slice(0, recentlyPlayedStorageLimit);
+				if (this.db) {
+					const transaction = this.db.transaction(["recentlyPlayed"], "readwrite");
+					const store = transaction.objectStore("recentlyPlayed");
+					store.put({
+						type: "songs",
+						items: this.recentlyPlayedSongs,
+					});
+				}
+			}
+			this.renderAdditionalDetails();
+			this.showNotification("Discover More settings saved successfully!", "success");
+			console.log("Discover More settings saved successfully");
+		} catch (error) {
+			console.error("Error saving Discover More settings:", error);
+			this.showNotification("Error saving Discover More settings", "error");
+		}
 	}
 	async loadDiscoverMoreSettingsOnStartup() {
-	    try {
-	        if (!this.db || !this.db.objectStoreNames.contains("settings")) {
-	            this.setDefaultDiscoverMoreValuesOnStartup();
-	            return;
-	        }
-	        const transaction = this.db.transaction(["settings"], "readonly");
-	        const store = transaction.objectStore("settings");
-	        const settingKeys = [
-	            "recentlyPlayedLimit",
-	            "recentlyPlayedDisplayLimit",
-	            "suggestedSongsDisplayLimit",
-	            "yourPicksDisplayLimit",
-	            "recentlyPlayedPlaylistsDisplayLimit",
-	            "sectionOrder"
-	        ];
-	        const requests = settingKeys.map(key => {
-	            const request = store.get(key);
-	            return new Promise(resolve => {
-	                request.onsuccess = () => resolve({ key, value: request.result?.value });
-	                request.onerror = () => resolve({ key, value: null });
-	            });
-	        });
-	        const results = await Promise.all(requests);
-	        const defaultOrder = this._getDefaultSectionOrder().map(s => s.key);
-	        results.forEach(result => {
-	            switch (result.key) {
-	                case "recentlyPlayedLimit":                  this.recentlyPlayedLimit = result.value || 20; break;
-	                case "recentlyPlayedDisplayLimit":           this.recentlyPlayedDisplayLimit = result.value ?? 3; break;
-	                case "suggestedSongsDisplayLimit":           this.suggestedSongsDisplayLimit = result.value ?? 2; break;
-	                case "yourPicksDisplayLimit":                this.yourPicksDisplayLimit = result.value ?? 2; break;
-	                case "recentlyPlayedPlaylistsDisplayLimit":  this.recentlyPlayedPlaylistsDisplayLimit = result.value ?? 1; break;
-	                case "sectionOrder":                         this.sectionOrder = result.value || defaultOrder; break;
-	            }
-	        });
-	    } catch (error) {
-	        console.error("Error loading discover more settings on startup:", error);
-	        this.setDefaultDiscoverMoreValuesOnStartup();
-	    }
+		try {
+			if (!this.db || !this.db.objectStoreNames.contains("settings")) {
+				console.log("Settings store not found, using default discover more settings");
+				this.setDefaultDiscoverMoreValuesOnStartup();
+				return;
+			}
+			const transaction = this.db.transaction(["settings"], "readonly");
+			const store = transaction.objectStore("settings");
+			const settingKeys = [
+				"recentlyPlayedLimit",
+				"recentlyPlayedDisplayLimit",
+				"suggestedSongsDisplayLimit",
+				"yourPicksDisplayLimit",
+				"recentlyPlayedPlaylistsDisplayLimit"
+			];
+			const requests = settingKeys.map(key => {
+				const request = store.get(key);
+				return new Promise(resolve => {
+					request.onsuccess = () => resolve({
+						key: key,
+						value: request.result?.value
+					});
+					request.onerror = () => resolve({
+						key: key,
+						value: null
+					});
+				});
+			});
+			const results = await Promise.all(requests);
+			results.forEach(result => {
+				switch (result.key) {
+					case "recentlyPlayedLimit":
+						this.recentlyPlayedLimit = result.value || 20;
+						break;
+					case "recentlyPlayedDisplayLimit":
+						this.recentlyPlayedDisplayLimit = result.value || 3;
+						break;
+					case "suggestedSongsDisplayLimit":
+						this.suggestedSongsDisplayLimit = result.value || 2;
+						break;
+					case "yourPicksDisplayLimit":
+						this.yourPicksDisplayLimit = result.value || 2;
+						break;
+					case "recentlyPlayedPlaylistsDisplayLimit":
+						this.recentlyPlayedPlaylistsDisplayLimit = result.value || 1;
+						break;
+				}
+			});
+			console.log("Discover More settings loaded on startup:", {
+				recentlyPlayedLimit: this.recentlyPlayedLimit,
+				recentlyPlayedDisplayLimit: this.recentlyPlayedDisplayLimit,
+				suggestedSongsDisplayLimit: this.suggestedSongsDisplayLimit,
+				yourPicksDisplayLimit: this.yourPicksDisplayLimit,
+				recentlyPlayedPlaylistsDisplayLimit: this.recentlyPlayedPlaylistsDisplayLimit
+			});
+		} catch (error) {
+			console.error("Error loading discover more settings on startup:", error);
+			this.setDefaultDiscoverMoreValuesOnStartup();
+		}
 	}
 	openImportSubtitlesModal(songId) {
 		const song = this.songLibrary.find((s) => s.id === songId);
@@ -14017,5 +14013,4 @@ window.addEventListener("beforeunload", () => {
 	}
 });
 document.addEventListener("DOMContentLoaded", initializeMusicPlayer);
-
 
