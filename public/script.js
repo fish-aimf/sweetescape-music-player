@@ -9935,6 +9935,9 @@ hideSidebar() {
 	        autoFetchBtn.disabled = false;
 	        autoFetchBtn.innerHTML = '<i class="fas fa-magic"></i> Auto-Fetch Transcript';
 	    }
+		const response = await fetch(url);
+		const result = await response.json();
+		console.log('Transcript API response:', response.status, result);
 	}
 	
 	formatYouTubeTranscriptForConversion(transcriptArray) {
