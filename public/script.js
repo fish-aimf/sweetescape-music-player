@@ -9992,8 +9992,8 @@ hideSidebar() {
 	resetTranscriptLangDropdown() {
 	    const langSelect = document.getElementById('transcriptLangSelect');
 	    if (langSelect) langSelect.innerHTML = '<option value="auto">Auto</option>';
-	    const hint = document.getElementById('langSwitchHint');
-	    if (hint) hint.remove();
+	    const switchBtn = document.getElementById('switchLangBtn');
+	    if (switchBtn) switchBtn.style.display = 'none';
 	}
 	addTimestampsToPlainText(plainText) {
 		try {
