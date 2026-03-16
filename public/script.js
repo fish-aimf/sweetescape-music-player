@@ -9966,6 +9966,9 @@ hideSidebar() {
 	    }
 	}
 	populateTranscriptLangDropdown(langs, currentLang) {
+	    console.log('populateTranscriptLangDropdown called', langs, currentLang);
+	    const switchBtn = document.getElementById('switchLangBtn');
+	    console.log('switchBtn found:', switchBtn);
 	    const langSelect = document.getElementById('transcriptLangSelect');
 	    if (!langSelect) return;
 	
