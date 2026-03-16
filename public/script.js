@@ -9875,24 +9875,21 @@ hideSidebar() {
 	    const autoFetchBtn = document.getElementById('autoFetchTranscriptBtn');
 	    const transcriptInput = document.getElementById('transcriptInput');
 	
+	    const videoId = this.currentSongForImport.videoId;
+	    let url = `/api/transcript?videoId=${encodeURIComponent(videoId)}`;
+	    if (lang) url += `&lang=${encodeURIComponent(lang)}`;
+	
 	    try {
 	        loadingIndicator.style.display = 'flex';
 	        autoFetchBtn.disabled = true;
 	        autoFetchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Fetching...';
 	
-	        const videoId = this.currentSongForImport.videoId;
-	        let url = `/api/transcript?videoId=${encodeURIComponent(videoId)}`;
-	        if (lang) url += `&lang=${encodeURIComponent(lang)}`;
-	
 	        const response = await fetch(url);
 	        const result = await response.json();
+	        console.log('Transcript API response:', response.status, result);
 	
-	        if (response.status === 404) {
-	            throw new Error('404');
-	        }
-	        if (!response.ok) {
-	            throw new Error(String(response.status));
-	        }
+	        if (response.status === 404) throw new Error('404');
+	        if (!response.ok) throw new Error(String(response.status));
 	
 	        const { transcript, availableLanguages, usedLang } = result.data;
 	
@@ -9900,8 +9897,6 @@ hideSidebar() {
 	            throw new Error('Empty transcript received');
 	        }
 	
-	        // If multiple languages available and none was explicitly requested, store them
-	        // so the UI can offer a language picker if needed
 	        if (availableLanguages.length > 1 && !lang) {
 	            this.availableTranscriptLanguages = availableLanguages;
 	        }
@@ -9935,9 +9930,6 @@ hideSidebar() {
 	        autoFetchBtn.disabled = false;
 	        autoFetchBtn.innerHTML = '<i class="fas fa-magic"></i> Auto-Fetch Transcript';
 	    }
-		const response = await fetch(url);
-		const result = await response.json();
-		console.log('Transcript API response:', response.status, result);
 	}
 	
 	formatYouTubeTranscriptForConversion(transcriptArray) {
