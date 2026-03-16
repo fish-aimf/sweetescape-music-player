@@ -8302,50 +8302,72 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     font-size: 11px;
 }
 
+/* Section order rows */
 .section-order-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
 }
 
 .section-order-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 8px 10px;
 }
 
 .section-order-row label {
-  flex: 1;
-  font-size: 0.9rem;
-  margin: 0;
-}
-
-.section-order-row input[type="number"] {
-  width: 60px;
+    flex: 1;
+    font-size: 0.9rem;
+    margin: 0;
+    min-width: unset; /* override the global label min-width */
+    color: var(--primary-text-color, #e2e8f0);
+    font-weight: 500;
 }
 
 .section-order-btns {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
 .section-order-btns button {
-  background: transparent;
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-  border-radius: 3px;
-  cursor: pointer;
-  font-size: 0.7rem;
-  padding: 1px 5px;
-  line-height: 1.4;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.7rem;
+    padding: 1px 5px;
+    line-height: 1.4;
 }
 
 .section-order-btns button:hover {
-  background: var(--bg-primary);
+    background: var(--bg-primary);
+}
+
+.section-order-btns button:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+/* Number input inside the rows */
+.section-limit-input {
+    width: 60px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-primary);
+    color: var(--primary-text-color, #e2e8f0);
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.section-limit-input:focus {
+    outline: none;
+    border-color: var(--accent-color, #6c63ff);
 }
