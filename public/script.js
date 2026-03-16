@@ -128,6 +128,7 @@ class AdvancedMusicPlayer {
 		
 		// Supabase / Global library
 		this.supabase = null;
+		this.supadataApiKey = 'sd_b3095aebbee9e4a7e6333bca9027b4cc';
 		this.globalLibrarySupabase = null;
 		this.globalLibraryCurrentUser = null;
 		this.globalLibraryArtists = [];
@@ -9874,67 +9875,82 @@ hideSidebar() {
 	    const loadingIndicator = document.getElementById('loadingIndicator');
 	    const autoFetchBtn = document.getElementById('autoFetchTranscriptBtn');
 	    const transcriptInput = document.getElementById('transcriptInput');
-	
-	    const videoId = this.currentSongForImport.videoId;
+	    const langSelect = document.getElementById('transcriptLangSelect');
+	    const selectedLang = langSelect ? langSelect.value : 'en';
 	
 	    try {
 	        loadingIndicator.style.display = 'flex';
 	        autoFetchBtn.disabled = true;
 	        autoFetchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Fetching...';
 	
-	        // Step 1: get available tracks
-	        const listResponse = await fetch(
-	            `https://www.youtube.com/api/timedtext?v=${videoId}&type=list`
-	        );
+	        const videoUrl = `https://www.youtube.com/watch?v=${this.currentSongForImport.videoId}`;
 	
-	        if (!listResponse.ok) throw new Error('404');
+	        // Try with selected language first
+	        let apiUrl = `https://api.supadata.ai/v1/youtube/transcript?url=${encodeURIComponent(videoUrl)}&text=false&lang=${selectedLang}`;
+	        let response = await fetch(apiUrl, {
+	            method: 'GET',
+	            headers: {
+	                'x-api-key': this.supadataApiKey,
+	                'Content-Type': 'application/json'
+	            }
+	        });
 	
-	        const listXml = await listResponse.text();
+	        // If selected language not found, retry without language filter
+	        if (!response.ok && response.status === 404) {
+	            console.warn(`No transcript in ${selectedLang}, retrying without language filter...`);
+	            apiUrl = `https://api.supadata.ai/v1/youtube/transcript?url=${encodeURIComponent(videoUrl)}&text=false`;
+	            response = await fetch(apiUrl, {
+	                method: 'GET',
+	                headers: {
+	                    'x-api-key': this.supadataApiKey,
+	                    'Content-Type': 'application/json'
+	                }
+	            });
+	        }
 	
-	        // Step 2: parse first available language
-	        const trackMatch = listXml.match(/lang_code="([^"]+)"/);
-	        if (!trackMatch) throw new Error('404');
+	        if (!response.ok) {
+	            throw new Error(`HTTP error! status: ${response.status}`);
+	        }
 	
-	        const lang = trackMatch[1];
+	        const data = await response.json();
+	        console.log('Supadata API Response:', data);
 	
-	        // Step 3: fetch transcript in that language
-	        const transcriptResponse = await fetch(
-	            `https://www.youtube.com/api/timedtext?v=${videoId}&lang=${lang}&fmt=json3`
-	        );
+	        let transcriptText = '';
+	        if (data.content) {
+	            if (Array.isArray(data.content)) {
+	                transcriptText = this.formatSupadataTranscriptForConversion(data.content);
+	            } else if (typeof data.content === 'string') {
+	                transcriptText = this.addTimestampsToPlainText(data.content);
+	            } else {
+	                throw new Error('Unexpected transcript format');
+	            }
 	
-	        if (!transcriptResponse.ok) throw new Error('404');
+	            if (!transcriptText.trim()) {
+	                throw new Error('Empty transcript received');
+	            }
 	
-	        const transcriptData = await transcriptResponse.json();
+	            transcriptInput.value = transcriptText;
+	            console.log('Formatted transcript:', transcriptText.substring(0, 200) + '...');
+	            this.showNotification('Transcript fetched successfully!', 'success');
 	
-	        const transcript = (transcriptData.events || [])
-	            .filter(e => e.segs)
-	            .map(e => ({
-	                text: e.segs.map(s => s.utf8).join('').replace(/\n/g, ' ').trim(),
-	                offset: e.tStartMs,
-	                duration: e.dDurationMs || 0
-	            }))
-	            .filter(e => e.text && e.text !== ' ');
-	
-	        if (!transcript.length) throw new Error('404');
-	
-	        const transcriptText = this.formatYouTubeTranscriptForConversion(transcript);
-	
-	        if (!transcriptText.trim()) throw new Error('Empty transcript after formatting');
-	
-	        transcriptInput.value = transcriptText;
-	        this.showNotification('Transcript fetched successfully!', 'success');
-	
-	        setTimeout(() => {
-	            this.convertTranscriptToLyricsHandler();
-	        }, 500);
+	            setTimeout(() => {
+	                this.convertTranscriptToLyricsHandler();
+	            }, 500);
+	        } else {
+	            throw new Error('No transcript content received');
+	        }
 	
 	    } catch (error) {
 	        console.error('Error fetching transcript:', error);
 	        let errorMessage = 'Failed to fetch transcript. ';
-	        if (error.message.includes('404')) {
-	            errorMessage += 'No captions available for this video.';
+	        if (error.message.includes('401')) {
+	            errorMessage += 'Invalid API key.';
+	        } else if (error.message.includes('404')) {
+	            errorMessage += 'Video not found or no transcript available.';
+	        } else if (error.message.includes('429')) {
+	            errorMessage += 'Rate limit exceeded. Please try again later.';
 	        } else {
-	            errorMessage += 'This video may not have captions enabled.';
+	            errorMessage += 'This probably means this song does not have transcripts.';
 	        }
 	        this.showNotification(errorMessage, 'error');
 	    } finally {
@@ -9943,25 +9959,47 @@ hideSidebar() {
 	        autoFetchBtn.innerHTML = '<i class="fas fa-magic"></i> Auto-Fetch Transcript';
 	    }
 	}
-	
-	formatYouTubeTranscriptForConversion(transcriptArray) {
-	    try {
-	        const formattedLines = [];
-	        for (const segment of transcriptArray) {
-	            if (segment.offset !== undefined && segment.text) {
-	                const totalSeconds = Math.floor(segment.offset / 1000);
-	                const minutes = Math.floor(totalSeconds / 60);
-	                const seconds = totalSeconds % 60;
-	                formattedLines.push(`${minutes}:${seconds.toString().padStart(2, '0')}`);
-	                formattedLines.push(segment.text.trim());
-	                formattedLines.push('');
-	            }
-	        }
-	        return formattedLines.join('\n');
-	    } catch (error) {
-	        console.error('Error formatting transcript:', error);
-	        return '';
-	    }
+	addTimestampsToPlainText(plainText) {
+		try {
+			const lines = plainText.split('\n').filter(line => line.trim());
+			const formattedLines = [];
+			let currentTime = 0;
+			const secondsPerLine = 3.5;
+			for (const line of lines) {
+				if (line.trim()) {
+					const minutes = Math.floor(currentTime / 60);
+					const seconds = Math.floor(currentTime % 60);
+					formattedLines.push(`${minutes}:${seconds.toString().padStart(2, '0')}`);
+					formattedLines.push(line.trim());
+					formattedLines.push('');
+					const wordCount = line.split(' ').length;
+					currentTime += Math.max(secondsPerLine, wordCount * 0.5);
+				}
+			}
+			return formattedLines.join('\n');
+		} catch (error) {
+			console.error('Error adding timestamps to plain text:', error);
+			return plainText;
+		}
+	}
+	formatSupadataTranscriptForConversion(transcriptArray) {
+		try {
+			const formattedLines = [];
+			for (const segment of transcriptArray) {
+				if (segment.offset !== undefined && segment.text) {
+					const totalSeconds = Math.floor(segment.offset / 1000);
+					const minutes = Math.floor(totalSeconds / 60);
+					const seconds = totalSeconds % 60;
+					formattedLines.push(`${minutes}:${seconds.toString().padStart(2, '0')}`);
+					formattedLines.push(segment.text.trim());
+					formattedLines.push('');
+				}
+			}
+			return formattedLines.join('\n');
+		} catch (error) {
+			console.error('Error formatting Supadata transcript:', error);
+			return '';
+		}
 	}
 	formatLyricText(text) {
 		text = text.replace(/♪/g, '').trim();
@@ -13900,6 +13938,5 @@ window.addEventListener("beforeunload", () => {
 	}
 });
 document.addEventListener("DOMContentLoaded", initializeMusicPlayer);
-
 
 
