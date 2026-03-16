@@ -589,31 +589,26 @@ class AdvancedMusicPlayer {
 			saveCustomTheme: this.handleSaveCustomTheme.bind(this),
 			adsToggle: this.handleAdsToggle.bind(this),
 			
-			
-			// Special handlers with custom logic
+		
 			librarySearchKeydown: async (e) => {
 			    if (e.key === "Enter") {
 			        const searchTerm = this.elements.librarySearch.value.trim();
 			        const videoId = this.extractYouTubeId(searchTerm);
 			        
-			        // If it's a YouTube URL, autofill it
 			        if (videoId && this.elements.youtubeSearchSuggestion.style.display !== "none") {
 			            this.autofillFromUrl(searchTerm);
 			            return;
 			        }
 			        
-			        // Check if there are any visible song items
 			        const visibleSongs = this.elements.songLibrary.querySelectorAll('.song-item');
 			        
 			        if (visibleSongs.length > 0) {
-			            // Play first visible song
 			            this.playFirstVisibleSong();
 			        } else if (searchTerm) {
-			            // No songs found - search YouTube
 			            try {
-			                const results = await this.searchYouTubeForLibraryMatches(searchTerm);
-			                if (results.length > 0) {
-			                    this.renderYouTubeLibrarySearchResults(results, searchTerm);
+			                const { items, nextPageToken } = await this.searchYouTubeForLibraryMatches(searchTerm);
+			                if (items.length > 0) {
+			                    this.renderYouTubeLibrarySearchResults(items, searchTerm, nextPageToken);
 			                } else {
 			                    this.showYouTubeSearchSuggestion(searchTerm);
 			                }
@@ -13375,16 +13370,17 @@ rotateYouTubeApiKey() {
     this.activeYoutubeKeyIndex = (this.activeYoutubeKeyIndex + 1) % this.YOUTUBE_API_KEYS_COUNT;
     console.log(`Rotated to YouTube API key ${this.activeYoutubeKeyIndex + 1}`);
 }
-async searchYouTubeForLibraryMatches(searchTerm) {
+async searchYouTubeForLibraryMatches(searchTerm, pageToken = null) {
     const maxResults = 5;
     
     for (let attempt = 0; attempt < this.YOUTUBE_API_KEYS_COUNT; attempt++) {
         const keyIndex = this.getRandomYouTubeApiKey();
         
         try {
-            // FIXED: Pass search term directly with type parameter
-            const response = await fetch(`/api/youtube?query=${encodeURIComponent(searchTerm)}&maxResults=${maxResults}&type=search&keyIndex=${keyIndex}`);
-            
+            let url = `/api/youtube?query=${encodeURIComponent(searchTerm)}&maxResults=${maxResults}&type=combined&keyIndex=${keyIndex}`;
+            if (pageToken) url += `&pageToken=${encodeURIComponent(pageToken)}`;
+
+            const response = await fetch(url);
             const result = await response.json();
             
             if (result.status !== 200) {
@@ -13403,10 +13399,10 @@ async searchYouTubeForLibraryMatches(searchTerm) {
                 continue;
             }
             
-            const items = data.items || [];
-
-            // Return results as-is from YouTube
-            return items;
+            return {
+                items: data.items || [],
+                nextPageToken: data.nextPageToken || null
+            };
             
         } catch (error) {
             console.error(`YouTube API attempt ${attempt + 1} failed:`, error);
@@ -13450,40 +13446,34 @@ createYouTubeLibraryResultCard(video) {
     const title = video.snippet.title;
     const channel = video.snippet.channelTitle;
     const publishedAt = new Date(video.snippet.publishedAt);
-    const thumbnail = video.snippet.thumbnails.high ? video.snippet.thumbnails.high.url : video.snippet.thumbnails.medium.url;
-    
-    // Format upload date
+    const thumbnail = video.snippet.thumbnails.high?.url || video.snippet.thumbnails.medium.url;
     const uploadDate = this.formatYouTubeUploadDate(publishedAt);
-    
+
+    // Statistics already bundled in — no extra API call needed
+    const viewCount = video.statistics?.viewCount
+        ? this.formatYouTubeViewCount(parseInt(video.statistics.viewCount))
+        : null;
+    const meta = viewCount ? `${viewCount} • ${uploadDate}` : uploadDate;
+
     const card = document.createElement('div');
     card.classList.add('youtube-library-result-card');
     
-    // Note: View count requires additional API call, so we'll fetch it
-    this.fetchYouTubeViewCount(videoId).then(viewCount => {
-        const metaElement = card.querySelector('.youtube-result-meta');
-        if (metaElement && viewCount) {
-            metaElement.textContent = `${viewCount} • ${uploadDate}`;
-        }
-    }).catch(() => {
-        // If fails, just show upload date
-    });
-    
     card.innerHTML = `
-	    <img src="${thumbnail}" alt="${this.escapeHtml(title)}" class="youtube-result-thumbnail">
-	    <div class="youtube-result-info">
-	        <div class="youtube-result-title">${this.decodeHtmlEntities(title)}</div>
-	        <div class="youtube-result-channel">${this.decodeHtmlEntities(channel)}</div>
-	        <div class="youtube-result-meta">${uploadDate}</div>
-	    </div>
-	    <div class="youtube-result-actions">
-	        <button class="youtube-result-preview-btn" data-video-id="${videoId}" title="Preview">
-	            <i class="fas fa-play"></i> Preview
-	        </button>
-	        <button class="youtube-result-add-btn" data-video-id="${videoId}" data-title="${this.escapeHtml(title)}" data-channel="${this.escapeHtml(channel)}">
-	            <i class="fas fa-plus"></i> Add
-	        </button>
-	    </div>
-	`;
+        <img src="${thumbnail}" alt="${this.escapeHtml(title)}" class="youtube-result-thumbnail">
+        <div class="youtube-result-info">
+            <div class="youtube-result-title">${this.decodeHtmlEntities(title)}</div>
+            <div class="youtube-result-channel">${this.decodeHtmlEntities(channel)}</div>
+            <div class="youtube-result-meta">${meta}</div>
+        </div>
+        <div class="youtube-result-actions">
+            <button class="youtube-result-preview-btn" data-video-id="${videoId}" title="Preview">
+                <i class="fas fa-play"></i> Preview
+            </button>
+            <button class="youtube-result-add-btn" data-video-id="${videoId}" data-title="${this.escapeHtml(title)}" data-channel="${this.escapeHtml(channel)}">
+                <i class="fas fa-plus"></i> Add
+            </button>
+        </div>
+    `;
     
     return card;
 }
@@ -13508,47 +13498,7 @@ setupYouTubeLibraryResultsDelegation() {
     });
 }
 
-async fetchYouTubeViewCount(videoId) {
-    for (let attempt = 0; attempt < this.YOUTUBE_API_KEYS_COUNT; attempt++) {
-        const keyIndex = this.getRandomYouTubeApiKey();
-        
-        try {
-            // FIXED: Pass videoId directly with type=statistics
-            const response = await fetch(`/api/youtube?query=${encodeURIComponent(videoId)}&type=statistics&keyIndex=${keyIndex}`);
-            
-            const result = await response.json();
-            
-            if (result.status !== 200) {
-                if (result.status === 403) {
-                    console.warn(`API key quota exceeded, trying next key...`);
-                    this.rotateYouTubeApiKey();
-                    continue;
-                }
-                return null;
-            }
-            
-            const data = result.data;
-            
-            if (data.error && data.error.code === 403) {
-                this.rotateYouTubeApiKey();
-                continue;
-            }
-            
-            const viewCount = data.items?.[0]?.statistics?.viewCount;
-            
-            if (!viewCount) return null;
-            
-            // Format view count (e.g., "1.2M views", "345K views")
-            return this.formatYouTubeViewCount(parseInt(viewCount));
-            
-        } catch (error) {
-            console.error('Failed to fetch view count:', error);
-            this.rotateYouTubeApiKey();
-        }
-    }
-    
-    return null;
-}
+
 formatYouTubeViewCount(count) {
     if (count >= 1000000000) {
         return `${(count / 1000000000).toFixed(1)}B views`;
