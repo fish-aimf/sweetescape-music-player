@@ -7250,14 +7250,6 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     transition: all 0.1s ease;
     opacity: 0.9;
 }
-
-/* YouTube Library Search Results */
-.youtube-library-results {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-bottom: 20px;
-}
 /* YouTube Library Search Results */
 .youtube-library-results {
     display: flex;
@@ -7322,6 +7314,41 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     opacity: 0.8;
 }
 
+/* Action buttons wrapper */
+.youtube-result-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.youtube-result-preview-btn {
+    padding: 8px 18px;
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.youtube-result-preview-btn:hover {
+    background: var(--accent-color);
+    color: var(--button-text-color);
+    border-color: var(--accent-color);
+}
+
+.youtube-result-preview-btn i {
+    margin-right: 4px;
+}
+
 .youtube-result-add-btn {
     padding: 8px 18px;
     background: var(--accent-color);
@@ -7333,7 +7360,6 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     font-weight: 500;
     transition: background 0.2s ease;
     white-space: nowrap;
-    flex-shrink: 0;
 }
 
 .youtube-result-add-btn:hover {
