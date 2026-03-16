@@ -13437,14 +13437,6 @@ renderYouTubeLibrarySearchResults(results, searchTerm, nextPageToken = null) {
         fragment.appendChild(loadMoreBtn);
     }
     
-    const instructionMessage = document.createElement('div');
-    instructionMessage.classList.add('empty-library-message');
-    instructionMessage.innerHTML = `
-        No songs found in your library matching "<strong>${this.escapeHtml(searchTerm)}</strong>"<br>
-        <small style="color: var(--text-secondary); margin-top: 8px; display: block;">Press Enter to search YouTube</small>
-    `;
-    fragment.appendChild(instructionMessage);
-    
     this.elements.songLibrary.innerHTML = '';
     this.elements.songLibrary.appendChild(fragment);
     
