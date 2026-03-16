@@ -8302,7 +8302,6 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     font-size: 11px;
 }
 
-/* Section order rows */
 .section-order-list {
     display: flex;
     flex-direction: column;
@@ -8324,8 +8323,8 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     flex: 1;
     font-size: 0.9rem;
     margin: 0;
-    min-width: unset; /* override the global label min-width */
-    color: var(--primary-text-color, #e2e8f0);
+    min-width: unset;
+    color: var(--text-primary);
     font-weight: 500;
 }
 
@@ -8348,6 +8347,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 
 .section-order-btns button:hover {
     background: var(--bg-primary);
+    color: var(--hover-color);
 }
 
 .section-order-btns button:disabled {
@@ -8355,19 +8355,18 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     cursor: not-allowed;
 }
 
-/* Number input inside the rows */
 .section-limit-input {
     width: 60px;
     padding: 4px 6px;
     border-radius: 4px;
     border: 1px solid var(--border-color);
     background: var(--bg-primary);
-    color: var(--primary-text-color, #e2e8f0);
+    color: var(--text-primary);
     font-size: 0.9rem;
     text-align: center;
 }
 
 .section-limit-input:focus {
     outline: none;
-    border-color: var(--accent-color, #6c63ff);
+    border-color: var(--accent-color);
 }
