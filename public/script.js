@@ -9869,46 +9869,60 @@ hideSidebar() {
 			return null;
 		}
 	}
-	async autoFetchTranscript(lang = null) {
+	async autoFetchTranscript() {
 	    if (!this.currentSongForImport) return;
 	    const loadingIndicator = document.getElementById('loadingIndicator');
 	    const autoFetchBtn = document.getElementById('autoFetchTranscriptBtn');
 	    const transcriptInput = document.getElementById('transcriptInput');
 	
 	    const videoId = this.currentSongForImport.videoId;
-	    let url = `/api/transcript?videoId=${encodeURIComponent(videoId)}`;
-	    if (lang) url += `&lang=${encodeURIComponent(lang)}`;
 	
 	    try {
 	        loadingIndicator.style.display = 'flex';
 	        autoFetchBtn.disabled = true;
 	        autoFetchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Fetching...';
 	
-	        const response = await fetch(url);
-	        const result = await response.json();
-	        console.log('Transcript API response:', response.status, result);
+	        // Step 1: get available tracks
+	        const listResponse = await fetch(
+	            `https://www.youtube.com/api/timedtext?v=${videoId}&type=list`
+	        );
 	
-	        if (response.status === 404) throw new Error('404');
-	        if (!response.ok) throw new Error(String(response.status));
+	        if (!listResponse.ok) throw new Error('404');
 	
-	        const { transcript, availableLanguages, usedLang } = result.data;
+	        const listXml = await listResponse.text();
 	
-	        if (!transcript || transcript.length === 0) {
-	            throw new Error('Empty transcript received');
-	        }
+	        // Step 2: parse first available language
+	        const trackMatch = listXml.match(/lang_code="([^"]+)"/);
+	        if (!trackMatch) throw new Error('404');
 	
-	        if (availableLanguages.length > 1 && !lang) {
-	            this.availableTranscriptLanguages = availableLanguages;
-	        }
+	        const lang = trackMatch[1];
+	
+	        // Step 3: fetch transcript in that language
+	        const transcriptResponse = await fetch(
+	            `https://www.youtube.com/api/timedtext?v=${videoId}&lang=${lang}&fmt=json3`
+	        );
+	
+	        if (!transcriptResponse.ok) throw new Error('404');
+	
+	        const transcriptData = await transcriptResponse.json();
+	
+	        const transcript = (transcriptData.events || [])
+	            .filter(e => e.segs)
+	            .map(e => ({
+	                text: e.segs.map(s => s.utf8).join('').replace(/\n/g, ' ').trim(),
+	                offset: e.tStartMs,
+	                duration: e.dDurationMs || 0
+	            }))
+	            .filter(e => e.text && e.text !== ' ');
+	
+	        if (!transcript.length) throw new Error('404');
 	
 	        const transcriptText = this.formatYouTubeTranscriptForConversion(transcript);
 	
-	        if (!transcriptText.trim()) {
-	            throw new Error('Empty transcript after formatting');
-	        }
+	        if (!transcriptText.trim()) throw new Error('Empty transcript after formatting');
 	
 	        transcriptInput.value = transcriptText;
-	        this.showNotification(`Transcript fetched! (${usedLang})`, 'success');
+	        this.showNotification('Transcript fetched successfully!', 'success');
 	
 	        setTimeout(() => {
 	            this.convertTranscriptToLyricsHandler();
@@ -9919,8 +9933,6 @@ hideSidebar() {
 	        let errorMessage = 'Failed to fetch transcript. ';
 	        if (error.message.includes('404')) {
 	            errorMessage += 'No captions available for this video.';
-	        } else if (error.message.includes('500')) {
-	            errorMessage += 'Server error, please try again.';
 	        } else {
 	            errorMessage += 'This video may not have captions enabled.';
 	        }
