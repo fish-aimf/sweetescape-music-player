@@ -128,7 +128,6 @@ class AdvancedMusicPlayer {
 		
 		// Supabase / Global library
 		this.supabase = null;
-		this.supadataApiKey = 'sd_b3095aebbee9e4a7e6333bca9027b4cc';
 		this.globalLibrarySupabase = null;
 		this.globalLibraryCurrentUser = null;
 		this.globalLibraryArtists = [];
@@ -9870,110 +9869,92 @@ hideSidebar() {
 			return null;
 		}
 	}
-	async autoFetchTranscript() {
-		if (!this.currentSongForImport) return;
-		const loadingIndicator = document.getElementById('loadingIndicator');
-		const autoFetchBtn = document.getElementById('autoFetchTranscriptBtn');
-		const transcriptInput = document.getElementById('transcriptInput');
-		try {
-			loadingIndicator.style.display = 'flex';
-			autoFetchBtn.disabled = true;
-			autoFetchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Fetching...';
-			const videoUrl = `https://www.youtube.com/watch?v=${this.currentSongForImport.videoId}`;
-			const apiUrl = `https://api.supadata.ai/v1/youtube/transcript?url=${encodeURIComponent(videoUrl)}&text=false`;
-			const response = await fetch(apiUrl, {
-				method: 'GET',
-				headers: {
-					'x-api-key': this.supadataApiKey,
-					'Content-Type': 'application/json'
-				}
-			});
-			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`);
-			}
-			const data = await response.json();
-			console.log('Supadata API Response:', data);
-			let transcriptText = '';
-			if (data.content) {
-				if (Array.isArray(data.content)) {
-					transcriptText = this.formatSupadataTranscriptForConversion(data.content);
-				} else if (typeof data.content === 'string') {
-					transcriptText = this.addTimestampsToPlainText(data.content);
-				} else {
-					throw new Error('Unexpected transcript format');
-				}
-				if (!transcriptText.trim()) {
-					throw new Error('Empty transcript received');
-				}
-				transcriptInput.value = transcriptText;
-				console.log('Formatted transcript:', transcriptText.substring(0, 200) + '...');
-				this.showNotification('Transcript fetched successfully!', 'success');
-				setTimeout(() => {
-					this.convertTranscriptToLyricsHandler();
-				}, 500);
-			} else {
-				throw new Error('No transcript content received');
-			}
-		} catch (error) {
-			console.error('Error fetching transcript:', error);
-			let errorMessage = 'Failed to fetch transcript. ';
-			if (error.message.includes('401')) {
-				errorMessage += 'Invalid API key.';
-			} else if (error.message.includes('404')) {
-				errorMessage += 'Video not found or no transcript available.';
-			} else if (error.message.includes('429')) {
-				errorMessage += 'Rate limit exceeded. Please try again later.';
-			} else {
-				errorMessage += 'This probably means this song does not have transcripts.';
-			}
-			this.showNotification(errorMessage, 'error');
-		} finally {
-			loadingIndicator.style.display = 'none';
-			autoFetchBtn.disabled = false;
-			autoFetchBtn.innerHTML = '<i class="fas fa-magic"></i> Auto-Fetch Transcript';
-		}
+	async autoFetchTranscript(lang = null) {
+	    if (!this.currentSongForImport) return;
+	    const loadingIndicator = document.getElementById('loadingIndicator');
+	    const autoFetchBtn = document.getElementById('autoFetchTranscriptBtn');
+	    const transcriptInput = document.getElementById('transcriptInput');
+	
+	    try {
+	        loadingIndicator.style.display = 'flex';
+	        autoFetchBtn.disabled = true;
+	        autoFetchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Fetching...';
+	
+	        const videoId = this.currentSongForImport.videoId;
+	        let url = `/api/transcript?videoId=${encodeURIComponent(videoId)}`;
+	        if (lang) url += `&lang=${encodeURIComponent(lang)}`;
+	
+	        const response = await fetch(url);
+	        const result = await response.json();
+	
+	        if (response.status === 404) {
+	            throw new Error('404');
+	        }
+	        if (!response.ok) {
+	            throw new Error(String(response.status));
+	        }
+	
+	        const { transcript, availableLanguages, usedLang } = result.data;
+	
+	        if (!transcript || transcript.length === 0) {
+	            throw new Error('Empty transcript received');
+	        }
+	
+	        // If multiple languages available and none was explicitly requested, store them
+	        // so the UI can offer a language picker if needed
+	        if (availableLanguages.length > 1 && !lang) {
+	            this.availableTranscriptLanguages = availableLanguages;
+	        }
+	
+	        const transcriptText = this.formatYouTubeTranscriptForConversion(transcript);
+	
+	        if (!transcriptText.trim()) {
+	            throw new Error('Empty transcript after formatting');
+	        }
+	
+	        transcriptInput.value = transcriptText;
+	        this.showNotification(`Transcript fetched! (${usedLang})`, 'success');
+	
+	        setTimeout(() => {
+	            this.convertTranscriptToLyricsHandler();
+	        }, 500);
+	
+	    } catch (error) {
+	        console.error('Error fetching transcript:', error);
+	        let errorMessage = 'Failed to fetch transcript. ';
+	        if (error.message.includes('404')) {
+	            errorMessage += 'No captions available for this video.';
+	        } else if (error.message.includes('500')) {
+	            errorMessage += 'Server error, please try again.';
+	        } else {
+	            errorMessage += 'This video may not have captions enabled.';
+	        }
+	        this.showNotification(errorMessage, 'error');
+	    } finally {
+	        loadingIndicator.style.display = 'none';
+	        autoFetchBtn.disabled = false;
+	        autoFetchBtn.innerHTML = '<i class="fas fa-magic"></i> Auto-Fetch Transcript';
+	    }
 	}
-	addTimestampsToPlainText(plainText) {
-		try {
-			const lines = plainText.split('\n').filter(line => line.trim());
-			const formattedLines = [];
-			let currentTime = 0;
-			const secondsPerLine = 3.5;
-			for (const line of lines) {
-				if (line.trim()) {
-					const minutes = Math.floor(currentTime / 60);
-					const seconds = Math.floor(currentTime % 60);
-					formattedLines.push(`${minutes}:${seconds.toString().padStart(2, '0')}`);
-					formattedLines.push(line.trim());
-					formattedLines.push('');
-					const wordCount = line.split(' ').length;
-					currentTime += Math.max(secondsPerLine, wordCount * 0.5);
-				}
-			}
-			return formattedLines.join('\n');
-		} catch (error) {
-			console.error('Error adding timestamps to plain text:', error);
-			return plainText;
-		}
-	}
-	formatSupadataTranscriptForConversion(transcriptArray) {
-		try {
-			const formattedLines = [];
-			for (const segment of transcriptArray) {
-				if (segment.offset !== undefined && segment.text) {
-					const totalSeconds = Math.floor(segment.offset / 1000);
-					const minutes = Math.floor(totalSeconds / 60);
-					const seconds = totalSeconds % 60;
-					formattedLines.push(`${minutes}:${seconds.toString().padStart(2, '0')}`);
-					formattedLines.push(segment.text.trim());
-					formattedLines.push('');
-				}
-			}
-			return formattedLines.join('\n');
-		} catch (error) {
-			console.error('Error formatting Supadata transcript:', error);
-			return '';
-		}
+	
+	formatYouTubeTranscriptForConversion(transcriptArray) {
+	    try {
+	        const formattedLines = [];
+	        for (const segment of transcriptArray) {
+	            if (segment.offset !== undefined && segment.text) {
+	                const totalSeconds = Math.floor(segment.offset / 1000);
+	                const minutes = Math.floor(totalSeconds / 60);
+	                const seconds = totalSeconds % 60;
+	                formattedLines.push(`${minutes}:${seconds.toString().padStart(2, '0')}`);
+	                formattedLines.push(segment.text.trim());
+	                formattedLines.push('');
+	            }
+	        }
+	        return formattedLines.join('\n');
+	    } catch (error) {
+	        console.error('Error formatting transcript:', error);
+	        return '';
+	    }
 	}
 	formatLyricText(text) {
 		text = text.replace(/♪/g, '').trim();
