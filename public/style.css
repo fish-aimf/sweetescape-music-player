@@ -8276,3 +8276,28 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     display: block;
     opacity: 0.8;
 }
+
+.subtitles-import-switch-lang-btn {
+    padding: 8px 12px;
+    background: var(--accent-color);
+    color: var(--button-text-color);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background 0.2s ease;
+    flex-shrink: 0;
+}
+
+.subtitles-import-switch-lang-btn:hover {
+    background: var(--hover-color);
+}
+
+.subtitles-import-switch-lang-btn i {
+    font-size: 11px;
+}
