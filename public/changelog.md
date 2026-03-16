@@ -566,3 +566,4 @@
 - fixed bug where html encoded before it gets inserted into the innerHTML so it breaks '?/ etc v59.25.0
 - youtube transcription api now supports different languages. (slightly bugged) v59.26.0
 - fixed some styles in the settings. v59.26.1
+- setting songs to display to 0, fully hides the section v59.27.0
