@@ -9914,6 +9914,7 @@ hideSidebar() {
 	
 	        const data = await response.json();
 	        console.log('Supadata API Response:', data);
+			console.log('Supadata full response:', JSON.stringify(data, null, 2));
 	
 	        let transcriptText = '';
 	        if (data.content) {
