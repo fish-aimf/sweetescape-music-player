@@ -3015,19 +3015,18 @@ if (this.elements.autofillBtn) {
 .number-input-group input {
     width: 80px;
     padding: 8px 12px;
-    border: 1px solid var(--border-color, #475569);
+    border: 1px solid var(--border-color);
     border-radius: 4px;
-    background: var(--background-color, #1e293b);
-    color: var(--text-primary, #e2e8f0);
+    background: var(--bg-primary);
+    color: var(--text-primary);
     font-size: 14px;
 }
 
 .number-input-group input[type="number"]:focus {
     outline: none;
-    border-color: var(--primary-color, #3b82f6);
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px var(--shadow-color);
 }
-
 .input-suffix {
     color: var(--text-secondary, #94a3b8);
     font-size: 14px;
