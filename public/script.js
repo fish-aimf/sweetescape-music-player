@@ -9876,7 +9876,7 @@ hideSidebar() {
 	    const autoFetchBtn = document.getElementById('autoFetchTranscriptBtn');
 	    const transcriptInput = document.getElementById('transcriptInput');
 	    const langSelect = document.getElementById('transcriptLangSelect');
-	    const selectedLang = langSelect ? langSelect.value : 'en';
+	    const selectedLang = langSelect ? langSelect.value : 'auto';
 	
 	    try {
 	        loadingIndicator.style.display = 'flex';
@@ -9885,9 +9885,12 @@ hideSidebar() {
 	
 	        const videoUrl = `https://www.youtube.com/watch?v=${this.currentSongForImport.videoId}`;
 	
-	        // Try with selected language first
-	        let apiUrl = `https://api.supadata.ai/v1/youtube/transcript?url=${encodeURIComponent(videoUrl)}&text=false&lang=${selectedLang}`;
-	        let response = await fetch(apiUrl, {
+	        // Always pass lang when a specific one is chosen — much faster
+	        const apiUrl = selectedLang === 'auto'
+	            ? `https://api.supadata.ai/v1/youtube/transcript?url=${encodeURIComponent(videoUrl)}&text=false`
+	            : `https://api.supadata.ai/v1/youtube/transcript?url=${encodeURIComponent(videoUrl)}&text=false&lang=${selectedLang}`;
+	
+	        const response = await fetch(apiUrl, {
 	            method: 'GET',
 	            headers: {
 	                'x-api-key': this.supadataApiKey,
@@ -9895,26 +9898,16 @@ hideSidebar() {
 	            }
 	        });
 	
-	        // If selected language not found, retry without language filter
-	        if (!response.ok && response.status === 404) {
-	            console.warn(`No transcript in ${selectedLang}, retrying without language filter...`);
-	            apiUrl = `https://api.supadata.ai/v1/youtube/transcript?url=${encodeURIComponent(videoUrl)}&text=false`;
-	            response = await fetch(apiUrl, {
-	                method: 'GET',
-	                headers: {
-	                    'x-api-key': this.supadataApiKey,
-	                    'Content-Type': 'application/json'
-	                }
-	            });
-	        }
-	
 	        if (!response.ok) {
 	            throw new Error(`HTTP error! status: ${response.status}`);
 	        }
 	
 	        const data = await response.json();
-	        console.log('Supadata API Response:', data);
-			console.log('Supadata full response:', JSON.stringify(data, null, 2));
+	
+	        // Populate dropdown with available languages from response
+	        if (data.availableLangs && data.availableLangs.length > 0) {
+	            this.populateTranscriptLangDropdown(data.availableLangs, data.lang);
+	        }
 	
 	        let transcriptText = '';
 	        if (data.content) {
@@ -9926,13 +9919,10 @@ hideSidebar() {
 	                throw new Error('Unexpected transcript format');
 	            }
 	
-	            if (!transcriptText.trim()) {
-	                throw new Error('Empty transcript received');
-	            }
+	            if (!transcriptText.trim()) throw new Error('Empty transcript received');
 	
 	            transcriptInput.value = transcriptText;
-	            console.log('Formatted transcript:', transcriptText.substring(0, 200) + '...');
-	            this.showNotification('Transcript fetched successfully!', 'success');
+	            this.showNotification(`Transcript fetched! (${data.lang})`, 'success');
 	
 	            setTimeout(() => {
 	                this.convertTranscriptToLyricsHandler();
@@ -9959,6 +9949,54 @@ hideSidebar() {
 	        autoFetchBtn.disabled = false;
 	        autoFetchBtn.innerHTML = '<i class="fas fa-magic"></i> Auto-Fetch Transcript';
 	    }
+	}
+	populateTranscriptLangDropdown(langs, currentLang) {
+	    const langSelect = document.getElementById('transcriptLangSelect');
+	    if (!langSelect) return;
+	
+	    const langNames = {
+	        'en': 'English', 'es': 'Spanish', 'fr': 'French',
+	        'de': 'German', 'pt': 'Portuguese', 'it': 'Italian',
+	        'ja': 'Japanese', 'ko': 'Korean', 'zh': 'Chinese',
+	        'ar': 'Arabic', 'hi': 'Hindi', 'ru': 'Russian',
+	        'tr': 'Turkish', 'nl': 'Dutch', 'pl': 'Polish',
+	        'sv': 'Swedish', 'da': 'Danish', 'fi': 'Finnish',
+	        'no': 'Norwegian', 'id': 'Indonesian', 'th': 'Thai',
+	        'vi': 'Vietnamese', 'uk': 'Ukrainian', 'cs': 'Czech',
+	        'ro': 'Romanian', 'hu': 'Hungarian', 'el': 'Greek',
+	    };
+	
+	    langSelect.innerHTML = '<option value="auto">Auto</option>';
+	    langs.forEach(code => {
+	        const option = document.createElement('option');
+	        option.value = code;
+	        option.textContent = langNames[code] || code.toUpperCase();
+	        if (code === currentLang) option.selected = true;
+	        langSelect.appendChild(option);
+	    });
+	
+	    // Show the lang row with a hint if multiple languages available
+	    const langRow = document.querySelector('.subtitles-import-lang-row');
+	    if (langRow && langs.length > 1) {
+	        langRow.style.display = 'flex';
+	        // Add hint text if not already there
+	        let hint = document.getElementById('langSwitchHint');
+	        if (!hint) {
+	            hint = document.createElement('span');
+	            hint.id = 'langSwitchHint';
+	            hint.className = 'subtitles-import-lang-hint';
+	            hint.textContent = `${langs.length} languages available — pick one and re-fetch`;
+	            langRow.parentNode.insertBefore(hint, langRow.nextSibling);
+	        } else {
+	            hint.textContent = `${langs.length} languages available — pick one and re-fetch`;
+	        }
+	    }
+	}
+	resetTranscriptLangDropdown() {
+	    const langSelect = document.getElementById('transcriptLangSelect');
+	    if (langSelect) langSelect.innerHTML = '<option value="auto">Auto</option>';
+	    const hint = document.getElementById('langSwitchHint');
+	    if (hint) hint.remove();
 	}
 	addTimestampsToPlainText(plainText) {
 		try {
