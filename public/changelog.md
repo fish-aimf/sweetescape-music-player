@@ -564,3 +564,4 @@
 - the dropdownlist in compact view now sorts by the usersetting. v59.23.0
 - added song preview to the youtube search results. v59.24.0
 - fixed bug where html encoded before it gets inserted into the innerHTML so it breaks '?/ etc v59.25.0
+- youtube transcription api now supports different languages. (slightly bugged) v59.26.0
