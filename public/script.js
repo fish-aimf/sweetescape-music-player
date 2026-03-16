@@ -9952,6 +9952,7 @@ hideSidebar() {
 	}
 	populateTranscriptLangDropdown(langs, currentLang) {
 	    const langSelect = document.getElementById('transcriptLangSelect');
+	    const switchBtn = document.getElementById('switchLangBtn');
 	    if (!langSelect) return;
 	
 	    const langNames = {
@@ -9975,20 +9976,16 @@ hideSidebar() {
 	        langSelect.appendChild(option);
 	    });
 	
-	    // Show the lang row with a hint if multiple languages available
-	    const langRow = document.querySelector('.subtitles-import-lang-row');
-	    if (langRow && langs.length > 1) {
-	        langRow.style.display = 'flex';
-	        // Add hint text if not already there
-	        let hint = document.getElementById('langSwitchHint');
-	        if (!hint) {
-	            hint = document.createElement('span');
-	            hint.id = 'langSwitchHint';
-	            hint.className = 'subtitles-import-lang-hint';
-	            hint.textContent = `${langs.length} languages available — pick one and re-fetch`;
-	            langRow.parentNode.insertBefore(hint, langRow.nextSibling);
+	    // Show switch button only if multiple languages available
+	    if (switchBtn) {
+	        if (langs.length > 1) {
+	            switchBtn.style.display = 'flex';
+	            // Remove old listener and add fresh one
+	            const newBtn = switchBtn.cloneNode(true);
+	            switchBtn.parentNode.replaceChild(newBtn, switchBtn);
+	            newBtn.addEventListener('click', () => this.autoFetchTranscript());
 	        } else {
-	            hint.textContent = `${langs.length} languages available — pick one and re-fetch`;
+	            switchBtn.style.display = 'none';
 	        }
 	    }
 	}
