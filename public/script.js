@@ -9984,7 +9984,6 @@ hideSidebar() {
 	        'ro': 'Romanian', 'hu': 'Hungarian', 'el': 'Greek',
 	    };
 	
-	    // Rebuild dropdown
 	    langSelect.innerHTML = '';
 	    langs.forEach(code => {
 	        const option = document.createElement('option');
@@ -9994,8 +9993,7 @@ hideSidebar() {
 	        langSelect.appendChild(option);
 	    });
 	
-	    // Show switch button only if multiple languages available
-	    const switchBtn = document.getElementById('switchLangBtn');
+	    // USE the switchBtn declared at the top — no second const
 	    if (switchBtn) {
 	        switchBtn.style.display = langs.length > 1 ? 'flex' : 'none';
 	    }
