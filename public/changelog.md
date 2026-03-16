@@ -562,3 +562,5 @@
 - remove dependency on external visitor counter, it now uses vercel database. improves page load speed by not relying on external javascript. v59.21.0
 - improved css for the visitor counter and added font awsome icon. v59.22.0
 - the dropdownlist in compact view now sorts by the usersetting. v59.23.0
+- added song preview to the youtube search results. v59.24.0
+- fixed bug where html encoded before it gets inserted into the innerHTML so it breaks '?/ etc v59.25.0
