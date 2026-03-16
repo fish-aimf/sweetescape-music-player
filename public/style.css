@@ -8266,3 +8266,13 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     outline: none;
     border-color: var(--accent-color);
 }
+
+
+.subtitles-import-lang-hint {
+    font-size: 11px;
+    color: var(--accent-color);
+    margin-top: 4px;
+    margin-bottom: 6px;
+    display: block;
+    opacity: 0.8;
+}
