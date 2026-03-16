@@ -13412,10 +13412,12 @@ async searchYouTubeForLibraryMatches(searchTerm, pageToken = null) {
     
     throw new Error('All YouTube API keys exhausted');
 }
-renderYouTubeLibrarySearchResults(results, searchTerm) {
+renderYouTubeLibrarySearchResults(results, searchTerm, nextPageToken = null) {
+    this.currentLibrarySearchTerm = searchTerm;
+    this.currentLibraryNextPageToken = nextPageToken;
+
     const fragment = document.createDocumentFragment();
     
-    // Create container for YouTube results
     const youtubeResultsContainer = document.createElement('div');
     youtubeResultsContainer.classList.add('youtube-library-results');
     
@@ -13425,8 +13427,16 @@ renderYouTubeLibrarySearchResults(results, searchTerm) {
     });
     
     fragment.appendChild(youtubeResultsContainer);
+
+    if (nextPageToken) {
+        const loadMoreBtn = document.createElement('button');
+        loadMoreBtn.id = 'loadMoreYouTubeBtn';
+        loadMoreBtn.className = 'load-more-youtube-btn';
+        loadMoreBtn.textContent = 'Load more results';
+        loadMoreBtn.addEventListener('click', () => this.loadMoreYouTubeLibraryResults());
+        fragment.appendChild(loadMoreBtn);
+    }
     
-    // Add the instructional message
     const instructionMessage = document.createElement('div');
     instructionMessage.classList.add('empty-library-message');
     instructionMessage.innerHTML = `
@@ -13438,8 +13448,46 @@ renderYouTubeLibrarySearchResults(results, searchTerm) {
     this.elements.songLibrary.innerHTML = '';
     this.elements.songLibrary.appendChild(fragment);
     
-    // Show the YouTube search suggestion below
     this.showYouTubeSearchSuggestion(searchTerm);
+}
+
+async loadMoreYouTubeLibraryResults() {
+    if (!this.currentLibraryNextPageToken || !this.currentLibrarySearchTerm) return;
+
+    const btn = document.getElementById('loadMoreYouTubeBtn');
+    if (btn) {
+        btn.textContent = 'Loading...';
+        btn.disabled = true;
+    }
+
+    try {
+        const { items, nextPageToken } = await this.searchYouTubeForLibraryMatches(
+            this.currentLibrarySearchTerm,
+            this.currentLibraryNextPageToken
+        );
+
+        this.currentLibraryNextPageToken = nextPageToken;
+
+        const container = this.elements.songLibrary.querySelector('.youtube-library-results');
+        items.forEach(video => {
+            const card = this.createYouTubeLibraryResultCard(video);
+            container.appendChild(card);
+        });
+
+        if (nextPageToken) {
+            btn.textContent = 'Load more results';
+            btn.disabled = false;
+        } else {
+            btn?.remove();
+        }
+
+    } catch (error) {
+        console.error('Failed to load more results:', error);
+        if (btn) {
+            btn.textContent = 'Load more results';
+            btn.disabled = false;
+        }
+    }
 }
 createYouTubeLibraryResultCard(video) {
     const videoId = video.id.videoId;
