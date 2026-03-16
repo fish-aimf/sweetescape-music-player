@@ -13465,21 +13465,34 @@ createYouTubeLibraryResultCard(video) {
     });
     
     card.innerHTML = `
-        <img src="${thumbnail}" alt="${this.escapeHtml(title)}" class="youtube-result-thumbnail">
-        <div class="youtube-result-info">
-            <div class="youtube-result-title">${this.escapeHtml(title)}</div>
-            <div class="youtube-result-channel">${this.escapeHtml(channel)}</div>
-            <div class="youtube-result-meta">${uploadDate}</div>
-        </div>
-        <button class="youtube-result-add-btn" data-video-id="${videoId}" data-title="${this.escapeHtml(title)}" data-channel="${this.escapeHtml(channel)}">
-            <i class="fas fa-plus"></i> Add
-        </button>
-    `;
+	    <img src="${thumbnail}" alt="${this.escapeHtml(title)}" class="youtube-result-thumbnail">
+	    <div class="youtube-result-info">
+	        <div class="youtube-result-title">${this.escapeHtml(title)}</div>
+	        <div class="youtube-result-channel">${this.escapeHtml(channel)}</div>
+	        <div class="youtube-result-meta">${uploadDate}</div>
+	    </div>
+	    <div class="youtube-result-actions">
+	        <button class="youtube-result-preview-btn" data-video-id="${videoId}" title="Preview">
+	            <i class="fas fa-play"></i>
+	        </button>
+	        <button class="youtube-result-add-btn" data-video-id="${videoId}" data-title="${this.escapeHtml(title)}" data-channel="${this.escapeHtml(channel)}">
+	            <i class="fas fa-plus"></i> Add
+	        </button>
+	    </div>
+	`;
     
     return card;
 }
 setupYouTubeLibraryResultsDelegation() {
     this.elements.songLibrary.addEventListener('click', (e) => {
+        const previewBtn = e.target.closest('.youtube-result-preview-btn');
+        if (previewBtn) {
+            const videoId = previewBtn.dataset.videoId;
+            const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
+            this.samplePlayTemporarySong(youtubeUrl);
+            return;
+        }
+
         const addBtn = e.target.closest('.youtube-result-add-btn');
         if (!addBtn) return;
         
