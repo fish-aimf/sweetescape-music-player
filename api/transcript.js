@@ -9,73 +9,63 @@ export default async function handler(req, res) {
     const { videoId, lang } = req.query;
     if (!videoId) return res.status(400).json({ error: 'videoId is required' });
 
+    const headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Referer': 'https://www.youtube.com/',
+        'Origin': 'https://www.youtube.com',
+    };
+
     try {
-        // Step 1: use the youtubei player API directly — not page scraping
-        const playerApiResponse = await fetch(
-            'https://www.youtube.com/youtubei/v1/player',
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                    'X-YouTube-Client-Name': '1',
-                    'X-YouTube-Client-Version': '2.20240101.00.00',
-                    'Origin': 'https://www.youtube.com',
-                    'Referer': 'https://www.youtube.com/',
-                },
-                body: JSON.stringify({
-                    videoId,
-                    context: {
-                        client: {
-                            clientName: 'WEB',
-                            clientVersion: '2.20240101.00.00',
-                            hl: lang || 'en',
-                            gl: 'US',
-                        }
-                    }
-                })
-            }
+        // Step 1: get list of available tracks
+        const listResponse = await fetch(
+            `https://www.youtube.com/api/timedtext?v=${videoId}&type=list`,
+            { headers }
         );
 
-        if (!playerApiResponse.ok) {
-            return res.status(404).json({ error: 'Could not reach YouTube player API' });
+        if (!listResponse.ok) {
+            return res.status(404).json({ error: 'Could not fetch caption list' });
         }
 
-        const playerResponse = await playerApiResponse.json();
-        const captionTracks = playerResponse?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
+        const listXml = await listResponse.text();
+        console.log('Caption list XML:', listXml.substring(0, 500));
 
-        if (!captionTracks || captionTracks.length === 0) {
+        // Step 2: parse available tracks from XML
+        // Format: <track id="0" name="" lang_code="en" lang_original="English" lang_translated="English" lang_default="true"/>
+        const trackMatches = [...listXml.matchAll(/<track[^>]+lang_code="([^"]+)"[^>]*name="([^"]*)"[^>]*\/?>/g)];
+
+        if (!trackMatches.length) {
             return res.status(404).json({ error: 'No captions available for this video' });
         }
 
-        // Step 2: pick the right track
-        let track;
+        const availableLanguages = trackMatches.map(m => ({
+            code: m[1],
+            name: m[2] || m[1],
+            isAuto: false
+        }));
+
+        // Step 3: pick language
+        let selectedLang;
         if (lang) {
-            track = captionTracks.find(t => t.languageCode === lang)
-                   || captionTracks.find(t => t.languageCode.startsWith(lang))
-                   || captionTracks[0];
+            selectedLang = availableLanguages.find(t => t.code === lang)?.code
+                        || availableLanguages.find(t => t.code.startsWith(lang))?.code
+                        || availableLanguages[0].code;
         } else {
-            // Prefer manual captions over auto-generated
-            track = captionTracks.find(t => !t.kind)
-                   || captionTracks.find(t => t.kind === 'asr')
-                   || captionTracks[0];
+            selectedLang = availableLanguages.find(t => t.code === 'en')?.code
+                        || availableLanguages[0].code;
         }
 
-        // Step 3: fetch the captions
-        const captionResponse = await fetch(`${track.baseUrl}&fmt=json3`, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Referer': 'https://www.youtube.com/',
-            }
-        });
+        // Step 4: fetch the actual transcript
+        const transcriptUrl = `https://www.youtube.com/api/timedtext?v=${videoId}&lang=${selectedLang}&fmt=json3`;
+        const transcriptResponse = await fetch(transcriptUrl, { headers });
 
-        if (!captionResponse.ok) {
-            return res.status(500).json({ error: 'Failed to fetch caption data' });
+        if (!transcriptResponse.ok) {
+            return res.status(500).json({ error: 'Failed to fetch transcript' });
         }
 
-        const captionData = await captionResponse.json();
+        const transcriptData = await transcriptResponse.json();
+        console.log('Transcript events count:', transcriptData.events?.length);
 
-        const transcript = (captionData.events || [])
+        const transcript = (transcriptData.events || [])
             .filter(e => e.segs)
             .map(e => ({
                 text: e.segs.map(s => s.utf8).join('').replace(/\n/g, ' ').trim(),
@@ -88,14 +78,8 @@ export default async function handler(req, res) {
             return res.status(404).json({ error: 'Transcript was empty after parsing' });
         }
 
-        const availableLanguages = captionTracks.map(t => ({
-            code: t.languageCode,
-            name: t.name?.simpleText || t.languageCode,
-            isAuto: t.kind === 'asr'
-        }));
-
         return res.status(200).json({
-            data: { transcript, availableLanguages, usedLang: track.languageCode },
+            data: { transcript, availableLanguages, usedLang: selectedLang },
             status: 200
         });
 
