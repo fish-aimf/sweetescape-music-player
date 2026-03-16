@@ -8237,3 +8237,32 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     opacity: 0.4;
     cursor: not-allowed;
 }
+    .subtitles-import-lang-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.subtitles-import-lang-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.subtitles-import-lang-select {
+    flex: 1;
+    padding: 8px 12px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+.subtitles-import-lang-select:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
