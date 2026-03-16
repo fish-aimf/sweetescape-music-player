@@ -456,7 +456,9 @@ class AdvancedMusicPlayer {
 			aiOutputSection: document.getElementById("aiOutputSection"),
 			aiOutput: document.getElementById("aiOutput"),
 			openAiGeneratorBtn: document.getElementById("openAiGeneratorBtn"),
-			notFindingSection: document.getElementById("notFindingSection")
+			notFindingSection: document.getElementById("notFindingSection"),
+			switchLangBtn: document.getElementById('switchLangBtn'),
+			transcriptLangSelect: document.getElementById('transcriptLangSelect')
 		};
 		
 		// Setup specialized UI handlers
@@ -702,7 +704,8 @@ class AdvancedMusicPlayer {
 			[this.elements.findSongsBtn, 'click', handlers.findSongsOpen],
 			[this.elements.closeFindSongs, 'click', handlers.findSongsClose],
 			[this.elements.findSongsSearch, 'input', handlers.findSongsSearch],
-			[this.elements.searchSongsToAdd, 'input', handlers.searchSongsToAdd]
+			[this.elements.searchSongsToAdd, 'input', handlers.searchSongsToAdd],
+			[this.elements.switchLangBtn, 'click', () => this.autoFetchTranscript()]
 		];
 		
 		// Efficiently attach all simple listeners with null checks
@@ -9952,7 +9955,6 @@ hideSidebar() {
 	}
 	populateTranscriptLangDropdown(langs, currentLang) {
 	    const langSelect = document.getElementById('transcriptLangSelect');
-	    const switchBtn = document.getElementById('switchLangBtn');
 	    if (!langSelect) return;
 	
 	    const langNames = {
@@ -9967,6 +9969,7 @@ hideSidebar() {
 	        'ro': 'Romanian', 'hu': 'Hungarian', 'el': 'Greek',
 	    };
 	
+	    // Rebuild dropdown with available langs
 	    langSelect.innerHTML = '<option value="auto">Auto</option>';
 	    langs.forEach(code => {
 	        const option = document.createElement('option');
@@ -9976,17 +9979,14 @@ hideSidebar() {
 	        langSelect.appendChild(option);
 	    });
 	
-	    // Show switch button only if multiple languages available
-	    if (switchBtn) {
-	        if (langs.length > 1) {
-	            switchBtn.style.display = 'flex';
-	            // Remove old listener and add fresh one
-	            const newBtn = switchBtn.cloneNode(true);
-	            switchBtn.parentNode.replaceChild(newBtn, switchBtn);
-	            newBtn.addEventListener('click', () => this.autoFetchTranscript());
-	        } else {
-	            switchBtn.style.display = 'none';
-	        }
+	    // Show/hide switch button
+	    const switchBtn = document.getElementById('switchLangBtn');
+	    if (!switchBtn) return;
+	
+	    if (langs.length > 1) {
+	        switchBtn.style.display = 'flex';
+	    } else {
+	        switchBtn.style.display = 'none';
 	    }
 	}
 	resetTranscriptLangDropdown() {
