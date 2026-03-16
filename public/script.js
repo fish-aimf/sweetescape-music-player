@@ -1418,7 +1418,11 @@ class AdvancedMusicPlayer {
 	        .replace(/"/g, '&quot;')
 	        .replace(/'/g, '&#039;');
 	}
-	
+	decodeHtmlEntities(text) {
+	    const textarea = document.createElement('textarea');
+	    textarea.innerHTML = text;
+	    return textarea.value;
+	}
 	debounce(func, wait) {
 		let timeout;
 		return function executedFunction(...args) {
@@ -13467,13 +13471,13 @@ createYouTubeLibraryResultCard(video) {
     card.innerHTML = `
 	    <img src="${thumbnail}" alt="${this.escapeHtml(title)}" class="youtube-result-thumbnail">
 	    <div class="youtube-result-info">
-	        <div class="youtube-result-title">${this.escapeHtml(title)}</div>
-	        <div class="youtube-result-channel">${this.escapeHtml(channel)}</div>
+	        <div class="youtube-result-title">${this.decodeHtmlEntities(title)}</div>
+	        <div class="youtube-result-channel">${this.decodeHtmlEntities(channel)}</div>
 	        <div class="youtube-result-meta">${uploadDate}</div>
 	    </div>
 	    <div class="youtube-result-actions">
 	        <button class="youtube-result-preview-btn" data-video-id="${videoId}" title="Preview">
-	            <i class="fas fa-play"></i>
+	            <i class="fas fa-play"></i> Preview
 	        </button>
 	        <button class="youtube-result-add-btn" data-video-id="${videoId}" data-title="${this.escapeHtml(title)}" data-channel="${this.escapeHtml(channel)}">
 	            <i class="fas fa-plus"></i> Add
