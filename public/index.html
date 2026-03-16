@@ -814,49 +814,24 @@ Another Playlist{
                   </div>
                   <!-- Recommendation Tab -->
                   <div class="tab-panel" id="recommendationPanel">
-                     <div class="setting-group">
-                        <label for="recentlyPlayedStorageLimit">Store Last Songs:</label>
-                        <div class="number-input-group">
-                           <input type="number" id="recentlyPlayedStorageLimit" min="1" max="100" value="20">
-                           <span class="input-suffix">songs</span>
-                        </div>
-                        <p class="setting-description">Maximum number of recently played songs to store</p>
-                     </div>
-                     <div class="setting-group">
-                        <label for="recentlyPlayedDisplayLimit">Recently Listened To Display:</label>
-                        <div class="number-input-group">
-                           <input type="number" id="recentlyPlayedDisplayLimit" min="1" max="10" value="3">
-                           <span class="input-suffix">songs</span>
-                        </div>
-                        <p class="setting-description">Number of songs to show in Recently Listened To section</p>
-                     </div>
-                     <div class="setting-group">
-                        <label for="suggestedSongsDisplayLimit">Suggested Songs Display:</label>
-                        <div class="number-input-group">
-                           <input type="number" id="suggestedSongsDisplayLimit" min="1" max="10" value="2">
-                           <span class="input-suffix">songs</span>
-                        </div>
-                        <p class="setting-description">Number of songs to show in Suggested section</p>
-                     </div>
-                     <div class="setting-group">
-                        <label for="yourPicksDisplayLimit">Your Picks Display:</label>
-                        <div class="number-input-group">
-                           <input type="number" id="yourPicksDisplayLimit" min="1" max="10" value="2">
-                           <span class="input-suffix">songs</span>
-                        </div>
-                        <p class="setting-description">Number of songs to show in Your Picks section</p>
-                     </div>
-                     <div class="setting-group">
-                        <label for="recentlyPlayedPlaylistsLimit">Recently Played Playlists Display:</label>
-                        <div class="number-input-group">
-                           <input type="number" id="recentlyPlayedPlaylistsLimit" min="1" max="5" value="1">
-                           <span class="input-suffix">playlists</span>
-                        </div>
-                        <p class="setting-description">Number of playlists to show in Recently Played Playlists section</p>
-                     </div>
-                     <div class="setting-group">
-                        <button id="saveDiscoverMoreSettings" class="save-settings-btn">Save Recommendation Settings</button>
-                     </div>
+                    <div class="setting-group">
+                      <label for="recentlyPlayedStorageLimit">Store Last Songs:</label>
+                      <div class="number-input-group">
+                        <input type="number" id="recentlyPlayedStorageLimit" min="1" max="100" value="20">
+                        <span class="input-suffix">songs</span>
+                      </div>
+                      <p class="setting-description">Maximum number of recently played songs to store</p>
+                    </div>
+                  
+                    <div class="setting-group">
+                      <label>Section Order &amp; Display Limits:</label>
+                      <p class="setting-description">Use ↑↓ to reorder. Set to 0 to hide a section.</p>
+                      <div id="sectionOrderList" class="section-order-list"></div>
+                    </div>
+                  
+                    <div class="setting-group">
+                      <button id="saveDiscoverMoreSettings" class="save-settings-btn">Save Recommendation Settings</button>
+                    </div>
                   </div>
                   <div id="keybindsPanel" class="tab-panel">
                      <div class="keybinds-content">
