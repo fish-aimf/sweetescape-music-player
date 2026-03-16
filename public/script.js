@@ -9890,8 +9890,11 @@ hideSidebar() {
 	    const loadingIndicator = document.getElementById('loadingIndicator');
 	    const autoFetchBtn = document.getElementById('autoFetchTranscriptBtn');
 	    const transcriptInput = document.getElementById('transcriptInput');
+	
+	    // Read lang at call time — not cached at top
 	    const langSelect = document.getElementById('transcriptLangSelect');
-	    const selectedLang = langSelect ? langSelect.value : 'auto';
+	    const selectedLang = langSelect?.value || 'auto';
+	    console.log('autoFetchTranscript called with lang:', selectedLang);
 	
 	    try {
 	        loadingIndicator.style.display = 'flex';
@@ -9900,10 +9903,11 @@ hideSidebar() {
 	
 	        const videoUrl = `https://www.youtube.com/watch?v=${this.currentSongForImport.videoId}`;
 	
-	        // Always pass lang when a specific one is chosen — much faster
 	        const apiUrl = selectedLang === 'auto'
 	            ? `https://api.supadata.ai/v1/youtube/transcript?url=${encodeURIComponent(videoUrl)}&text=false`
 	            : `https://api.supadata.ai/v1/youtube/transcript?url=${encodeURIComponent(videoUrl)}&text=false&lang=${selectedLang}`;
+	
+	        console.log('Fetching:', apiUrl);
 	
 	        const response = await fetch(apiUrl, {
 	            method: 'GET',
@@ -9918,8 +9922,8 @@ hideSidebar() {
 	        }
 	
 	        const data = await response.json();
+	        console.log('Supadata response lang:', data.lang, 'availableLangs:', data.availableLangs);
 	
-	        // Populate dropdown with available languages from response
 	        if (data.availableLangs && data.availableLangs.length > 0) {
 	            this.populateTranscriptLangDropdown(data.availableLangs, data.lang);
 	        }
@@ -9967,9 +9971,8 @@ hideSidebar() {
 	}
 	populateTranscriptLangDropdown(langs, currentLang) {
 	    console.log('populateTranscriptLangDropdown called', langs, currentLang);
-	    const switchBtn = document.getElementById('switchLangBtn');
-	    console.log('switchBtn found:', switchBtn);
 	    const langSelect = document.getElementById('transcriptLangSelect');
+	    const switchBtn = document.getElementById('switchLangBtn');
 	    if (!langSelect) return;
 	
 	    const langNames = {
@@ -9984,18 +9987,43 @@ hideSidebar() {
 	        'ro': 'Romanian', 'hu': 'Hungarian', 'el': 'Greek',
 	    };
 	
-	    langSelect.innerHTML = '';
+	    // Remove old change listener by cloning
+	    const newSelect = langSelect.cloneNode(false);
+	    langSelect.parentNode.replaceChild(newSelect, langSelect);
+	
+	    // Rebuild options
+	    newSelect.innerHTML = '';
 	    langs.forEach(code => {
 	        const option = document.createElement('option');
 	        option.value = code;
 	        option.textContent = langNames[code] || code.toUpperCase();
 	        if (code === currentLang) option.selected = true;
-	        langSelect.appendChild(option);
+	        newSelect.appendChild(option);
 	    });
 	
-	    // USE the switchBtn declared at the top — no second const
+	    // Fresh change listener on the new select
+	    newSelect.addEventListener('change', (e) => {
+	        console.log('Language changed to:', e.target.value);
+	        this.autoFetchTranscript();
+	    });
+	
+	    // Show switch button if multiple languages
 	    if (switchBtn) {
-	        switchBtn.style.display = langs.length > 1 ? 'flex' : 'none';
+	        if (langs.length > 1) {
+	            switchBtn.style.display = 'flex';
+	            // Fresh click listener
+	            const newBtn = switchBtn.cloneNode(true);
+	            switchBtn.parentNode.replaceChild(newBtn, switchBtn);
+	            newBtn.addEventListener('click', () => {
+	                newSelect.focus();
+	                newSelect.size = newSelect.options.length;
+	                newSelect.addEventListener('blur', () => {
+	                    newSelect.size = 1;
+	                }, { once: true });
+	            });
+	        } else {
+	            switchBtn.style.display = 'none';
+	        }
 	    }
 	}
 	resetTranscriptLangDropdown() {
