@@ -705,7 +705,6 @@ class AdvancedMusicPlayer {
 			[this.elements.closeFindSongs, 'click', handlers.findSongsClose],
 			[this.elements.findSongsSearch, 'input', handlers.findSongsSearch],
 			[this.elements.searchSongsToAdd, 'input', handlers.searchSongsToAdd],
-			[this.elements.switchLangBtn, 'click', () => this.autoFetchTranscript()]
 		];
 		
 		// Efficiently attach all simple listeners with null checks
@@ -749,6 +748,7 @@ class AdvancedMusicPlayer {
 		    });
 		}
 		
+		
 		// Current song name styling
 		const currentSongName = document.getElementById('currentSongName');
 		if (currentSongName) {
@@ -773,6 +773,18 @@ class AdvancedMusicPlayer {
 		if (refreshBtn) {
 			refreshBtn.addEventListener('click', handlers.refreshRandomRecommendations);
 		}
+		// Switch Language button opens the dropdown
+		this.elements.switchLangBtn?.addEventListener('click', () => {
+		    this.elements.transcriptLangSelect.focus();
+		    this.elements.transcriptLangSelect.click();
+		});
+		
+		// When user picks a language from dropdown, auto-fetch immediately
+		this.elements.transcriptLangSelect?.addEventListener('change', (e) => {
+		    if (e.target.value !== 'auto') {
+		        this.autoFetchTranscript();
+		    }
+		});
 		// Discord modal events
 		document.getElementById('closeDiscordModal')?.addEventListener('click', () => this.closeDiscordModal());
 		document.getElementById('discordCloseBtn2')?.addEventListener('click',  () => this.closeDiscordModal());
@@ -9969,8 +9981,8 @@ hideSidebar() {
 	        'ro': 'Romanian', 'hu': 'Hungarian', 'el': 'Greek',
 	    };
 	
-	    // Rebuild dropdown with available langs
-	    langSelect.innerHTML = '<option value="auto">Auto</option>';
+	    // Rebuild dropdown
+	    langSelect.innerHTML = '';
 	    langs.forEach(code => {
 	        const option = document.createElement('option');
 	        option.value = code;
@@ -9979,19 +9991,17 @@ hideSidebar() {
 	        langSelect.appendChild(option);
 	    });
 	
-	    // Show/hide switch button
+	    // Show switch button only if multiple languages available
 	    const switchBtn = document.getElementById('switchLangBtn');
-	    if (!switchBtn) return;
-	
-	    if (langs.length > 1) {
-	        switchBtn.style.display = 'flex';
-	    } else {
-	        switchBtn.style.display = 'none';
+	    if (switchBtn) {
+	        switchBtn.style.display = langs.length > 1 ? 'flex' : 'none';
 	    }
 	}
 	resetTranscriptLangDropdown() {
 	    const langSelect = document.getElementById('transcriptLangSelect');
-	    if (langSelect) langSelect.innerHTML = '<option value="auto">Auto</option>';
+	    if (langSelect) {
+	        langSelect.innerHTML = '<option value="auto">Auto</option>';
+	    }
 	    const switchBtn = document.getElementById('switchLangBtn');
 	    if (switchBtn) switchBtn.style.display = 'none';
 	}
