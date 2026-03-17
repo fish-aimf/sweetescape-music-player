@@ -785,11 +785,6 @@ class AdvancedMusicPlayer {
 		        this.autoFetchTranscript();
 		    }
 		});
-		// Compact close button for the now playingsection
-		const compactCloseBtn = document.getElementById('compactCloseBtn');
-		if (compactCloseBtn) {
-		    compactCloseBtn.addEventListener('click', () => this.closeCompactNowPlaying());
-		}
 		// Discord modal events
 		document.getElementById('closeDiscordModal')?.addEventListener('click', () => this.closeDiscordModal());
 		document.getElementById('discordCloseBtn2')?.addEventListener('click',  () => this.closeDiscordModal());
@@ -2665,7 +2660,6 @@ class AdvancedMusicPlayer {
 		this.renderPlaylistSidebar();
 		this.saveRecentlyPlayedPlaylist(playlist);
 		this.updateCurrentSongDisplay();
-		this._updateCompactNowPlayingIfOpen();
 	}
 	playSong(songId) {
 		const song = this.songLibrary.find((s) => s.id === songId);
@@ -2678,7 +2672,6 @@ class AdvancedMusicPlayer {
 		this.hideSidebar();
 		this.saveRecentlyPlayedSong(song);
 		this.updateCurrentSongDisplay();
-		this._updateCompactNowPlayingIfOpen();
 
 		this._discordScheduleSend();
 
@@ -2809,7 +2802,6 @@ class AdvancedMusicPlayer {
 			this.playSongById(nextSong.videoId);
 			this.updatePlayerUI();
 			this.updateCurrentSongDisplay();
-			this._updateCompactNowPlayingIfOpen();
 
 			// Send Discord RPC update
 			this._discordScheduleSend();
@@ -2839,7 +2831,6 @@ class AdvancedMusicPlayer {
 			this.playCurrentSong();
 		}
 		this.updateCurrentSongDisplay();
-		this._updateCompactNowPlayingIfOpen();
 
 		// Send Discord RPC update
 		this._discordScheduleSend();
@@ -2866,7 +2857,6 @@ class AdvancedMusicPlayer {
 			this.saveRecentlyPlayedSong(source[this.currentSongIndex]);
 			this.playSongById(source[this.currentSongIndex].videoId);
 			this.updateCurrentSongDisplay();
-			this._updateCompactNowPlayingIfOpen();
 
 			// Send Discord RPC update
 			if (this.discordEnabled && this.discordConnected) {
@@ -2885,7 +2875,6 @@ class AdvancedMusicPlayer {
 			this.playCurrentSong();
 		}
 		this.updateCurrentSongDisplay();
-		this._updateCompactNowPlayingIfOpen();
 
 		// Send Discord RPC update
 		this._discordScheduleSend();
@@ -2903,7 +2892,6 @@ class AdvancedMusicPlayer {
 			this.updatePlayerUI();
 		}
 		this.updateCurrentSongDisplay();
-		this._updateCompactNowPlayingIfOpen();
 
 		// Send Discord RPC update
 		this._discordScheduleSend();
@@ -2923,7 +2911,6 @@ class AdvancedMusicPlayer {
 		this.saveRecentlyPlayedSong(song);
 		this.playSongById(song.videoId);
 		this.updateCurrentSongDisplay();
-		this._updateCompactNowPlayingIfOpen();
 
 		// Send Discord RPC update
 		this._discordScheduleSend();
@@ -5408,7 +5395,6 @@ hideSidebar() {
 		this.saveRecentlyPlayedSong(this.currentPlaylist.songs[this.currentSongIndex]);
 		this.playSongById(this.currentPlaylist.songs[nextIndex].videoId);
 		this.updateCurrentSongDisplay();
-		this._updateCompactNowPlayingIfOpen();
 	}
 	isSongTemporarilySkipped(song) {
 		const entryId = song.entryId || "id_" + song.videoId;
@@ -5981,11 +5967,7 @@ hideSidebar() {
 	            </div>
 	        </div>`;
 	    this.elements.additionalDetails.appendChild(currentSongDiv);
-		currentSongDiv.style.cursor = 'pointer';
-		currentSongDiv.title = 'Click to open compact player';
-		currentSongDiv.addEventListener('click', () => this.openCompactNowPlaying());
 	    this.updateCurrentSongDisplay();
-		this._updateCompactNowPlayingIfOpen();
 	
 	    // Ordered sections — skip any with limit === 0
 	    const defs = this._getDefaultSectionOrder();
@@ -6093,7 +6075,6 @@ hideSidebar() {
 	}
 	initializeCurrentSongSection() {
 		this.updateCurrentSongDisplay();
-		this._updateCompactNowPlayingIfOpen();
 	}
 	getCurrentSongData() {
 	  if (!this.currentSong) return null;
@@ -13725,79 +13706,6 @@ resetLibrarySearchTimeout() {
         }
     }, 60000);
 }
-openCompactNowPlaying() {
-    if (!this.currentSong) return;
-
-    const overlay = document.getElementById('compactNowPlaying');
-    const appContainer = document.querySelector('.app-container');
-    if (!overlay || !appContainer) return;
-
-    // Populate song info
-    const songData = this.getCurrentSongData();
-    document.getElementById('compactSongName').textContent = songData?.name || 'No Song Playing';
-    document.getElementById('compactSongAuthor').textContent = songData?.author || '';
-    document.getElementById('compactThumbnail').src = songData?.thumbnailUrl ||
-        (songData?.videoId ? `https://img.youtube.com/vi/${songData.videoId}/default.jpg` : '');
-
-    // Move the three control sections into the overlay
-    const progressWrapper  = overlay.querySelector('.compact-progress-wrapper');
-    const controlsWrapper  = overlay.querySelector('.compact-controls-wrapper');
-    const volumeWrapper    = overlay.querySelector('.compact-volume-wrapper');
-
-    const musicProgress    = document.querySelector('.music-progress');
-    const playerControls   = document.querySelector('.player-controls');
-    const volumeControl    = document.querySelector('.volume-control');
-
-    if (musicProgress)  progressWrapper.appendChild(musicProgress);
-    if (playerControls) controlsWrapper.appendChild(playerControls);
-    if (volumeControl)  volumeWrapper.appendChild(volumeControl);
-
-    // Hide app, show overlay
-    appContainer.style.display = 'none';
-    overlay.style.display = 'flex';
-
-    this._compactModeActive = true;
-}
-
-closeCompactNowPlaying() {
-    const overlay = document.getElementById('compactNowPlaying');
-    const appContainer = document.querySelector('.app-container');
-    if (!overlay || !appContainer) return;
-
-    // Move controls back to .now-playing
-    const nowPlaying = document.querySelector('.now-playing');
-    if (nowPlaying) {
-        const musicProgress  = overlay.querySelector('.music-progress');
-        const playerControls = overlay.querySelector('.player-controls');
-        const volumeControl  = overlay.querySelector('.volume-control');
-
-        // Re-insert in correct order: progress, then now-playing-info already there,
-        // then controls, then volume
-        const nowPlayingInfo = nowPlaying.querySelector('.now-playing-info');
-
-        if (musicProgress)  nowPlaying.insertBefore(musicProgress, nowPlaying.firstChild);
-        if (playerControls && nowPlayingInfo) nowPlaying.insertBefore(playerControls, nowPlayingInfo.nextSibling);
-        if (volumeControl)  nowPlaying.appendChild(volumeControl);
-    }
-
-    // Show app, hide overlay
-    appContainer.style.display = '';
-    overlay.style.display = 'none';
-
-    this._compactModeActive = false;
-}
-
-_updateCompactNowPlayingIfOpen() {
-    if (!this._compactModeActive) return;
-    const songData = this.getCurrentSongData();
-    const nameEl   = document.getElementById('compactSongName');
-    const authorEl = document.getElementById('compactSongAuthor');
-    const thumbEl  = document.getElementById('compactThumbnail');
-    if (nameEl)   nameEl.textContent  = songData?.name   || 'No Song Playing';
-    if (authorEl) authorEl.textContent = songData?.author || '';
-    if (thumbEl)  thumbEl.src = songData?.thumbnailUrl ||
-        (songData?.videoId ? `https://img.youtube.com/vi/${songData.videoId}/default.jpg` : '');
-}
 
 
 
@@ -14113,4 +14021,3 @@ window.addEventListener("beforeunload", () => {
 	}
 });
 document.addEventListener("DOMContentLoaded", initializeMusicPlayer);
-
