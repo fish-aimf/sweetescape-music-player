@@ -1260,6 +1260,30 @@ Another Playlist{
             </div>
          </div>
       </div>
+         <!-- Compact Now Playing Overlay -->
+      <div id="compactNowPlaying" class="compact-now-playing" style="display:none;">
+          <button id="compactCloseBtn" class="compact-close-btn" title="Back to app">
+              <i class="fas fa-arrow-left"></i>
+          </button>
+          <div class="compact-left">
+              <img id="compactThumbnail" src="" alt="Thumbnail" class="compact-thumbnail" />
+          </div>
+          <div class="compact-right">
+              <div class="compact-song-info">
+                  <div id="compactSongName" class="compact-song-name">No Song Playing</div>
+                  <div id="compactSongAuthor" class="compact-song-author"></div>
+              </div>
+              <div class="compact-progress-wrapper">
+                  <!-- progress bar gets moved here -->
+              </div>
+              <div class="compact-controls-wrapper">
+                  <!-- controls get moved here -->
+              </div>
+              <div class="compact-volume-wrapper">
+                  <!-- volume gets moved here -->
+              </div>
+          </div>
+      </div>
       <script src="https://www.youtube.com/iframe_api"></script>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
 
