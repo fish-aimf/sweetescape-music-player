@@ -13757,7 +13757,7 @@ openCompactNowPlaying() {
     overlay.style.display = 'flex';
 
     this._compactModeActive = true;
-},
+}
 
 closeCompactNowPlaying() {
     const overlay = document.getElementById('compactNowPlaying');
@@ -13785,7 +13785,7 @@ closeCompactNowPlaying() {
     overlay.style.display = 'none';
 
     this._compactModeActive = false;
-},
+}
 
 _updateCompactNowPlayingIfOpen() {
     if (!this._compactModeActive) return;
@@ -13797,7 +13797,7 @@ _updateCompactNowPlayingIfOpen() {
     if (authorEl) authorEl.textContent = songData?.author || '';
     if (thumbEl)  thumbEl.src = songData?.thumbnailUrl ||
         (songData?.videoId ? `https://img.youtube.com/vi/${songData.videoId}/default.jpg` : '');
-},
+}
 
 
 
