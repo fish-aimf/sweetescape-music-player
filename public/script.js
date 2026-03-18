@@ -1140,6 +1140,7 @@ class AdvancedMusicPlayer {
 	
 	    const lyrics = this.currentLyrics ?? [];
 	    const timings = this.currentTimings ?? [];
+		console.log('[DEBUG] seekMusic — lyrics:', lyrics.length, 'timings:', timings.length, 'seekTime:', seekTime, 'raw currentLyrics:', this.currentLyrics, 'raw currentTimings:', this.currentTimings);
 	    this.updateHighlightedLyric(seekTime, lyrics, timings);
 	}
 	handleTouchStart(e) {
@@ -2791,6 +2792,7 @@ class AdvancedMusicPlayer {
 				}
 			} else {
 				this.ytPlayer.playVideo();
+				console.log('[DEBUG] unpause — currentLyrics:', this.currentLyrics, 'currentTimings:', this.currentTimings);
 				this.isPlaying = true;
 				this.updatePageTitle();
 			}
