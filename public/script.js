@@ -1088,17 +1088,19 @@ class AdvancedMusicPlayer {
 	
 	         
 	
-	            if (duration > 0) {
-	                const progressPercent = (currentTime / duration) * 100;
-	                this.elements.progressBar.value = progressPercent;
-	
-	                if (this.elements.timeDisplay) {
-	                    this.elements.timeDisplay.textContent =
-	                        `${this.formatTime(currentTime)}/${this.formatTime(duration)}`;
-	                }
-	
-	                this.updateHighlightedLyric(currentTime, this.currentLyrics ?? [], this.currentTimings ?? []);
-	            }
+				if (duration > 0) {
+					if (!this.isDragging) {
+						const progressPercent = (currentTime / duration) * 100;
+						this.elements.progressBar.value = progressPercent;
+				
+						if (this.elements.timeDisplay) {
+							this.elements.timeDisplay.textContent =
+								`${this.formatTime(currentTime)}/${this.formatTime(duration)}`;
+						}
+				
+						this.updateHighlightedLyric(currentTime, this.currentLyrics ?? [], this.currentTimings ?? []);
+					}
+				}
 	        } catch (error) {
 	            console.error("Error updating progress bar:", error);
 	        }
