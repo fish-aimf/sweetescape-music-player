@@ -1086,16 +1086,7 @@ class AdvancedMusicPlayer {
 	            const currentTime = this.ytPlayer.getCurrentTime() || 0;
 	            const duration = this.ytPlayer.getDuration() || 0;
 	
-	            // FIX 3: If YT hasn't settled after a seek yet, skip this tick entirely
-	            if (
-	                this.pendingSeekTime !== undefined &&
-	                Date.now() - this.pendingSeekTimestamp < 1500 &&
-	                Math.abs(currentTime - this.pendingSeekTime) > 2
-	            ) {
-	                return; // YT still scrubbing — don't overwrite the correct highlight
-	            }
-	            // Seek has settled, clear the guard
-	            this.pendingSeekTime = undefined;
+	         
 	
 	            if (duration > 0) {
 	                const progressPercent = (currentTime / duration) * 100;
@@ -2788,19 +2779,9 @@ class AdvancedMusicPlayer {
 					document.title = "Music Player";
 				}
 				} else {
-				    this.ytPlayer.playVideo();
-				    this.isPlaying = true;
-				    this.updatePageTitle();
-				    if (this.currentLyrics?.length && this.currentTimings?.length) {
-				        const currentTime = this.ytPlayer.getCurrentTime();
-				        this.updateHighlightedLyric(currentTime, this.currentLyrics, this.currentTimings);
-				        setTimeout(() => {
-				            if (this.ytPlayer && this.isPlaying) {
-				                const settledTime = this.ytPlayer.getCurrentTime();
-				                this.updateHighlightedLyric(settledTime, this.currentLyrics, this.currentTimings);
-				            }
-				        }, 150);
-				    }
+					this.ytPlayer.playVideo();
+					this.isPlaying = true;
+					this.updatePageTitle();
 				}
 			this.debouncedUpdatePlayerUI();
 		} catch (error) {
@@ -3249,15 +3230,17 @@ hideSidebar() {
 			if (this.currentSpeed !== 1) {
 				this.ytPlayer.setPlaybackRate(this.currentSpeed);
 			}
-
-			// Only start progress bar if tab is visible
 			if (this.isTabVisible) {
 				this.updateProgressBar();
 			}
-
 			this.startListeningTimeTracking();
 			if (document.getElementById("lyrics") && document.getElementById("lyrics").classList.contains("active")) {
-				this.renderLyricsTab();
+				if (!this.currentLyrics?.length) {
+					this.renderLyricsTab();
+				} else {
+					const currentTime = this.ytPlayer.getCurrentTime();
+					this.updateHighlightedLyric(currentTime, this.currentLyrics, this.currentTimings);
+				}
 			}
 			if (this.isLyricsFullscreen) {
 				this.renderFullscreenLyrics();
@@ -7408,7 +7391,6 @@ hideSidebar() {
 			progressItem.classList.add('lyricmaker-timed');
 		}
 		
-		// NEW UI FEATURES (unchanged)
 		updateLyricsDisplay();
 		updateLyricMakerButtonStates();
 		renderLyricMakerVisualTimeline();
