@@ -8479,3 +8479,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
         width: 100%;
     }
 }
+
+.compact-now-playing * {
+    outline: 1px solid red !important;
+}
