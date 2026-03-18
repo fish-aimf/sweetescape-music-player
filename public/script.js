@@ -1138,10 +1138,7 @@ class AdvancedMusicPlayer {
 	    this.pendingSeekTime = seekTime;
 	    this.pendingSeekTimestamp = Date.now();
 	
-	    const lyrics = this.currentLyrics ?? [];
-	    const timings = this.currentTimings ?? [];
-		console.log('[DEBUG] seekMusic — lyrics:', lyrics.length, 'timings:', timings.length, 'seekTime:', seekTime, 'raw currentLyrics:', this.currentLyrics, 'raw currentTimings:', this.currentTimings);
-	    this.updateHighlightedLyric(seekTime, lyrics, timings);
+	    this.updateHighlightedLyric(seekTime, this.currentLyrics ?? [], this.currentTimings ?? []);
 	}
 	handleTouchStart(e) {
 		e.preventDefault();
@@ -2791,10 +2788,13 @@ class AdvancedMusicPlayer {
 					document.title = "Music Player";
 				}
 			} else {
-				this.ytPlayer.playVideo();
-				console.log('[DEBUG] unpause — currentLyrics:', this.currentLyrics, 'currentTimings:', this.currentTimings);
-				this.isPlaying = true;
-				this.updatePageTitle();
+			    this.ytPlayer.playVideo();
+			    this.isPlaying = true;
+			    this.updatePageTitle();
+			    if (this.currentLyrics?.length && this.currentTimings?.length) {
+			        const currentTime = this.ytPlayer.getCurrentTime();
+			        this.updateHighlightedLyric(currentTime, this.currentLyrics, this.currentTimings);
+			    }
 			}
 			this.debouncedUpdatePlayerUI();
 		} catch (error) {
@@ -6808,17 +6808,25 @@ hideSidebar() {
 		
 		this.elements.lyricsPane.appendChild(lyricsPlayer);
 		
+		this.currentLyrics = hasTimestamps ? lyricsArray : [];
+		this.currentTimings = hasTimestamps ? timingsArray : [];
+		
 		if (this.lyricsInterval) {
-			clearInterval(this.lyricsInterval);
+		    clearInterval(this.lyricsInterval);
+		    this.lyricsInterval = null;
 		}
 		
-		if (hasTimestamps && this.ytPlayer && this.isPlaying) {
-			this.lyricsInterval = setInterval(() => {
-				if (this.ytPlayer && this.ytPlayer.getCurrentTime) {
-					const currentTime = this.ytPlayer.getCurrentTime();
-					this.updateHighlightedLyric(currentTime, lyricsArray, timingsArray);
-				}
-			}, 100);
+		if (hasTimestamps && this.ytPlayer) {
+		    this.lyricsInterval = setInterval(() => {
+		        if (
+		            this.ytPlayer &&
+		            this.ytPlayer.getCurrentTime &&
+		            this.ytPlayer.getPlayerState() === YT.PlayerState.PLAYING
+		        ) {
+		            const currentTime = this.ytPlayer.getCurrentTime();
+		            this.updateHighlightedLyric(currentTime, this.currentLyrics, this.currentTimings);
+		        }
+		    }, 100);
 		}
 	}
 	generateKaraokeURL(song, lyricsWithTimestamps) {
