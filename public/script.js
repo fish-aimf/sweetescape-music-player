@@ -6815,7 +6815,7 @@ hideSidebar() {
 		            const currentTime = this.ytPlayer.getCurrentTime();
 		            this.updateHighlightedLyric(currentTime, this.currentLyrics, this.currentTimings);
 		        }
-		    }, 100);
+		    }, 500);
 		}
 	}
 	generateKaraokeURL(song, lyricsWithTimestamps) {
