@@ -1123,6 +1123,7 @@ class AdvancedMusicPlayer {
 		clickPosition = Math.max(0, Math.min(1, clickPosition));
 		const seekTime = duration * clickPosition;
 		this.ytPlayer.seekTo(seekTime, true);
+		this.updateHighlightedLyric(seekTime, this.currentLyrics, this.currentTimings);
 		if (this.elements.timeDisplay) {
 			const formattedCurrentTime = this.formatTime(seekTime);
 			const formattedDuration = this.formatTime(duration);
@@ -6888,14 +6889,13 @@ hideSidebar() {
 	    let highlightIndex = -1;
 	    for (let i = 0; i < timings.length; i++) {
 	        if (currentTime >= timings[i]) {
-	            if (i === timings.length - 1 || currentTime < timings[i + 1]) {
-	                highlightIndex = i;
-	            }
+	            highlightIndex = i; 
+	        } else {
+	            break; 
 	        }
 	    }
 	
 	    if (highlightIndex !== this.currentHighlightedLyricIndex) {
-	        // Remove active from previous element only — no querySelectorAll loop
 	        if (this.currentHighlightedLyricIndex !== undefined && this.currentHighlightedLyricIndex !== -1) {
 	            const prevElement = document.getElementById(`lyric-${this.currentHighlightedLyricIndex}`);
 	            if (prevElement) prevElement.classList.remove("active");
