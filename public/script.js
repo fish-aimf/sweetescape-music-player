@@ -1081,11 +1081,21 @@ class AdvancedMusicPlayer {
 	
 	        try {
 	            const playerState = this.ytPlayer.getPlayerState();
-	            // Exit early if not playing — no UI updates needed
 	            if (playerState !== YT.PlayerState.PLAYING) return;
 	
 	            const currentTime = this.ytPlayer.getCurrentTime() || 0;
 	            const duration = this.ytPlayer.getDuration() || 0;
+	
+	            // FIX 3: If YT hasn't settled after a seek yet, skip this tick entirely
+	            if (
+	                this.pendingSeekTime !== undefined &&
+	                Date.now() - this.pendingSeekTimestamp < 1500 &&
+	                Math.abs(currentTime - this.pendingSeekTime) > 2
+	            ) {
+	                return; // YT still scrubbing — don't overwrite the correct highlight
+	            }
+	            // Seek has settled, clear the guard
+	            this.pendingSeekTime = undefined;
 	
 	            if (duration > 0) {
 	                const progressPercent = (currentTime / duration) * 100;
@@ -1096,7 +1106,7 @@ class AdvancedMusicPlayer {
 	                        `${this.formatTime(currentTime)}/${this.formatTime(duration)}`;
 	                }
 	
-	                this.updateHighlightedLyric(currentTime, this.currentLyrics, this.currentTimings);
+	                this.updateHighlightedLyric(currentTime, this.currentLyrics ?? [], this.currentTimings ?? []);
 	            }
 	        } catch (error) {
 	            console.error("Error updating progress bar:", error);
@@ -1121,13 +1131,16 @@ class AdvancedMusicPlayer {
 	    this.ytPlayer.seekTo(seekTime, true);
 	
 	    if (this.elements.timeDisplay) {
-	        const formattedCurrentTime = this.formatTime(seekTime);
-	        const formattedDuration = this.formatTime(duration);
-	        this.elements.timeDisplay.textContent = `${formattedCurrentTime}/${formattedDuration}`;
+	        this.elements.timeDisplay.textContent =
+	            `${this.formatTime(seekTime)}/${this.formatTime(duration)}`;
 	    }
 	
-	    // Always update lyrics immediately on seek, even if paused
-	    this.updateHighlightedLyric(seekTime, this.currentLyrics, this.currentTimings);
+	    this.pendingSeekTime = seekTime;
+	    this.pendingSeekTimestamp = Date.now();
+	
+	    const lyrics = this.currentLyrics ?? [];
+	    const timings = this.currentTimings ?? [];
+	    this.updateHighlightedLyric(seekTime, lyrics, timings);
 	}
 	handleTouchStart(e) {
 		e.preventDefault();
