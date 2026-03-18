@@ -785,6 +785,11 @@ class AdvancedMusicPlayer {
 		        this.autoFetchTranscript();
 		    }
 		});
+		// Compact close button
+		const compactCloseBtn = document.getElementById('compactCloseBtn');
+		if (compactCloseBtn) {
+		    compactCloseBtn.addEventListener('click', () => this.closeCompactNowPlaying());
+		}
 		// Discord modal events
 		document.getElementById('closeDiscordModal')?.addEventListener('click', () => this.closeDiscordModal());
 		document.getElementById('discordCloseBtn2')?.addEventListener('click',  () => this.closeDiscordModal());
@@ -2660,6 +2665,7 @@ class AdvancedMusicPlayer {
 		this.renderPlaylistSidebar();
 		this.saveRecentlyPlayedPlaylist(playlist);
 		this.updateCurrentSongDisplay();
+		this._updateCompactNowPlayingIfOpen();
 	}
 	playSong(songId) {
 		const song = this.songLibrary.find((s) => s.id === songId);
@@ -2672,6 +2678,7 @@ class AdvancedMusicPlayer {
 		this.hideSidebar();
 		this.saveRecentlyPlayedSong(song);
 		this.updateCurrentSongDisplay();
+		this._updateCompactNowPlayingIfOpen();
 
 		this._discordScheduleSend();
 
@@ -2802,6 +2809,7 @@ class AdvancedMusicPlayer {
 			this.playSongById(nextSong.videoId);
 			this.updatePlayerUI();
 			this.updateCurrentSongDisplay();
+			this._updateCompactNowPlayingIfOpen();
 
 			// Send Discord RPC update
 			this._discordScheduleSend();
@@ -2831,6 +2839,7 @@ class AdvancedMusicPlayer {
 			this.playCurrentSong();
 		}
 		this.updateCurrentSongDisplay();
+		this._updateCompactNowPlayingIfOpen();
 
 		// Send Discord RPC update
 		this._discordScheduleSend();
@@ -2857,6 +2866,7 @@ class AdvancedMusicPlayer {
 			this.saveRecentlyPlayedSong(source[this.currentSongIndex]);
 			this.playSongById(source[this.currentSongIndex].videoId);
 			this.updateCurrentSongDisplay();
+			this._updateCompactNowPlayingIfOpen();
 
 			// Send Discord RPC update
 			if (this.discordEnabled && this.discordConnected) {
@@ -2875,6 +2885,7 @@ class AdvancedMusicPlayer {
 			this.playCurrentSong();
 		}
 		this.updateCurrentSongDisplay();
+		this._updateCompactNowPlayingIfOpen();
 
 		// Send Discord RPC update
 		this._discordScheduleSend();
@@ -2892,6 +2903,7 @@ class AdvancedMusicPlayer {
 			this.updatePlayerUI();
 		}
 		this.updateCurrentSongDisplay();
+		this._updateCompactNowPlayingIfOpen();
 
 		// Send Discord RPC update
 		this._discordScheduleSend();
@@ -2911,6 +2923,7 @@ class AdvancedMusicPlayer {
 		this.saveRecentlyPlayedSong(song);
 		this.playSongById(song.videoId);
 		this.updateCurrentSongDisplay();
+		this._updateCompactNowPlayingIfOpen();
 
 		// Send Discord RPC update
 		this._discordScheduleSend();
@@ -5395,6 +5408,7 @@ hideSidebar() {
 		this.saveRecentlyPlayedSong(this.currentPlaylist.songs[this.currentSongIndex]);
 		this.playSongById(this.currentPlaylist.songs[nextIndex].videoId);
 		this.updateCurrentSongDisplay();
+		this._updateCompactNowPlayingIfOpen();
 	}
 	isSongTemporarilySkipped(song) {
 		const entryId = song.entryId || "id_" + song.videoId;
@@ -5944,9 +5958,17 @@ hideSidebar() {
 	    const keybindKey = this.currentKeybinds.toggleMusicExplorer || 'KeyO';
 	    hideBtn.title = `[${this.getKeyDisplayName(keybindKey)}] Hide Music Explorer`;
 	    hideBtn.style.cssText = `background:transparent;border:none;color:var(--bg-primary);font-size:1.2rem;cursor:pointer;padding:4px 8px;border-radius:4px;transition:all 0.2s ease;line-height:1;font-weight:bold;flex-shrink:0;`;
-	    hideBtn.addEventListener('mouseenter', () => { hideBtn.style.color = 'var(--hover-color)'; hideBtn.style.background = 'var(--bg-secondary)'; });
-	    hideBtn.addEventListener('mouseleave', () => { hideBtn.style.color = 'var(--bg-primary)'; hideBtn.style.background = 'transparent'; });
-	    hideBtn.addEventListener('click', () => { this.toggleAdditionalDetails(); });
+	    hideBtn.addEventListener('mouseenter', () => {
+	        hideBtn.style.color = 'var(--hover-color)';
+	        hideBtn.style.background = 'var(--bg-secondary)';
+	    });
+	    hideBtn.addEventListener('mouseleave', () => {
+	        hideBtn.style.color = 'var(--bg-primary)';
+	        hideBtn.style.background = 'transparent';
+	    });
+	    hideBtn.addEventListener('click', () => {
+	        this.toggleAdditionalDetails();
+	    });
 	
 	    headerContainer.appendChild(headerText);
 	    headerContainer.appendChild(hideBtn);
@@ -5966,8 +5988,14 @@ hideSidebar() {
 	                <div class="current-song-author" id="currentSongAuthor"></div>
 	            </div>
 	        </div>`;
+	
+	    currentSongDiv.style.cursor = 'pointer';
+	    currentSongDiv.title = 'Click to open compact player';
+	    currentSongDiv.addEventListener('click', () => this.openCompactNowPlaying());
+	
 	    this.elements.additionalDetails.appendChild(currentSongDiv);
 	    this.updateCurrentSongDisplay();
+		this._updateCompactNowPlayingIfOpen();
 	
 	    // Ordered sections — skip any with limit === 0
 	    const defs = this._getDefaultSectionOrder();
@@ -6075,6 +6103,7 @@ hideSidebar() {
 	}
 	initializeCurrentSongSection() {
 		this.updateCurrentSongDisplay();
+		this._updateCompactNowPlayingIfOpen();
 	}
 	getCurrentSongData() {
 	  if (!this.currentSong) return null;
@@ -13705,6 +13734,95 @@ resetLibrarySearchTimeout() {
             this.elements.librarySearch.blur();
         }
     }, 60000);
+}
+
+
+	
+openCompactNowPlaying() {
+    if (!this.currentSong) return;
+
+    const overlay = document.getElementById('compactNowPlaying');
+    if (!overlay) return;
+
+    // Populate song info
+    const songData = this.getCurrentSongData();
+    document.getElementById('compactSongName').textContent = songData?.name || 'No Song Playing';
+    document.getElementById('compactSongAuthor').textContent = songData?.author || '';
+    document.getElementById('compactThumbnail').src = songData?.thumbnailUrl ||
+        (songData?.videoId ? `https://img.youtube.com/vi/${songData.videoId}/default.jpg` : '');
+
+    // Move controls into overlay
+    const progressWrapper  = overlay.querySelector('.compact-progress-wrapper');
+    const controlsWrapper  = overlay.querySelector('.compact-controls-wrapper');
+    const volumeWrapper    = overlay.querySelector('.compact-volume-wrapper');
+
+    const musicProgress    = document.querySelector('.now-playing .music-progress');
+    const playerControls   = document.querySelector('.now-playing .player-controls');
+    const volumeControl    = document.querySelector('.now-playing .volume-control');
+
+    if (musicProgress)  progressWrapper.appendChild(musicProgress);
+    if (playerControls) controlsWrapper.appendChild(playerControls);
+    if (volumeControl)  volumeWrapper.appendChild(volumeControl);
+
+    // Hide only the main-container and theme-toggle bar, NOT the whole app-container
+    // This avoids conflicting with the app's own show/hide logic
+    const mainContainer = document.querySelector('.main-container');
+    const themeToggle   = document.querySelector('.theme-toggle');
+    const listeningStats = document.querySelector('.listening-stats');
+    const nowPlaying    = document.querySelector('.now-playing');
+    const controlBarToggle = document.querySelector('.control-bar-toggle');
+    const layoutToggle  = document.querySelector('.layout-toggle');
+    const controlBarSpacer = document.getElementById('controlBarSpacer');
+
+    if (mainContainer)    mainContainer.dataset.compactHidden = 'true', mainContainer.style.display = 'none';
+    if (themeToggle)      themeToggle.dataset.compactHidden = 'true', themeToggle.style.display = 'none';
+    if (listeningStats)   listeningStats.dataset.compactHidden = 'true', listeningStats.style.display = 'none';
+    if (nowPlaying)       nowPlaying.dataset.compactHidden = 'true', nowPlaying.style.display = 'none';
+    if (controlBarToggle) controlBarToggle.dataset.compactHidden = 'true', controlBarToggle.style.display = 'none';
+    if (layoutToggle)     layoutToggle.dataset.compactHidden = 'true', layoutToggle.style.display = 'none';
+    if (controlBarSpacer) controlBarSpacer.dataset.compactHidden = 'true', controlBarSpacer.style.display = 'none';
+
+    overlay.style.display = 'flex';
+    this._compactModeActive = true;
+}
+
+closeCompactNowPlaying() {
+    const overlay = document.getElementById('compactNowPlaying');
+    if (!overlay) return;
+
+    // Move controls back to .now-playing
+    const nowPlaying = document.querySelector('.now-playing');
+    if (nowPlaying) {
+        const musicProgress  = overlay.querySelector('.music-progress');
+        const playerControls = overlay.querySelector('.player-controls');
+        const volumeControl  = overlay.querySelector('.volume-control');
+        const nowPlayingInfo = nowPlaying.querySelector('.now-playing-info');
+
+        if (musicProgress)  nowPlaying.insertBefore(musicProgress, nowPlaying.firstChild);
+        if (playerControls && nowPlayingInfo) nowPlaying.insertBefore(playerControls, nowPlayingInfo.nextSibling);
+        if (volumeControl)  nowPlaying.appendChild(volumeControl);
+    }
+
+    // Restore all hidden elements
+    document.querySelectorAll('[data-compact-hidden="true"]').forEach(el => {
+        el.style.display = '';
+        delete el.dataset.compactHidden;
+    });
+
+    overlay.style.display = 'none';
+    this._compactModeActive = false;
+}
+
+_updateCompactNowPlayingIfOpen() {
+    if (!this._compactModeActive) return;
+    const songData = this.getCurrentSongData();
+    const nameEl   = document.getElementById('compactSongName');
+    const authorEl = document.getElementById('compactSongAuthor');
+    const thumbEl  = document.getElementById('compactThumbnail');
+    if (nameEl)   nameEl.textContent  = songData?.name   || 'No Song Playing';
+    if (authorEl) authorEl.textContent = songData?.author || '';
+    if (thumbEl)  thumbEl.src = songData?.thumbnailUrl ||
+        (songData?.videoId ? `https://img.youtube.com/vi/${songData.videoId}/default.jpg` : '');
 }
 
 
