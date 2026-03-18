@@ -2787,15 +2787,21 @@ class AdvancedMusicPlayer {
 					this.titleScrollInterval = null;
 					document.title = "Music Player";
 				}
-			} else {
-			    this.ytPlayer.playVideo();
-			    this.isPlaying = true;
-			    this.updatePageTitle();
-			    if (this.currentLyrics?.length && this.currentTimings?.length) {
-			        const currentTime = this.ytPlayer.getCurrentTime();
-			        this.updateHighlightedLyric(currentTime, this.currentLyrics, this.currentTimings);
-			    }
-			}
+				} else {
+				    this.ytPlayer.playVideo();
+				    this.isPlaying = true;
+				    this.updatePageTitle();
+				    if (this.currentLyrics?.length && this.currentTimings?.length) {
+				        const currentTime = this.ytPlayer.getCurrentTime();
+				        this.updateHighlightedLyric(currentTime, this.currentLyrics, this.currentTimings);
+				        setTimeout(() => {
+				            if (this.ytPlayer && this.isPlaying) {
+				                const settledTime = this.ytPlayer.getCurrentTime();
+				                this.updateHighlightedLyric(settledTime, this.currentLyrics, this.currentTimings);
+				            }
+				        }, 150);
+				    }
+				}
 			this.debouncedUpdatePlayerUI();
 		} catch (error) {
 			console.error("Error toggling play/pause:", error);
