@@ -13739,10 +13739,21 @@ resetLibrarySearchTimeout() {
 
 	
 openCompactNowPlaying() {
-    if (!this.currentSong) return;
+    if (!this.currentSong) {
+        console.warn('openCompactNowPlaying: no currentSong, aborting');
+        return;
+    }
 
     const overlay = document.getElementById('compactNowPlaying');
-    if (!overlay) return;
+    if (!overlay) {
+        console.warn('openCompactNowPlaying: overlay not found');
+        return;
+    }
+	console.log('musicProgress found:', !!document.querySelector('.now-playing .music-progress'));
+    console.log('playerControls found:', !!document.querySelector('.now-playing .player-controls'));
+    console.log('volumeControl found:', !!document.querySelector('.now-playing .volume-control'));
+    console.log('currentSong:', this.currentSong);
+    console.log('overlay:', overlay);
 
     // Populate song info
     const songData = this.getCurrentSongData();
