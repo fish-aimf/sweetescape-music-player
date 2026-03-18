@@ -1068,67 +1068,66 @@ class AdvancedMusicPlayer {
 		});
 	}
 	updateProgressBar() {
-		if (!this.ytPlayer || !this.elements.progressBar) return;
-
-		// Don't start if tab is hidden
-		if (!this.isTabVisible) {
-			return;
-		}
-
-		if (this.progressInterval) {
-			clearInterval(this.progressInterval);
-			this.progressInterval = null;
-		}
-
-		this.progressInterval = setInterval(() => {
-			// Skip updates when tab is hidden
-			if (!this.isTabVisible) {
-				return;
-			}
-
-			try {
-				if (
-					!this.ytPlayer ||
-					this.ytPlayer.getPlayerState() !== YT.PlayerState.PLAYING
-				) {
-					return;
-				}
-				const currentTime = this.ytPlayer.getCurrentTime() || 0;
-				const duration = this.ytPlayer.getDuration() || 0;
-				if (duration > 0) {
-					const progressPercent = (currentTime / duration) * 100;
-					this.elements.progressBar.value = progressPercent;
-					if (this.elements.timeDisplay) {
-						const formattedCurrentTime = this.formatTime(currentTime);
-						const formattedDuration = this.formatTime(duration);
-						this.elements.timeDisplay.textContent = `${formattedCurrentTime}/${formattedDuration}`;
-					}
-				}
-			} catch (error) {
-				console.error("Error updating progress bar:", error);
-			}
-		}, 1200);
+	    if (!this.ytPlayer || !this.elements.progressBar) return;
+	    if (!this.isTabVisible) return;
+	
+	    if (this.progressInterval) {
+	        clearInterval(this.progressInterval);
+	        this.progressInterval = null;
+	    }
+	
+	    this.progressInterval = setInterval(() => {
+	        if (!this.isTabVisible || !this.ytPlayer) return;
+	
+	        try {
+	            const playerState = this.ytPlayer.getPlayerState();
+	            // Exit early if not playing — no UI updates needed
+	            if (playerState !== YT.PlayerState.PLAYING) return;
+	
+	            const currentTime = this.ytPlayer.getCurrentTime() || 0;
+	            const duration = this.ytPlayer.getDuration() || 0;
+	
+	            if (duration > 0) {
+	                const progressPercent = (currentTime / duration) * 100;
+	                this.elements.progressBar.value = progressPercent;
+	
+	                if (this.elements.timeDisplay) {
+	                    this.elements.timeDisplay.textContent =
+	                        `${this.formatTime(currentTime)}/${this.formatTime(duration)}`;
+	                }
+	
+	                this.updateHighlightedLyric(currentTime, this.currentLyrics, this.currentTimings);
+	            }
+	        } catch (error) {
+	            console.error("Error updating progress bar:", error);
+	        }
+	    }, 1200);
 	}
 	seekMusic(e) {
-		if (!this.ytPlayer) return;
-		const duration = this.ytPlayer.getDuration();
-		let clickPosition;
-		if (e.type === 'touchstart' || e.type === 'touchmove') {
-			const touch = e.touches[0] || e.changedTouches[0];
-			const rect = this.elements.progressBar.getBoundingClientRect();
-			clickPosition = (touch.clientX - rect.left) / rect.width;
-		} else {
-			clickPosition = e.offsetX / this.elements.progressBar.offsetWidth;
-		}
-		clickPosition = Math.max(0, Math.min(1, clickPosition));
-		const seekTime = duration * clickPosition;
-		this.ytPlayer.seekTo(seekTime, true);
-		this.updateHighlightedLyric(seekTime, this.currentLyrics, this.currentTimings);
-		if (this.elements.timeDisplay) {
-			const formattedCurrentTime = this.formatTime(seekTime);
-			const formattedDuration = this.formatTime(duration);
-			this.elements.timeDisplay.textContent = `${formattedCurrentTime}/${formattedDuration}`;
-		}
+	    if (!this.ytPlayer) return;
+	    const duration = this.ytPlayer.getDuration();
+	    let clickPosition;
+	
+	    if (e.type === 'touchstart' || e.type === 'touchmove') {
+	        const touch = e.touches[0] || e.changedTouches[0];
+	        const rect = this.elements.progressBar.getBoundingClientRect();
+	        clickPosition = (touch.clientX - rect.left) / rect.width;
+	    } else {
+	        clickPosition = e.offsetX / this.elements.progressBar.offsetWidth;
+	    }
+	
+	    clickPosition = Math.max(0, Math.min(1, clickPosition));
+	    const seekTime = duration * clickPosition;
+	    this.ytPlayer.seekTo(seekTime, true);
+	
+	    if (this.elements.timeDisplay) {
+	        const formattedCurrentTime = this.formatTime(seekTime);
+	        const formattedDuration = this.formatTime(duration);
+	        this.elements.timeDisplay.textContent = `${formattedCurrentTime}/${formattedDuration}`;
+	    }
+	
+	    // Always update lyrics immediately on seek, even if paused
+	    this.updateHighlightedLyric(seekTime, this.currentLyrics, this.currentTimings);
 	}
 	handleTouchStart(e) {
 		e.preventDefault();
