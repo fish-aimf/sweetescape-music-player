@@ -13794,6 +13794,46 @@ openCompactNowPlaying() {
     if (controlBarSpacer) controlBarSpacer.dataset.compactHidden = 'true', controlBarSpacer.style.display = 'none';
 
     overlay.style.display = 'flex';
+	// Force visible styles directly
+overlay.style.cssText = `
+    display: flex !important;
+    position: fixed !important;
+    inset: 0 !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 99999 !important;
+    background: var(--bg-primary) !important;
+    align-items: center !important;
+    gap: 32px !important;
+    padding: 40px !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+`;
+
+const compactRight = overlay.querySelector('.compact-right');
+if (compactRight) {
+    compactRight.style.cssText = 'flex:1;display:flex;flex-direction:column;gap:20px;min-width:0;';
+}
+
+const compactLeft = overlay.querySelector('.compact-left');
+if (compactLeft) {
+    compactLeft.style.cssText = 'flex-shrink:0;';
+}
+
+const thumb = document.getElementById('compactThumbnail');
+if (thumb) {
+    thumb.style.cssText = 'width:280px;height:280px;object-fit:cover;border-radius:12px;';
+}
+
+const nameEl = document.getElementById('compactSongName');
+if (nameEl) nameEl.style.cssText = 'font-size:1.6rem;font-weight:700;color:var(--text-primary);';
+
+const authorEl = document.getElementById('compactSongAuthor');
+if (authorEl) authorEl.style.cssText = 'font-size:1rem;color:var(--text-secondary);';
     this._compactModeActive = true;
 }
 
