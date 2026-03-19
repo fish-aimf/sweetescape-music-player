@@ -13781,14 +13781,14 @@ initNowPlayingTab() {
 }
 showNowPlayingTab() {
     const tab = document.querySelector('.tab[data-tab="nowplaying"]');
-    if (tab) tab.style.display = '';
+    if (tab) tab.classList.add('visible');
     this.elements.tabs = document.querySelectorAll('.tab');
     this.elements.tabPanes = document.querySelectorAll('.tab-pane');
 }
 
 hideNowPlayingTab() {
     const tab = document.querySelector('.tab[data-tab="nowplaying"]');
-    if (tab) tab.style.display = 'none';
+    if (tab) tab.classList.remove('visible');
     this.elements.tabs = document.querySelectorAll('.tab');
     this.elements.tabPanes = document.querySelectorAll('.tab-pane');
 }
