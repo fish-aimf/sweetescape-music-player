@@ -205,45 +205,46 @@
                   </div>
                   <div class="tab-pane" id="nowplaying">
                    <div class="np-view">
-                       <div class="np-thumbnail-wrap">
-                           <img id="npThumbnail" src="" alt="Now Playing" />
-                       </div>
-                       <div class="np-meta">
-                           <div class="np-song-name" id="npSongName">No Song Playing</div>
-                           <div class="np-song-author" id="npSongAuthor"></div>
-                       </div>
-                       <div class="np-progress-wrap">
-                           <input type="range" id="npProgressBar" min="0" max="100" value="0" step="0.1">
-                           <div class="np-time" id="npTimeDisplay">0:00/0:00</div>
-                       </div>
-                       <div class="np-controls">
-                           <button id="npPrevBtn"><i class="fas fa-step-backward"></i></button>
-                           <button id="npPlayPauseBtn"><i class="fas fa-play"></i></button>
-                           <button id="npNextBtn"><i class="fas fa-step-forward"></i></button>
-                           <button id="npLoopBtn"><i class="fas fa-redo"></i></button>
-                           <button id="npAutoplayBtn"><i class="fas fa-forward"></i></button>
-                           <button id="npShowPlaylistBtn"><i class="fas fa-list"></i></button>
-                           <div class="speed-control">
-                               <button id="npSpeedBtn">1x</button>
-                               <div class="speed-options" id="npSpeedOptions">
-                                   <div class="speed-option" data-speed="0.25">0.25x</div>
-                                   <div class="speed-option" data-speed="0.5">0.5x</div>
-                                   <div class="speed-option" data-speed="0.75">0.75x</div>
-                                   <div class="speed-option" data-speed="1">1x</div>
-                                   <div class="speed-option" data-speed="1.25">1.25x</div>
-                                   <div class="speed-option" data-speed="1.5">1.5x</div>
-                                   <div class="speed-option" data-speed="1.75">1.75x</div>
-                                   <div class="speed-option" data-speed="2">2x</div>
-                               </div>
-                           </div>
-                       </div>
-                       <div class="np-volume">
-                           <i class="fas fa-volume-down"></i>
-                           <input type="range" id="npVolumeSlider" min="0" max="100" value="50">
-                           <i class="fas fa-volume-up"></i>
-                       </div>
-                   </div>
-               </div>
+                      <div class="np-left">
+                          <img id="npThumbnail" src="" alt="Now Playing" />
+                      </div>
+                      <div class="np-right">
+                          <div class="np-meta">
+                              <div class="np-song-name" id="npSongName">No Song Playing</div>
+                              <div class="np-song-author" id="npSongAuthor"></div>
+                          </div>
+                          <div class="np-progress-wrap">
+                              <input type="range" id="npProgressBar" min="0" max="100" value="0" step="0.1">
+                              <div class="np-time" id="npTimeDisplay">0:00/0:00</div>
+                          </div>
+                          <div class="np-controls">
+                              <button id="npPrevBtn" title="Previous"><i class="fas fa-step-backward"></i></button>
+                              <button id="npPlayPauseBtn" title="Play/Pause"><i class="fas fa-play"></i></button>
+                              <button id="npNextBtn" title="Next"><i class="fas fa-step-forward"></i></button>
+                              <button id="npLoopBtn" title="Loop"><i class="fas fa-redo"></i></button>
+                              <button id="npAutoplayBtn" title="Autoplay"><i class="fas fa-forward"></i></button>
+                              <button id="npShowPlaylistBtn" title="Playlist"><i class="fas fa-list"></i></button>
+                              <div class="np-speed-control">
+                                  <button id="npSpeedBtn">1x</button>
+                                  <div class="np-speed-options" id="npSpeedOptions">
+                                      <div class="speed-option" data-speed="0.25">0.25x</div>
+                                      <div class="speed-option" data-speed="0.5">0.5x</div>
+                                      <div class="speed-option" data-speed="0.75">0.75x</div>
+                                      <div class="speed-option" data-speed="1">1x</div>
+                                      <div class="speed-option" data-speed="1.25">1.25x</div>
+                                      <div class="speed-option" data-speed="1.5">1.5x</div>
+                                      <div class="speed-option" data-speed="1.75">1.75x</div>
+                                      <div class="speed-option" data-speed="2">2x</div>
+                                  </div>
+                              </div>
+                          </div>
+                          <div class="np-volume">
+                              <i class="fas fa-volume-down"></i>
+                              <input type="range" id="npVolumeSlider" min="0" max="100" value="50">
+                              <i class="fas fa-volume-up"></i>
+                          </div>
+                      </div>
+                  </div>
                   <div class="tab-pane" id="lyrics">
                      <div class="lyrics-container">
                         <div class="lyrics-content" id="lyricsContent">
