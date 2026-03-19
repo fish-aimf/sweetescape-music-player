@@ -290,6 +290,7 @@ class AdvancedMusicPlayer {
 		this.setupChangelogModal();
 		this.loadVersion();
 		this.setupYouTubeLibraryResultsDelegation();
+		this.initNowPlayingTab();
 	}
 	
 	_handleInitializationError(error) {
@@ -1091,6 +1092,10 @@ class AdvancedMusicPlayer {
 				if (duration > 0) {
 					const progressPercent = (currentTime / duration) * 100;
 					this.elements.progressBar.value = progressPercent;
+					const npBar = document.getElementById('npProgressBar');
+					const npTime = document.getElementById('npTimeDisplay');
+					if (npBar) npBar.value = progressPercent;
+					if (npTime) npTime.textContent = `${this.formatTime(currentTime)}/${this.formatTime(duration)}`;
 				
 					if (this.elements.timeDisplay) {
 						this.elements.timeDisplay.textContent =
@@ -3014,6 +3019,7 @@ class AdvancedMusicPlayer {
 			this.renderPlaylistSidebar();
 		}
 		this.updatePageTitle();
+		this.updateNowPlayingView();
 	}
 	escapeJsString(str) {
 		if (!str) return "";
@@ -3339,15 +3345,23 @@ hideSidebar() {
 		};
 	}
 	switchTab(tabName) {
-		this.elements.tabs.forEach((tab) => tab.classList.remove("active"));
-		this.elements.tabPanes.forEach((pane) => pane.classList.remove("active"));
-		document
-			.querySelector(`.tab[data-tab="${tabName}"]`)
-			.classList.add("active");
-		document.getElementById(tabName).classList.add("active");
-		if (tabName === "lyrics") {
-			this.renderLyricsTab();
-		}
+	    this.elements.tabs.forEach((tab) => tab.classList.remove("active"));
+	    this.elements.tabPanes.forEach((pane) => pane.classList.remove("active"));
+	    document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add("active");
+	    document.getElementById(tabName).classList.add("active");
+	    if (tabName === "lyrics") {
+	        this.renderLyricsTab();
+	    }
+	    // Hide control bar on now playing tab, restore otherwise
+	    const nowPlaying = document.querySelector('.now-playing');
+	    const spacer = document.getElementById('controlBarSpacer');
+	    if (tabName === 'nowplaying') {
+	        if (nowPlaying) nowPlaying.style.display = 'none';
+	        if (spacer) spacer.style.display = 'none';
+	    } else {
+	        if (nowPlaying) nowPlaying.style.display = '';
+	        if (spacer) spacer.style.display = '';
+	    }
 	}
 	savePlaylists() {
 		return new Promise((resolve, reject) => {
@@ -6037,8 +6051,11 @@ hideSidebar() {
 	updateCurrentSongDisplay() {
 	  if (!this.currentSong) {
 	    this.hideCurrentSongSection();
+	    this.hideNowPlayingTab();
 	    return;
 	  }
+	  this.showNowPlayingTab();
+	  this.updateNowPlayingView();
 	  
 	  let displaySong = this.currentSong;
 	  if (this.currentPlaylist) {
@@ -13724,6 +13741,80 @@ resetLibrarySearchTimeout() {
         }
     }, 60000);
 }
+initNowPlayingTab() {
+    // Wire up all NP controls to existing handlers
+    document.getElementById('npPlayPauseBtn')?.addEventListener('click', () => this.togglePlayPause());
+    document.getElementById('npPrevBtn')?.addEventListener('click', () => this.playPreviousSong());
+    document.getElementById('npNextBtn')?.addEventListener('click', () => this.playNextSong());
+    document.getElementById('npLoopBtn')?.addEventListener('click', () => this.toggleLoop());
+    document.getElementById('npAutoplayBtn')?.addEventListener('click', () => this.toggleAutoplay());
+    document.getElementById('npShowPlaylistBtn')?.addEventListener('click', () => this.togglePlaylistSidebar());
+
+    // Progress bar
+    document.getElementById('npProgressBar')?.addEventListener('change', (e) => {
+        if (!this.ytPlayer) return;
+        const duration = this.ytPlayer.getDuration();
+        const seekTime = (e.target.value / 100) * duration;
+        this.ytPlayer.seekTo(seekTime, true);
+        this.updateHighlightedLyric(seekTime, this.currentLyrics ?? [], this.currentTimings ?? []);
+    });
+
+    // Volume
+    document.getElementById('npVolumeSlider')?.addEventListener('input', (e) => {
+        this.setVolume(e.target.value);
+        // Keep main slider in sync
+        if (this.elements.volumeSlider) this.elements.volumeSlider.value = e.target.value;
+    });
+
+    // Speed options
+    document.getElementById('npSpeedBtn')?.addEventListener('click', () => {
+        document.getElementById('npSpeedOptions')?.classList.toggle('visible');
+    });
+    document.querySelectorAll('#npSpeedOptions .speed-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+            const speed = parseFloat(opt.dataset.speed);
+            this.setPlaybackSpeed(speed);
+            document.getElementById('npSpeedBtn').textContent = speed + 'x';
+            document.getElementById('npSpeedOptions')?.classList.remove('visible');
+        });
+    });
+}
+showNowPlayingTab() {
+    const tab = document.querySelector('.tab[data-tab="nowplaying"]');
+    if (tab) tab.style.display = '';
+}
+
+hideNowPlayingTab() {
+    const tab = document.querySelector('.tab[data-tab="nowplaying"]');
+    if (tab) tab.style.display = 'none';
+}
+
+updateNowPlayingView() {
+    if (!this.currentSong) return;
+
+    const song = this.currentPlaylist
+        ? (this.songLibrary.find(s => s.videoId === this.currentSong.videoId) || this.currentSong)
+        : this.currentSong;
+
+    const thumb = document.getElementById('npThumbnail');
+    const name = document.getElementById('npSongName');
+    const author = document.getElementById('npSongAuthor');
+    const vol = document.getElementById('npVolumeSlider');
+    const ppBtn = document.getElementById('npPlayPauseBtn');
+    const loopBtn = document.getElementById('npLoopBtn');
+    const autoBtn = document.getElementById('npAutoplayBtn');
+
+    if (thumb) thumb.src = song.thumbnailUrl || `https://img.youtube.com/vi/${song.videoId}/default.jpg`;
+    if (name) name.textContent = song.name || '';
+    if (author) author.textContent = song.author || '';
+    if (vol && this.elements.volumeSlider) vol.value = this.elements.volumeSlider.value;
+    if (ppBtn) ppBtn.innerHTML = this.isPlaying
+        ? '<i class="fas fa-pause"></i>'
+        : '<i class="fas fa-play"></i>';
+    if (loopBtn) loopBtn.classList.toggle('active', this.isLooping);
+    if (autoBtn) autoBtn.classList.toggle('active', this.isAutoplayEnabled);
+}
+
 
 
 
