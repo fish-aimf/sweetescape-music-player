@@ -13767,17 +13767,26 @@ initNowPlayingTab() {
     });
 
     // Speed options
-    document.getElementById('npSpeedBtn')?.addEventListener('click', () => {
-        document.getElementById('npSpeedOptions')?.classList.toggle('visible');
-    });
-    document.querySelectorAll('#npSpeedOptions .speed-option').forEach(opt => {
-        opt.addEventListener('click', () => {
-            const speed = parseFloat(opt.dataset.speed);
-            this.setPlaybackSpeed(speed);
-            document.getElementById('npSpeedBtn').textContent = speed + 'x';
-            document.getElementById('npSpeedOptions')?.classList.remove('visible');
-        });
-    });
+    const npSpeedBtn = document.getElementById('npSpeedBtn');
+	const npSpeedOptions = document.getElementById('npSpeedOptions');
+	
+	npSpeedBtn?.addEventListener('click', (e) => {
+	    e.stopPropagation();
+	    npSpeedOptions?.classList.toggle('show');
+	});
+	
+	document.querySelectorAll('#npSpeedOptions .speed-option').forEach(opt => {
+	    opt.addEventListener('click', () => {
+	        const speed = parseFloat(opt.dataset.speed);
+	        this.setPlaybackSpeed(speed);
+	        if (npSpeedBtn) npSpeedBtn.textContent = speed + 'x';
+	        npSpeedOptions?.classList.remove('show');
+	    });
+	});
+	
+	document.addEventListener('click', () => {
+	    npSpeedOptions?.classList.remove('show');
+	});
 }
 showNowPlayingTab() {
     const tab = document.querySelector('.tab[data-tab="nowplaying"]');
