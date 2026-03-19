@@ -13782,11 +13782,15 @@ initNowPlayingTab() {
 showNowPlayingTab() {
     const tab = document.querySelector('.tab[data-tab="nowplaying"]');
     if (tab) tab.style.display = '';
+    this.elements.tabs = document.querySelectorAll('.tab');
+    this.elements.tabPanes = document.querySelectorAll('.tab-pane');
 }
 
 hideNowPlayingTab() {
     const tab = document.querySelector('.tab[data-tab="nowplaying"]');
     if (tab) tab.style.display = 'none';
+    this.elements.tabs = document.querySelectorAll('.tab');
+    this.elements.tabPanes = document.querySelectorAll('.tab-pane');
 }
 
 updateNowPlayingView() {
