@@ -8369,25 +8369,30 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     outline: none;
     border-color: var(--accent-color);
 }
-/* Now Playing tab button — hidden by default */
 .tab[data-tab="nowplaying"] {
     display: none;
+}
+
+
+.tab[data-tab="nowplaying"].visible {
+    display: inline-block;
 }
 
 .np-view {
     display: flex;
     flex-direction: row;
-    gap: 24px;
-    padding: 20px;
-    align-items: flex-start;
+    gap: 28px;
+    padding: 28px;
+    align-items: center;
     background: var(--bg-secondary);
-    border-radius: 8px;
+    height: 100%;
+    box-sizing: border-box;
 }
 
 .np-left {
     flex-shrink: 0;
-    width: 200px;
-    height: 200px;
+    width: clamp(140px, 28vw, 280px);
+    height: clamp(140px, 28vw, 280px);
     border-radius: 6px;
     overflow: hidden;
     background: var(--bg-primary);
@@ -8405,18 +8410,13 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 16px;
     min-width: 0;
-}
-
-.np-meta {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+    justify-content: center;
 }
 
 .np-song-name {
-    font-size: 1.1rem;
+    font-size: clamp(1rem, 2vw, 1.4rem);
     font-weight: 600;
     color: var(--text-primary);
     white-space: nowrap;
@@ -8425,14 +8425,15 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 }
 
 .np-song-author {
-    font-size: 0.875rem;
+    font-size: clamp(0.85rem, 1.4vw, 1rem);
     color: var(--text-secondary);
+    margin-top: 3px;
 }
 
 .np-progress-wrap {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 5px;
 }
 
 .np-progress-wrap input[type="range"] {
@@ -8441,7 +8442,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 }
 
 .np-time {
-    font-size: 0.78rem;
+    font-size: clamp(0.78rem, 1.2vw, 0.9rem);
     color: var(--text-secondary);
 }
 
@@ -8457,8 +8458,8 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     border: 1px solid var(--border-color);
     color: var(--text-primary);
     border-radius: 4px;
-    padding: 6px 10px;
-    font-size: 0.85rem;
+    padding: 7px 12px;
+    font-size: clamp(0.8rem, 1.3vw, 0.95rem);
     cursor: pointer;
     transition: background 0.15s, color 0.15s;
     line-height: 1;
@@ -8480,8 +8481,8 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     background: var(--accent-color);
     color: var(--button-text-color);
     border-color: var(--accent-color);
-    padding: 7px 14px;
-    font-size: 0.95rem;
+    padding: 8px 18px;
+    font-size: clamp(0.9rem, 1.5vw, 1.05rem);
 }
 
 #npPlayPauseBtn:hover {
@@ -8489,7 +8490,6 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     border-color: var(--hover-color);
 }
 
-/* Speed dropdown */
 .np-speed-control {
     position: relative;
 }
@@ -8499,8 +8499,8 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     border: 1px solid var(--border-color);
     color: var(--text-primary);
     border-radius: 4px;
-    padding: 6px 10px;
-    font-size: 0.85rem;
+    padding: 7px 12px;
+    font-size: clamp(0.8rem, 1.3vw, 0.95rem);
     cursor: pointer;
     transition: background 0.15s;
 }
@@ -8532,7 +8532,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 
 .np-speed-options .speed-option {
     padding: 7px 12px;
-    font-size: 0.82rem;
+    font-size: clamp(0.78rem, 1.2vw, 0.88rem);
     cursor: pointer;
     color: var(--text-primary);
     text-align: left;
@@ -8547,19 +8547,12 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 .np-volume {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     color: var(--text-secondary);
-    font-size: 0.85rem;
+    font-size: clamp(0.82rem, 1.3vw, 0.95rem);
 }
 
 .np-volume input[type="range"] {
     flex: 1;
     cursor: pointer;
-}
-.tab[data-tab="nowplaying"] {
-    display: none;
-}
-
-.tab[data-tab="nowplaying"].visible {
-    display: inline-block;
 }
