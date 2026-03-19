@@ -8492,3 +8492,11 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 .np-volume input[type="range"] {
     flex: 1;
 }
+
+.tab[data-tab="nowplaying"] {
+    display: none;
+}
+
+.tab[data-tab="nowplaying"].visible {
+    display: inline-block;
+}
