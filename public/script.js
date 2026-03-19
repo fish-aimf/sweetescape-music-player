@@ -12026,7 +12026,15 @@ closeBillboardHot100Modal() {
 		} else if (code === k.toggleLoop && k.toggleLoop !== '') {
 			this.toggleLoop();
 		} else if (code === k.restartSong && k.restartSong !== '') {
-			if (this.ytPlayer) this.ytPlayer.seekTo(0, true);
+	    if (this.ytPlayer) {
+	        this.ytPlayer.seekTo(0, true);
+	        if (this.elements.progressBar) this.elements.progressBar.value = 0;
+	        if (this.elements.timeDisplay) {
+	            const duration = this.ytPlayer.getDuration();
+	            this.elements.timeDisplay.textContent = `0:00/${this.formatTime(duration)}`;
+	        }
+	        this.updateHighlightedLyric(0, this.currentLyrics ?? [], this.currentTimings ?? []);
+	    }
 		} else if (code === k.toggleTheme && k.toggleTheme !== '') {
 			this.toggleTheme();
 		} else if (code === k.openTimer && k.openTimer !== '') {
