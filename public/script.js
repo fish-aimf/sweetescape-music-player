@@ -13817,7 +13817,7 @@ updateNowPlayingView() {
     const loopBtn = document.getElementById('npLoopBtn');
     const autoBtn = document.getElementById('npAutoplayBtn');
 
-    if (thumb) thumb.src = song.thumbnailUrl || `https://img.youtube.com/vi/${song.videoId}/default.jpg`;
+    if (thumb) thumb.src = `https://img.youtube.com/vi/${song.videoId}/maxresdefault.jpg`;
     if (name) name.textContent = song.name || '';
     if (author) author.textContent = song.author || '';
     if (vol && this.elements.volumeSlider) vol.value = this.elements.volumeSlider.value;
