@@ -8369,3 +8369,126 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     outline: none;
     border-color: var(--accent-color);
 }
+/* Now Playing tab button — hidden by default */
+.tab[data-tab="nowplaying"] {
+    display: none;
+}
+
+/* Full view layout */
+.np-view {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 24px 16px;
+}
+
+.np-thumbnail-wrap {
+    width: 260px;
+    height: 260px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    background: var(--bg-primary);
+    flex-shrink: 0;
+}
+
+.np-thumbnail-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.np-meta {
+    text-align: center;
+}
+
+.np-song-name {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.np-song-author {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+.np-progress-wrap {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.np-progress-wrap input[type="range"] {
+    width: 100%;
+}
+
+.np-time {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.np-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.np-controls button {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    border-radius: 50%;
+    width: 42px;
+    height: 42px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.np-controls button:hover {
+    background: var(--hover-color);
+    color: var(--button-text-color);
+}
+
+.np-controls button.active {
+    background: var(--accent-color);
+    color: var(--button-text-color);
+}
+
+#npPlayPauseBtn {
+    width: 54px;
+    height: 54px;
+    font-size: 1.3rem;
+    background: var(--accent-color);
+    color: var(--button-text-color);
+    border: none;
+}
+
+#npPlayPauseBtn:hover {
+    background: var(--hover-color);
+}
+
+.np-volume {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    max-width: 320px;
+    color: var(--text-secondary);
+}
+
+.np-volume input[type="range"] {
+    flex: 1;
+}
