@@ -8374,125 +8374,188 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     display: none;
 }
 
-/* Full view layout */
 .np-view {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-    padding: 24px 16px;
+    flex-direction: row;
+    gap: 24px;
+    padding: 20px;
+    align-items: flex-start;
+    background: var(--bg-secondary);
+    border-radius: 8px;
 }
 
-.np-thumbnail-wrap {
-    width: 260px;
-    height: 260px;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
-    background: var(--bg-primary);
+.np-left {
     flex-shrink: 0;
+    width: 200px;
+    height: 200px;
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
 }
 
-.np-thumbnail-wrap img {
+.np-left img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
 }
 
+.np-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+}
+
 .np-meta {
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .np-song-name {
-    font-size: 1.3rem;
+    font-size: 1.1rem;
     font-weight: 600;
     color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .np-song-author {
-    font-size: 0.95rem;
+    font-size: 0.875rem;
     color: var(--text-secondary);
-    margin-top: 4px;
 }
 
 .np-progress-wrap {
-    width: 100%;
-    max-width: 480px;
     display: flex;
     flex-direction: column;
-    align-items: center;
     gap: 4px;
 }
 
 .np-progress-wrap input[type="range"] {
     width: 100%;
+    cursor: pointer;
 }
 
 .np-time {
-    font-size: 0.85rem;
+    font-size: 0.78rem;
     color: var(--text-secondary);
 }
 
 .np-controls {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 6px;
     flex-wrap: wrap;
-    justify-content: center;
 }
 
 .np-controls button {
     background: var(--bg-primary);
     border: 1px solid var(--border-color);
     color: var(--text-primary);
-    border-radius: 50%;
-    width: 42px;
-    height: 42px;
-    font-size: 1rem;
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-size: 0.85rem;
     cursor: pointer;
-    transition: background 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+    line-height: 1;
 }
 
 .np-controls button:hover {
     background: var(--hover-color);
     color: var(--button-text-color);
+    border-color: var(--hover-color);
 }
 
 .np-controls button.active {
     background: var(--accent-color);
     color: var(--button-text-color);
+    border-color: var(--accent-color);
 }
 
 #npPlayPauseBtn {
-    width: 54px;
-    height: 54px;
-    font-size: 1.3rem;
     background: var(--accent-color);
     color: var(--button-text-color);
-    border: none;
+    border-color: var(--accent-color);
+    padding: 7px 14px;
+    font-size: 0.95rem;
 }
 
 #npPlayPauseBtn:hover {
     background: var(--hover-color);
+    border-color: var(--hover-color);
+}
+
+/* Speed dropdown */
+.np-speed-control {
+    position: relative;
+}
+
+#npSpeedBtn {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+#npSpeedBtn:hover {
+    background: var(--hover-color);
+    color: var(--button-text-color);
+    border-color: var(--hover-color);
+}
+
+.np-speed-options {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 0;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    overflow: hidden;
+    z-index: 100;
+    min-width: 70px;
+    box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.np-speed-options.show {
+    display: flex;
+    flex-direction: column;
+}
+
+.np-speed-options .speed-option {
+    padding: 7px 12px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    color: var(--text-primary);
+    text-align: left;
+    white-space: nowrap;
+}
+
+.np-speed-options .speed-option:hover {
+    background: var(--hover-color);
+    color: var(--button-text-color);
 }
 
 .np-volume {
     display: flex;
     align-items: center;
-    gap: 10px;
-    width: 100%;
-    max-width: 320px;
+    gap: 8px;
     color: var(--text-secondary);
+    font-size: 0.85rem;
 }
 
 .np-volume input[type="range"] {
     flex: 1;
+    cursor: pointer;
 }
-
 .tab[data-tab="nowplaying"] {
     display: none;
 }
