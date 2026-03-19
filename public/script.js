@@ -13817,7 +13817,13 @@ updateNowPlayingView() {
     const loopBtn = document.getElementById('npLoopBtn');
     const autoBtn = document.getElementById('npAutoplayBtn');
 
-    if (thumb) thumb.src = `https://img.youtube.com/vi/${song.videoId}/maxresdefault.jpg`;
+    if (thumb) {
+	    thumb.src = `https://img.youtube.com/vi/${song.videoId}/maxresdefault.jpg`;
+	    thumb.onerror = () => {
+	        thumb.onerror = null;
+	        thumb.src = `https://img.youtube.com/vi/${song.videoId}/hqdefault.jpg`;
+	    };
+	}
     if (name) name.textContent = song.name || '';
     if (author) author.textContent = song.author || '';
     if (vol && this.elements.volumeSlider) vol.value = this.elements.volumeSlider.value;
