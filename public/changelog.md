@@ -570,3 +570,4 @@
 - you can now reorder sections in additional details v59.28.0
 - changed default display settings. v59.28.1
 - resource optimized lyrics v59.28.2
+- fixed a bug when bar doesn't seek visually, unless music is playing or played. v59.28.3
