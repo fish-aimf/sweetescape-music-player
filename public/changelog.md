@@ -571,3 +571,5 @@
 - changed default display settings. v59.28.1
 - resource optimized lyrics v59.28.2
 - fixed a bug when bar doesn't seek visually, unless music is playing or played. v59.28.3
+- fixed a bug such that the lyrics will change even if the time doesn't hit. v59.28.4
+- fixed a bug such that the lyrics will now highlight instantly when seeked, instead of until the time reaches for next lyric. v59.28.5
