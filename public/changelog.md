@@ -569,3 +569,4 @@
 - setting songs to display to 0, fully hides the section v59.27.0
 - you can now reorder sections in additional details v59.28.0
 - changed default display settings. v59.28.1
+- resource optimized lyrics v59.28.2
