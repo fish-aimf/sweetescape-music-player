@@ -573,3 +573,6 @@
 - fixed a bug when bar doesn't seek visually, unless music is playing or played. v59.28.3
 - fixed a bug such that the lyrics will change even if the time doesn't hit. v59.28.4
 - fixed a bug such that the lyrics will now highlight instantly when seeked, instead of until the time reaches for next lyric. v59.28.5
+- fixed bug when reset song key is hit, it will instantly show visually, rather than until the song is unpaused. v59.28.6
+- now playing tab added v60.0.0
+- the bottom control bar automatically hidden when nowplaying tab appears v60.1.0
