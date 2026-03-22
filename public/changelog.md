@@ -576,3 +576,4 @@
 - fixed bug when reset song key is hit, it will instantly show visually, rather than until the song is unpaused. v59.28.6
 - now playing tab added v60.0.0
 - the bottom control bar automatically hidden when nowplaying tab appears v60.1.0
+- moved all elements to the now playing tab. from the control bar when now playing tab is active.  v60.2.0
