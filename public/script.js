@@ -13632,8 +13632,6 @@ createYouTubeLibraryResultCard(video) {
     const publishedAt = new Date(video.snippet.publishedAt);
     const thumbnail = video.snippet.thumbnails.high?.url || video.snippet.thumbnails.medium.url;
     const uploadDate = this.formatYouTubeUploadDate(publishedAt);
-
-    // Statistics already bundled in — no extra API call needed
     const viewCount = video.statistics?.viewCount
         ? this.formatYouTubeViewCount(parseInt(video.statistics.viewCount))
         : null;
@@ -13819,8 +13817,16 @@ updateNowPlayingView() {
 
     if (thumb) {
 	    thumb.src = `https://img.youtube.com/vi/${song.videoId}/maxresdefault.jpg`;
+
+	    thumb.onload = function () {
+	        if (thumb.naturalHeight <= 90) {
+	            thumb.onload = null;
+	            thumb.src = `https://img.youtube.com/vi/${song.videoId}/hqdefault.jpg`;
+	        }
+	    };
 	    thumb.onerror = () => {
 	        thumb.onerror = null;
+	        thumb.onload = null;
 	        thumb.src = `https://img.youtube.com/vi/${song.videoId}/hqdefault.jpg`;
 	    };
 	}
