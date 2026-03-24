@@ -12362,9 +12362,9 @@ closeBillboardHot100Modal() {
 	    } catch(e) {}
 	}
 	
-	openDiscordModal() {
+	async openDiscordModal() {
 	    document.getElementById('discordRpcModal')?.classList.add('active');
-	    this._discordSyncFields();
+	    await this._discordSyncFields();
 	    this._discordRefreshModal();
 	}
 	
@@ -12503,13 +12503,13 @@ closeBillboardHot100Modal() {
 	    this.updateDiscordButtonUI();
 	}
 	
-	sendDiscordRPC() {
+	async sendDiscordRPC() {
 	    if (!this.discordEnabled || !this.discordConnected || !this.currentSong) return;
 	    if (!this.discordWs || this.discordWs.readyState !== WebSocket.OPEN) return;
-	    const d = this._discordGetEffective();
+		const d = await this._discordGetEffective();
 	    try {
 	        this.discordWs.send(JSON.stringify({ song: d.song, artist: d.artist, url: d.url }));
-	        this._discordSyncPreview();
+	        await this._discordSyncPreview();
 	    } catch(e) { console.error('Discord RPC send failed:', e); }
 	}
 	
@@ -12528,7 +12528,7 @@ closeBillboardHot100Modal() {
 	}
 	
 	// ── Modal refresh ─────────────────────────────────────────────────────────────
-	_discordRefreshModal() {
+	async _discordRefreshModal() {
 	    const modal = document.getElementById('discordRpcModal');
 	    if (!modal?.classList.contains('active')) return;
 	
@@ -12562,7 +12562,7 @@ closeBillboardHot100Modal() {
 	    this._discordRefreshSteps(state);
 	
 	    // Preview
-	    this._discordSyncPreview();
+	    await this._discordSyncPreview();
 		this._discordSyncLastUpdate();
 	
 	    // Footer buttons
@@ -12636,8 +12636,8 @@ closeBillboardHot100Modal() {
 	}
 	
 	// ── Preview ───────────────────────────────────────────────────────────────────
-	_discordSyncPreview() {
-	    const d = this._discordGetEffective();
+	async _discordSyncPreview() {
+	    const d = await this._discordGetEffective();
 	    const el = id => document.getElementById(id);
 	    if (el('discordPreviewSong'))   el('discordPreviewSong').textContent   = d.song || 'No song playing';
 	    if (el('discordPreviewArtist')) el('discordPreviewArtist').textContent = d.artist ? `by ${d.artist}` : '—';
@@ -12650,20 +12650,20 @@ closeBillboardHot100Modal() {
 	}
 	
 	// ── Fields ────────────────────────────────────────────────────────────────────
-	_discordSyncFields() {
+	async _discordSyncFields() {
 	    if (!this._discordOverrides) this._discordOverrides = {};
-	    const a = this._discordGetAuto();
+	    const a = await this._discordGetAuto();
 	    const s = id => { const e = document.getElementById(id); return e ? e : null; };
 	    const set = (id, key, autoVal) => { const e = s(id); if (e) e.value = this._discordOverrides[key] ?? autoVal; };
 	    set('discordEditSong',   'song',      a.song);
 	    set('discordEditArtist', 'artist',    a.artist);
 	    set('discordEditThumb',  'thumbnail', a.thumbnail);
-	    this._discordSyncPreview();
+	    await this._discordSyncPreview();
 	}
 	
-	_discordOnFieldEdit() {
+	async _discordOnFieldEdit() {
 	    if (!this._discordOverrides) this._discordOverrides = {};
-	    const a = this._discordGetAuto();
+	    const a = await this._discordGetAuto();
 	    const handle = (inputId, groupId, badgeId, key, autoVal) => {
 	        const el = document.getElementById(inputId); if (!el) return;
 	        const modified = el.value !== autoVal;
@@ -12675,16 +12675,16 @@ closeBillboardHot100Modal() {
 	    handle('discordEditSong',   'discordFieldSong',   'discordBadgeSong',   'song',      a.song);
 	    handle('discordEditArtist', 'discordFieldArtist', 'discordBadgeArtist', 'artist',    a.artist);
 	    handle('discordEditThumb',  'discordFieldThumb',  'discordBadgeThumb',  'thumbnail', a.thumbnail);
-	    this._discordSyncPreview();
+	    await this._discordSyncPreview();
 	}
 	
-	_discordResetFields() {
+	async _discordResetFields() {
 	    this._discordOverrides = {};
 	    ['discordFieldSong','discordFieldArtist','discordFieldThumb'].forEach(id => document.getElementById(id)?.classList.remove('is-modified'));
 	    ['discordBadgeSong','discordBadgeArtist','discordBadgeThumb'].forEach(id => {
 	        const e = document.getElementById(id); if (e) e.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Auto';
 	    });
-	    this._discordSyncFields();
+	    await this._discordSyncFields();
 	}
 	
 	_discordSendNow() {
@@ -12705,19 +12705,34 @@ closeBillboardHot100Modal() {
 	    }, 1500);
 	}
 	// ── Data helpers ──────────────────────────────────────────────────────────────
-	_discordGetAuto() {
+	async _discordGetAuto() {
 	    const s = this.currentSong;
 	    const v = s?.videoId || '';
+	
+	    let thumbnail = '';
+	    if (v) {
+	        const maxres = `https://img.youtube.com/vi/${v}/maxresdefault.jpg`;
+	        const hq     = `https://img.youtube.com/vi/${v}/hqdefault.jpg`;
+	
+	        try {
+	            const res = await fetch(maxres);
+	            const blob = await res.blob();
+	            thumbnail = blob.size > 5000 ? maxres : hq;
+	        } catch {
+	            thumbnail = hq;
+	        }
+	    }
+	
 	    return {
 	        song:      s?.name   || '',
 	        artist:    s?.author || '',
 	        url:       v ? `https://www.youtube.com/watch?v=${v}` : '',
-	        thumbnail: v ? `https://img.youtube.com/vi/${v}/maxresdefault.jpg` : ''
+	        thumbnail
 	    };
 	}
 	
-	_discordGetEffective() {
-	    const a = this._discordGetAuto();
+	async _discordGetEffective() {
+	    const a = await this._discordGetAuto();
 	    const o = this._discordOverrides || {};
 	    return {
 	        song:      o.song      ?? a.song,
