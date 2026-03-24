@@ -581,3 +581,4 @@
 - moved it infront of library, and will not be shown by default v60.4.0
 - added backup thumbnail as not all videos have maxresdefault v60.5.0
 - added styles for the NP sliders v60.6.0
+- fixed a bug where some songs thumbnails will not be able to load due to the lack of the maxresdefault. in the now playing section. v60.6.1 
