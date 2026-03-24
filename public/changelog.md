@@ -580,3 +580,4 @@
 - added styles for now playing tab. v60.3.0
 - moved it infront of library, and will not be shown by default v60.4.0
 - added backup thumbnail as not all videos have maxresdefault v60.5.0
+- added styles for the NP sliders v60.6.0
