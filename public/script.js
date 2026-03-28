@@ -10886,7 +10886,6 @@ async autofillAuthors(artistId) {
 		} else {
 			this.elements.findSongsResults.innerHTML = resultsHTML;
 		}
-		this.elements.notFindingSection.style.display = "block";
 	}
 	async viewAllSongs(artistId, artistName) {
 		try {
