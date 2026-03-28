@@ -583,3 +583,4 @@
 - added styles for the NP sliders v60.6.0
 - fixed a bug where some songs thumbnails will not be able to load due to the lack of the maxresdefault. in the now playing section. v60.6.1
 - added this check to discord rpc as well v60.6.2
+- removed ai generator, will replace with a better musicbrainz.org api instead of gemini. v60.7.0
