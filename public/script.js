@@ -631,7 +631,6 @@ class AdvancedMusicPlayer {
 			},
 			librarySearchInput: this.handleLibrarySearchInput.bind(this),
 			saveDiscoverMoreSettings: this.handleSaveDiscoverMoreSettings.bind(this),
-			importToGlobalLibrary: this.handleImportToGlobalLibrary.bind(this),
 			refreshRandomRecommendations: () => this.refreshRandomRecommendations(),
 			visualizerToggle: (e) => this.handleVisualizerToggle(e)
 		};
