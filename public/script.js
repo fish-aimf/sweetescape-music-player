@@ -115,15 +115,12 @@ class AdvancedMusicPlayer {
 			isActive: false
 		};
 		//api
-		this.currentKeyIndex = 0;
 		this.activeYoutubeKeyIndex = 0;
-		this.GEMINI_API_KEYS_COUNT = 8;
 		this.YOUTUBE_API_KEYS_COUNT = 29; 
 		
 		
 		this.activeYoutubeKeyIndex = 0;
 		this.youtubeLibrarySearchResults = [];
-		this.GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 		this.YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3/search';
 		
 		// Supabase / Global library
