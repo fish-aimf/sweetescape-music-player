@@ -1262,45 +1262,7 @@ Another Playlist{
             </div>
          </div>
       </div>
-      <!-- AI Song Generator Modal - Add after findSongsDiv -->
-      <!-- AI Song Generator Modal - Add after findSongsDiv -->
-      <div id="aiGeneratorDiv" class="ai-generator-container" style="display: none;">
-         <div class="ai-generator-content">
-            <div class="ai-generator-header">
-               <div class="ai-generator-header-content">
-                  <h1>AI Playlist Generator</h1>
-                  <p>Generate a playlist using AI for any artist. Reliable for famous artists. Unknown artists might result in unreliable results</p>
-               </div>
-               <button id="closeAiGenerator" class="close-btn">&times;</button>
-            </div>
-            <div class="ai-generator-form">
-               <div class="form-group">
-                  <label for="aiArtistName">Artist Name:</label>
-                  <input type="text" id="aiArtistName" placeholder="Enter artist name (e.g., Taylor Swift, The Beatles)" required>
-               </div>
-               <div class="form-group">
-                  <label for="aiSongCount">Number of Songs:</label>
-                  <input type="number" id="aiSongCount" min="1" max="50" value="10" required>
-               </div>
-               <div class="form-group">
-                  <label for="aiRequiredSongs">Required Songs (Optional):</label>
-                  <input type="text" id="aiRequiredSongs" placeholder="Enter specific songs that must be included (comma-separated)">
-                  <small style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 5px; display: block;">
-                  Example: Young black and rich, God's plan, Started from the bottom
-                  </small>
-               </div>
-               <div class="ai-button-group">
-                  <button class="ai-generate-btn" id="aiGenerateBtn">Generate Song List</button>
-                  <button class="ai-copy-btn" id="aiCopyBtn" style="display: none;">Copy to Clipboard</button>
-                  <button class="ai-import-global-btn" id="aiImportGlobalBtn" style="display: none;">Import to Global Library</button>
-                  <button class="ai-import-btn" id="aiImportBtn" style="display: none;">Import to Library</button>
-               </div>
-            </div>
-            <div class="ai-output-section" style="display: none;" id="aiOutputSection">
-               <div class="ai-output-container" id="aiOutput"></div>
-            </div>
-         </div>
-      </div>
+  
       <script src="https://www.youtube.com/iframe_api"></script>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
 
