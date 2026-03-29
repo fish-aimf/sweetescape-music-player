@@ -10375,14 +10375,13 @@ autofillYouTubeIds(playlistId) {
     songCards.forEach(card => {
         const ytInput = card.querySelector('.song-ytid-input');
         const raw = ytInput.value.trim();
-        if (raw.length !== 11) {
-            const extracted = this.extractYouTubeId(raw);
-            if (extracted) { ytInput.value = extracted; filled++; }
-        }
+        if (!raw) return;
+        if (raw.length === 11 && /^[a-zA-Z0-9_-]{11}$/.test(raw)) return; // already a valid ID, skip
+        const extracted = this.extractYouTubeId(raw);
+        if (extracted) { ytInput.value = extracted; filled++; }
     });
     this.showGlobalLibraryMessage(`Extracted ${filled} YouTube IDs from URLs.`, 'success');
 }
-
 
 toggleGlobalLibraryPlaylist(artistId) {
     const songsContainer = document.getElementById(`songs-container-${artistId}`);
