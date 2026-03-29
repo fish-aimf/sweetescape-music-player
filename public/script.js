@@ -10368,21 +10368,43 @@ hideSidebar() {
 	            </div>`;
 	    }).join('');
 	}
-autofillYouTubeIds(playlistId) {
+async autofillYouTubeIds(playlistId) {
     const editModeContainer = document.getElementById(`edit-mode-${playlistId}`);
     const songCards = editModeContainer.querySelectorAll('.global-library-song-edit-item');
-    console.log('Found cards:', songCards.length);
     let filled = 0;
-    songCards.forEach(card => {
+
+    for (const card of songCards) {
         const ytInput = card.querySelector('.song-ytid-input');
-        console.log('ytInput:', ytInput, 'value:', ytInput?.value);
+        const nameInput = card.querySelector('.song-name-input');
+        const artistInput = card.querySelector('.song-author-input');
+
         const raw = ytInput.value.trim();
-        console.log('raw:', raw);
-        const extracted = this.extractYouTubeId(raw);
-        console.log('extracted:', extracted);
-        if (extracted && raw !== extracted) { ytInput.value = extracted; filled++; }
-    });
-    this.showGlobalLibraryMessage(`Extracted ${filled} YouTube IDs from URLs.`, 'success');
+        // Skip if already has a valid ID
+        if (raw.length === 11 && /^[a-zA-Z0-9_-]{11}$/.test(raw)) continue;
+
+        const name = nameInput.value.trim();
+        const artist = artistInput.value.trim();
+        if (!name) continue;
+
+        try {
+            this.showGlobalLibraryMessage(`Searching YouTube for "${name}"...`, 'success');
+            const searchQuery = artist ? `"${name}" "${artist}"` : name;
+            const data = await this.searchYouTubeWithRotation(searchQuery);
+
+            if (data.items && data.items.length > 0) {
+                const best = this.findBestYouTubeMatch(data.items, name, artist);
+                if (best) {
+                    ytInput.value = best.id.videoId;
+                    filled++;
+                }
+            }
+            await new Promise(r => setTimeout(r, 300));
+        } catch (error) {
+            console.error(`Error searching for "${name}":`, error);
+        }
+    }
+
+    this.showGlobalLibraryMessage(`Autofilled ${filled} YouTube IDs.`, 'success');
 }
 
 toggleGlobalLibraryPlaylist(artistId) {
