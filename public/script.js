@@ -10371,14 +10371,16 @@ hideSidebar() {
 autofillYouTubeIds(playlistId) {
     const editModeContainer = document.getElementById(`edit-mode-${playlistId}`);
     const songCards = editModeContainer.querySelectorAll('.global-library-song-edit-item');
+    console.log('Found cards:', songCards.length);
     let filled = 0;
     songCards.forEach(card => {
         const ytInput = card.querySelector('.song-ytid-input');
+        console.log('ytInput:', ytInput, 'value:', ytInput?.value);
         const raw = ytInput.value.trim();
-        if (!raw) return;
-        if (raw.length === 11 && /^[a-zA-Z0-9_-]{11}$/.test(raw)) return; // already a valid ID, skip
+        console.log('raw:', raw);
         const extracted = this.extractYouTubeId(raw);
-        if (extracted) { ytInput.value = extracted; filled++; }
+        console.log('extracted:', extracted);
+        if (extracted && raw !== extracted) { ytInput.value = extracted; filled++; }
     });
     this.showGlobalLibraryMessage(`Extracted ${filled} YouTube IDs from URLs.`, 'success');
 }
