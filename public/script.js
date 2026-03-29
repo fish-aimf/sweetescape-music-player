@@ -10532,7 +10532,6 @@ async savePlaylistChanges(playlistId) {
     const songCards = editModeContainer.querySelectorAll('.global-library-song-edit-item');
     const errorDiv = document.getElementById(`validation-error-${playlistId}`);
     errorDiv.textContent = '';
-
     const songsData = [];
     let hasError = false;
 
@@ -10540,8 +10539,6 @@ async savePlaylistChanges(playlistId) {
         const name = card.querySelector('.song-name-input').value.trim();
         const artist = card.querySelector('.song-author-input').value.trim();
         const rawYt = card.querySelector('.song-ytid-input').value.trim();
-
-        // Accept full URL or bare ID
         const yt_id = this.extractYouTubeId(rawYt) || rawYt;
 
         if (!name || !artist || !yt_id) {
@@ -10555,8 +10552,9 @@ async savePlaylistChanges(playlistId) {
             return;
         }
 
+        const rawId = card.getAttribute('data-song-id');
         songsData.push({
-            id: card.getAttribute('data-song-id') ? parseInt(card.getAttribute('data-song-id')) : null,
+            id: rawId ? parseInt(rawId) : null,
             name, artist, yt_id, position: index
         });
     });
@@ -10564,30 +10562,45 @@ async savePlaylistChanges(playlistId) {
     if (hasError) return;
 
     try {
-        // 1. Upsert all songs (insert new, update existing by id)
-        const toUpsert = songsData.map(s => ({
-            ...(s.id ? { id: s.id } : {}),
-            name: s.name,
-            artist: s.artist,
-            yt_id: s.yt_id
-        }));
+        // 1. Update existing songs
+        const existingSongs = songsData.filter(s => s.id);
+        for (const s of existingSongs) {
+            const { error } = await this.globalLibrarySupabase
+                .from('songs')
+                .update({ name: s.name, artist: s.artist, yt_id: s.yt_id })
+                .eq('id', s.id);
+            if (error) throw error;
+        }
 
-        const { data: upsertedSongs, error: upsertError } = await this.globalLibrarySupabase
-            .from('songs')
-            .upsert(toUpsert, { onConflict: 'id' })
-            .select('id, name');
-        if (upsertError) throw upsertError;
+        // 2. Insert new songs
+        const newSongs = songsData.filter(s => !s.id);
+        let insertedSongs = [];
+        if (newSongs.length > 0) {
+            const { data, error } = await this.globalLibrarySupabase
+                .from('songs')
+                .insert(newSongs.map(s => ({ name: s.name, artist: s.artist, yt_id: s.yt_id })))
+                .select('id, name');
+            if (error) throw error;
+            insertedSongs = data;
+        }
 
-        // 2. Rebuild playlist_songs for this playlist
+        // 3. Map back to original order, matching new songs by position
+        let newSongPointer = 0;
+        const allSongIds = songsData.map(s => {
+            if (s.id) return s.id;
+            return insertedSongs[newSongPointer++]?.id;
+        });
+
+        // 4. Rebuild playlist_songs
         const { error: deleteError } = await this.globalLibrarySupabase
             .from('playlist_songs')
             .delete()
             .eq('playlist_id', playlistId);
         if (deleteError) throw deleteError;
 
-        const playlistSongsRows = upsertedSongs.map((song, index) => ({
+        const playlistSongsRows = allSongIds.map((song_id, index) => ({
             playlist_id: playlistId,
-            song_id: song.id,
+            song_id,
             position: index
         }));
 
@@ -10597,12 +10610,12 @@ async savePlaylistChanges(playlistId) {
         if (insertError) throw insertError;
 
         this.showGlobalLibraryMessage('Playlist saved successfully!', 'success');
+        this.allPlaylists = [];
         this.loadGlobalLibraryData();
     } catch (error) {
         this.showGlobalLibraryMessage('Error saving playlist: ' + error.message, 'error');
     }
 }
-
 async autofillYouTubeUrls(artistId) {
     const editModeContainer = document.getElementById(`edit-mode-${artistId}`);
     const songCards = editModeContainer.querySelectorAll('.global-library-song-edit-item');
