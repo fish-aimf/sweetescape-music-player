@@ -10405,6 +10405,31 @@ async autofillYouTubeIds(playlistId) {
 
     this.showGlobalLibraryMessage(`Autofilled ${filled} YouTube IDs.`, 'success');
 }
+	findBestYouTubeMatch(items, songTitle, artist) {
+    const scored = items.map(item => {
+        const title = (item.snippet.title || '').toLowerCase();
+        const channel = (item.snippet.channelTitle || '').toLowerCase();
+        const songLower = songTitle.toLowerCase();
+        const artistLower = (artist || '').toLowerCase();
+        let score = 0;
+
+        if (title.includes(songLower)) score += 25;
+        if (title.includes(artistLower)) score += 20;
+        if (channel.includes(artistLower)) score += 30;
+        if (title.includes('official')) score += 15;
+        if (title.includes('music video') || title.includes('mv')) score += 10;
+        if (title.includes('cover') || title.includes('remix') || title.includes('live')) score -= 20;
+
+        const words = songLower.split(/\s+/).filter(w => w.length > 2);
+        const matched = words.filter(w => title.includes(w));
+        score += (matched.length / Math.max(words.length, 1)) * 15;
+
+        return { ...item, score };
+    });
+
+    scored.sort((a, b) => b.score - a.score);
+    return scored[0]?.score > 10 ? scored[0] : null;
+}
 
 toggleGlobalLibraryPlaylist(artistId) {
     const songsContainer = document.getElementById(`songs-container-${artistId}`);
@@ -11269,7 +11294,7 @@ async autofillAuthors(artistId) {
 				error
 			} = await this.supabase
 				.from('songs')
-				.select('id, name, author, youtube_url')
+				.select('id, name, artist, yt_id')
 				.limit(100);
 			if (error) throw error;
 			const shuffled = randomSongs.sort(() => 0.5 - Math.random());
@@ -11543,7 +11568,7 @@ closeBillboardHot100Modal() {
 				error
 			} = await this.supabase
 				.from('songs')
-				.select('id, name, author, youtube_url')
+				.select('id, name, artist, yt_id')
 				.limit(100);
 			if (error) throw error;
 			const shuffled = randomSongs.sort(() => 0.5 - Math.random());
