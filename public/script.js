@@ -10379,7 +10379,6 @@ async autofillYouTubeIds(playlistId) {
         const artistInput = card.querySelector('.song-author-input');
 
         const raw = ytInput.value.trim();
-        // Skip if already has a valid ID
         if (raw.length === 11 && /^[a-zA-Z0-9_-]{11}$/.test(raw)) continue;
 
         const name = nameInput.value.trim();
@@ -10387,12 +10386,12 @@ async autofillYouTubeIds(playlistId) {
         if (!name) continue;
 
         try {
-            this.showGlobalLibraryMessage(`Searching YouTube for "${name}"...`, 'success');
-            const searchQuery = artist ? `"${name}" "${artist}"` : name;
-            const data = await this.searchYouTubeWithRotation(searchQuery);
+            this.showGlobalLibraryMessage(`Searching for "${name}"...`, 'success');
+            const searchQuery = artist ? `${name} ${artist}` : name;
+            const { items } = await this.searchYouTubeForLibraryMatches(searchQuery);
 
-            if (data.items && data.items.length > 0) {
-                const best = this.findBestYouTubeMatch(data.items, name, artist);
+            if (items && items.length > 0) {
+                const best = this.findBestYouTubeMatch(items, name, artist);
                 if (best) {
                     ytInput.value = best.id.videoId;
                     filled++;
