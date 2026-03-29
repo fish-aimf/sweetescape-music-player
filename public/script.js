@@ -10926,7 +10926,7 @@ async autofillAuthors(artistId) {
 	    this.elements.findSongsDiv.style.display = 'flex';
 	    this.elements.findSongsSearch.focus();
 	    await this.loadAllPlaylists();
-	    this.displaySearchResults(this.allPlaylists, [], 'playlists');
+	    this.displayBrowseView();
 	    await this.loadRecommendations();
 	}
 	closeFindSongs() {
@@ -10985,7 +10985,7 @@ async autofillAuthors(artistId) {
 	    }
 	}
 
-	displaySearchResults(playlists, individualSongs = [], mode = 'mixed') {
+	displaySearchResults(playlists, individualSongs = []) {
 	    let resultsHTML = '';
 	
 	    const limitedSongs = individualSongs.slice(0, 10);
@@ -11001,7 +11001,7 @@ async autofillAuthors(artistId) {
 	                                <div class="song-playlist">from playlist: ${song.playlist_name}</div>
 	                            </div>
 	                            <div class="song-actions">
-	                                <button class="preview-btn" onclick="musicPlayer.samplePlayTemporarySong('${song.youtube_url}')" title="Play on YouTube">▶</button>
+	                                <button class="preview-btn" onclick="musicPlayer.samplePlayTemporarySong('${song.youtube_url}')" title="Play">▶</button>
 	                                <button class="add-single-song-btn" onclick="musicPlayer.addSingleSongToLocalLibrary('${song.name.replace(/'/g, "\\'")}', '${(song.artist || '').replace(/'/g, "\\'")}', '${song.youtube_url}')">
 	                                    Add Song
 	                                </button>
@@ -11030,7 +11030,7 @@ async autofillAuthors(artistId) {
 	                                    ${preview.map(s => `
 	                                        <div class="song-preview">${s.name}${s.artist ? ` - ${s.artist}` : ''}</div>
 	                                    `).join('')}
-	                                    ${remaining > 0 ? `<div class="song-preview">... and ${remaining} more songs</div>` : ''}
+	                                    ${remaining > 0 ? `<div class="song-preview">... and ${remaining} more</div>` : ''}
 	                                </div>
 	                                <div class="playlist-actions">
 	                                    <button class="view-all-btn" onclick="musicPlayer.openDetailedPlaylistView(${playlist.id}, '${playlist.name.replace(/'/g, "\\'")}')">
@@ -11129,10 +11129,11 @@ async autofillAuthors(artistId) {
 			this.elements.findSongsResults.innerHTML = '<div class="loading-spinner">Error loading playlists</div>';
 		}
 	}
+	
 	filterResults() {
 	    const searchTerm = this.elements.findSongsSearch.value.trim().toLowerCase();
 	    if (!searchTerm) {
-	        this.displaySearchResults((this.allPlaylists || []).slice(0, 10), [], 'playlists');
+	        this.displayBrowseView();
 	        return;
 	    }
 	    const filteredPlaylists = (this.allPlaylists || []).filter(p =>
@@ -11149,8 +11150,42 @@ async autofillAuthors(artistId) {
 	        s.playlist_name.toLowerCase().includes(searchTerm)
 	    ).slice(0, 10);
 	
-	    this.displaySearchResults(filteredPlaylists, filteredSongs, 'mixed');
+	    this.displaySearchResults(filteredPlaylists, filteredSongs);
 	}
+
+	displayBrowseView() {
+	    const playlists = this.allPlaylists || [];
+	    // Pick 6 random playlists
+	    const shuffled = [...playlists].sort(() => 0.5 - Math.random()).slice(0, 6);
+	
+	    if (shuffled.length === 0) {
+	        this.elements.findSongsResults.innerHTML = '<div class="loading-spinner">No playlists yet</div>';
+	        return;
+	    }
+	
+	    this.elements.findSongsResults.innerHTML = `
+	        <div style="padding: 8px 0;">
+	            <div style="font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px;">
+	                Browse playlists
+	            </div>
+	            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+	                ${shuffled.map(p => `
+	                    <button
+	                        onclick="musicPlayer.openDetailedPlaylistView(${p.id}, '${p.name.replace(/'/g, "\\'")}')"
+	                        style="padding: 6px 14px; border-radius: 999px; border: 1px solid var(--border-color);
+	                               background: var(--bg-secondary); color: var(--text-primary); cursor: pointer;
+	                               font-size: 13px; white-space: nowrap;">
+	                        ${p.name}
+	                        <span style="color: var(--text-secondary); font-size: 11px; margin-left: 4px;">${p.songs.length}</span>
+	                    </button>
+	                `).join('')}
+	            </div>
+	            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 14px;">
+	                ${playlists.length} playlists total — type to search
+	            </div>
+	        </div>`;
+	}
+
 	async openDetailedPlaylistView(playlistId, playlistName) {
 	    try {
 	        const { data, error } = await this.supabase
