@@ -11320,7 +11320,7 @@ async autofillAuthors(artistId) {
 	}
 	
 	displayRandomRecommendations(songs) {
-	    const container = document.getElementById('randomSongsContainer');
+   		const container = document.getElementById('randomSongsContainer');
 	    
 	    if (!songs || songs.length === 0) {
 	        container.innerHTML = '<div style="color: var(--text-secondary); font-size: 12px;">No recommendations available</div>';
@@ -11328,16 +11328,17 @@ async autofillAuthors(artistId) {
 	    }
 	    
 	    container.innerHTML = songs.map(song => {
-	        const thumbnailUrl = this.getYouTubeThumbnail(song.youtube_url);
+	        const youtubeUrl = `https://www.youtube.com/watch?v=${song.yt_id}`;
+	        const thumbnailUrl = `https://img.youtube.com/vi/${song.yt_id}/mqdefault.jpg`;
 	        return `
-	            <div class="recommendation-song-item" onclick="musicPlayer.samplePlayTemporarySong('${song.youtube_url}')" style="cursor: pointer;" title="Click to preview">
+	            <div class="recommendation-song-item" onclick="musicPlayer.samplePlayTemporarySong('${youtubeUrl}')" style="cursor: pointer;" title="Click to preview">
 	                <img src="${thumbnailUrl}" 
 	                     alt="Thumbnail" 
 	                     class="song-thumbnail" 
-	                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'40\\' height=\\'30\\' viewBox=\\'0 0 40 30\\'%3E%3Crect fill=\\'%23ddd\\' width=\\'40\\' height=\\'30\\'/%3E%3Ctext x=\\'20\\' y=\\'18\\' text-anchor=\\'middle\\' font-size=\\'8\\' fill=\\'%23666\\'%3E♪%3C/text%3E%3C/svg%3E'">
+	                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'40\' height=\'30\' viewBox=\'0 0 40 30\'%3E%3Crect fill=\'%23ddd\' width=\'40\' height=\'30\'/%3E%3Ctext x=\'20\' y=\'18\' text-anchor=\'middle\' font-size=\'8\' fill=\'%23666\'%3E♪%3C/text%3E%3C/svg%3E'">
 	                <div class="recommendation-song-info">
 	                    <div class="recommendation-song-name">${song.name}</div>
-	                    <div class="recommendation-song-author">by ${song.author || 'Unknown'}</div>
+	                    <div class="recommendation-song-author">by ${song.artist || 'Unknown'}</div>
 	                </div>
 	            </div>
 	        `;
