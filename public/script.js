@@ -10238,7 +10238,7 @@ hideSidebar() {
 		document.getElementById('globalLibraryMainSection').style.display = 'block';
 		document.getElementById('globalLibraryUserInfo').textContent = `Welcome, ${this.globalLibraryCurrentUser.email}`;
 		this.loadGlobalLibraryData();
-		this.loadTopSongsManagement();
+	
 		this.autofillGlobalLibraryImport();
 	}
 	
