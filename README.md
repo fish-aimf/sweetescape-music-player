@@ -36,7 +36,6 @@ SweetEscape is a **self-contained static website** that:
 * **Dark/Light/Custom theme Mode Toggle**
 * Customizable **Hotkeys** for fast navigation
 * **Mobile-Friendly Interface** Although I don't recommend it due to it being a website
-* **Google Analytics + Free Visitors Counter**
 * **Billboard hot 100 updated and synced daily**
 * **Discord rich presence** enabled and **picture in picture** mode
 * **Clean** collapasible/adjustable interface
