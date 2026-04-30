@@ -8111,14 +8111,14 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 }
 
 .np-view {
-    display: flex;
-    flex-direction: row;
-    gap: 0px;
-    padding: 28px;
-    align-items: center;
-    background: var(--bg-secondary);
-    height: 100%;
-    box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  gap: 28px;
+  padding: 28px 0;
+  align-items: center;
+  background: var(--bg-secondary);
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .np-left {
