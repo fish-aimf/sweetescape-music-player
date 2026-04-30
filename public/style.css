@@ -8123,8 +8123,8 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 
 .np-left {
     flex-shrink: 0;
-    width: clamp(140px, 28vw, 280px);
-    height: clamp(140px, 28vw, 280px);
+    width: clamp(100px, 18vw, 180px);
+    height: clamp(100px, 18vw, 180px);
     border-radius: 6px;
     overflow: hidden;
     background: var(--bg-primary);
