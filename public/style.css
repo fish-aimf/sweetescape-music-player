@@ -8114,7 +8114,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     display: flex;
     flex-direction: row;
     gap: 28px;
-    padding: 28px;
+    padding: 0px;
     align-items: center;
     background: var(--bg-secondary);
     height: 100%;
