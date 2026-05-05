@@ -587,3 +587,4 @@
 - fixed weird css in now playing section v60.7.1
 - going onto the now playing tab no longer shows the now playing section in the additional details. v60.8.0
 - clicking now playing section now opens the now playing tab. v60.9.0
+- fixed tiny thumbnail cover images on the recently played and nowplaying sections v60.10.0
