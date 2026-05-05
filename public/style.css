@@ -1697,7 +1697,7 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transform: scale(1.3);
+    transform: scale(1.35);
 }
 
 .details-item-thumbnail i {
@@ -8353,5 +8353,5 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transform: scale(1.25);
+    transform: scale(1.35);
 }
