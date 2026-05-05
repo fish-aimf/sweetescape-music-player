@@ -721,6 +721,11 @@ class AdvancedMusicPlayer {
 		        handlers.autofillMouseleave();
 		    });
 		}
+		this.elements.additionalDetails.addEventListener('click', (e) => {
+		    if (e.target.closest('#currentSongSection') && !window.getSelection().toString()) {
+		        this.switchTab('nowplaying');
+		    }
+		});
 		
 		
 		// Current song name styling
@@ -5963,12 +5968,7 @@ hideSidebar() {
 	        </div>`;
 	    this.elements.additionalDetails.appendChild(currentSongDiv);
 		this.updateCurrentSongDisplay();
-		
-		currentSongDiv.addEventListener('click', (e) => {
-		    if (window.getSelection().toString()) return;
-		    this.switchTab('nowplaying');
-		});
-	
+			
 	    // Ordered sections — skip any with limit === 0
 	    const defs = this._getDefaultSectionOrder();
 	    const order = this.sectionOrder || defs.map(s => s.key);
