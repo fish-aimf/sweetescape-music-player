@@ -3325,15 +3325,16 @@ hideSidebar() {
 	    if (tabName === "lyrics") {
 	        this.renderLyricsTab();
 	    }
-	    // Hide control bar on now playing tab, restore otherwise
 	    const nowPlaying = document.querySelector('.now-playing');
 	    const spacer = document.getElementById('controlBarSpacer');
 	    if (tabName === 'nowplaying') {
 	        if (nowPlaying) nowPlaying.style.display = 'none';
 	        if (spacer) spacer.style.display = 'none';
+	        this.hideCurrentSongSection();      
 	    } else {
 	        if (nowPlaying) nowPlaying.style.display = '';
 	        if (spacer) spacer.style.display = '';
+	        if (this.currentSong) this.showCurrentSongSection();  
 	    }
 	}
 	savePlaylists() {
