@@ -5962,7 +5962,12 @@ hideSidebar() {
 	            </div>
 	        </div>`;
 	    this.elements.additionalDetails.appendChild(currentSongDiv);
-	    this.updateCurrentSongDisplay();
+		this.updateCurrentSongDisplay();
+		
+		currentSongDiv.addEventListener('click', (e) => {
+		    if (window.getSelection().toString()) return;
+		    this.switchTab('nowplaying');
+		});
 	
 	    // Ordered sections — skip any with limit === 0
 	    const defs = this._getDefaultSectionOrder();
