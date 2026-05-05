@@ -3330,13 +3330,16 @@ hideSidebar() {
 	    if (tabName === 'nowplaying') {
 	        if (nowPlaying) nowPlaying.style.display = 'none';
 	        if (spacer) spacer.style.display = 'none';
-	        this.hideCurrentSongSection();      
+	        this.isOnNowPlayingTab = true;
+	        this.hideCurrentSongSection();
 	    } else {
 	        if (nowPlaying) nowPlaying.style.display = '';
 	        if (spacer) spacer.style.display = '';
-	        if (this.currentSong) this.showCurrentSongSection();  
+	        this.isOnNowPlayingTab = false;
+	        if (this.currentSong) this.showCurrentSongSection();
 	    }
 	}
+	
 	savePlaylists() {
 		return new Promise((resolve, reject) => {
 			if (!this.db) {
@@ -6057,10 +6060,11 @@ hideSidebar() {
 	  }
 	}
 	showCurrentSongSection() {
-		const currentSongSection = document.getElementById('currentSongSection');
-		if (currentSongSection) {
-			currentSongSection.style.display = 'block';
-		}
+	    if (this.isOnNowPlayingTab) return;
+	    const currentSongSection = document.getElementById('currentSongSection');
+	    if (currentSongSection) {
+	        currentSongSection.style.display = 'block';
+	    }
 	}
 	hideCurrentSongSection() {
 		const currentSongSection = document.getElementById('currentSongSection');
