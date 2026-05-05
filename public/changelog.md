@@ -585,3 +585,5 @@
 - added this check to discord rpc as well v60.6.2
 - removed ai generator, will replace with a better musicbrainz.org api instead of gemini. v60.7.0
 - fixed weird css in now playing section v60.7.1
+- going onto the now playing tab no longer shows the now playing section in the additional details. v60.8.0
+- clicking now playing section now opens the now playing tab. v60.9.0
