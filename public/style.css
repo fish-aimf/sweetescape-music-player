@@ -1632,12 +1632,11 @@ body {
 
 #additionalDetails {
     width: 280px;
-    height: 100%;
     background-color: var(--bg-primary);
     border-radius: 9px;
     padding: 13px;
-    overflow-y: auto;
     box-sizing: border-box;
+    align-self: flex-start;
 }
 
 .additional-details-header {
