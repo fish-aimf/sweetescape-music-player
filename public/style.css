@@ -1621,6 +1621,7 @@ body {
     width: 100%;
     gap: 18px;
     margin-bottom: 20px;
+    align-items: flex-start;
 }
 
 .player-area {
@@ -1636,9 +1637,10 @@ body {
     border-radius: 9px;
     padding: 13px;
     box-sizing: border-box;
+    height: auto;
     align-self: flex-start;
+    overflow: visible;
 }
-
 .additional-details-header {
     margin-top: 0;
     margin-bottom: 6px;
