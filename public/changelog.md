@@ -589,3 +589,4 @@
 - clicking now playing section now opens the now playing tab. v60.9.0
 - fixed tiny thumbnail cover images on the recently played and nowplaying sections v60.10.0
 - made additional details not have fixed height, making it look a lot nicer. v60.11.0
+- cleaned up css file by a few hundred lines of duplicate stuff v60.12.0
