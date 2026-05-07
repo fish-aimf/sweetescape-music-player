@@ -1640,14 +1640,18 @@ body {
     height: auto;
     align-self: flex-start;
     overflow: visible;
+    display: flex;
+    flex-direction: column;
 }
+
 .additional-details-header {
     margin-top: 0;
-    margin-bottom: 6px;
+    margin-bottom: 6px; 
     color: var(--text-primary);
     font-size: 1.2rem;
     padding-bottom: 6px;
     border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
 }
 
 .additional-details-section {
@@ -4687,30 +4691,7 @@ if (this.elements.autofillBtn) {
     flex: 1;
   }
 }
-/* Keep all your existing CSS and ADD these rules */
 
-#additionalDetails {
-    width: 280px;
-    height: calc(650px); /* hhere */
-    background-color: var(--bg-primary);
-    border-radius: 9px;
-    padding: 13px;
-    overflow-y: auto;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-}
-
-/* Keep header fixed */
-.additional-details-header {
-    margin-top: 0;
-    margin-bottom: 6x;
-    color: var(--text-primary);
-    font-size: 1.2rem;
-    padding-bottom: 6px;
-    border-bottom: 1px solid var(--border-color);
-    flex-shrink: 0; /* Prevent header from shrinking */
-}
 
 /* Current song section styles */
 .current-song-section {
