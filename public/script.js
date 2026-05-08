@@ -2925,48 +2925,31 @@ class AdvancedMusicPlayer {
 			this.updatePageTitle();
 			return;
 		}
+
+		
 		this.elements.currentSongName.textContent = currentSong.name;
-		if (this.isLooping) {
-			this.elements.nextSongName.textContent = currentSong.name;
+		
+		if (!this.isAutoplayEnabled) {
+		    this.elements.nextSongName.textContent = 'Autoplay disabled';
+		} else if (this.isLooping) {
+		    this.elements.nextSongName.textContent = currentSong.name;
 		} else if (this.songQueue.length > 0) {
-			this.elements.nextSongName.textContent = `Queue: ${this.songQueue[0].name}`;
-		} else if (!this.isAutoplayEnabled) {
-			this.elements.nextSongName.textContent = "Autoplay disabled";
+		    const next = this.songQueue[0];
+		    if (next.type === 'stop') {
+		        this.elements.nextSongName.textContent = 'Queue: Stop';
+		    } else if (next.type === 'loop') {
+		        this.elements.nextSongName.textContent = 'Queue: Loop Forever';
+		    } else {
+		        this.elements.nextSongName.textContent = `Queue: ${next.name}`;
+		    }
 		} else {
-			const source = this.currentPlaylist ? this.currentPlaylist.songs : this.songLibrary;
-			if (this.currentPlaylist && this.temporarilySkippedSongs && this.temporarilySkippedSongs.size > 0) {
-				const totalSongs = source.length;
-				let nextIndex = (this.currentSongIndex + 1) % totalSongs;
-				const startIndex = nextIndex;
-				while (this.isSongTemporarilySkipped(source[nextIndex])) {
-					nextIndex = (nextIndex + 1) % totalSongs;
-					if (nextIndex === startIndex) {
-						this.elements.nextSongName.textContent = "No next song available";
-						break;
-					}
-					if (nextIndex === 0 && !this.isPlaylistLooping) {
-						this.elements.nextSongName.textContent = "End of playlist";
-						break;
-					}
-				}
-				if (
-					this.elements.nextSongName.textContent !== "No next song available" &&
-					this.elements.nextSongName.textContent !== "End of playlist"
-				) {
-					this.elements.nextSongName.textContent = source[nextIndex].name;
-				}
-			} else {
-				const nextSongIndex = (this.currentSongIndex + 1) % source.length;
-				const nextSong = source[nextSongIndex];
-				if (
-					this.currentSongIndex === source.length - 1 &&
-					!this.isPlaylistLooping
-				) {
-					this.elements.nextSongName.textContent = "End of playlist";
-				} else {
-					this.elements.nextSongName.textContent = nextSong.name;
-				}
-			}
+		    const source = this.currentPlaylist ? this.currentPlaylist.songs : this.songLibrary;
+		    if (this.currentSongIndex === source.length - 1 && !this.isPlaylistLooping) {
+		        this.elements.nextSongName.textContent = 'End of playlist';
+		    } else {
+		        const nextSongIndex = (this.currentSongIndex + 1) % source.length;
+		        this.elements.nextSongName.textContent = source[nextSongIndex].name;
+		    }
 		}
 		const playPauseIcon = this.elements.playPauseBtn.querySelector("i");
 		if (playPauseIcon) {
@@ -7900,6 +7883,18 @@ hideSidebar() {
 	    this.showQueueNotification('Stop block added');
 	    this._queueRefreshPanel();
 	}
+	addLoopBlock() {
+	    this.songQueue.push({
+	        type: 'loop',
+	        name: '— Loop Forever —',
+	        queueId: `loop_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`
+	    });
+	    this.saveQueue();
+	    this.updateQueueVisualIndicators();
+	    this.updatePlayerUI();
+	    this.showQueueNotification('Loop block added');
+	    this._queueRefreshPanel();
+	}
 
 		 
 	removeFromQueue(queueId) {
@@ -7965,9 +7960,7 @@ hideSidebar() {
 	    this._queueRefreshPanel();
 	}
 	_consumeQueueHead() {
-	    // Returns true if it handled playback, false to fall through to normal autoplay
 	    if (!this.songQueue.length) return false;
-	
 	    const block = this.songQueue[0];
 	
 	    if (block.type === 'stop') {
@@ -7984,24 +7977,31 @@ hideSidebar() {
 	        return true;
 	    }
 	
+	    if (block.type === 'loop') {
+	        this.songQueue.shift();
+	        this.saveQueue();
+	        this.isLooping = true;
+	        this.elements.loopBtn?.classList.add('active');
+	        this.saveSetting('isLooping', true);
+	        this.updatePlayerUI();
+	        this.updateQueueVisualIndicators();
+	        this._queueRefreshPanel();
+	        // Loop block doesn't play anything — it just sets state,
+	        // then falls through to normal autoplay for the next song
+	        return false;
+	    }
+	
 	    if (block.type === 'song') {
-	        // Handle loop-forever: set isLooping, don't shift
 	        if (block.repeat === -1) {
 	            this.isLooping = true;
 	            this.elements.loopBtn?.classList.add('active');
 	            this.saveSetting('isLooping', true);
-	            // Don't shift — keep block in queue, isLooping handles replay
-	            this.songQueue.shift(); // remove it; isLooping will repeat via normal loop logic
-	            this.saveQueue();
+	            this.songQueue.shift();
 	        } else {
-	            // Decrement repeat count
 	            block.repeat -= 1;
-	            if (block.repeat <= 0) {
-	                this.songQueue.shift();
-	            }
-	            this.saveQueue();
+	            if (block.repeat <= 0) this.songQueue.shift();
 	        }
-	
+	        this.saveQueue();
 	        this.updateQueueVisualIndicators();
 	        this._queueRefreshPanel();
 	
@@ -8110,6 +8110,9 @@ hideSidebar() {
 	                <button class="qv2-btn-ghost" id="qv2-add-stop" title="Add stop block">
 	                    <i class="fas fa-stop-circle" aria-hidden="true"></i>
 	                </button>
+					<button class="qv2-btn-ghost" id="qv2-add-loop" title="Add loop-forever block">
+					    <i class="fas fa-infinity" aria-hidden="true"></i>
+					</button>
 	                <button class="qv2-btn-ghost" id="qv2-clear" title="Clear all">
 	                    <i class="fas fa-trash-alt" aria-hidden="true"></i>
 	                </button>
@@ -8158,6 +8161,7 @@ hideSidebar() {
 	    // Header buttons
 	    document.getElementById('qv2-shuffle').addEventListener('click', () => this.shuffleQueue());
 	    document.getElementById('qv2-add-stop').addEventListener('click', () => this.addStopBlock());
+		document.getElementById('qv2-add-loop').addEventListener('click', () => this.addLoopBlock());
 	    document.getElementById('qv2-clear').addEventListener('click', () => {
 	        if (!this.songQueue.length) return;
 	        this.clearQueue();
@@ -8215,7 +8219,7 @@ hideSidebar() {
 	
 	_queueBuildRow(block, idx) {
 	    const row = document.createElement('div');
-	    row.className = `qv2-row${block.type === 'stop' ? ' qv2-row--stop' : ''}`;
+	    row.className = `qv2-row${block.type === 'stop' ? ' qv2-row--stop' : block.type === 'loop' ? ' qv2-row--loop' : ''}`;
 	    row.dataset.queueId = block.queueId;
 	    row.dataset.idx = idx;
 	    row.setAttribute('role', 'listitem');
@@ -8232,6 +8236,19 @@ hideSidebar() {
 	            <div class="qv2-row-actions">
 	                <button class="qv2-row-btn qv2-row-btn--remove" data-action="remove" title="Remove"><i class="fas fa-times"></i></button>
 	            </div>`;
+	
+	    } else if (block.type === 'loop') {
+	        row.innerHTML = `
+	            <span class="qv2-drag-handle" aria-hidden="true"><i class="fas fa-grip-vertical"></i></span>
+	            <span class="qv2-row-num">${idx + 1}</span>
+	            <div class="qv2-row-info qv2-row-info--loop">
+	                <i class="fas fa-infinity"></i>
+	                <span class="qv2-row-name">Loop Forever</span>
+	            </div>
+	            <div class="qv2-row-actions">
+	                <button class="qv2-row-btn qv2-row-btn--remove" data-action="remove" title="Remove"><i class="fas fa-times"></i></button>
+	            </div>`;
+	
 	    } else {
 	        const isInf = block.repeat === -1;
 	        const repeatVal = isInf ? '∞' : block.repeat;
@@ -8254,26 +8271,41 @@ hideSidebar() {
 	                <button class="qv2-row-btn qv2-row-btn--remove" data-action="remove" title="Remove"><i class="fas fa-times"></i></button>
 	            </div>`;
 	
-	        // Repeat input
 	        const input = row.querySelector('.qv2-repeat-input');
+	
 	        input.addEventListener('change', () => {
 	            const v = input.value.trim();
-	            if (v === '∞') { block.repeat = -1; input.dataset.inf = 'true'; }
-	            else {
+	            if (v === '∞') {
+	                block.repeat = -1;
+	                input.dataset.inf = 'true';
+	                row.querySelector('[data-action="inc"]').disabled = true;
+	                row.querySelector('[data-action="dec"]').disabled = true;
+	            } else {
 	                const n = Math.max(1, Math.min(99, parseInt(v) || 1));
 	                block.repeat = n;
 	                input.value = n;
 	                input.dataset.inf = 'false';
+	                row.querySelector('[data-action="inc"]').disabled = false;
+	                row.querySelector('[data-action="dec"]').disabled = false;
 	            }
 	            this.saveQueue();
 	        });
-	        // +/- buttons
+	
+	        // Prevent non-numeric / non-∞ input
+	        input.addEventListener('keydown', e => {
+	            const allowed = ['Backspace','Delete','ArrowLeft','ArrowRight','Tab','Enter'];
+	            if (allowed.includes(e.key)) return;
+	            if (e.key === '∞') return;
+	            if (!/^\d$/.test(e.key)) e.preventDefault();
+	        });
+	
 	        row.querySelector('[data-action="inc"]').addEventListener('click', () => {
 	            if (block.repeat === -1) return;
 	            block.repeat = Math.min(99, block.repeat + 1);
 	            input.value = block.repeat;
 	            this.saveQueue();
 	        });
+	
 	        row.querySelector('[data-action="dec"]').addEventListener('click', () => {
 	            if (block.repeat === -1) return;
 	            block.repeat = Math.max(1, block.repeat - 1);
@@ -8282,59 +8314,76 @@ hideSidebar() {
 	        });
 	    }
 	
+	    // Single delegated listener for remove/duplicate — won't fire on repeat +/- 
+	    // because those are bound directly above and stopPropagation is not needed
 	    row.addEventListener('click', e => {
 	        const btn = e.target.closest('[data-action]');
 	        if (!btn) return;
-	        if (btn.dataset.action === 'remove') this.removeFromQueue(row.dataset.queueId);
-	        if (btn.dataset.action === 'duplicate') this.duplicateQueueBlock(row.dataset.queueId);
+	        const action = btn.dataset.action;
+	        if (action === 'remove') this.removeFromQueue(row.dataset.queueId);
+	        if (action === 'duplicate') this.duplicateQueueBlock(row.dataset.queueId);
 	    });
 	
 	    return row;
 	}
-		 
-	// ─── DRAG AND DROP (native HTML5, no library) ────────────────
 	_queueBindDrag(container) {
-	    let dragIdx = null;
-	 
-	    const onDragStart = e => {
+	    let dragSrcQueueId = null;
+	
+	    const getRow = e => {
 	        const row = e.target.closest('.qv2-row');
-	        if (!row) return;
-	        dragIdx = +row.dataset.idx;
-	        row.classList.add('qv2-row--dragging');
-	        e.dataTransfer.effectAllowed = 'move';
+	        return row && container.contains(row) ? row : null;
 	    };
+	
+	    const onDragStart = e => {
+	        const row = getRow(e);
+	        if (!row) return;
+	        dragSrcQueueId = row.dataset.queueId;
+	        // Must set dataTransfer or Firefox won't drag
+	        e.dataTransfer.setData('text/plain', dragSrcQueueId);
+	        e.dataTransfer.effectAllowed = 'move';
+	        // Defer class add so the drag image captures clean state
+	        requestAnimationFrame(() => row.classList.add('qv2-row--dragging'));
+	    };
+	
 	    const onDragOver = e => {
 	        e.preventDefault();
-	        const row = e.target.closest('.qv2-row');
-	        if (!row) return;
 	        e.dataTransfer.dropEffect = 'move';
-	        // Highlight target
+	        const row = getRow(e);
+	        if (!row || row.dataset.queueId === dragSrcQueueId) return;
 	        container.querySelectorAll('.qv2-row--over').forEach(r => r.classList.remove('qv2-row--over'));
 	        row.classList.add('qv2-row--over');
 	    };
+	
 	    const onDrop = e => {
 	        e.preventDefault();
-	        const row = e.target.closest('.qv2-row');
-	        if (!row || dragIdx === null) return;
-	        const toIdx = +row.dataset.idx;
-	        if (toIdx !== dragIdx) {
-	            this.reorderQueue(dragIdx, toIdx);
-	            this._queueRenderRows();
-	        }
-	        dragIdx = null;
+	        const row = getRow(e);
+	        if (!row || !dragSrcQueueId) return;
+	        const toQueueId = row.dataset.queueId;
+	        if (toQueueId === dragSrcQueueId) return;
+	
+	        // Resolve indices at drop time from live queueId — not stale dataset.idx
+	        const fromIdx = this.songQueue.findIndex(b => b.queueId === dragSrcQueueId);
+	        const toIdx = this.songQueue.findIndex(b => b.queueId === toQueueId);
+	        if (fromIdx === -1 || toIdx === -1) return;
+	
+	        this.reorderQueue(fromIdx, toIdx);
+	        this._queueRenderRows();
+	        dragSrcQueueId = null;
 	    };
+	
 	    const onDragEnd = () => {
-	        container.querySelectorAll('.qv2-row--dragging,.qv2-row--over').forEach(r => {
+	        container.querySelectorAll('.qv2-row--dragging, .qv2-row--over').forEach(r => {
 	            r.classList.remove('qv2-row--dragging', 'qv2-row--over');
 	        });
-	        dragIdx = null;
+	        dragSrcQueueId = null;
 	    };
-	 
+	
 	    container.addEventListener('dragstart', onDragStart);
 	    container.addEventListener('dragover', onDragOver);
 	    container.addEventListener('drop', onDrop);
 	    container.addEventListener('dragend', onDragEnd);
 	}
+
 	 
 	// ─── SEARCH / ADD ─────────────────────────────────────────────
 	_queueBindSearch(input, dropdown) {
