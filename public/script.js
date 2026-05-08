@@ -2775,9 +2775,29 @@ class AdvancedMusicPlayer {
 	// Complete playNextSong method with Discord RPC
 	playNextSong() {
 		if (this.songQueue.length > 0) {
-		    this._queueExecCurrent();
-		    return;
-		}
+	    const next = this.songQueue.shift();
+	    this.saveQueue();
+	    this.updateQueueVisualIndicators();
+	    if (next.type === 'stop') {
+	        if (this.ytPlayer) { this.ytPlayer.stopVideo(); }
+	        this.isPlaying = false;
+	        this.updatePlayerUI();
+	        this._queueRefreshPanel();
+	        return;
+	    }
+	    const songInLibrary = this.songLibrary.find(s => s.videoId === next.videoId);
+	    if (songInLibrary) {
+	        this.currentSongIndex = this.songLibrary.findIndex(s => s.id === songInLibrary.id);
+	        this.currentPlaylist = null;
+	    }
+	    this.currentSong = next;
+	    this.saveRecentlyPlayedSong(next);
+	    this.playSongById(next.videoId);
+	    this.updatePlayerUI();
+	    this.updateCurrentSongDisplay();
+	    this._discordScheduleSend();
+	    return;
+	}
 		const source = this.currentPlaylist ? this.currentPlaylist.songs : this.songLibrary;
 		if (!source.length) return;
 		if (this.currentPlaylist && this.temporarilySkippedSongs && this.temporarilySkippedSongs.size > 0) {
@@ -2932,7 +2952,7 @@ class AdvancedMusicPlayer {
 		if (this.isLooping) {
 			this.elements.nextSongName.textContent = currentSong.name;
 		} else if (this.songQueue.length > 0) {
-			this.elements.nextSongName.textContent = this._queueNextLabel();
+			this.elements.nextSongName.textContent = `Queue: ${this.songQueue[0].name}`;
 		} else if (!this.isAutoplayEnabled) {
 			this.elements.nextSongName.textContent = "Autoplay disabled";
 		} else {
@@ -3164,9 +3184,7 @@ hideSidebar() {
 				        this.ytPlayer.seekTo(0, true);
 				    }
 				} else if (this.isAutoplayEnabled) {
-				    if (!this._queueTickBlock()) {
-				        this.playNextSong();
-				    }
+				    this.playNextSong();
 				} else {
 				    this.isPlaying = false;
 				    this.updatePlayerUI();
@@ -7843,128 +7861,20 @@ hideSidebar() {
 		}
 	}
 
-	_queueAddBlock(song, repeat = 1) {
-	    return {
-	        id: `blk_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-	        type: song ? 'song' : 'stop',
-	        song: song || null,
-	        repeat,
-	        _remaining: repeat
-	    };
-	}
+
+
 	 
-	// ─── TICK: called on song-end, returns true if it handled replay ──
-	_queueTickBlock() {
-	    if (!this.songQueue.length) return false;
-	    const block = this.songQueue[0];
-	    if (block.type === 'stop') {
-	        // Execute stop
-	        this.songQueue.shift();
-	        this.saveQueue();
-	        if (this.ytPlayer) { this.ytPlayer.stopVideo(); }
-	        this.isPlaying = false;
-	        this.updatePlayerUI();
-	        this._queueRefreshPanel();
-	        return true;
-	    }
-	    if (block.repeat === 'inf') {
-	        // Loop forever — replay same block
-	        this.playSongById(block.song.videoId);
-	        return true;
-	    }
-	    if (block._remaining > 1) {
-	        block._remaining--;
-	        this.saveQueue();
-	        this.playSongById(block.song.videoId);
-	        this._queueRefreshPanel();
-	        return true;
-	    }
-	    // Done with this block — advance
-	    this.songQueue.shift();
-	    this.saveQueue();
-	    this._queueRefreshPanel();
-	    return false; // let playNextSong() handle the next
-	}
-	 
-	// ─── EXEC CURRENT: plays front-of-queue block ────────────────
-	_queueExecCurrent() {
-	    if (!this.songQueue.length) return;
-	    const block = this.songQueue[0];
-	 
-	    if (block.type === 'stop') {
-	        this.songQueue.shift();
-	        this.saveQueue();
-	        if (this.ytPlayer) { this.ytPlayer.stopVideo(); }
-	        this.isPlaying = false;
-	        this.updatePlayerUI();
-	        this._queueRefreshPanel();
-	        return;
-	    }
-	 
-	    // Reset remaining counter on fresh execution
-	    if (block._remaining === undefined || block._remaining <= 0) {
-	        block._remaining = block.repeat;
-	    }
-	 
-	    const songInLibrary = this.songLibrary.find(s => s.videoId === block.song.videoId);
-	    if (songInLibrary) {
-	        this.currentSongIndex = this.songLibrary.findIndex(s => s.id === songInLibrary.id);
-	        this.currentPlaylist = null;
-	    }
-	    this.currentSong = block.song;
-	    this.saveRecentlyPlayedSong(block.song);
-	    this.playSongById(block.song.videoId);
-	    this.updatePlayerUI();
-	    this.updateCurrentSongDisplay();
-	    this._discordScheduleSend();
-	}
-	 
-	// ─── NEXT LABEL for updatePlayerUI ───────────────────────────
-	_queueNextLabel() {
-	    if (!this.songQueue.length) return '-';
-	    const block = this.songQueue[0];
-	    if (block.type === 'stop') return 'Queue: ⏹ stop';
-	    const name = block.song.name;
-	    if (block.repeat === 'inf') return `Queue: ${name} (∞)`;
-	    if (block._remaining > 1) return `Queue: ${name} (×${block._remaining})`;
-	    return `Queue: ${name}`;
-	}
-	 
-	// ─── SAVE / LOAD (backward-compatible) ───────────────────────
 	saveQueue() {
-	    // Strip runtime _remaining before persisting
-	    const toSave = this.songQueue.map(b => {
-	        const { _remaining, ...rest } = b;
-	        return rest;
-	    });
 	    try {
-	        sessionStorage.setItem('musicPlayerQueue', JSON.stringify(toSave));
-	    } catch (e) {
-	        // sessionStorage full — silently skip
-	    }
+	        sessionStorage.setItem('musicPlayerQueue', JSON.stringify(this.songQueue));
+	    } catch(e) {}
 	}
-	 
+	
 	loadQueue() {
 	    try {
 	        const raw = sessionStorage.getItem('musicPlayerQueue');
-	        if (!raw) { this.songQueue = []; return; }
-	        const parsed = JSON.parse(raw);
-	        // Migrate old flat-song format to block format
-	        this.songQueue = parsed.map(item => {
-	            if (item.type === 'song' || item.type === 'stop') {
-	                // Already new format — restore _remaining
-	                return { ...item, _remaining: item.repeat };
-	            }
-	            // Old format: plain song object
-	            return {
-	                id: item.queueId ? `blk_${item.queueId}` : `blk_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,
-	                type: 'song',
-	                song: item,
-	                repeat: 1,
-	                _remaining: 1
-	            };
-	        });
-	    } catch (e) {
+	        this.songQueue = raw ? JSON.parse(raw) : [];
+	    } catch(e) {
 	        this.songQueue = [];
 	    }
 	    this.updateQueueVisualIndicators();
@@ -7972,25 +7882,36 @@ hideSidebar() {
 	 
 	// ─── ADD TO QUEUE (public API, unchanged call signature) ─────
 	addToQueue(song, repeat = 1) {
-	    const block = this._queueAddBlock(song, repeat);
-	    this.songQueue.push(block);
+	    const count = (repeat === -1) ? 1 : Math.max(1, repeat);
+	    for (let i = 0; i < count; i++) {
+	        this.songQueue.push({
+	            ...song,
+	            queueId: `${Date.now()}_${Math.random().toString(36).slice(2,6)}_${i}`
+	        });
+	    }
+	    if (repeat === -1) {
+	        this.isLooping = true;
+	        this.elements.loopBtn?.classList.add('active');
+	        this.saveSetting('isLooping', true);
+	    }
 	    this.saveQueue();
 	    this.updateQueueVisualIndicators();
 	    this.updatePlayerUI();
-	    this.showQueueNotification(`Added "${song.name}" to queue`);
+	    const label = repeat === -1 ? ' (∞ loop on)' : repeat > 1 ? ` (×${repeat})` : '';
+	    this.showQueueNotification(`Added "${song.name}"${label}`);
 	    this._queueRefreshPanel();
 	}
-	 
+		 
 	// ─── REMOVE FROM QUEUE ────────────────────────────────────────
-	removeFromQueue(blockId) {
-	    const idx = this.songQueue.findIndex(b => b.id === blockId);
+	removeFromQueue(queueId) {
+	    const idx = this.songQueue.findIndex(b => b.queueId === queueId);
 	    if (idx === -1) return;
-	    const name = this.songQueue[idx].type === 'stop' ? 'Stop block' : this.songQueue[idx].song.name;
+	    const name = this.songQueue[idx].name;
 	    this.songQueue.splice(idx, 1);
 	    this.saveQueue();
 	    this.updateQueueVisualIndicators();
 	    this.updatePlayerUI();
-	    this.showQueueNotification(`Removed "${name}" from queue`);
+	    this.showQueueNotification(`Removed "${name}"`);
 	    this._queueRefreshPanel();
 	}
 	 
@@ -8031,31 +7952,20 @@ hideSidebar() {
 	    this._queueRefreshPanel();
 	}
 	 
-	// ─── DUPLICATE A BLOCK ───────────────────────────────────────
-	duplicateQueueBlock(blockId) {
-	    const idx = this.songQueue.findIndex(b => b.id === blockId);
+	duplicateQueueBlock(queueId) {
+	    const idx = this.songQueue.findIndex(b => b.queueId === queueId);
 	    if (idx === -1) return;
 	    const orig = this.songQueue[idx];
-	    const dupe = { ...orig, id: `blk_${Date.now()}_${Math.random().toString(36).slice(2,7)}`, _remaining: orig.repeat };
+	    const dupe = { ...orig, queueId: `${Date.now()}_${Math.random().toString(36).slice(2,6)}` };
 	    this.songQueue.splice(idx + 1, 0, dupe);
 	    this.saveQueue();
 	    this.updateQueueVisualIndicators();
 	    this.updatePlayerUI();
-	    this.showQueueNotification(`Duplicated "${orig.type === 'stop' ? 'Stop block' : orig.song.name}"`);
+	    this.showQueueNotification(`Duplicated "${orig.name}"`);
 	    this._queueRefreshPanel();
 	}
-	 
-	// ─── SET REPEAT ON A BLOCK ───────────────────────────────────
-	setBlockRepeat(blockId, repeat) {
-	    const block = this.songQueue.find(b => b.id === blockId);
-	    if (!block) return;
-	    block.repeat = repeat;
-	    block._remaining = repeat;
-	    this.saveQueue();
-	    this.updatePlayerUI();
-	    this._queueRefreshPanel();
-	}
-	 
+		 
+
 	// ─── REORDER (drag result) ───────────────────────────────────
 	reorderQueue(fromIdx, toIdx) {
 	    if (fromIdx === toIdx) return;
@@ -8165,10 +8075,7 @@ hideSidebar() {
 	                    autocomplete="off"
 	                    spellcheck="false"
 	                />
-	                <button class="qv2-stop-btn" id="qv2-add-stop" title="Add stop block">
-	                    <i class="fas fa-stop" aria-hidden="true"></i>
-	                    <span>Stop</span>
-	                </button>
+	               
 	            </div>
 	            <div class="qv2-dropdown" id="qv2-dropdown" hidden></div>
 	        </div>
@@ -8201,14 +8108,7 @@ hideSidebar() {
 	        this.clearQueue();
 	    });
 	    document.getElementById('qv2-close').addEventListener('click', () => backdrop.remove());
-	    document.getElementById('qv2-add-stop').addEventListener('click', () => {
-	        this.songQueue.push(this._queueAddBlock(null));
-	        this.saveQueue();
-	        this.updateQueueVisualIndicators();
-	        this.updatePlayerUI();
-	        this.showQueueNotification('Stop block added');
-	        this._queueRefreshPanel();
-	    });
+	   
 	 
 	    // Backdrop click to close
 	    backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
@@ -8249,86 +8149,45 @@ hideSidebar() {
 	    this._queueBindDrag(container);
 	}
 	 
-	// ─── BUILD SINGLE ROW ────────────────────────────────────────
 	_queueBuildRow(block, idx) {
 	    const row = document.createElement('div');
-	    row.className = `qv2-row${block.type === 'stop' ? ' qv2-row--stop' : ''}`;
-	    row.dataset.blockId = block.id;
+	    row.className = 'qv2-row';
+	    row.dataset.queueId = block.queueId;
 	    row.dataset.idx = idx;
 	    row.setAttribute('role', 'listitem');
 	    row.draggable = true;
-	 
-	    if (block.type === 'stop') {
-	        row.innerHTML = `
-	            <span class="qv2-drag-handle" aria-hidden="true"><i class="fas fa-grip-vertical"></i></span>
-	            <span class="qv2-stop-icon"><i class="fas fa-stop"></i></span>
-	            <span class="qv2-row-name">Stop playback</span>
-	            <button class="qv2-row-btn qv2-row-btn--remove" data-action="remove" title="Remove">
-	                <i class="fas fa-times"></i>
-	            </button>
-	        `;
-	    } else {
-	        const repeatLabel = block.repeat === 'inf' ? '∞'
-	            : block.repeat > 1 ? `×${block._remaining ?? block.repeat}/${block.repeat}`
-	            : '';
-	 
-	        row.innerHTML = `
-	            <span class="qv2-drag-handle" aria-hidden="true"><i class="fas fa-grip-vertical"></i></span>
-	            <span class="qv2-row-num">${idx + 1}</span>
-	            <div class="qv2-row-info">
-	                <span class="qv2-row-name">${this.escapeHtml(block.song.name)}</span>
-	                ${block.song.author ? `<span class="qv2-row-author">${this.escapeHtml(block.song.author)}</span>` : ''}
-	            </div>
-	            ${repeatLabel ? `<span class="qv2-repeat-badge">${repeatLabel}</span>` : ''}
-	            <div class="qv2-row-actions">
-	                <button class="qv2-row-btn" data-action="repeat-minus" title="Decrease repeats">−</button>
-	                <span class="qv2-repeat-count" data-action="repeat-display">${block.repeat === 'inf' ? '∞' : block.repeat}</span>
-	                <button class="qv2-row-btn" data-action="repeat-plus" title="Increase repeats">+</button>
-	                <button class="qv2-row-btn" data-action="repeat-inf" title="Loop forever" class="${block.repeat === 'inf' ? 'active' : ''}">
-	                    <i class="fas fa-infinity"></i>
-	                </button>
-	                <button class="qv2-row-btn" data-action="duplicate" title="Duplicate">
-	                    <i class="fas fa-copy"></i>
-	                </button>
-	                <button class="qv2-row-btn qv2-row-btn--remove" data-action="remove" title="Remove">
-	                    <i class="fas fa-times"></i>
-	                </button>
-	            </div>
-	        `;
+	
+	    // Count consecutive copies of this song starting at idx
+	    let copies = 0;
+	    for (let i = idx; i < this.songQueue.length; i++) {
+	        if (this.songQueue[i].videoId === block.videoId) copies++;
+	        else break;
 	    }
-	 
-	    // Single delegated listener on the row
+	
+	    row.innerHTML = `
+	        <span class="qv2-drag-handle" aria-hidden="true"><i class="fas fa-grip-vertical"></i></span>
+	        <span class="qv2-row-num">${idx + 1}</span>
+	        <div class="qv2-row-info">
+	            <span class="qv2-row-name">${this.escapeHtml(block.name)}</span>
+	            ${block.author ? `<span class="qv2-row-author">${this.escapeHtml(block.author)}</span>` : ''}
+	        </div>
+	        ${copies > 1 ? `<span class="qv2-repeat-badge">×${copies}</span>` : ''}
+	        <div class="qv2-row-actions">
+	            <button class="qv2-row-btn" data-action="duplicate" title="Duplicate"><i class="fas fa-copy"></i></button>
+	            <button class="qv2-row-btn qv2-row-btn--remove" data-action="remove" title="Remove"><i class="fas fa-times"></i></button>
+	        </div>
+	    `;
+	
 	    row.addEventListener('click', e => {
 	        const btn = e.target.closest('[data-action]');
 	        if (!btn) return;
-	        const action = btn.dataset.action;
-	        const id = row.dataset.blockId;
-	        if (action === 'remove') { this.removeFromQueue(id); return; }
-	        if (action === 'duplicate') { this.duplicateQueueBlock(id); return; }
-	        if (action === 'repeat-inf') {
-	            const b = this.songQueue.find(x => x.id === id);
-	            if (!b) return;
-	            this.setBlockRepeat(id, b.repeat === 'inf' ? 1 : 'inf');
-	            return;
-	        }
-	        if (action === 'repeat-plus') {
-	            const b = this.songQueue.find(x => x.id === id);
-	            if (!b || b.repeat === 'inf') return;
-	            this.setBlockRepeat(id, b.repeat + 1);
-	            return;
-	        }
-	        if (action === 'repeat-minus') {
-	            const b = this.songQueue.find(x => x.id === id);
-	            if (!b || b.repeat === 'inf') return;
-	            if (b.repeat <= 1) return;
-	            this.setBlockRepeat(id, b.repeat - 1);
-	            return;
-	        }
+	        if (btn.dataset.action === 'remove') this.removeFromQueue(row.dataset.queueId);
+	        if (btn.dataset.action === 'duplicate') this.duplicateQueueBlock(row.dataset.queueId);
 	    });
-	 
+	
 	    return row;
 	}
-	 
+		 
 	// ─── DRAG AND DROP (native HTML5, no library) ────────────────
 	_queueBindDrag(container) {
 	    let dragIdx = null;
@@ -8379,35 +8238,59 @@ hideSidebar() {
 	    let _debounce = null;
 	 
 	    const renderResults = (term) => {
-	        if (!term) { dropdown.hidden = true; return; }
-	        const lower = term.toLowerCase();
-	        const results = this.songLibrary
-	            .filter(s => s.name.toLowerCase().includes(lower) || (s.author && s.author.toLowerCase().includes(lower)))
-	            .slice(0, 5);
-	 
-	        if (!results.length) { dropdown.hidden = true; return; }
-	 
-	        dropdown.hidden = false;
-	        const frag = document.createDocumentFragment();
-	        results.forEach(song => {
-	            const item = document.createElement('div');
-	            item.className = 'qv2-result';
-	            item.innerHTML = `
-	                <span class="qv2-result-name">${this.escapeHtml(song.name)}</span>
-	                ${song.author ? `<span class="qv2-result-author">${this.escapeHtml(song.author)}</span>` : ''}
-	            `;
-	            item.addEventListener('mousedown', e => {
-	                e.preventDefault(); // Prevent input blur
-	                this.addToQueue(song);
-	                input.value = '';
-	                dropdown.hidden = true;
-	            });
-	            frag.appendChild(item);
-	        });
-	        dropdown.innerHTML = '';
-	        dropdown.appendChild(frag);
-	    };
-	 
+		    if (!term) { dropdown.hidden = true; return; }
+		    const lower = term.toLowerCase();
+		    const results = this.songLibrary
+		        .filter(s => s.name.toLowerCase().includes(lower) || (s.author && s.author.toLowerCase().includes(lower)))
+		        .slice(0, 5);
+		    if (!results.length) { dropdown.hidden = true; return; }
+		
+		    dropdown.hidden = false;
+		    const frag = document.createDocumentFragment();
+		    results.forEach(song => {
+		        const item = document.createElement('div');
+		        item.className = 'qv2-result';
+		        item.innerHTML = `
+		            <div class="qv2-result-info">
+		                <span class="qv2-result-name">${this.escapeHtml(song.name)}</span>
+		                ${song.author ? `<span class="qv2-result-author">${this.escapeHtml(song.author)}</span>` : ''}
+		            </div>
+		            <div class="qv2-result-actions">
+		                <button class="qv2-result-btn" data-action="minus" title="Less">−</button>
+		                <span class="qv2-result-count">1</span>
+		                <button class="qv2-result-btn" data-action="plus" title="More">+</button>
+		                <button class="qv2-result-btn qv2-result-btn--inf" data-action="inf" title="Loop forever">∞</button>
+		                <button class="qv2-result-btn qv2-result-btn--add" data-action="add" title="Add to queue">+Add</button>
+		            </div>
+		        `;
+		
+		        // Count controls
+		        const countEl = item.querySelector('.qv2-result-count');
+		        item.addEventListener('click', e => {
+		            const btn = e.target.closest('[data-action]');
+		            if (!btn) return;
+		            const action = btn.dataset.action;
+		            if (action === 'plus') {
+		                countEl.textContent = Math.min(99, +countEl.textContent + 1);
+		            } else if (action === 'minus') {
+		                countEl.textContent = Math.max(1, +countEl.textContent - 1);
+		            } else if (action === 'inf') {
+		                this.addToQueue(song, -1);
+		                input.value = '';
+		                dropdown.hidden = true;
+		            } else if (action === 'add') {
+		                this.addToQueue(song, +countEl.textContent);
+		                input.value = '';
+		                dropdown.hidden = true;
+		            }
+		        });
+		
+		        frag.appendChild(item);
+		    });
+		    dropdown.innerHTML = '';
+		    dropdown.appendChild(frag);
+		};
+			 
 	    input.addEventListener('input', () => {
 	        clearTimeout(_debounce);
 	        _debounce = setTimeout(() => renderResults(input.value.trim()), 120);
