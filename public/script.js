@@ -2938,7 +2938,7 @@ class AdvancedMusicPlayer {
 		    if (next.type === 'stop') {
 		        this.elements.nextSongName.textContent = 'Queue: Stop';
 		    } else if (next.type === 'loop') {
-		        this.elements.nextSongName.textContent = 'Queue: Loop Forever';
+		        this.elements.nextSongName.textContent = 'Queue: Loop Previous Song Forever';
 		    } else {
 		        this.elements.nextSongName.textContent = `Queue: ${next.name}`;
 		    }
@@ -7892,7 +7892,7 @@ hideSidebar() {
 	    this.saveQueue();
 	    this.updateQueueVisualIndicators();
 	    this.updatePlayerUI();
-	    this.showQueueNotification('Loop block added');
+	    this.showQueueNotification('Loop previous song forever block added');
 	    this._queueRefreshPanel();
 	}
 
@@ -7977,19 +7977,21 @@ hideSidebar() {
 	        return true;
 	    }
 	
-	    if (block.type === 'loop') {
-	        this.songQueue.shift();
-	        this.saveQueue();
-	        this.isLooping = true;
-	        this.elements.loopBtn?.classList.add('active');
-	        this.saveSetting('isLooping', true);
-	        this.updatePlayerUI();
-	        this.updateQueueVisualIndicators();
-	        this._queueRefreshPanel();
-	        // Loop block doesn't play anything — it just sets state,
-	        // then falls through to normal autoplay for the next song
-	        return false;
-	    }
+		if (block.type === 'loop') {
+		    this.songQueue.shift();
+		    this.saveQueue();
+		    this.isLooping = true;
+		    this.elements.loopBtn?.classList.add('active');
+		    this.saveSetting('isLooping', true);
+		    this.updateQueueVisualIndicators();
+		    this._queueRefreshPanel();
+		
+		    if (this.currentSong) {
+		        this.playSongById(this.currentSong.videoId);
+		    }
+		    this.updatePlayerUI();
+		    return true; 
+		}
 	
 	    if (block.type === 'song') {
 	        if (block.repeat === -1) {
@@ -8243,7 +8245,7 @@ hideSidebar() {
 	            <span class="qv2-row-num">${idx + 1}</span>
 	            <div class="qv2-row-info qv2-row-info--loop">
 	                <i class="fas fa-infinity"></i>
-	                <span class="qv2-row-name">Loop Forever</span>
+	                <span class="qv2-row-name">Loop Previous Song Forever</span>
 	            </div>
 	            <div class="qv2-row-actions">
 	                <button class="qv2-row-btn qv2-row-btn--remove" data-action="remove" title="Remove"><i class="fas fa-times"></i></button>
