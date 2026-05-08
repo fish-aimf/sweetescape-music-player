@@ -7982,12 +7982,11 @@ hideSidebar() {
 	    document.querySelectorAll('.queue-indicator').forEach(el => el.remove());
 	    this.songQueue.forEach((block, index) => {
 	        if (block.type === 'stop') return;
-	        const song = block.song;
 	        const songElements = [
-	            ...document.querySelectorAll(`[data-video-id="${song.videoId}"]`),
-	            ...document.querySelectorAll(`[onclick*="playSong(${song.id})"]`),
-	            ...document.querySelectorAll(`[onclick*="'${song.videoId}'"]`)
-	        ];
+				...document.querySelectorAll(`[data-video-id="${block.videoId}"]`),
+				...document.querySelectorAll(`[onclick*="playSong(${block.id})"]`),
+				...document.querySelectorAll(`[onclick*="'${block.videoId}'"]`)
+			];
 	        songElements.forEach(element => {
 	            if (element.querySelector('.queue-indicator')) return;
 	            const indicator = document.createElement('span');
