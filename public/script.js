@@ -2774,23 +2774,9 @@ class AdvancedMusicPlayer {
 	// Complete playNextSong method with Discord RPC
 	playNextSong() {
 		if (this.songQueue.length > 0) {
-			const nextSong = this.songQueue.shift();
-			this.saveQueue();
-			this.updateQueueVisualIndicators();
-			const songInLibrary = this.songLibrary.find(s => s.videoId === nextSong.videoId);
-			if (songInLibrary) {
-				this.currentSongIndex = this.songLibrary.findIndex(s => s.id === songInLibrary.id);
-				this.currentPlaylist = null;
-			}
-			this.currentSong = nextSong;
-			this.saveRecentlyPlayedSong(nextSong);
-			this.playSongById(nextSong.videoId);
-			this.updatePlayerUI();
-			this.updateCurrentSongDisplay();
-
-			// Send Discord RPC update
-			this._discordScheduleSend();
-			return;
+		if (this.songQueue.length > 0) {
+		    this._queueExecCurrent();
+		    return;
 		}
 		const source = this.currentPlaylist ? this.currentPlaylist.songs : this.songLibrary;
 		if (!source.length) return;
@@ -2946,7 +2932,7 @@ class AdvancedMusicPlayer {
 		if (this.isLooping) {
 			this.elements.nextSongName.textContent = currentSong.name;
 		} else if (this.songQueue.length > 0) {
-			this.elements.nextSongName.textContent = `Queue: ${this.songQueue[0].name}`;
+			this.elements.nextSongName.textContent = this._queueNextLabel();
 		} else if (!this.isAutoplayEnabled) {
 			this.elements.nextSongName.textContent = "Autoplay disabled";
 		} else {
@@ -3174,16 +3160,18 @@ hideSidebar() {
 			console.log("Song ended - taking immediate action");
 			setTimeout(() => {
 				if (this.isLooping) {
-					// Efficient loop - just restart the video
-					if (this.ytPlayer) {
-						this.ytPlayer.seekTo(0, true);
-					}
+				    if (this.ytPlayer) {
+				        this.ytPlayer.seekTo(0, true);
+				    }
 				} else if (this.isAutoplayEnabled) {
-					this.playNextSong();
+				    if (!this._queueTickBlock()) {
+				        this.playNextSong();
+				    }
 				} else {
-					this.isPlaying = false;
-					this.updatePlayerUI();
+				    this.isPlaying = false;
+				    this.updatePlayerUI();
 				}
+				
 			}, 0);
 			if (this.elements.progressBar) {
 				this.elements.progressBar.value = 0;
@@ -7855,227 +7843,635 @@ hideSidebar() {
 			hintEl.style.display = "none";
 		}
 	}
-	addToQueue(song) {
-		console.log('Adding song to queue:', song);
-		this.songQueue.push({
-			...song,
-			queueId: Date.now() + Math.random()
-		});
-		this.saveQueue();
-		this.updateQueueVisualIndicators();
-		this.updatePlayerUI();
-		this.showQueueNotification(`Added "${song.name}" to queue`);
+	
+	// ─── BLOCK FACTORY ──────────────────────────────────────────
+	_queueAddBlock(song, repeat = 1) {
+	    return {
+	        id: `blk_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+	        type: song ? 'song' : 'stop',
+	        song: song || null,
+	        repeat,
+	        _remaining: repeat
+	    };
 	}
-	removeFromQueue(queueId) {
-		console.log('Removing song from queue with ID:', queueId);
-		const removedSong = this.songQueue.find(item => item.queueId == queueId);
-		this.songQueue = this.songQueue.filter(item => item.queueId != queueId);
-		this.saveQueue();
-		this.updateQueueVisualIndicators();
-		this.updatePlayerUI();
-		if (removedSong) {
-			this.showQueueNotification(`Removed "${removedSong.name}" from queue`);
-		}
+	 
+	// ─── TICK: called on song-end, returns true if it handled replay ──
+	_queueTickBlock() {
+	    if (!this.songQueue.length) return false;
+	    const block = this.songQueue[0];
+	    if (block.type === 'stop') {
+	        // Execute stop
+	        this.songQueue.shift();
+	        this.saveQueue();
+	        if (this.ytPlayer) { this.ytPlayer.stopVideo(); }
+	        this.isPlaying = false;
+	        this.updatePlayerUI();
+	        this._queueRefreshPanel();
+	        return true;
+	    }
+	    if (block.repeat === 'inf') {
+	        // Loop forever — replay same block
+	        this.playSongById(block.song.videoId);
+	        return true;
+	    }
+	    if (block._remaining > 1) {
+	        block._remaining--;
+	        this.saveQueue();
+	        this.playSongById(block.song.videoId);
+	        this._queueRefreshPanel();
+	        return true;
+	    }
+	    // Done with this block — advance
+	    this.songQueue.shift();
+	    this.saveQueue();
+	    this._queueRefreshPanel();
+	    return false; // let playNextSong() handle the next
 	}
+	 
+	// ─── EXEC CURRENT: plays front-of-queue block ────────────────
+	_queueExecCurrent() {
+	    if (!this.songQueue.length) return;
+	    const block = this.songQueue[0];
+	 
+	    if (block.type === 'stop') {
+	        this.songQueue.shift();
+	        this.saveQueue();
+	        if (this.ytPlayer) { this.ytPlayer.stopVideo(); }
+	        this.isPlaying = false;
+	        this.updatePlayerUI();
+	        this._queueRefreshPanel();
+	        return;
+	    }
+	 
+	    // Reset remaining counter on fresh execution
+	    if (block._remaining === undefined || block._remaining <= 0) {
+	        block._remaining = block.repeat;
+	    }
+	 
+	    const songInLibrary = this.songLibrary.find(s => s.videoId === block.song.videoId);
+	    if (songInLibrary) {
+	        this.currentSongIndex = this.songLibrary.findIndex(s => s.id === songInLibrary.id);
+	        this.currentPlaylist = null;
+	    }
+	    this.currentSong = block.song;
+	    this.saveRecentlyPlayedSong(block.song);
+	    this.playSongById(block.song.videoId);
+	    this.updatePlayerUI();
+	    this.updateCurrentSongDisplay();
+	    this._discordScheduleSend();
+	}
+	 
+	// ─── NEXT LABEL for updatePlayerUI ───────────────────────────
+	_queueNextLabel() {
+	    if (!this.songQueue.length) return '-';
+	    const block = this.songQueue[0];
+	    if (block.type === 'stop') return 'Queue: ⏹ stop';
+	    const name = block.song.name;
+	    if (block.repeat === 'inf') return `Queue: ${name} (∞)`;
+	    if (block._remaining > 1) return `Queue: ${name} (×${block._remaining})`;
+	    return `Queue: ${name}`;
+	}
+	 
+	// ─── SAVE / LOAD (backward-compatible) ───────────────────────
 	saveQueue() {
-		sessionStorage.setItem('musicPlayerQueue', JSON.stringify(this.songQueue));
+	    // Strip runtime _remaining before persisting
+	    const toSave = this.songQueue.map(b => {
+	        const { _remaining, ...rest } = b;
+	        return rest;
+	    });
+	    try {
+	        sessionStorage.setItem('musicPlayerQueue', JSON.stringify(toSave));
+	    } catch (e) {
+	        // sessionStorage full — silently skip
+	    }
 	}
+	 
 	loadQueue() {
-		const saved = sessionStorage.getItem('musicPlayerQueue');
-		this.songQueue = saved ? JSON.parse(saved) : [];
-		this.updateQueueVisualIndicators();
+	    try {
+	        const raw = sessionStorage.getItem('musicPlayerQueue');
+	        if (!raw) { this.songQueue = []; return; }
+	        const parsed = JSON.parse(raw);
+	        // Migrate old flat-song format to block format
+	        this.songQueue = parsed.map(item => {
+	            if (item.type === 'song' || item.type === 'stop') {
+	                // Already new format — restore _remaining
+	                return { ...item, _remaining: item.repeat };
+	            }
+	            // Old format: plain song object
+	            return {
+	                id: item.queueId ? `blk_${item.queueId}` : `blk_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,
+	                type: 'song',
+	                song: item,
+	                repeat: 1,
+	                _remaining: 1
+	            };
+	        });
+	    } catch (e) {
+	        this.songQueue = [];
+	    }
+	    this.updateQueueVisualIndicators();
 	}
-	updateQueueVisualIndicators() {
-		document.querySelectorAll('.queue-indicator').forEach(el => el.remove());
-		this.songQueue.forEach((queueSong, index) => {
-			const songElements = [
-				...document.querySelectorAll(`[data-video-id="${queueSong.videoId}"]`),
-				...document.querySelectorAll(`[onclick*="playSong(${queueSong.id})"]`),
-				...document.querySelectorAll(`[onclick*="'${queueSong.videoId}'"]`)
-			];
-			songElements.forEach(element => {
-				if (element.querySelector('.queue-indicator')) return;
-				const indicator = document.createElement('span');
-				indicator.className = 'queue-indicator';
-				indicator.textContent = `${index + 1}`;
-				indicator.style.cssText = `
-        position: absolute;
-        top: 2px;
-        right: 2px;
-        background: #ff6b6b;
-        color: white;
-        border-radius: 50%;
-        width: 20px;
-        height: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 11px;
-        font-weight: bold;
-        z-index: 10;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-      `;
-				element.style.position = 'relative';
-				element.appendChild(indicator);
-			});
-		});
+	 
+	// ─── ADD TO QUEUE (public API, unchanged call signature) ─────
+	addToQueue(song, repeat = 1) {
+	    const block = this._queueAddBlock(song, repeat);
+	    this.songQueue.push(block);
+	    this.saveQueue();
+	    this.updateQueueVisualIndicators();
+	    this.updatePlayerUI();
+	    this.showQueueNotification(`Added "${song.name}" to queue`);
+	    this._queueRefreshPanel();
 	}
-	showQueueNotification(message) {
-		const existing = document.querySelector('.queue-notification');
-		if (existing) existing.remove();
-		const notification = document.createElement('div');
-		notification.className = 'queue-notification';
-		notification.textContent = message;
-		notification.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: var(--accent-color);
-    color: white;
-    padding: 10px 15px;
-    border-radius: 5px;
-    z-index: 1000;
-    font-size: 14px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    animation: slideIn 0.3s ease;
-  `;
-		document.body.appendChild(notification);
-		setTimeout(() => {
-			notification.style.animation = 'slideOut 0.3s ease';
-			setTimeout(() => notification.remove(), 300);
-		}, 2000);
+	 
+	// ─── REMOVE FROM QUEUE ────────────────────────────────────────
+	removeFromQueue(blockId) {
+	    const idx = this.songQueue.findIndex(b => b.id === blockId);
+	    if (idx === -1) return;
+	    const name = this.songQueue[idx].type === 'stop' ? 'Stop block' : this.songQueue[idx].song.name;
+	    this.songQueue.splice(idx, 1);
+	    this.saveQueue();
+	    this.updateQueueVisualIndicators();
+	    this.updatePlayerUI();
+	    this.showQueueNotification(`Removed "${name}" from queue`);
+	    this._queueRefreshPanel();
 	}
-	showQueueOverlay() {
-		const existing = document.querySelector('.queue-overlay');
-		if (existing) {
-			existing.remove();
-			return;
-		}
-		const overlay = document.createElement('div');
-		overlay.className = 'queue-overlay';
-		overlay.style.cssText = `
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.8);
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  `;
-		const queuePanel = document.createElement('div');
-		queuePanel.className = 'queue-panel';
-		queuePanel.style.cssText = `
-    background: var(--bg-secondary);
-    border-radius: 10px;
-    padding: 20px;
-    max-width: 500px;
-    width: 90%;
-    max-height: 70vh;
-    overflow-y: auto;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-  `;
-		let queueContent = `
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-      <h3 style="margin: 0; color: var(--text-primary);">Queue (${this.songQueue.length} songs)</h3>
-      <button onclick="this.closest('.queue-overlay').remove()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-primary);">&times;</button>
-    </div>
-  `;
-		if (this.songQueue.length === 0) {
-			queueContent += '<p style="color: var(--text-secondary); text-align: center; margin: 20px 0;">No songs in queue</p>';
-		} else {
-			queueContent += '<div class="queue-songs">';
-			this.songQueue.forEach((song, index) => {
-				queueContent += `
-        <div style="display: flex; align-items: center; padding: 10px; border-bottom: 1px solid var(--border-color); color: var(--text-primary);">
-          <span style="margin-right: 10px; font-weight: bold; color: var(--accent-color);">${index + 1}</span>
-          <div style="flex: 1;">
-            <div style="font-weight: bold;">${this.escapeHtml(song.name)}</div>
-            ${song.author ? `<div style="font-size: 12px; color: var(--text-secondary);">${this.escapeHtml(song.author)}</div>` : ''}
-          </div>
-          <button data-queue-id="${song.queueId}" class="remove-queue-btn" style="background: #ff6b6b; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px;">Remove</button>
-        </div>
-      `;
-			});
-			queueContent += '</div>';
-			queueContent += `
-      <div style="margin-top: 15px; display: flex; gap: 10px;">
-        <button onclick="musicPlayer.clearQueue()" style="background: #ff6b6b; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; flex: 1;">Clear Queue</button>
-        <button onclick="musicPlayer.shuffleQueue()" style="background: var(--accent-color); color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; flex: 1;">Shuffle Queue</button>
-      </div>
-    `;
-		}
-		queuePanel.innerHTML = queueContent;
-		overlay.appendChild(queuePanel);
-		document.body.appendChild(overlay);
-		queuePanel.addEventListener('click', (e) => {
-			if (e.target.classList.contains('remove-queue-btn')) {
-				const queueId = e.target.getAttribute('data-queue-id');
-				console.log('Remove button clicked for queue ID:', queueId);
-				this.removeFromQueue(queueId);
-				overlay.remove();
-				this.showQueueOverlay();
-			}
-		});
-		overlay.addEventListener('click', (e) => {
-			if (e.target === overlay) {
-				overlay.remove();
-			}
-		});
-	}
+	 
+	// ─── CLEAR QUEUE ─────────────────────────────────────────────
 	clearQueue() {
-		this.songQueue = [];
-		this.saveQueue();
-		this.updateQueueVisualIndicators();
-		this.updatePlayerUI();
-		this.showQueueNotification('Queue cleared');
-		const overlay = document.querySelector('.queue-overlay');
-		if (overlay) {
-			overlay.remove();
-			this.showQueueOverlay();
-		}
+	    this.songQueue = [];
+	    this.saveQueue();
+	    this.updateQueueVisualIndicators();
+	    this.updatePlayerUI();
+	    this.showQueueNotification('Queue cleared');
+	    this._queueRefreshPanel();
 	}
+	 
+	// ─── SHUFFLE (skips stop blocks) ─────────────────────────────
 	shuffleQueue() {
-		for (let i = this.songQueue.length - 1; i > 0; i--) {
-			const j = Math.floor(Math.random() * (i + 1));
-			[this.songQueue[i], this.songQueue[j]] = [this.songQueue[j], this.songQueue[i]];
-		}
-		this.saveQueue();
-		this.updateQueueVisualIndicators();
-		this.updatePlayerUI();
-		this.showQueueNotification('Queue shuffled');
-		const overlay = document.querySelector('.queue-overlay');
-		if (overlay) {
-			overlay.remove();
-			this.showQueueOverlay();
-		}
+	    // Separate stop blocks from song blocks, shuffle songs only
+	    const stops = [];
+	    const songs = [];
+	    this.songQueue.forEach((b, i) => {
+	        if (b.type === 'stop') stops.push({ block: b, originalIdx: i });
+	        else songs.push(b);
+	    });
+	    for (let i = songs.length - 1; i > 0; i--) {
+	        const j = Math.floor(Math.random() * (i + 1));
+	        [songs[i], songs[j]] = [songs[j], songs[i]];
+	    }
+	    // Reinsert stop blocks at original relative positions
+	    const result = [...songs];
+	    stops.forEach(({ block, originalIdx }) => {
+	        const insertAt = Math.min(originalIdx, result.length);
+	        result.splice(insertAt, 0, block);
+	    });
+	    this.songQueue = result;
+	    this.saveQueue();
+	    this.updateQueueVisualIndicators();
+	    this.updatePlayerUI();
+	    this.showQueueNotification('Queue shuffled');
+	    this._queueRefreshPanel();
 	}
+	 
+	// ─── DUPLICATE A BLOCK ───────────────────────────────────────
+	duplicateQueueBlock(blockId) {
+	    const idx = this.songQueue.findIndex(b => b.id === blockId);
+	    if (idx === -1) return;
+	    const orig = this.songQueue[idx];
+	    const dupe = { ...orig, id: `blk_${Date.now()}_${Math.random().toString(36).slice(2,7)}`, _remaining: orig.repeat };
+	    this.songQueue.splice(idx + 1, 0, dupe);
+	    this.saveQueue();
+	    this.updateQueueVisualIndicators();
+	    this.updatePlayerUI();
+	    this.showQueueNotification(`Duplicated "${orig.type === 'stop' ? 'Stop block' : orig.song.name}"`);
+	    this._queueRefreshPanel();
+	}
+	 
+	// ─── SET REPEAT ON A BLOCK ───────────────────────────────────
+	setBlockRepeat(blockId, repeat) {
+	    const block = this.songQueue.find(b => b.id === blockId);
+	    if (!block) return;
+	    block.repeat = repeat;
+	    block._remaining = repeat;
+	    this.saveQueue();
+	    this.updatePlayerUI();
+	    this._queueRefreshPanel();
+	}
+	 
+	// ─── REORDER (drag result) ───────────────────────────────────
+	reorderQueue(fromIdx, toIdx) {
+	    if (fromIdx === toIdx) return;
+	    const [moved] = this.songQueue.splice(fromIdx, 1);
+	    this.songQueue.splice(toIdx, 0, moved);
+	    this.saveQueue();
+	    this.updateQueueVisualIndicators();
+	    this.updatePlayerUI();
+	}
+	 
+	// ─── VISUAL INDICATORS (unchanged behaviour) ─────────────────
+	updateQueueVisualIndicators() {
+	    // Remove old indicators in one pass
+	    document.querySelectorAll('.queue-indicator').forEach(el => el.remove());
+	    this.songQueue.forEach((block, index) => {
+	        if (block.type === 'stop') return;
+	        const song = block.song;
+	        const songElements = [
+	            ...document.querySelectorAll(`[data-video-id="${song.videoId}"]`),
+	            ...document.querySelectorAll(`[onclick*="playSong(${song.id})"]`),
+	            ...document.querySelectorAll(`[onclick*="'${song.videoId}'"]`)
+	        ];
+	        songElements.forEach(element => {
+	            if (element.querySelector('.queue-indicator')) return;
+	            const indicator = document.createElement('span');
+	            indicator.className = 'queue-indicator';
+	            indicator.textContent = `${index + 1}`;
+	            indicator.style.cssText = `position:absolute;top:2px;right:2px;background:var(--accent-color);color:#fff;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;z-index:10;pointer-events:none;`;
+	            element.style.position = 'relative';
+	            element.appendChild(indicator);
+	        });
+	    });
+	}
+	 
+	// ─── NOTIFICATION ─────────────────────────────────────────────
+	showQueueNotification(message) {
+	    const existing = document.querySelector('.queue-notification');
+	    if (existing) existing.remove();
+	    const n = document.createElement('div');
+	    n.className = 'queue-notification';
+	    n.textContent = message;
+	    document.body.appendChild(n);
+	    // Use rAF to trigger transition
+	    requestAnimationFrame(() => n.classList.add('queue-notification--in'));
+	    const hide = () => {
+	        n.classList.remove('queue-notification--in');
+	        n.addEventListener('transitionend', () => n.remove(), { once: true });
+	    };
+	    this._queueNotifTimer = setTimeout(hide, 2200);
+	}
+	 
+	// ─── REFRESH PANEL (no-op if closed) ─────────────────────────
+	_queueRefreshPanel() {
+	    const panel = document.getElementById('qv2-panel');
+	    if (!panel) return; // panel not open — skip
+	    this._queueRenderRows();
+	}
+	 
+	// ─── MAIN OVERLAY ─────────────────────────────────────────────
+	showQueueOverlay() {
+	    const existing = document.getElementById('qv2-backdrop');
+	    if (existing) { existing.remove(); return; }
+	    this._queueBuildOverlay();
+	}
+	 
+	_queueBuildOverlay() {
+	    // Backdrop
+	    const backdrop = document.createElement('div');
+	    backdrop.id = 'qv2-backdrop';
+	    backdrop.className = 'qv2-backdrop';
+	 
+	    // Panel
+	    const panel = document.createElement('div');
+	    panel.id = 'qv2-panel';
+	    panel.className = 'qv2-panel';
+	    panel.setAttribute('role', 'dialog');
+	    panel.setAttribute('aria-label', 'Song Queue');
+	 
+	    panel.innerHTML = `
+	        <div class="qv2-header">
+	            <div class="qv2-title">
+	                <span class="qv2-title-icon"><i class="fas fa-list-ol" aria-hidden="true"></i></span>
+	                <span>Queue</span>
+	                <span class="qv2-count" id="qv2-count">${this.songQueue.length}</span>
+	            </div>
+	            <div class="qv2-header-actions">
+	                <button class="qv2-btn-ghost" id="qv2-shuffle" title="Shuffle">
+	                    <i class="fas fa-random" aria-hidden="true"></i>
+	                </button>
+	                <button class="qv2-btn-ghost" id="qv2-clear" title="Clear all">
+	                    <i class="fas fa-trash-alt" aria-hidden="true"></i>
+	                </button>
+	                <button class="qv2-btn-ghost qv2-close" id="qv2-close" aria-label="Close queue">
+	                    <i class="fas fa-times" aria-hidden="true"></i>
+	                </button>
+	            </div>
+	        </div>
+	 
+	        <div class="qv2-add-section">
+	            <div class="qv2-search-wrap">
+	                <i class="fas fa-plus qv2-search-icon" aria-hidden="true"></i>
+	                <input
+	                    id="qv2-search-input"
+	                    class="qv2-search-input"
+	                    type="text"
+	                    placeholder="Add song to queue…"
+	                    autocomplete="off"
+	                    spellcheck="false"
+	                />
+	                <button class="qv2-stop-btn" id="qv2-add-stop" title="Add stop block">
+	                    <i class="fas fa-stop" aria-hidden="true"></i>
+	                    <span>Stop</span>
+	                </button>
+	            </div>
+	            <div class="qv2-dropdown" id="qv2-dropdown" hidden></div>
+	        </div>
+	 
+	        <div class="qv2-rows" id="qv2-rows" role="list"></div>
+	 
+	        <div class="qv2-empty" id="qv2-empty" hidden>
+	            <i class="fas fa-music" aria-hidden="true"></i>
+	            <p>Queue is empty</p>
+	            <small>Search above to add songs</small>
+	        </div>
+	    `;
+	 
+	    backdrop.appendChild(panel);
+	    document.body.appendChild(backdrop);
+	 
+	    // Render rows immediately
+	    this._queueRenderRows();
+	 
+	    // Bind search
+	    this._queueBindSearch(
+	        document.getElementById('qv2-search-input'),
+	        document.getElementById('qv2-dropdown')
+	    );
+	 
+	    // Header buttons
+	    document.getElementById('qv2-shuffle').addEventListener('click', () => this.shuffleQueue());
+	    document.getElementById('qv2-clear').addEventListener('click', () => {
+	        if (this.songQueue.length === 0) return;
+	        this.clearQueue();
+	    });
+	    document.getElementById('qv2-close').addEventListener('click', () => backdrop.remove());
+	    document.getElementById('qv2-add-stop').addEventListener('click', () => {
+	        this.songQueue.push(this._queueAddBlock(null));
+	        this.saveQueue();
+	        this.updateQueueVisualIndicators();
+	        this.updatePlayerUI();
+	        this.showQueueNotification('Stop block added');
+	        this._queueRefreshPanel();
+	    });
+	 
+	    // Backdrop click to close
+	    backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
+	 
+	    // Keyboard close
+	    const onKey = e => { if (e.key === 'Escape') { backdrop.remove(); document.removeEventListener('keydown', onKey); } };
+	    document.addEventListener('keydown', onKey);
+	 
+	    // Animate in
+	    requestAnimationFrame(() => backdrop.classList.add('qv2-backdrop--in'));
+	}
+	 
+	// ─── RENDER ROWS ─────────────────────────────────────────────
+	_queueRenderRows() {
+	    const container = document.getElementById('qv2-rows');
+	    const emptyEl = document.getElementById('qv2-empty');
+	    const countEl = document.getElementById('qv2-count');
+	    if (!container) return;
+	 
+	    if (countEl) countEl.textContent = this.songQueue.length;
+	 
+	    if (this.songQueue.length === 0) {
+	        container.innerHTML = '';
+	        if (emptyEl) emptyEl.hidden = false;
+	        return;
+	    }
+	    if (emptyEl) emptyEl.hidden = true;
+	 
+	    // Build fragment for performance
+	    const frag = document.createDocumentFragment();
+	    this.songQueue.forEach((block, idx) => {
+	        frag.appendChild(this._queueBuildRow(block, idx));
+	    });
+	    container.innerHTML = '';
+	    container.appendChild(frag);
+	 
+	    // Bind drag-and-drop
+	    this._queueBindDrag(container);
+	}
+	 
+	// ─── BUILD SINGLE ROW ────────────────────────────────────────
+	_queueBuildRow(block, idx) {
+	    const row = document.createElement('div');
+	    row.className = `qv2-row${block.type === 'stop' ? ' qv2-row--stop' : ''}`;
+	    row.dataset.blockId = block.id;
+	    row.dataset.idx = idx;
+	    row.setAttribute('role', 'listitem');
+	    row.draggable = true;
+	 
+	    if (block.type === 'stop') {
+	        row.innerHTML = `
+	            <span class="qv2-drag-handle" aria-hidden="true"><i class="fas fa-grip-vertical"></i></span>
+	            <span class="qv2-stop-icon"><i class="fas fa-stop"></i></span>
+	            <span class="qv2-row-name">Stop playback</span>
+	            <button class="qv2-row-btn qv2-row-btn--remove" data-action="remove" title="Remove">
+	                <i class="fas fa-times"></i>
+	            </button>
+	        `;
+	    } else {
+	        const repeatLabel = block.repeat === 'inf' ? '∞'
+	            : block.repeat > 1 ? `×${block._remaining ?? block.repeat}/${block.repeat}`
+	            : '';
+	 
+	        row.innerHTML = `
+	            <span class="qv2-drag-handle" aria-hidden="true"><i class="fas fa-grip-vertical"></i></span>
+	            <span class="qv2-row-num">${idx + 1}</span>
+	            <div class="qv2-row-info">
+	                <span class="qv2-row-name">${this.escapeHtml(block.song.name)}</span>
+	                ${block.song.author ? `<span class="qv2-row-author">${this.escapeHtml(block.song.author)}</span>` : ''}
+	            </div>
+	            ${repeatLabel ? `<span class="qv2-repeat-badge">${repeatLabel}</span>` : ''}
+	            <div class="qv2-row-actions">
+	                <button class="qv2-row-btn" data-action="repeat-minus" title="Decrease repeats">−</button>
+	                <span class="qv2-repeat-count" data-action="repeat-display">${block.repeat === 'inf' ? '∞' : block.repeat}</span>
+	                <button class="qv2-row-btn" data-action="repeat-plus" title="Increase repeats">+</button>
+	                <button class="qv2-row-btn" data-action="repeat-inf" title="Loop forever" class="${block.repeat === 'inf' ? 'active' : ''}">
+	                    <i class="fas fa-infinity"></i>
+	                </button>
+	                <button class="qv2-row-btn" data-action="duplicate" title="Duplicate">
+	                    <i class="fas fa-copy"></i>
+	                </button>
+	                <button class="qv2-row-btn qv2-row-btn--remove" data-action="remove" title="Remove">
+	                    <i class="fas fa-times"></i>
+	                </button>
+	            </div>
+	        `;
+	    }
+	 
+	    // Single delegated listener on the row
+	    row.addEventListener('click', e => {
+	        const btn = e.target.closest('[data-action]');
+	        if (!btn) return;
+	        const action = btn.dataset.action;
+	        const id = row.dataset.blockId;
+	        if (action === 'remove') { this.removeFromQueue(id); return; }
+	        if (action === 'duplicate') { this.duplicateQueueBlock(id); return; }
+	        if (action === 'repeat-inf') {
+	            const b = this.songQueue.find(x => x.id === id);
+	            if (!b) return;
+	            this.setBlockRepeat(id, b.repeat === 'inf' ? 1 : 'inf');
+	            return;
+	        }
+	        if (action === 'repeat-plus') {
+	            const b = this.songQueue.find(x => x.id === id);
+	            if (!b || b.repeat === 'inf') return;
+	            this.setBlockRepeat(id, b.repeat + 1);
+	            return;
+	        }
+	        if (action === 'repeat-minus') {
+	            const b = this.songQueue.find(x => x.id === id);
+	            if (!b || b.repeat === 'inf') return;
+	            if (b.repeat <= 1) return;
+	            this.setBlockRepeat(id, b.repeat - 1);
+	            return;
+	        }
+	    });
+	 
+	    return row;
+	}
+	 
+	// ─── DRAG AND DROP (native HTML5, no library) ────────────────
+	_queueBindDrag(container) {
+	    let dragIdx = null;
+	 
+	    const onDragStart = e => {
+	        const row = e.target.closest('.qv2-row');
+	        if (!row) return;
+	        dragIdx = +row.dataset.idx;
+	        row.classList.add('qv2-row--dragging');
+	        e.dataTransfer.effectAllowed = 'move';
+	    };
+	    const onDragOver = e => {
+	        e.preventDefault();
+	        const row = e.target.closest('.qv2-row');
+	        if (!row) return;
+	        e.dataTransfer.dropEffect = 'move';
+	        // Highlight target
+	        container.querySelectorAll('.qv2-row--over').forEach(r => r.classList.remove('qv2-row--over'));
+	        row.classList.add('qv2-row--over');
+	    };
+	    const onDrop = e => {
+	        e.preventDefault();
+	        const row = e.target.closest('.qv2-row');
+	        if (!row || dragIdx === null) return;
+	        const toIdx = +row.dataset.idx;
+	        if (toIdx !== dragIdx) {
+	            this.reorderQueue(dragIdx, toIdx);
+	            this._queueRenderRows();
+	        }
+	        dragIdx = null;
+	    };
+	    const onDragEnd = () => {
+	        container.querySelectorAll('.qv2-row--dragging,.qv2-row--over').forEach(r => {
+	            r.classList.remove('qv2-row--dragging', 'qv2-row--over');
+	        });
+	        dragIdx = null;
+	    };
+	 
+	    container.addEventListener('dragstart', onDragStart);
+	    container.addEventListener('dragover', onDragOver);
+	    container.addEventListener('drop', onDrop);
+	    container.addEventListener('dragend', onDragEnd);
+	}
+	 
+	// ─── SEARCH / ADD ─────────────────────────────────────────────
+	_queueBindSearch(input, dropdown) {
+	    if (!input || !dropdown) return;
+	    let _debounce = null;
+	 
+	    const renderResults = (term) => {
+	        if (!term) { dropdown.hidden = true; return; }
+	        const lower = term.toLowerCase();
+	        const results = this.songLibrary
+	            .filter(s => s.name.toLowerCase().includes(lower) || (s.author && s.author.toLowerCase().includes(lower)))
+	            .slice(0, 5);
+	 
+	        if (!results.length) { dropdown.hidden = true; return; }
+	 
+	        dropdown.hidden = false;
+	        const frag = document.createDocumentFragment();
+	        results.forEach(song => {
+	            const item = document.createElement('div');
+	            item.className = 'qv2-result';
+	            item.innerHTML = `
+	                <span class="qv2-result-name">${this.escapeHtml(song.name)}</span>
+	                ${song.author ? `<span class="qv2-result-author">${this.escapeHtml(song.author)}</span>` : ''}
+	            `;
+	            item.addEventListener('mousedown', e => {
+	                e.preventDefault(); // Prevent input blur
+	                this.addToQueue(song);
+	                input.value = '';
+	                dropdown.hidden = true;
+	            });
+	            frag.appendChild(item);
+	        });
+	        dropdown.innerHTML = '';
+	        dropdown.appendChild(frag);
+	    };
+	 
+	    input.addEventListener('input', () => {
+	        clearTimeout(_debounce);
+	        _debounce = setTimeout(() => renderResults(input.value.trim()), 120);
+	    });
+	 
+	    input.addEventListener('keydown', e => {
+	        if (e.key === 'Escape') { dropdown.hidden = true; input.value = ''; }
+	        if (e.key === 'Enter') {
+	            const first = dropdown.querySelector('.qv2-result');
+	            if (first) first.dispatchEvent(new MouseEvent('mousedown'));
+	        }
+	        // Arrow key navigation
+	        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+	            e.preventDefault();
+	            const items = [...dropdown.querySelectorAll('.qv2-result')];
+	            if (!items.length) return;
+	            const focused = dropdown.querySelector('.qv2-result--focused');
+	            let idx = focused ? items.indexOf(focused) : -1;
+	            if (focused) focused.classList.remove('qv2-result--focused');
+	            idx = e.key === 'ArrowDown' ? Math.min(idx + 1, items.length - 1) : Math.max(idx - 1, 0);
+	            items[idx].classList.add('qv2-result--focused');
+	        }
+	    });
+	 
+	    // Close dropdown on outside click
+	    document.addEventListener('mousedown', e => {
+	        if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+	            dropdown.hidden = true;
+	        }
+	    }, { passive: true });
+	}
+	 
+	// ─── ADD STYLES ───────────────────────────────────────────────
 	addQueueStyles() {
-		const style = document.createElement('style');
-		style.textContent = `
-    @keyframes slideIn {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
-    @keyframes slideOut {
-      from { transform: translateX(0); opacity: 1; }
-      to { transform: translateX(100%); opacity: 0; }
-    }
-    .queue-panel::-webkit-scrollbar {
-      width: 8px;
-    }
-    .queue-panel::-webkit-scrollbar-track {
-      background: var(--bg-primary);
-      border-radius: 4px;
-    }
-    .queue-panel::-webkit-scrollbar-thumb {
-      background: var(--accent-color);
-      border-radius: 4px;
-    }
-  `;
-		document.head.appendChild(style);
+	    if (document.getElementById('qv2-styles')) return;
+	    const style = document.createElement('style');
+	    style.id = 'qv2-styles';
+	    // Note: Full CSS is in queue-system-styles.css
+	    // This is the minimal inline injection for notification animation
+	    style.textContent = `
+	        .queue-notification {
+	            position: fixed;
+	            top: 20px;
+	            right: 20px;
+	            background: var(--accent-color);
+	            color: #fff;
+	            padding: 9px 16px;
+	            border-radius: 6px;
+	            font-size: 13px;
+	            z-index: 9999;
+	            opacity: 0;
+	            transform: translateX(12px);
+	            transition: opacity .22s ease, transform .22s ease;
+	            pointer-events: none;
+	            box-shadow: 0 4px 14px rgba(0,0,0,.25);
+	        }
+	        .queue-notification--in {
+	            opacity: 1;
+	            transform: translateX(0);
+	        }
+	    `;
+	    document.head.appendChild(style);
 	}
 	createWebEmbedOverlay() {
 		if (this.webEmbedOverlay) return;
