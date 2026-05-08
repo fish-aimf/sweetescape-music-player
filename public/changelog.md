@@ -590,3 +590,19 @@
 - fixed tiny thumbnail cover images on the recently played and nowplaying sections v60.10.0
 - made additional details not have fixed height, making it look a lot nicer. v60.11.0
 - cleaned up css file by a few hundred lines of duplicate stuff v60.12.0
+- Queue update, songs can now be queued and ordered better. v61.0.0
+- queue can now be reordered v61.1.0
+- songs can be looped x number of times v61.2.0
+- infinite loop block added v61.3.0
+- stop block added v61.4.0
+- UI redone allows for wider and FA icons. v61.5.0
+- added a search bar to quickly add songs within the queue itself v61.6.0
+- changed core logic for stop play to just setting autoplay = false. v61.7.0
+- fixed a bug where the nested .song property doesn't exist v61.7.1
+- pressing enter would allow top song to be added instantly. v61.8.0
+- fixed visual bug where queue will show songs up next despite autoplay being off v61.8.1
+- fixed reordering lag bug. v61.8.2
+- fixed a bug where looping forever block would cause the song after that to be looped forever. v61.8.3
+- renamed loop forever block to loop previous song forever. v61.8.4
+- fixed visual clutter, Next: Queue: Stop is very unsightly. removed queue: for these commands. v61.9.0
+ 
