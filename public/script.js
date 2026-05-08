@@ -2897,73 +2897,74 @@ class AdvancedMusicPlayer {
 		});
 	}
 	updatePlayerUI() {
-		let currentSong;
-		if (this.currentPlaylist && this.currentPlaylist.songs[this.currentSongIndex]) {
-			currentSong = this.currentPlaylist.songs[this.currentSongIndex];
-		} else if (this.songLibrary[this.currentSongIndex]) {
-			currentSong = this.songLibrary[this.currentSongIndex];
-		} else {
-			if (this.ytPlayer && this.ytPlayer.getVideoData) {
-				try {
-					const videoData = this.ytPlayer.getVideoData();
-					const currentVideoId = videoData.video_id;
-					currentSong = this.songLibrary.find(s => s.videoId === currentVideoId) ||
-						(this.currentPlaylist && this.currentPlaylist.songs.find(s => s.videoId === currentVideoId));
-				} catch (e) {
-					console.warn('Could not get current video data:', e);
-				}
-			}
-		}
-		if (!currentSong) {
-			this.elements.currentSongName.textContent = "No Song Playing";
-			this.elements.nextSongName.textContent = "-";
-			const playPauseIcon = this.elements.playPauseBtn.querySelector("i");
-			if (playPauseIcon) {
-				playPauseIcon.classList.remove("fa-play", "fa-pause");
-				playPauseIcon.classList.add("fa-play");
-			}
-			this.updatePageTitle();
-			return;
-		}
-
-		
-		this.elements.currentSongName.textContent = currentSong.name;
-		
-		if (!this.isAutoplayEnabled) {
-		    this.elements.nextSongName.textContent = 'Autoplay disabled';
-		} else if (this.isLooping) {
-		    this.elements.nextSongName.textContent = currentSong.name;
-		} else if (this.songQueue.length > 0) {
-		    const next = this.songQueue[0];
-		    if (next.type === 'stop') {
-		        this.elements.nextSongName.textContent = 'Queue: Stop';
-		    } else if (next.type === 'loop') {
-		        this.elements.nextSongName.textContent = 'Queue: Loop Previous Song Forever';
-		    } else {
-		        this.elements.nextSongName.textContent = `Queue: ${next.name}`;
-		    }
-		} else {
-		    const source = this.currentPlaylist ? this.currentPlaylist.songs : this.songLibrary;
-		    if (this.currentSongIndex === source.length - 1 && !this.isPlaylistLooping) {
-		        this.elements.nextSongName.textContent = 'End of playlist';
-		    } else {
-		        const nextSongIndex = (this.currentSongIndex + 1) % source.length;
-		        this.elements.nextSongName.textContent = source[nextSongIndex].name;
-		    }
-		}
-		const playPauseIcon = this.elements.playPauseBtn.querySelector("i");
-		if (playPauseIcon) {
-			playPauseIcon.classList.remove("fa-play", "fa-pause");
-			playPauseIcon.classList.add(this.isPlaying ? "fa-pause" : "fa-play");
-		}
-		if (this.elements.autoplayBtn) {
-			this.elements.autoplayBtn.classList.toggle("active", this.isAutoplayEnabled);
-		}
-		if (this.currentPlaylist && this.isSidebarVisible) {
-			this.renderPlaylistSidebar();
-		}
-		this.updatePageTitle();
-		this.updateNowPlayingView();
+	    let currentSong;
+	    if (this.currentPlaylist && this.currentPlaylist.songs[this.currentSongIndex]) {
+	        currentSong = this.currentPlaylist.songs[this.currentSongIndex];
+	    } else if (this.songLibrary[this.currentSongIndex]) {
+	        currentSong = this.songLibrary[this.currentSongIndex];
+	    } else {
+	        if (this.ytPlayer && this.ytPlayer.getVideoData) {
+	            try {
+	                const videoData = this.ytPlayer.getVideoData();
+	                const currentVideoId = videoData.video_id;
+	                currentSong = this.songLibrary.find(s => s.videoId === currentVideoId) ||
+	                    (this.currentPlaylist && this.currentPlaylist.songs.find(s => s.videoId === currentVideoId));
+	            } catch (e) {
+	                console.warn('Could not get current video data:', e);
+	            }
+	        }
+	    }
+	
+	    if (!currentSong) {
+	        this.elements.currentSongName.textContent = "No Song Playing";
+	        this.elements.nextSongName.textContent = "-";
+	        const playPauseIcon = this.elements.playPauseBtn.querySelector("i");
+	        if (playPauseIcon) {
+	            playPauseIcon.classList.remove("fa-play", "fa-pause");
+	            playPauseIcon.classList.add("fa-play");
+	        }
+	        this.updatePageTitle();
+	        return;
+	    }
+	
+	    this.elements.currentSongName.textContent = currentSong.name;
+	
+	    if (!this.isAutoplayEnabled) {
+	        this.elements.nextSongName.textContent = 'Autoplay disabled';
+	    } else if (this.isLooping) {
+	        this.elements.nextSongName.textContent = currentSong.name;
+	    } else if (this.songQueue.length > 0) {
+	        const next = this.songQueue[0];
+	        if (next.type === 'stop') {
+	            this.elements.nextSongName.textContent = 'Stop Autoplay';
+	        } else if (next.type === 'loop') {
+	            this.elements.nextSongName.textContent = 'Loop Previous Song Forever';
+	        } else {
+	            this.elements.nextSongName.textContent = `Queue: ${next.name}`;
+	        }
+	    } else {
+	        const source = this.currentPlaylist ? this.currentPlaylist.songs : this.songLibrary;
+	        if (this.currentSongIndex === source.length - 1 && !this.isPlaylistLooping) {
+	            this.elements.nextSongName.textContent = 'End of playlist';
+	        } else {
+	            const nextSongIndex = (this.currentSongIndex + 1) % source.length;
+	            this.elements.nextSongName.textContent = source[nextSongIndex].name;
+	        }
+	    }
+	
+	    const playPauseIcon = this.elements.playPauseBtn.querySelector("i");
+	    if (playPauseIcon) {
+	        playPauseIcon.classList.remove("fa-play", "fa-pause");
+	        playPauseIcon.classList.add(this.isPlaying ? "fa-pause" : "fa-play");
+	    }
+	    if (this.elements.autoplayBtn) {
+	        this.elements.autoplayBtn.classList.toggle("active", this.isAutoplayEnabled);
+	    }
+	    if (this.currentPlaylist && this.isSidebarVisible) {
+	        this.renderPlaylistSidebar();
+	    }
+	    this.updatePageTitle();
+	    this.updateNowPlayingView();
 	}
 	escapeJsString(str) {
 		if (!str) return "";
