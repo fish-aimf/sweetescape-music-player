@@ -288,6 +288,7 @@ class AdvancedMusicPlayer {
 		this.loadVersion();
 		this.setupYouTubeLibraryResultsDelegation();
 		this.initNowPlayingTab();
+		this.addQueueStyles(); 
 	}
 	
 	_handleInitializationError(error) {
