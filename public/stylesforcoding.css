@@ -2416,7 +2416,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list { ma
 
 #currentSongThumbnail { width: 100%; height: 100%; object-fit: cover; transform: scale(1.35); }
 
-
+/* ── Queue backdrop ───────────────────────────────────────── */
 .qv2-backdrop {
     position: fixed;
     inset: 0;
@@ -2434,11 +2434,12 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list { ma
     opacity: 1;
 }
 
+/* ── Panel ────────────────────────────────────────────────── */
 .qv2-panel {
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
     border-radius: 12px;
-    width: min(750px, 100%);      
+    width: min(750px, 100%);
     max-height: min(82vh, 680px);
     display: flex;
     flex-direction: column;
@@ -2451,6 +2452,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list { ma
     transform: translateY(0);
 }
 
+/* ── Header ───────────────────────────────────────────────── */
 .qv2-header {
     display: flex;
     align-items: center;
@@ -2505,6 +2507,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list { ma
     color: var(--error-color);
 }
 
+/* ── Add / Search section ─────────────────────────────────── */
 .qv2-add-section {
     padding: 10px 14px 0;
     flex-shrink: 0;
@@ -2562,6 +2565,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list { ma
     border-color: var(--text-secondary);
 }
 
+/* ── Search dropdown ──────────────────────────────────────── */
 .qv2-dropdown {
     position: absolute;
     top: calc(100% + 2px);
@@ -2605,12 +2609,12 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list { ma
     flex-shrink: 0;
 }
 
+/* ── Rows container ───────────────────────────────────────── */
 .qv2-rows {
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 8px 6px 8px;
-    /* Custom scrollbar */
+    padding: 8px 6px;
     scrollbar-width: thin;
     scrollbar-color: var(--accent-color) transparent;
 }
@@ -2625,6 +2629,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list { ma
     background: transparent;
 }
 
+/* ── Queue row ────────────────────────────────────────────── */
 .qv2-row {
     display: flex;
     align-items: center;
@@ -2634,34 +2639,30 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list { ma
     cursor: default;
     transition: background .12s;
     user-select: none;
-    min-height: 44px;     
+    min-height: 44px;
 }
 .qv2-row:hover {
     background: var(--bg-primary);
 }
 .qv2-row--dragging {
-    opacity: 0.45;
+    opacity: 0.4;
     background: var(--bg-primary);
 }
 .qv2-row--over {
-    background: color-mix(in srgb, var(--accent-color) 12%, var(--bg-primary));
     outline: 1px dashed var(--accent-color);
-    border-radius: 7px;
+    background: var(--bg-primary);
 }
 .qv2-row--stop {
     border: 1px dashed var(--border-color);
-    background: color-mix(in srgb, var(--error-color) 6%, transparent);
-}
-.qv2-row--stop:hover {
-    background: color-mix(in srgb, var(--error-color) 10%, transparent);
 }
 
+/* ── Row internals ────────────────────────────────────────── */
 .qv2-drag-handle {
     color: var(--border-color);
     cursor: grab;
     font-size: 12px;
     flex-shrink: 0;
-    padding: 2px;
+    padding: 2px 3px;
     transition: color .12s;
 }
 .qv2-row:hover .qv2-drag-handle {
@@ -2708,12 +2709,14 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list { ma
     font-size: 11px;
     font-weight: 700;
     color: var(--accent-color);
-    background: color-mix(in srgb, var(--accent-color) 14%, transparent);
     padding: 1px 7px;
     border-radius: 20px;
+    border: 1px solid var(--accent-color);
     flex-shrink: 0;
+    opacity: 0.8;
 }
 
+/* ── Row action buttons ───────────────────────────────────── */
 .qv2-row-actions {
     display: flex;
     align-items: center;
@@ -2743,7 +2746,6 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list { ma
     color: var(--text-primary);
 }
 .qv2-row-btn--remove:hover {
-    background: color-mix(in srgb, var(--error-color) 15%, transparent);
     color: var(--error-color);
 }
 .qv2-repeat-count {
@@ -2754,15 +2756,15 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list { ma
     text-align: center;
 }
 
+/* ── Empty state ──────────────────────────────────────────── */
 .qv2-empty {
     text-align: center;
-    padding: 36px 20px;
+    padding: 40px 20px;
     color: var(--text-secondary);
-    flex: 1;
 }
 .qv2-empty i {
-    font-size: 28px;
-    opacity: 0.3;
+    font-size: 26px;
+    opacity: 0.25;
     display: block;
     margin-bottom: 10px;
 }
@@ -2776,23 +2778,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list { ma
     font-size: 12px;
 }
 
-@media (max-width: 520px) {
-    .qv2-panel {
-        max-height: 90vh;
-        border-radius: 10px 10px 0 0;
-    }
-    .qv2-backdrop {
-        align-items: flex-end;
-        padding: 0;
-    }
-    .qv2-row-actions {
-        opacity: 1;   
-    }
-    .qv2-result-author {
-        display: none; 
-    }
-}
-
+/* ── Notification ─────────────────────────────────────────── */
 .queue-notification {
     position: fixed;
     top: 20px;
@@ -2812,4 +2798,42 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list { ma
 .queue-notification--in {
     opacity: 1;
     transform: translateX(0);
+}
+
+/* ── Queue indicator dot on song cards ───────────────────── */
+.queue-indicator {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: var(--accent-color);
+    color: #fff;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    z-index: 10;
+    pointer-events: none;
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 520px) {
+    .qv2-backdrop {
+        align-items: flex-end;
+        padding: 0;
+    }
+    .qv2-panel {
+        max-height: 90vh;
+        border-radius: 10px 10px 0 0;
+        width: 100%;
+    }
+    .qv2-row-actions {
+        opacity: 1;
+    }
+    .qv2-result-author {
+        display: none;
+    }
 }
