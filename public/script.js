@@ -6491,298 +6491,308 @@ hideSidebar() {
 			});
 	}
 	renderLyricsTab() {
-		if (!this.elements.lyricsPane) return;
-		this.elements.lyricsPane.innerHTML = "";
-		
-		if (
-			this.currentSongIndex === undefined ||
-			(!this.songLibrary.length && !this.currentPlaylist)
-		) {
-			const emptyMessage = document.createElement("div");
-			emptyMessage.classList.add("empty-lyrics-message");
-			emptyMessage.textContent = "No song is currently playing.";
-			this.elements.lyricsPane.appendChild(emptyMessage);
-			return;
-		}
-		
-		const currentSong = this.currentPlaylist ?
-			this.currentPlaylist.songs[this.currentSongIndex] :
-			this.songLibrary[this.currentSongIndex];
-		
-		if (!currentSong) {
-			const errorMessage = document.createElement("div");
-			errorMessage.classList.add("error-message");
-			errorMessage.textContent = "Current song information could not be found.";
-			this.elements.lyricsPane.appendChild(errorMessage);
-			return;
-		}
-		
-		let songWithLyrics = currentSong;
-		if (this.currentPlaylist) {
-			const libraryMatch = this.songLibrary.find(
-				(libSong) => libSong.videoId === currentSong.videoId
-			);
-			if (libraryMatch && libraryMatch.lyrics) {
-				songWithLyrics = libraryMatch;
-			}
-		}
-		
-		if (!songWithLyrics.lyrics || songWithLyrics.lyrics.trim() === "") {
-			const noLyricsMessage = document.createElement("div");
-			noLyricsMessage.classList.add("no-lyrics-message");
-			noLyricsMessage.innerHTML = `
-				<p>No lyrics available for "${this.escapeHtml(currentSong.name)}".</p>
-				<p>You can add lyrics by double-clicking on this song in the library tab.</p>
-			`;
-			
-			const buttonsContainer = document.createElement("div");
-			buttonsContainer.style.display = "flex";
-			buttonsContainer.style.gap = "10px";
-			buttonsContainer.style.marginTop = "10px";
-			
-			const addLyricsBtn = document.createElement("button");
-			addLyricsBtn.textContent = "Transcribe lyrics";
-			addLyricsBtn.classList.add("add-lyrics-btn");
-			addLyricsBtn.style.backgroundColor = "var(--accent-color)";
-			addLyricsBtn.style.color = "white";
-			addLyricsBtn.style.border = "none";
-			addLyricsBtn.style.borderRadius = "4px";
-			addLyricsBtn.style.padding = "8px 16px";
-			addLyricsBtn.style.cursor = "pointer";
-			addLyricsBtn.style.flex = "1";
-			
-			const importSubtitlesBtn = document.createElement("button");
-			importSubtitlesBtn.textContent = "Import subtitles as lyrics";
-			importSubtitlesBtn.classList.add("import-subtitles-btn");
-			importSubtitlesBtn.style.backgroundColor = "#17a2b8";
-			importSubtitlesBtn.style.color = "white";
-			importSubtitlesBtn.style.border = "none";
-			importSubtitlesBtn.style.borderRadius = "4px";
-			importSubtitlesBtn.style.padding = "8px 16px";
-			importSubtitlesBtn.style.cursor = "pointer";
-			importSubtitlesBtn.style.flex = "1";
-			
-			const librarySong = this.currentPlaylist ?
-				this.songLibrary.find((s) => s.videoId === currentSong.videoId) :
-				currentSong;
-			
-			if (librarySong) {
-				addLyricsBtn.addEventListener("click", () => {
-					this.openLyricsMakerModal(librarySong.id);
-				});
-				importSubtitlesBtn.addEventListener("click", () => {
-					this.openImportSubtitlesModal(librarySong.id);
-				});
-				buttonsContainer.appendChild(addLyricsBtn);
-				buttonsContainer.appendChild(importSubtitlesBtn);
-			}
-			
-			noLyricsMessage.appendChild(buttonsContainer);
-			this.elements.lyricsPane.appendChild(noLyricsMessage);
-			return;
-		}
-		
-		const lyricsPlayer = document.createElement("div");
-		lyricsPlayer.classList.add("lyrics-player");
-		lyricsPlayer.style.position = "relative"; // For absolute positioning of buttons
-		
-		const lyricsArray = [];
-		const timingsArray = [];
-		let hasTimestamps = false;
-		
-		const lines = songWithLyrics.lyrics
-			.split("\n")
-			.filter((line) => line.trim() !== "");
-		
-		for (const line of lines) {
-			if (line.match(/.*\s*\[(\d+):(\d+)\]/)) {
-				hasTimestamps = true;
-				break;
-			}
-		}
-		
-		for (const line of lines) {
-			if (hasTimestamps) {
-				const match = line.match(/(.*)\s*\[(\d+):(\d+)\]/);
-				if (match) {
-					const lyric = match[1].trim();
-					const minutes = parseInt(match[2]);
-					const seconds = parseInt(match[3]);
-					const timeInSeconds = minutes * 60 + seconds;
-					lyricsArray.push(lyric);
-					timingsArray.push(timeInSeconds);
-				}
-			} else {
-				lyricsArray.push(line.trim());
-			}
-		}
-		
-		const lyricsDisplay = document.createElement("div");
-		lyricsDisplay.classList.add("lyrics-display");
-		lyricsDisplay.style.margin = "20px 0";
-		lyricsDisplay.style.padding = "15px";
-		lyricsDisplay.style.border = "1px solid var(--border-color)";
-		lyricsDisplay.style.borderRadius = "5px";
-		lyricsDisplay.style.backgroundColor = "var(--bg-primary)";
-		lyricsDisplay.style.height = "400px";
-		lyricsDisplay.style.overflowY = "auto";
-		
-		for (let i = 0; i < lyricsArray.length; i++) {
-			const lineElement = document.createElement("div");
-			lineElement.classList.add("lyric-line");
-			lineElement.textContent = lyricsArray[i];
-			lineElement.id = `lyric-${i}`;
-			lyricsDisplay.appendChild(lineElement);
-		}
-		
-		lyricsPlayer.appendChild(lyricsDisplay);
-
-		const floatingButtonsContainer = document.createElement("div");
-		floatingButtonsContainer.style.cssText = `
-			position: absolute;
-			top: 10px;
-			right: 15px;
-			display: flex;
-			gap: 7px;
-			z-index: 100;
-			pointer-events: none;
-		`;
-		
-		// Initialize autocenter state if not already set
-		if (this.autoCenterLyrics === undefined) {
-			this.autoCenterLyrics = true;
-		}
-		
-		// Toggle Autocenter button
-		const autoCenterButton = document.createElement("button");
-		autoCenterButton.innerHTML = '<i class="fas fa-align-center"></i>';
-		autoCenterButton.title = this.autoCenterLyrics ? "Auto-center: ON" : "Auto-center: OFF";
-		autoCenterButton.style.cssText = `
-			background: ${this.autoCenterLyrics ? 'rgba(93, 156, 89, 0.25)' : 'rgba(255, 255, 255, 0.15)'};
-			backdrop-filter: blur(10px);
-			border: 1px solid rgba(255, 255, 255, 0.2);
-			border-radius: 50%;
-			width: 25px;
-			height: 25px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			cursor: pointer;
-			transition: all 0.3s ease;
-			color: var(--text-primary);
-			font-size: 10px;
-			pointer-events: auto;
-			opacity: ${this.autoCenterLyrics ? '1' : '0.5'};
-		`;
-		autoCenterButton.addEventListener('mouseenter', () => {
-			autoCenterButton.style.background = this.autoCenterLyrics ? 'rgba(93, 156, 89, 0.35)' : 'rgba(255, 255, 255, 0.25)';
-			autoCenterButton.style.transform = 'scale(1.1)';
-		});
-		autoCenterButton.addEventListener('mouseleave', () => {
-			autoCenterButton.style.background = this.autoCenterLyrics ? 'rgba(93, 156, 89, 0.25)' : 'rgba(255, 255, 255, 0.15)';
-			autoCenterButton.style.transform = 'scale(1)';
-		});
-		autoCenterButton.addEventListener('click', () => {
-			this.autoCenterLyrics = !this.autoCenterLyrics;
-			autoCenterButton.style.background = this.autoCenterLyrics ? 'rgba(93, 156, 89, 0.25)' : 'rgba(255, 255, 255, 0.15)';
-			autoCenterButton.style.opacity = this.autoCenterLyrics ? '1' : '0.5';
-			autoCenterButton.title = this.autoCenterLyrics ? "Auto-center: ON" : "Auto-center: OFF";
-		});
-		floatingButtonsContainer.appendChild(autoCenterButton);
-		
-		// Share button (only show if has timestamps)
-		if (hasTimestamps) {
-			const shareButton = document.createElement("button");
-			shareButton.innerHTML = '<i class="fas fa-share-alt"></i>';
-			shareButton.title = "Share Karaoke URL";
-			shareButton.style.cssText = `
-				background: rgba(255, 255, 255, 0.15);
-				backdrop-filter: blur(10px);
-				border: 1px solid rgba(255, 255, 255, 0.2);
-				border-radius: 50%;
-				width: 25px;
-				height: 25px;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				cursor: pointer;
-				transition: all 0.3s ease;
-				color: var(--text-primary);
-				font-size: 10px;
-				pointer-events: auto;
-			`;
-			shareButton.addEventListener('mouseenter', () => {
-				shareButton.style.background = 'rgba(255, 255, 255, 0.25)';
-				shareButton.style.transform = 'scale(1.1)';
-			});
-			shareButton.addEventListener('mouseleave', () => {
-				shareButton.style.background = 'rgba(255, 255, 255, 0.15)';
-				shareButton.style.transform = 'scale(1)';
-			});
-			shareButton.addEventListener('click', () => {
-				this.shareKaraokeURL();
-			});
-			floatingButtonsContainer.appendChild(shareButton);
-		}
-		
-		// Expand button
-		const expandButton = document.createElement("button");
-		expandButton.innerHTML = '<i class="fas fa-expand"></i>';
-		expandButton.title = "Expand Lyrics";
-		expandButton.style.cssText = `
-			background: rgba(255, 255, 255, 0.15);
-			backdrop-filter: blur(10px);
-			border: 1px solid rgba(255, 255, 255, 0.2);
-			border-radius: 50%;
-			width: 25px;
-			height: 25px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			cursor: pointer;
-			transition: all 0.3s ease;
-			color: var(--text-primary);
-			font-size: 10px;
-			pointer-events: auto;
-		`;
-		expandButton.addEventListener('mouseenter', () => {
-			expandButton.style.background = 'rgba(255, 255, 255, 0.25)';
-			expandButton.style.transform = 'scale(1.1)';
-		});
-		expandButton.addEventListener('mouseleave', () => {
-			expandButton.style.background = 'rgba(255, 255, 255, 0.15)';
-			expandButton.style.transform = 'scale(1)';
-		});
-		expandButton.addEventListener('click', () => {
-			this.enterLyricsFullscreen();
-		});
-		floatingButtonsContainer.appendChild(expandButton);
-		
-		lyricsPlayer.appendChild(floatingButtonsContainer);
-		// ========== END NEW BUTTONS ==========
-		
-		this.elements.lyricsPane.appendChild(lyricsPlayer);
-		
-		this.currentLyrics = hasTimestamps ? lyricsArray : [];
-		this.currentTimings = hasTimestamps ? timingsArray : [];
-		
-		if (this.lyricsInterval) {
-		    clearInterval(this.lyricsInterval);
-		    this.lyricsInterval = null;
-		}
-		
-		if (hasTimestamps && this.ytPlayer) {
-		    this.lyricsInterval = setInterval(() => {
-		        if (
-		            this.ytPlayer &&
-		            this.ytPlayer.getCurrentTime &&
-		            this.ytPlayer.getPlayerState() === YT.PlayerState.PLAYING
-		        ) {
-		            const currentTime = this.ytPlayer.getCurrentTime();
-		            this.updateHighlightedLyric(currentTime, this.currentLyrics, this.currentTimings);
-		        }
-		    }, 240);
-		}
+	    if (!this.elements.lyricsPane) return;
+	    this.elements.lyricsPane.innerHTML = "";
+	    
+	    if (
+	        this.currentSongIndex === undefined ||
+	        (!this.songLibrary.length && !this.currentPlaylist)
+	    ) {
+	        const emptyMessage = document.createElement("div");
+	        emptyMessage.classList.add("empty-lyrics-message");
+	        emptyMessage.textContent = "No song is currently playing.";
+	        this.elements.lyricsPane.appendChild(emptyMessage);
+	        return;
+	    }
+	    
+	    const currentSong = this.currentPlaylist ?
+	        this.currentPlaylist.songs[this.currentSongIndex] :
+	        this.songLibrary[this.currentSongIndex];
+	    
+	    if (!currentSong) {
+	        const errorMessage = document.createElement("div");
+	        errorMessage.classList.add("error-message");
+	        errorMessage.textContent = "Current song information could not be found.";
+	        this.elements.lyricsPane.appendChild(errorMessage);
+	        return;
+	    }
+	    
+	    let songWithLyrics = currentSong;
+	    if (this.currentPlaylist) {
+	        const libraryMatch = this.songLibrary.find(
+	            (libSong) => libSong.videoId === currentSong.videoId
+	        );
+	        if (libraryMatch && libraryMatch.lyrics) {
+	            songWithLyrics = libraryMatch;
+	        }
+	    }
+	    
+	    if (!songWithLyrics.lyrics || songWithLyrics.lyrics.trim() === "") {
+	        const noLyricsMessage = document.createElement("div");
+	        noLyricsMessage.classList.add("no-lyrics-message");
+	        noLyricsMessage.innerHTML = `
+	            <p>No lyrics available for "${this.escapeHtml(currentSong.name)}".</p>
+	            <p>You can add lyrics by double-clicking on this song in the library tab.</p>
+	        `;
+	        
+	        const buttonsContainer = document.createElement("div");
+	        buttonsContainer.style.display = "flex";
+	        buttonsContainer.style.gap = "10px";
+	        buttonsContainer.style.marginTop = "10px";
+	        
+	        const addLyricsBtn = document.createElement("button");
+	        addLyricsBtn.textContent = "Transcribe lyrics";
+	        addLyricsBtn.classList.add("add-lyrics-btn");
+	        addLyricsBtn.style.backgroundColor = "var(--accent-color)";
+	        addLyricsBtn.style.color = "var(--button-text-color)";
+	        addLyricsBtn.style.border = "none";
+	        addLyricsBtn.style.borderRadius = "4px";
+	        addLyricsBtn.style.padding = "8px 16px";
+	        addLyricsBtn.style.cursor = "pointer";
+	        addLyricsBtn.style.flex = "1";
+	        
+	        const importSubtitlesBtn = document.createElement("button");
+	        importSubtitlesBtn.textContent = "Import subtitles as lyrics";
+	        importSubtitlesBtn.classList.add("import-subtitles-btn");
+	        importSubtitlesBtn.style.backgroundColor = "var(--hover-color)";
+	        importSubtitlesBtn.style.color = "var(--button-text-color)";
+	        importSubtitlesBtn.style.border = "none";
+	        importSubtitlesBtn.style.borderRadius = "4px";
+	        importSubtitlesBtn.style.padding = "8px 16px";
+	        importSubtitlesBtn.style.cursor = "pointer";
+	        importSubtitlesBtn.style.flex = "1";
+	        
+	        const librarySong = this.currentPlaylist ?
+	            this.songLibrary.find((s) => s.videoId === currentSong.videoId) :
+	            currentSong;
+	        
+	        if (librarySong) {
+	            addLyricsBtn.addEventListener("click", () => {
+	                this.openLyricsMakerModal(librarySong.id);
+	            });
+	            importSubtitlesBtn.addEventListener("click", () => {
+	                this.openImportSubtitlesModal(librarySong.id);
+	            });
+	            buttonsContainer.appendChild(addLyricsBtn);
+	            buttonsContainer.appendChild(importSubtitlesBtn);
+	        }
+	        
+	        noLyricsMessage.appendChild(buttonsContainer);
+	        this.elements.lyricsPane.appendChild(noLyricsMessage);
+	        return;
+	    }
+	    
+	    const lyricsPlayer = document.createElement("div");
+	    lyricsPlayer.classList.add("lyrics-player");
+	    lyricsPlayer.style.position = "relative";
+	    
+	    const lyricsArray = [];
+	    const timingsArray = [];
+	    let hasTimestamps = false;
+	    
+	    const lines = songWithLyrics.lyrics
+	        .split("\n")
+	        .filter((line) => line.trim() !== "");
+	    
+	    for (const line of lines) {
+	        if (line.match(/.*\s*\[(\d+):(\d+)\]/)) {
+	            hasTimestamps = true;
+	            break;
+	        }
+	    }
+	    
+	    for (const line of lines) {
+	        if (hasTimestamps) {
+	            const match = line.match(/(.*)\s*\[(\d+):(\d+)\]/);
+	            if (match) {
+	                const lyric = match[1].trim();
+	                const minutes = parseInt(match[2]);
+	                const seconds = parseInt(match[3]);
+	                const timeInSeconds = minutes * 60 + seconds;
+	                lyricsArray.push(lyric);
+	                timingsArray.push(timeInSeconds);
+	            }
+	        } else {
+	            lyricsArray.push(line.trim());
+	        }
+	    }
+	    
+	    const lyricsDisplay = document.createElement("div");
+	    lyricsDisplay.classList.add("lyrics-display");
+	    lyricsDisplay.style.margin = "20px 0";
+	    lyricsDisplay.style.padding = "15px";
+	    lyricsDisplay.style.border = "1px solid var(--border-color)";
+	    lyricsDisplay.style.borderRadius = "5px";
+	    lyricsDisplay.style.backgroundColor = "var(--bg-primary)";
+	    lyricsDisplay.style.height = "400px";
+	    lyricsDisplay.style.overflowY = "auto";
+	    
+	    for (let i = 0; i < lyricsArray.length; i++) {
+	        const lineElement = document.createElement("div");
+	        lineElement.classList.add("lyric-line");
+	        lineElement.textContent = lyricsArray[i];
+	        lineElement.id = `lyric-${i}`;
+	        lyricsDisplay.appendChild(lineElement);
+	    }
+	    
+	    lyricsPlayer.appendChild(lyricsDisplay);
+	
+	    const floatingButtonsContainer = document.createElement("div");
+	    floatingButtonsContainer.style.cssText = `
+	        position: absolute;
+	        top: 10px;
+	        right: 15px;
+	        display: flex;
+	        gap: 7px;
+	        z-index: 100;
+	        pointer-events: none;
+	    `;
+	
+	    const addSimpleHover = (btn) => {
+	        btn.addEventListener('mouseenter', () => {
+	            btn.style.opacity = '1';
+	            btn.style.transform = 'scale(1.1)';
+	        });
+	        btn.addEventListener('mouseleave', () => {
+	            btn.style.opacity = btn._baseOpacity ?? '0.7';
+	            btn.style.transform = 'scale(1)';
+	        });
+	    };
+	
+	    // Initialize autocenter state if not already set
+	    if (this.autoCenterLyrics === undefined) {
+	        this.autoCenterLyrics = true;
+	    }
+	    
+	    // Toggle Autocenter button
+	    const autoCenterButton = document.createElement("button");
+	    autoCenterButton.innerHTML = '<i class="fas fa-align-center"></i>';
+	    autoCenterButton.title = this.autoCenterLyrics ? "Auto-center: ON" : "Auto-center: OFF";
+	    autoCenterButton._baseOpacity = this.autoCenterLyrics ? '1' : '0.5';
+	    autoCenterButton.style.cssText = `
+	        background: ${this.autoCenterLyrics ? 'rgba(93, 156, 89, 0.25)' : 'rgba(128, 128, 128, 0.15)'};
+	        backdrop-filter: blur(10px);
+	        border: 1px solid rgba(255, 255, 255, 0.2);
+	        border-radius: 50%;
+	        width: 25px;
+	        height: 25px;
+	        display: flex;
+	        align-items: center;
+	        justify-content: center;
+	        cursor: pointer;
+	        transition: all 0.3s ease;
+	        color: var(--text-primary);
+	        font-size: 10px;
+	        pointer-events: auto;
+	        opacity: ${this.autoCenterLyrics ? '1' : '0.5'};
+	    `;
+	
+	    const updateAutoCenterStyle = () => {
+	        const on = this.autoCenterLyrics;
+	        autoCenterButton.style.background = on
+	            ? 'rgba(93, 156, 89, 0.25)'
+	            : 'rgba(128, 128, 128, 0.15)';
+	        autoCenterButton.style.opacity = on ? '1' : '0.5';
+	        autoCenterButton._baseOpacity = on ? '1' : '0.5';
+	        autoCenterButton.title = on ? "Auto-center: ON" : "Auto-center: OFF";
+	    };
+	
+	    autoCenterButton.addEventListener('mouseenter', () => {
+	        autoCenterButton.style.opacity = '1';
+	        autoCenterButton.style.transform = 'scale(1.1)';
+	    });
+	    autoCenterButton.addEventListener('mouseleave', () => {
+	        autoCenterButton.style.opacity = autoCenterButton._baseOpacity;
+	        autoCenterButton.style.transform = 'scale(1)';
+	    });
+	    autoCenterButton.addEventListener('click', () => {
+	        this.autoCenterLyrics = !this.autoCenterLyrics;
+	        updateAutoCenterStyle();
+	    });
+	    floatingButtonsContainer.appendChild(autoCenterButton);
+	    
+	    // Share button (only show if has timestamps)
+	    if (hasTimestamps) {
+	        const shareButton = document.createElement("button");
+	        shareButton.innerHTML = '<i class="fas fa-share-alt"></i>';
+	        shareButton.title = "Share Karaoke URL";
+	        shareButton._baseOpacity = '0.7';
+	        shareButton.style.cssText = `
+	            background: rgba(128, 128, 128, 0.15);
+	            backdrop-filter: blur(10px);
+	            border: 1px solid rgba(255, 255, 255, 0.2);
+	            border-radius: 50%;
+	            width: 25px;
+	            height: 25px;
+	            display: flex;
+	            align-items: center;
+	            justify-content: center;
+	            cursor: pointer;
+	            transition: all 0.3s ease;
+	            color: var(--text-primary);
+	            font-size: 10px;
+	            pointer-events: auto;
+	            opacity: 0.7;
+	        `;
+	        addSimpleHover(shareButton);
+	        shareButton.addEventListener('click', () => {
+	            this.shareKaraokeURL();
+	        });
+	        floatingButtonsContainer.appendChild(shareButton);
+	    }
+	    
+	    // Expand button
+	    const expandButton = document.createElement("button");
+	    expandButton.innerHTML = '<i class="fas fa-expand"></i>';
+	    expandButton.title = "Expand Lyrics";
+	    expandButton._baseOpacity = '0.7';
+	    expandButton.style.cssText = `
+	        background: rgba(128, 128, 128, 0.15);
+	        backdrop-filter: blur(10px);
+	        border: 1px solid rgba(255, 255, 255, 0.2);
+	        border-radius: 50%;
+	        width: 25px;
+	        height: 25px;
+	        display: flex;
+	        align-items: center;
+	        justify-content: center;
+	        cursor: pointer;
+	        transition: all 0.3s ease;
+	        color: var(--text-primary);
+	        font-size: 10px;
+	        pointer-events: auto;
+	        opacity: 0.7;
+	    `;
+	    addSimpleHover(expandButton);
+	    expandButton.addEventListener('click', () => {
+	        this.enterLyricsFullscreen();
+	    });
+	    floatingButtonsContainer.appendChild(expandButton);
+	    
+	    lyricsPlayer.appendChild(floatingButtonsContainer);
+	    
+	    this.elements.lyricsPane.appendChild(lyricsPlayer);
+	    
+	    this.currentLyrics = hasTimestamps ? lyricsArray : [];
+	    this.currentTimings = hasTimestamps ? timingsArray : [];
+	    
+	    if (this.lyricsInterval) {
+	        clearInterval(this.lyricsInterval);
+	        this.lyricsInterval = null;
+	    }
+	    
+	    if (hasTimestamps && this.ytPlayer) {
+	        this.lyricsInterval = setInterval(() => {
+	            if (
+	                this.ytPlayer &&
+	                this.ytPlayer.getCurrentTime &&
+	                this.ytPlayer.getPlayerState() === YT.PlayerState.PLAYING
+	            ) {
+	                const currentTime = this.ytPlayer.getCurrentTime();
+	                this.updateHighlightedLyric(currentTime, this.currentLyrics, this.currentTimings);
+	            }
+	        }, 240);
+	    }
 	}
 	generateKaraokeURL(song, lyricsWithTimestamps) {
 		const lines = [];
