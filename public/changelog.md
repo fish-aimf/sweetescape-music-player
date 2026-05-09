@@ -606,4 +606,4 @@
 - renamed loop forever block to loop previous song forever. v61.8.4
 - fixed visual clutter, Next: Queue: Stop is very unsightly. removed queue: for these commands. v61.9.0
 - added missing styles for qv2-repeat-btn v61.10.0
- 
+- fixed hardcoded styles buttons in lyrics tab v61.11.0
