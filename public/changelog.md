@@ -605,4 +605,5 @@
 - fixed a bug where looping forever block would cause the song after that to be looped forever. v61.8.3
 - renamed loop forever block to loop previous song forever. v61.8.4
 - fixed visual clutter, Next: Queue: Stop is very unsightly. removed queue: for these commands. v61.9.0
+- added missing styles for qv2-repeat-btn v61.10.0
  
