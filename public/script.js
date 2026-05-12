@@ -14001,7 +14001,7 @@ initDownloadModal() {
     if (!queue.length) { queueSection.style.display = 'none'; return; }
     queueSection.style.display = '';
     const pending = queue.filter(q => q.status !== 'done').length;
-    downloadAllLabel.textContent = pending < queue.length ? 'Download rest' : 'Download all';
+    downloadAllLabel.textContent = pending < queue.length ? 'Download all the rest' : 'Download all';
 
     queueList.innerHTML = queue.map((item, i) => `
       <div class="dl-queue-item" data-idx="${i}">
