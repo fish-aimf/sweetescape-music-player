@@ -6942,10 +6942,11 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  width: 100%; max-width: 480px;
-  max-height: 90vh; overflow-y: auto;
+  width: 100%; max-width: 560px;
+  height: 580px;
   display: flex; flex-direction: column;
   gap: 0;
+  overflow: hidden;
 }
 .dl-header {
   display: flex; align-items: center; justify-content: space-between;
@@ -7077,6 +7078,9 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   padding: 0 1.25rem 1rem;
   border-top: 1px solid var(--border-color);
   margin-top: 0.25rem;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 .dl-queue-header {
   display: flex; align-items: center; justify-content: space-between;
