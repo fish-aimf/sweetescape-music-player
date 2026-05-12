@@ -200,6 +200,7 @@ class AdvancedMusicPlayer {
 		// Tab visibility
 		this.isTabVisible = !document.hidden;
 		this.handleVisibilityChange = null;
+		this.dlQueue = [];
 		
 		// Debounced functions
 		this.debouncedUpdatePlayerUI = this.debounce(this.updatePlayerUI.bind(this), 50);
@@ -213,6 +214,7 @@ class AdvancedMusicPlayer {
 		this.elements = {};
 		
 		// Initialize with error handling
+		
 		this._initialize();
 	}
 	
@@ -13857,9 +13859,6 @@ initDownloadModal() {
   const downloadAllBtn = document.getElementById('dlDownloadAllBtn');
   const downloadAllLabel = document.getElementById('dlDownloadAllLabel');
 
-  // queue: [{ videoId, name, author, status: 'idle'|'converting'|'done'|'error', link }]
-  let queue = [];
-
   const escHtml = s => s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : '';
 
   const open = () => {
@@ -13888,7 +13887,6 @@ initDownloadModal() {
 
   modeBtns.forEach(btn => btn.addEventListener('click', () => setMode(btn.dataset.mode)));
 
-  // Hide current-song mode button if nothing playing
   const refreshCurrentPanel = () => {
     const song = this.currentSong;
     const modeBtn = document.getElementById('dlModeCurrent');
@@ -13902,7 +13900,7 @@ initDownloadModal() {
     const thumb = document.getElementById('dlCurrentThumb');
     if (song.videoId) thumb.style.backgroundImage = `url(https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg)`;
     const addBtn = document.getElementById('dlCurrentAddBtn');
-    const alreadyQueued = queue.some(q => q.videoId === song.videoId);
+    const alreadyQueued = this.dlQueue.some(q => q.videoId === song.videoId);
     addBtn.disabled = alreadyQueued;
     addBtn.title = alreadyQueued ? 'Already in queue' : 'Add to queue';
     addBtn.onclick = () => {
@@ -13944,8 +13942,6 @@ initDownloadModal() {
         addToQueue({ videoId: results[i].videoId, name: results[i].name, author: results[i].author });
       });
     });
-
-    searchInput.addEventListener('keydown', handleSearchKey, { once: false });
   };
 
   const handleSearchKey = (e) => {
@@ -13967,58 +13963,64 @@ initDownloadModal() {
   };
   searchInput.addEventListener('keydown', handleSearchKey);
 
-
   const addFromUrl = () => {
     const id = this.extractYouTubeId(urlInput.value.trim());
     if (!id) { urlInput.style.borderColor = 'var(--error-color)'; setTimeout(() => urlInput.style.borderColor = '', 1200); return; }
     addToQueue({ videoId: id, name: id, author: '' });
-    // Fetch real title async
     fetch(`/api/song/${id}`)
       .then(r => r.text())
       .then(html => {
         const m = html.match(/<title>(.*?)<\/title>/);
         if (m) {
-          const item = queue.find(q => q.videoId === id);
+          const item = this.dlQueue.find(q => q.videoId === id);
           if (item) { item.name = m[1].replace(/ - .*/, '').trim(); renderQueue(); }
         }
       }).catch(() => {});
     urlInput.value = '';
   };
-	addUrlBtn.addEventListener('click', addFromUrl);
-	urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') addFromUrl(); });
+  addUrlBtn.addEventListener('click', addFromUrl);
+  urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') addFromUrl(); });
 
-
-  // Queue
   const addToQueue = (song) => {
-    if (queue.some(q => q.videoId === song.videoId)) return;
-    queue.push({ ...song, status: 'idle', link: null });
+    if (this.dlQueue.some(q => q.videoId === song.videoId)) return;
+    this.dlQueue.push({ ...song, status: 'idle', link: null, opened: false });
     renderQueue();
-    // Auto-start conversion
-    convertItem(queue[queue.length - 1]);
+    convertItem(this.dlQueue[this.dlQueue.length - 1]);
   };
 
   const renderQueue = () => {
-    if (!queue.length) { queueSection.style.display = 'none'; return; }
+    if (!this.dlQueue.length) { queueSection.style.display = 'none'; return; }
     queueSection.style.display = '';
-    const pending = queue.filter(q => q.status !== 'done').length;
-    downloadAllLabel.textContent = pending < queue.length ? 'Download all the rest' : 'Download all';
 
-    queueList.innerHTML = queue.map((item, i) => `
-      <div class="dl-queue-item" data-idx="${i}">
+    const totalDone = this.dlQueue.filter(q => q.status === 'done').length;
+    const notOpened = this.dlQueue.filter(q => q.status === 'done' && !q.opened).length;
+    const anyOpened = this.dlQueue.some(q => q.opened);
+
+    if (anyOpened) {
+      downloadAllLabel.textContent = notOpened > 0 ? `Download rest (${notOpened})` : 'All downloaded';
+    } else {
+      downloadAllLabel.textContent = `Download all (${totalDone}/${this.dlQueue.length})`;
+    }
+    downloadAllBtn.disabled = notOpened === 0;
+
+    queueList.innerHTML = this.dlQueue.map((item, i) => `
+      <div class="dl-queue-item${item.opened ? ' dl-qi-opened' : ''}" data-idx="${i}">
         <div class="dl-qi-thumb" style="${item.videoId ? `background-image:url(https://img.youtube.com/vi/${item.videoId}/mqdefault.jpg)` : ''}"></div>
         <div class="dl-qi-info">
           <div class="dl-qi-name">${escHtml(item.name)}</div>
           <div class="dl-qi-status ${item.status}">
             ${item.status === 'idle' ? 'Waiting…'
             : item.status === 'converting' ? '<span class="dl-spinner"></span> Converting…'
+            : item.status === 'done' && item.opened ? '<i class="fas fa-check"></i> Downloaded'
             : item.status === 'done' ? 'Ready'
             : 'Failed — tap retry'}
           </div>
         </div>
         <div class="dl-qi-actions">
-          ${item.status === 'done'
-            ? `<span class="dl-qi-tick"><i class="fas fa-check-circle"></i></span>
-               <button class="dl-qi-download" title="Download"><i class="fas fa-download"></i></button>`
+          ${item.status === 'done' && item.opened
+            ? `<span class="dl-qi-tick" style="color:#5D9C59"><i class="fas fa-check-circle"></i></span>`
+            : item.status === 'done'
+            ? `<button class="dl-qi-download" title="Download"><i class="fas fa-download"></i></button>`
             : item.status === 'error'
             ? `<button class="dl-qi-download" title="Retry"><i class="fas fa-redo"></i></button>`
             : ''}
@@ -14027,15 +14029,17 @@ initDownloadModal() {
       </div>`).join('');
 
     queueList.querySelectorAll('.dl-queue-item').forEach((el, i) => {
-      const item = queue[i];
+      const item = this.dlQueue[i];
       el.querySelector('.dl-qi-remove')?.addEventListener('click', () => {
-        queue.splice(i, 1); renderQueue();
+        this.dlQueue.splice(i, 1); renderQueue();
       });
       const dlBtn = el.querySelector('.dl-qi-download');
       if (dlBtn) {
         dlBtn.addEventListener('click', () => {
           if (item.status === 'done' && item.link) {
+            item.opened = true;
             window.open(item.link, '_blank');
+            renderQueue();
           } else if (item.status === 'error') {
             item.status = 'idle'; renderQueue(); convertItem(item);
           }
@@ -14053,8 +14057,7 @@ initDownloadModal() {
       if (data.status === 'ok' && data.link) {
         item.status = 'done'; item.link = data.link;
         if (data.title && item.name === item.videoId) item.name = data.title;
-      } else if (data.progress && data.progress < 100) {
-        // Still processing — poll every 3s
+      } else if (data.progress !== undefined && data.progress < 100) {
         item.status = 'idle'; renderQueue();
         setTimeout(() => convertItem(item), 3000);
         return;
@@ -14068,9 +14071,13 @@ initDownloadModal() {
   };
 
   downloadAllBtn.addEventListener('click', () => {
-    queue.forEach(item => {
-      if (item.status === 'done' && item.link) window.open(item.link, '_blank');
-    });
+    this.dlQueue
+      .filter(item => item.status === 'done' && item.link && !item.opened)
+      .forEach(item => {
+        item.opened = true;
+        window.open(item.link, '_blank');
+      });
+    renderQueue();
   });
 }
 initNowPlayingTab() {
