@@ -607,3 +607,5 @@
 - fixed visual clutter, Next: Queue: Stop is very unsightly. removed queue: for these commands. v61.9.0
 - added missing styles for qv2-repeat-btn v61.10.0
 - fixed hardcoded styles buttons in lyrics tab v61.11.0
+- fixed the awful hardcoded css for the top right settings buttons. v61.12.0
+- added a new download button next to the discord button v61.13.0
