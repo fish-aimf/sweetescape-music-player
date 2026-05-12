@@ -14013,7 +14013,7 @@ initDownloadModal() {
             : item.status === 'converting' ? '<span class="dl-spinner"></span> Converting…'
             : item.status === 'done' && item.opened ? '<i class="fas fa-check"></i> Downloaded'
             : item.status === 'done' ? 'Ready'
-            : 'Failed — tap retry'}
+            : item._quotaExceeded ? 'API limit reached' : 'Failed — tap retry'}
           </div>
         </div>
         <div class="dl-qi-actions">
@@ -14075,8 +14075,9 @@ initDownloadModal() {
         item.status = 'error';
       }
     } catch {
-      item.status = 'error';
-    }
+	  item.status = 'error';
+	  item._quotaExceeded = true;
+	}
     renderQueue();
   };
 
