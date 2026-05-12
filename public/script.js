@@ -13967,9 +13967,6 @@ initDownloadModal() {
   };
   searchInput.addEventListener('keydown', handleSearchKey);
 
-  // URL input
-  addUrlBtn.addEventListener('click', addFromUrl);
-  urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') addFromUrl(); });
 
   const addFromUrl = () => {
     const id = this.extractYouTubeId(urlInput.value.trim());
@@ -13987,6 +13984,9 @@ initDownloadModal() {
       }).catch(() => {});
     urlInput.value = '';
   };
+	addUrlBtn.addEventListener('click', addFromUrl);
+	urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') addFromUrl(); });
+
 
   // Queue
   const addToQueue = (song) => {
