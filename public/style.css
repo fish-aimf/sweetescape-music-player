@@ -7147,3 +7147,10 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   animation: dl-spin 0.7s linear infinite; display: inline-block;
 }
 @keyframes dl-spin { to { transform: rotate(360deg); } }
+
+.dl-qi-opened {
+  opacity: 0.45;
+}
+.dl-qi-opened .dl-qi-name {
+  text-decoration: line-through;
+}
