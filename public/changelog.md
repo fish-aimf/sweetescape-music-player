@@ -609,3 +609,20 @@
 - fixed hardcoded styles buttons in lyrics tab v61.11.0
 - fixed the awful hardcoded css for the top right settings buttons. v61.12.0
 - added a new download button next to the discord button v61.13.0
+- added download mp3. v62.0.0
+- added download model. v62.1.0
+- added search functionality in download. v62.2.0
+- added bulk download v62.3.0
+- added delegation to search v62.3.1
+- maximum display 5 songs v62.3.2
+- when enter is pressed it could select song and convert song already v62.4.0
+- added download via url v62.5.0
+- added download all button v62.6.0
+- a song will be cancelled once it has been downloaded once to avoid duplicate downloads. v62.7.0
+- added cancel button v62.8.0
+- the download all button will turn into download the rest. v62.9.0
+- added strikethrough effect v62.10.0
+- changed styles of model so it wouldn't change size constantly v62.11.0
+- optimized api polling to save on api count. v62.12.0
+- limited max conversions at 1 time to 2. v62.13.0
+- added another api key to rotate to increase monthly limit to 600 downloads. v62.14.0
