@@ -14049,7 +14049,12 @@ initDownloadModal() {
   };
 
   const convertItem = async (item) => {
-    if (item.status === 'done' || item.status === 'converting') return;
+	  if (item.status === 'done' || item.status === 'converting') return;
+	  const activeCount = this.dlQueue.filter(q => q.status === 'converting').length;
+	  if (activeCount >= 2) {
+	    setTimeout(() => convertItem(item), 2000);
+	    return;
+	  }
     item.status = 'converting'; renderQueue();
     try {
       const res = await fetch(`/api/download?videoId=${item.videoId}`);
@@ -14058,9 +14063,14 @@ initDownloadModal() {
         item.status = 'done'; item.link = data.link;
         if (data.title && item.name === item.videoId) item.name = data.title;
       } else if (data.progress !== undefined && data.progress < 100) {
-        item.status = 'idle'; renderQueue();
-        setTimeout(() => convertItem(item), 3000);
-        return;
+		  item._retries = (item._retries || 0) + 1;
+		  if (item._retries >= 5) {
+		    item.status = 'error';
+		  } else {
+		    item.status = 'idle'; renderQueue();
+		    setTimeout(() => convertItem(item), 8000);
+		    return;
+		  }
       } else {
         item.status = 'error';
       }
