@@ -288,6 +288,7 @@ class AdvancedMusicPlayer {
 		this.loadVersion();
 		this.setupYouTubeLibraryResultsDelegation();
 		this.initNowPlayingTab();
+		this.initDownloadModal();
 		this.addQueueStyles(); 
 	}
 	
@@ -13837,6 +13838,240 @@ resetLibrarySearchTimeout() {
             this.elements.librarySearch.blur();
         }
     }, 60000);
+}
+initDownloadModal() {
+  const overlay = document.getElementById('downloadModal');
+  const closeBtn = document.getElementById('dlCloseBtn');
+  const modeBtns = document.querySelectorAll('.dl-mode-btn');
+  const panels = {
+    current: document.getElementById('dlPanelCurrent'),
+    search: document.getElementById('dlPanelSearch'),
+    url: document.getElementById('dlPanelUrl')
+  };
+  const searchInput = document.getElementById('dlSearchInput');
+  const searchResults = document.getElementById('dlSearchResults');
+  const urlInput = document.getElementById('dlUrlInput');
+  const addUrlBtn = document.getElementById('dlAddUrlBtn');
+  const queueSection = document.getElementById('dlQueueSection');
+  const queueList = document.getElementById('dlQueueList');
+  const downloadAllBtn = document.getElementById('dlDownloadAllBtn');
+  const downloadAllLabel = document.getElementById('dlDownloadAllLabel');
+
+  // queue: [{ videoId, name, author, status: 'idle'|'converting'|'done'|'error', link }]
+  let queue = [];
+
+  const escHtml = s => s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : '';
+
+  const open = () => {
+    overlay.style.display = 'flex';
+    refreshCurrentPanel();
+    setMode('current');
+    if (!this.currentSong) setMode('search');
+  };
+
+  const close = () => { overlay.style.display = 'none'; };
+
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+  closeBtn.addEventListener('click', close);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && overlay.style.display !== 'none') close();
+  });
+
+  document.getElementById('downloadButton').addEventListener('click', open);
+
+  const setMode = (mode) => {
+    modeBtns.forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+    Object.entries(panels).forEach(([k, el]) => el.style.display = k === mode ? '' : 'none');
+    if (mode === 'search') setTimeout(() => searchInput.focus(), 50);
+    if (mode === 'url') setTimeout(() => urlInput.focus(), 50);
+  };
+
+  modeBtns.forEach(btn => btn.addEventListener('click', () => setMode(btn.dataset.mode)));
+
+  // Hide current-song mode button if nothing playing
+  const refreshCurrentPanel = () => {
+    const song = this.currentSong;
+    const modeBtn = document.getElementById('dlModeCurrent');
+    if (!song) {
+      modeBtn.style.display = 'none';
+      return;
+    }
+    modeBtn.style.display = '';
+    document.getElementById('dlCurrentName').textContent = song.name || 'Unknown';
+    document.getElementById('dlCurrentAuthor').textContent = song.author || '';
+    const thumb = document.getElementById('dlCurrentThumb');
+    if (song.videoId) thumb.style.backgroundImage = `url(https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg)`;
+    const addBtn = document.getElementById('dlCurrentAddBtn');
+    const alreadyQueued = queue.some(q => q.videoId === song.videoId);
+    addBtn.disabled = alreadyQueued;
+    addBtn.title = alreadyQueued ? 'Already in queue' : 'Add to queue';
+    addBtn.onclick = () => {
+      addToQueue({ videoId: song.videoId, name: song.name, author: song.author });
+      addBtn.disabled = true;
+    };
+  };
+
+  // Search
+  let _debounce = null;
+  searchInput.addEventListener('input', () => {
+    clearTimeout(_debounce);
+    _debounce = setTimeout(() => renderSearch(searchInput.value.trim()), 120);
+  });
+
+  const renderSearch = (term) => {
+    if (!term) { searchResults.hidden = true; return; }
+    const lower = term.toLowerCase();
+    const results = this.songLibrary
+      .filter(s => s.name.toLowerCase().includes(lower) || (s.author && s.author.toLowerCase().includes(lower)))
+      .slice(0, 5);
+    if (!results.length) { searchResults.hidden = true; return; }
+    searchResults.hidden = false;
+    searchResults.innerHTML = results.map((s, i) => `
+      <div class="dl-result${i === 0 ? ' focused' : ''}" data-idx="${i}">
+        <div style="flex:1;min-width:0;">
+          <span class="dl-result-name">${escHtml(s.name)}</span>
+          ${s.author ? `<span class="dl-result-author">${escHtml(s.author)}</span>` : ''}
+        </div>
+        <button class="dl-result-add" title="Add to queue"><i class="fas fa-plus"></i></button>
+      </div>`).join('');
+
+    searchResults.querySelectorAll('.dl-result').forEach((el, i) => {
+      el.querySelector('.dl-result-add').addEventListener('click', (e) => {
+        e.stopPropagation();
+        addToQueue({ videoId: results[i].videoId, name: results[i].name, author: results[i].author });
+      });
+      el.addEventListener('click', () => {
+        addToQueue({ videoId: results[i].videoId, name: results[i].name, author: results[i].author });
+      });
+    });
+
+    searchInput.addEventListener('keydown', handleSearchKey, { once: false });
+  };
+
+  const handleSearchKey = (e) => {
+    const items = [...searchResults.querySelectorAll('.dl-result')];
+    const focused = searchResults.querySelector('.dl-result.focused');
+    let idx = focused ? items.indexOf(focused) : 0;
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (items[idx]) items[idx].click();
+      searchInput.value = ''; searchResults.hidden = true;
+    } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      focused?.classList.remove('focused');
+      idx = e.key === 'ArrowDown' ? Math.min(idx+1, items.length-1) : Math.max(idx-1, 0);
+      items[idx].classList.add('focused');
+    } else if (e.key === 'Escape') {
+      searchResults.hidden = true; searchInput.value = '';
+    }
+  };
+  searchInput.addEventListener('keydown', handleSearchKey);
+
+  // URL input
+  addUrlBtn.addEventListener('click', addFromUrl);
+  urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') addFromUrl(); });
+
+  const addFromUrl = () => {
+    const id = this.extractYouTubeId(urlInput.value.trim());
+    if (!id) { urlInput.style.borderColor = 'var(--error-color)'; setTimeout(() => urlInput.style.borderColor = '', 1200); return; }
+    addToQueue({ videoId: id, name: id, author: '' });
+    // Fetch real title async
+    fetch(`/api/song/${id}`)
+      .then(r => r.text())
+      .then(html => {
+        const m = html.match(/<title>(.*?)<\/title>/);
+        if (m) {
+          const item = queue.find(q => q.videoId === id);
+          if (item) { item.name = m[1].replace(/ - .*/, '').trim(); renderQueue(); }
+        }
+      }).catch(() => {});
+    urlInput.value = '';
+  };
+
+  // Queue
+  const addToQueue = (song) => {
+    if (queue.some(q => q.videoId === song.videoId)) return;
+    queue.push({ ...song, status: 'idle', link: null });
+    renderQueue();
+    // Auto-start conversion
+    convertItem(queue[queue.length - 1]);
+  };
+
+  const renderQueue = () => {
+    if (!queue.length) { queueSection.style.display = 'none'; return; }
+    queueSection.style.display = '';
+    const pending = queue.filter(q => q.status !== 'done').length;
+    downloadAllLabel.textContent = pending < queue.length ? 'Download rest' : 'Download all';
+
+    queueList.innerHTML = queue.map((item, i) => `
+      <div class="dl-queue-item" data-idx="${i}">
+        <div class="dl-qi-thumb" style="${item.videoId ? `background-image:url(https://img.youtube.com/vi/${item.videoId}/mqdefault.jpg)` : ''}"></div>
+        <div class="dl-qi-info">
+          <div class="dl-qi-name">${escHtml(item.name)}</div>
+          <div class="dl-qi-status ${item.status}">
+            ${item.status === 'idle' ? 'Waiting…'
+            : item.status === 'converting' ? '<span class="dl-spinner"></span> Converting…'
+            : item.status === 'done' ? 'Ready'
+            : 'Failed — tap retry'}
+          </div>
+        </div>
+        <div class="dl-qi-actions">
+          ${item.status === 'done'
+            ? `<span class="dl-qi-tick"><i class="fas fa-check-circle"></i></span>
+               <button class="dl-qi-download" title="Download"><i class="fas fa-download"></i></button>`
+            : item.status === 'error'
+            ? `<button class="dl-qi-download" title="Retry"><i class="fas fa-redo"></i></button>`
+            : ''}
+          <button class="dl-qi-remove" title="Remove"><i class="fas fa-times"></i></button>
+        </div>
+      </div>`).join('');
+
+    queueList.querySelectorAll('.dl-queue-item').forEach((el, i) => {
+      const item = queue[i];
+      el.querySelector('.dl-qi-remove')?.addEventListener('click', () => {
+        queue.splice(i, 1); renderQueue();
+      });
+      const dlBtn = el.querySelector('.dl-qi-download');
+      if (dlBtn) {
+        dlBtn.addEventListener('click', () => {
+          if (item.status === 'done' && item.link) {
+            window.open(item.link, '_blank');
+          } else if (item.status === 'error') {
+            item.status = 'idle'; renderQueue(); convertItem(item);
+          }
+        });
+      }
+    });
+  };
+
+  const convertItem = async (item) => {
+    if (item.status === 'done' || item.status === 'converting') return;
+    item.status = 'converting'; renderQueue();
+    try {
+      const res = await fetch(`/api/download?videoId=${item.videoId}`);
+      const data = await res.json();
+      if (data.status === 'ok' && data.link) {
+        item.status = 'done'; item.link = data.link;
+        if (data.title && item.name === item.videoId) item.name = data.title;
+      } else if (data.progress && data.progress < 100) {
+        // Still processing — poll every 3s
+        item.status = 'idle'; renderQueue();
+        setTimeout(() => convertItem(item), 3000);
+        return;
+      } else {
+        item.status = 'error';
+      }
+    } catch {
+      item.status = 'error';
+    }
+    renderQueue();
+  };
+
+  downloadAllBtn.addEventListener('click', () => {
+    queue.forEach(item => {
+      if (item.status === 'done' && item.link) window.open(item.link, '_blank');
+    });
+  });
 }
 initNowPlayingTab() {
     // Wire up all NP controls to existing handlers
