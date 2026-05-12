@@ -1265,6 +1265,75 @@ Another Playlist{
             </div>
          </div>
       </div>
+      <div id="downloadModal" class="dl-overlay" style="display:none;" role="dialog" aria-modal="true" aria-label="Download songs">
+        <div class="dl-modal">
+      
+          <div class="dl-header">
+            <span class="dl-title"><i class="fas fa-download"></i> Download</span>
+            <button class="dl-close" id="dlCloseBtn" title="Close"><i class="fas fa-times"></i></button>
+          </div>
+      
+          <!-- Mode selector -->
+          <div class="dl-modes">
+            <button class="dl-mode-btn active" data-mode="current" id="dlModeCurrent">
+              <i class="fas fa-music"></i>
+              <span>Current song</span>
+            </button>
+            <button class="dl-mode-btn" data-mode="search" id="dlModeSearch">
+              <i class="fas fa-search"></i>
+              <span>Search library</span>
+            </button>
+            <button class="dl-mode-btn" data-mode="url" id="dlModeUrl">
+              <i class="fab fa-youtube"></i>
+              <span>YouTube URL</span>
+            </button>
+          </div>
+      
+          <!-- Panel: Current song -->
+          <div class="dl-panel" id="dlPanelCurrent">
+            <div class="dl-current-card" id="dlCurrentCard">
+              <div class="dl-current-thumb" id="dlCurrentThumb"></div>
+              <div class="dl-current-info">
+                <div class="dl-current-name" id="dlCurrentName">No song playing</div>
+                <div class="dl-current-author" id="dlCurrentAuthor"></div>
+              </div>
+              <button class="dl-queue-btn" id="dlCurrentAddBtn" title="Add to queue">
+                <i class="fas fa-plus"></i>
+              </button>
+            </div>
+          </div>
+      
+          <!-- Panel: Search library -->
+          <div class="dl-panel" id="dlPanelSearch" style="display:none;">
+            <div class="dl-search-wrap">
+              <i class="fas fa-search dl-search-icon"></i>
+              <input type="text" id="dlSearchInput" class="dl-search-input" placeholder="Search songs or artists…" autocomplete="off" />
+            </div>
+            <div id="dlSearchResults" class="dl-search-results" hidden></div>
+          </div>
+      
+          <!-- Panel: YouTube URL -->
+          <div class="dl-panel" id="dlPanelUrl" style="display:none;">
+            <div class="dl-search-wrap">
+              <i class="fab fa-youtube dl-search-icon"></i>
+              <input type="text" id="dlUrlInput" class="dl-search-input" placeholder="Paste YouTube URL or video ID…" autocomplete="off" />
+            </div>
+            <button class="dl-add-url-btn" id="dlAddUrlBtn"><i class="fas fa-plus"></i> Add to queue</button>
+          </div>
+      
+          <!-- Queue -->
+          <div class="dl-queue-section" id="dlQueueSection" style="display:none;">
+            <div class="dl-queue-header">
+              <span class="dl-queue-label">Queue</span>
+              <button class="dl-download-all-btn" id="dlDownloadAllBtn">
+                <i class="fas fa-download"></i> <span id="dlDownloadAllLabel">Download all</span>
+              </button>
+            </div>
+            <div id="dlQueueList" class="dl-queue-list"></div>
+          </div>
+      
+        </div>
+      </div>
   
       <script src="https://www.youtube.com/iframe_api"></script>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
