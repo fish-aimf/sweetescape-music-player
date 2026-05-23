@@ -626,3 +626,4 @@
 - optimized api polling to save on api count. v62.12.0
 - limited max conversions at 1 time to 2. v62.13.0
 - added another api key to rotate to increase monthly limit to 600 downloads. v62.14.0
+- allowed searching for songs in cyrillic in latin. v62.15.0
