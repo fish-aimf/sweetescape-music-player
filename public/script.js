@@ -1275,11 +1275,15 @@ class AdvancedMusicPlayer {
 			// Filter library based on search term
 			let filteredLibrary = this.songLibrary;
 			if (searchTerm && searchTerm !== "") {
-				filteredLibrary = this.songLibrary.filter(song => {
-					const nameMatch = song.name.toLowerCase().includes(searchTerm);
-					const authorMatch = song.author && song.author.toLowerCase().includes(searchTerm);
-					return nameMatch || authorMatch;
-				});
+			    const LAT_TO_CYR = {'a':'а','b':'б','v':'в','g':'г','d':'д','e':'е','z':'з','i':'и','j':'й','k':'к','l':'л','m':'м','n':'н','o':'о','p':'п','r':'р','s':'с','t':'т','u':'у','f':'ф','y':'ы'};
+			    const latinized = searchTerm.split('').map(c => LAT_TO_CYR[c] || c).join('');
+			
+			    filteredLibrary = this.songLibrary.filter(song => {
+			        const name = song.name.toLowerCase();
+			        const author = (song.author || '').toLowerCase();
+			        return name.includes(searchTerm) || author.includes(searchTerm)
+			            || name.includes(latinized) || author.includes(latinized);
+			    });
 			}
 
 			// Sort the filtered library
