@@ -1293,7 +1293,6 @@ class AdvancedMusicPlayer {
 
 			let filteredLibrary = this.songLibrary;
 			if (searchTerm && searchTerm !== "") {
-				 this.songLibrary.forEach(s => { if (!s._searchIndex) AdvancedMusicPlayer._buildIndex(s); });
 			    const normalizedTerm = this.transliterateToLatin(searchTerm.toLowerCase());
 			    filteredLibrary = this.songLibrary.filter(song => {
 			        const rawText = `${song.name} ${song.author || ''}`.toLowerCase();
