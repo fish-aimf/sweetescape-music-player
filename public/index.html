@@ -15,7 +15,6 @@
         <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
         <link rel="preconnect" href="https://img.youtube.com" crossorigin>  
 
         <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
@@ -49,8 +48,10 @@
         </style>
 
       
-        <link rel="stylesheet" href="style.css">
-        <link rel="stylesheet" href="all.min.css">
+        <link rel="preload" href="all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+         <noscript><link rel="stylesheet" href="all.min.css"></noscript>
+         <link rel="preload" href="style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+         <noscript><link rel="stylesheet" href="style.css"></noscript>
       
         <meta property="og:title" content="SweetEscape – Music Player">
         <meta property="og:description" content="Seamless ad-free music streaming packed with features.">
@@ -1340,7 +1341,7 @@ Another Playlist{
       <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
 
       <script src="/karaoke-encoder.js"></script>
-      <script src="script.js"></script>
+      <script src="script.js" defer></script>
          <script>
       fetch('/api/count')
         .then(r => r.json())
