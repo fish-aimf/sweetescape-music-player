@@ -1,0 +1,20 @@
+name: Update Version File
+on:
+  push:
+    branches: [main]
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Extract latest version from changelog
+        run: |
+          grep -o 'v[0-9]*\.[0-9]*\.[0-9]*' changelog.md | tail -1 | tr -d 'v' > current-version.txt
+      - name: Commit version file
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add current-version.txt
+          git diff --staged --quiet || git commit -m "update version file"
+          git push
