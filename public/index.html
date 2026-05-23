@@ -1336,19 +1336,19 @@ Another Playlist{
       
         </div>
       </div>
-  
-      <script src="https://www.youtube.com/iframe_api"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
 
-      <script src="/karaoke-encoder.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js" defer></script>
+      <script src="/karaoke-encoder.js" defer></script>
       <script src="script.js" defer></script>
-         <script>
-      fetch('/api/count')
-        .then(r => r.json())
-        .then(d => {
-          document.getElementById('visitor-count').textContent =
-            d.count.toLocaleString()
-        })
+      <script src="https://www.youtube.com/iframe_api" defer></script>
+      <script>
+        window.addEventListener('load', () => {
+          fetch('/api/count')
+            .then(r => r.json())
+            .then(d => {
+              document.getElementById('visitor-count').textContent = d.count.toLocaleString();
+            });
+        });
       </script>
 
       
