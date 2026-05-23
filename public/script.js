@@ -145,7 +145,18 @@ class AdvancedMusicPlayer {
 		this.closeImportModalBtn = null;
 		this.importSongsBtn = null;
 		this.importSongsTextarea = null;
-		
+		this.CYRILLIC_TO_LATIN = {
+		    'а':'a','б':'b','в':'v','г':'g','д':'d','е':'e','ё':'yo','ж':'zh',
+		    'з':'z','и':'i','й':'j','к':'k','л':'l','м':'m','н':'n','о':'o',
+		    'п':'p','р':'r','с':'s','т':'t','у':'u','ф':'f','х':'kh','ц':'ts',
+		    'ч':'ch','ш':'sh','щ':'shch','ъ':'','ы':'y','ь':'','э':'e','ю':'yu',
+		    'я':'ya',
+		    // Ukrainian extras
+		    'є':'ye','і':'i','ї':'yi','ґ':'g',
+		    // Belarusian extras
+		    'ў':'u',
+		};
+				
 		// Keybinds
 		this.defaultKeybinds = {
 			togglePlayPause: 'Space',
@@ -900,6 +911,7 @@ class AdvancedMusicPlayer {
 					if (song.author === undefined) song.author = "";
 					return song;
 				});
+				this.songLibrary = this.songLibrary.map(song => this.buildSongSearchIndex(song));
 				
 				// Save if any migrations were needed
 				if (this.songLibrary.some(song => 
@@ -1267,19 +1279,18 @@ class AdvancedMusicPlayer {
 		try {
 			if (!this.elements.songLibrary) return;
 
-			// Get search term from input if not provided
 			if (searchTerm === null && this.elements.librarySearch) {
 				searchTerm = this.elements.librarySearch.value.toLowerCase().trim();
 			}
 
-			// Filter library based on search term
 			let filteredLibrary = this.songLibrary;
 			if (searchTerm && searchTerm !== "") {
-				filteredLibrary = this.songLibrary.filter(song => {
-					const nameMatch = song.name.toLowerCase().includes(searchTerm);
-					const authorMatch = song.author && song.author.toLowerCase().includes(searchTerm);
-					return nameMatch || authorMatch;
-				});
+			    const normalizedTerm = this.transliterateToLatin(searchTerm.toLowerCase());
+			    filteredLibrary = this.songLibrary.filter(song => {
+			        const rawText = `${song.name} ${song.author || ''}`.toLowerCase();
+			        if (rawText.includes(searchTerm.toLowerCase())) return true;
+			        return song._searchIndex.includes(normalizedTerm);
+			    });
 			}
 
 			// Sort the filtered library
@@ -1483,6 +1494,17 @@ class AdvancedMusicPlayer {
 	    } else {
 	        this.hideYouTubeSearchSuggestion();
 	    }
+	}
+	transliterateToLatin(str) {
+	    return str.toLowerCase().split('').map(char => 
+	        this.CYRILLIC_TO_LATIN[char] ?? char
+	    ).join('');
+	}
+	
+	buildSongSearchIndex(song) {
+	    const raw = `${song.name} ${song.author || ''}`.toLowerCase();
+	    song._searchIndex = this.transliterateToLatin(raw);
+	    return song;
 	}
 	showAddToLibrarySuggestion(youtubeUrl) {
 		const querySpan = this.elements.youtubeSearchSuggestion.querySelector(".search-query");
