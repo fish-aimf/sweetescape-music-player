@@ -2,7 +2,15 @@ class AdvancedMusicPlayer {
 	constructor() {
 		// Core player state
 		this.playlists = [];
-		this.songLibrary = [];
+		this.songLibrary = new Proxy([], {
+		    set(target, prop, value) {
+		        if (value !== null && typeof value === 'object' && !Array.isArray(value) && !value._searchIndex) {
+		            AdvancedMusicPlayer._buildIndex(value);
+		        }
+		        target[prop] = value;
+		        return true;
+		    }
+		});
 		this.songQueue = [];
 		this.db = null;
 		this.currentPlaylist = null;
@@ -1285,6 +1293,7 @@ class AdvancedMusicPlayer {
 
 			let filteredLibrary = this.songLibrary;
 			if (searchTerm && searchTerm !== "") {
+				 this.songLibrary.forEach(s => { if (!s._searchIndex) AdvancedMusicPlayer._buildIndex(s); });
 			    const normalizedTerm = this.transliterateToLatin(searchTerm.toLowerCase());
 			    filteredLibrary = this.songLibrary.filter(song => {
 			        const rawText = `${song.name} ${song.author || ''}`.toLowerCase();
@@ -1504,6 +1513,18 @@ class AdvancedMusicPlayer {
 	buildSongSearchIndex(song) {
 	    const raw = `${song.name} ${song.author || ''}`.toLowerCase();
 	    song._searchIndex = this.transliterateToLatin(raw);
+	    return song;
+	}
+	static _buildIndex(song) {
+	    const CYRILLIC_TO_LATIN = {
+	        'а':'a','б':'b','в':'v','г':'g','д':'d','е':'e','ё':'yo','ж':'zh',
+	        'з':'z','и':'i','й':'j','к':'k','л':'l','м':'m','н':'n','о':'o',
+	        'п':'p','р':'r','с':'s','т':'t','у':'u','ф':'f','х':'kh','ц':'ts',
+	        'ч':'ch','ш':'sh','щ':'shch','ъ':'','ы':'y','ь':'','э':'e','ю':'yu',
+	        'я':'ya','є':'ye','і':'i','ї':'yi','ґ':'g','ў':'u',
+	    };
+	    const raw = `${song.name || ''} ${song.author || ''}`.toLowerCase();
+	    song._searchIndex = raw.split('').map(c => CYRILLIC_TO_LATIN[c] ?? c).join('');
 	    return song;
 	}
 	showAddToLibrarySuggestion(youtubeUrl) {
