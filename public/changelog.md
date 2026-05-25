@@ -631,3 +631,4 @@
 - added caching to all files so they serve from the disk and save massive datacosts. v63.0.0
 - fixed some rendering order bug. v63.1.0
 - fixed some script execution order bug. v63.2.0
+- fetches version number from the tiny current-version.txt instead of the huge changelog.md. v63.3.0
