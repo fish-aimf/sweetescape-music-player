@@ -48,23 +48,24 @@
         </style>
 
       
-        <script>
-         (async () => {
+         <script>
+         window.__se_vq_promise = (async () => {
            try {
              const res = await fetch('/current-version.txt', { cache: 'no-store' });
              const v = (await res.text()).trim();
              const q = v !== localStorage.getItem('se_version') ? `?v=${v}` : '';
              if (q) localStorage.setItem('se_version', v);
-             window.__se_vq = q;
              for (const href of [`all.min.css${q}`, `style.css${q}`]) {
                const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = href;
                document.head.appendChild(l);
              }
+             return q;
            } catch {
              for (const href of ['all.min.css', 'style.css']) {
                const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = href;
                document.head.appendChild(l);
              }
+             return '';
            }
          })();
          </script>
@@ -1355,11 +1356,18 @@ Another Playlist{
       </div>
 
       <script>
-        const q = window.__se_vq ?? '';
+      (async () => {
+        const q = await window.__se_vq_promise;
         for (const src of [`/karaoke-encoder.js${q}`, `script.js${q}`]) {
-          const s = document.createElement('script'); s.src = src;
-          document.body.appendChild(s);
+          await new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = src;
+            s.onload = resolve;
+            s.onerror = reject;
+            document.body.appendChild(s);
+          });
         }
+      })();
       </script>
       <script src="https://www.youtube.com/iframe_api" defer></script>
       <script>
