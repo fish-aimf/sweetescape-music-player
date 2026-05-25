@@ -14510,4 +14510,8 @@ window.addEventListener("beforeunload", () => {
 		musicPlayer.cleanup();
 	}
 });
-document.addEventListener("DOMContentLoaded", initializeMusicPlayer);
+if (document.readyState === 'loading') {
+  document.addEventListener("DOMContentLoaded", initializeMusicPlayer);
+} else {
+  initializeMusicPlayer();
+}
