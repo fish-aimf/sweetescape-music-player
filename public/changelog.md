@@ -628,3 +628,4 @@
 - added another api key to rotate to increase monthly limit to 600 downloads. v62.14.0
 - allowed searching for songs in cyrillic in latin. v62.15.0
 - added current version.txt file in preperation for offline update. v62.16.0
+- added caching to all files so they serve from the disk and save massive datacosts. v63.0.0
