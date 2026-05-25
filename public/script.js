@@ -8996,30 +8996,34 @@ hideSidebar() {
 		}
 	}
 	async loadVersion() {
-		try {
-			const response = await fetch('changelog.md');
-			const text = await response.text();
-			const lines = text.trim().split('\n').filter(line => line.trim());
-			if (lines.length > 0) {
-				const lastLine = lines[lines.length - 1];
-				const versionMatch = lastLine.match(/v\d+\.\d+\.\d+/);
-				if (versionMatch) {
-					const versionDisplay = document.getElementById('versionDisplay');
-					const versionText = document.getElementById('versionText');
-					if (versionDisplay && versionText) {
-						versionText.textContent = versionMatch[0];
-						const changeText = lastLine.replace(/v\d+\.\d+\.\d+/, '').replace(/^\*\s*/, '').trim();
-						versionDisplay.title = `Latest: ${changeText}`;
-						this.fullChangelog = text;
-						versionDisplay.addEventListener('click', () => {
-							this.showChangelogModal();
-						});
-					}
-				}
-			}
-		} catch (error) {
-			console.warn('Could not load version:', error);
-		}
+	    try {
+	        const response = await fetch('/current-version.txt', { cache: 'no-store' });
+	        const version = (await response.text()).trim();
+	        
+	        const versionDisplay = document.getElementById('versionDisplay');
+	        const versionText = document.getElementById('versionText');
+	        if (versionDisplay && versionText) {
+	            versionText.textContent = `v${version}`;
+	            versionDisplay.addEventListener('click', () => {
+	                // Only load changelog.md when user actually clicks
+	                this.loadAndShowChangelog();
+	            });
+	        }
+	    } catch (error) {
+	        console.warn('Could not load version:', error);
+	    }
+	}
+	
+	async loadAndShowChangelog() {
+	    try {
+	        if (!this.fullChangelog) {
+	            const response = await fetch('changelog.md');
+	            this.fullChangelog = await response.text();
+	        }
+	        this.showChangelogModal();
+	    } catch (error) {
+	        console.warn('Could not load changelog:', error);
+	    }
 	}
 	showChangelogModal() {
 		const modal = document.getElementById('changelogModal');
