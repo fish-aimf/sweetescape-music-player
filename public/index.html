@@ -48,10 +48,27 @@
         </style>
 
       
-        <link rel="preload" href="all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-         <noscript><link rel="stylesheet" href="all.min.css"></noscript>
-         <link rel="preload" href="style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-         <noscript><link rel="stylesheet" href="style.css"></noscript>
+        <script>
+         (async () => {
+           try {
+             const res = await fetch('/current-version.txt', { cache: 'no-store' });
+             const v = (await res.text()).trim();
+             const q = v !== localStorage.getItem('se_version') ? `?v=${v}` : '';
+             if (q) localStorage.setItem('se_version', v);
+             window.__se_vq = q;
+             for (const href of [`all.min.css${q}`, `style.css${q}`]) {
+               const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = href;
+               document.head.appendChild(l);
+             }
+           } catch {
+             for (const href of ['all.min.css', 'style.css']) {
+               const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = href;
+               document.head.appendChild(l);
+             }
+           }
+         })();
+         </script>
+         <noscript><link rel="stylesheet" href="all.min.css"><link rel="stylesheet" href="style.css"></noscript>
       
         <meta property="og:title" content="SweetEscape – Music Player">
         <meta property="og:description" content="Seamless ad-free music streaming packed with features.">
@@ -1337,9 +1354,13 @@ Another Playlist{
         </div>
       </div>
 
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js" defer></script>
-      <script src="/karaoke-encoder.js" defer></script>
-      <script src="script.js" defer></script>
+      <script>
+        const q = window.__se_vq ?? '';
+        for (const src of [`/karaoke-encoder.js${q}`, `script.js${q}`]) {
+          const s = document.createElement('script'); s.src = src;
+          document.body.appendChild(s);
+        }
+      </script>
       <script src="https://www.youtube.com/iframe_api" defer></script>
       <script>
         window.addEventListener('load', () => {
