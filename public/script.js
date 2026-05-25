@@ -9005,7 +9005,6 @@ hideSidebar() {
 	        if (versionDisplay && versionText) {
 	            versionText.textContent = `v${version}`;
 	            versionDisplay.addEventListener('click', () => {
-	                // Only load changelog.md when user actually clicks
 	                this.loadAndShowChangelog();
 	            });
 	        }
