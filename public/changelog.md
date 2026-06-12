@@ -638,3 +638,4 @@
 - various optimizations v64.1.0
 - better error codes for offline playback issues v64.2.0
 - improved modal for edit song details. v64.3.0
+- fixed some style issues v64.3.1
