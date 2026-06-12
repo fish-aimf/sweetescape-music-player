@@ -2695,14 +2695,15 @@ class AdvancedMusicPlayer {
 		}
 	}
 	async playSongById(videoId) {
-	    if (!this.ytPlayer) { console.error("YouTube player not initialized"); return; }
-	    if (!videoId) { console.error("No video ID provided"); return; }
-	    if (!this.ytPlayerReady) { console.log("Player not ready yet, please wait a moment..."); return; }
-	
-	    // Always look up master song from library — playlist/queue copies won't have the handle
-	    const masterSong = this.songLibrary.find(s => s.id === this.currentSong?.id)
-	                    || this.songLibrary.find(s => s.videoId === videoId);
-	
+	    if (!this.ytPlayer)      { console.error('YouTube player not initialized'); return; }
+	    if (!videoId)            { console.error('No video ID provided'); return; }
+	    if (!this.ytPlayerReady) { console.log('Player not ready yet, please wait a moment...'); return; }
+	 
+	    // Look up master song from library — playlist/queue copies won't have the handle
+	    const currentId = this.currentSong?.id;
+	    const masterSong = (currentId && this.songLibrary.find(s => s.id === currentId))
+	                     || this.songLibrary.find(s => s.videoId === videoId);
+	 
 	    if (masterSong?.localFileHandle) {
 	        try {
 	            const perm = await masterSong.localFileHandle.requestPermission({ mode: 'read' });
@@ -2712,23 +2713,38 @@ class AdvancedMusicPlayer {
 	                this.playLocalAudio(url);
 	                return;
 	            }
+	            this.showNotification('Local file permission denied. Falling back to YouTube.', 'error');
 	        } catch (err) {
-	            console.warn('Local file unavailable, falling back to YouTube:', err);
+	            const errorMessages = {
+	                NotFoundError:  'Local file not found — was it renamed or moved?',
+	                NotAllowedError:'Local file access was denied.',
+	                SecurityError:  'Security error reading local file.',
+	            };
+	            const msg = errorMessages[err.name] || `Local file error (${err.name}).`;
+	            this.showNotification(`${msg} Falling back to YouTube.`, 'error');
+	 
+	            // Only auto-clear if the file is genuinely gone
+	            if (err.name === 'NotFoundError') {
+	                const idx = this.songLibrary.findIndex(s => s.id === masterSong.id);
+	                if (idx !== -1) {
+	                    this.songLibrary[idx].localFileHandle = null;
+	                    this.songLibrary[idx].localFileName   = null;
+	                    this.saveSongLibrary();
+	                }
+	            }
 	        }
 	    }
-	
+	 
 	    // Stop local audio if switching back to YouTube
-	    if (this.localAudio && !this.localAudio.paused) {
-	        this.localAudio.pause();
-	    }
+	    if (this.localAudio && !this.localAudio.paused) this.localAudio.pause();
 	    this.isLocalPlayback = false;
-	
+	 
 	    try {
-	        console.log("Loading video:", videoId);
-	        this.ytPlayer.loadVideoById({ videoId: videoId, suggestedQuality: "small" });
+	        console.log('Loading video:', videoId);
+	        this.ytPlayer.loadVideoById({ videoId, suggestedQuality: 'small' });
 	        setTimeout(() => {
-	            try { this.ytPlayer.setPlaybackQuality("small"); }
-	            catch (error) { console.warn("Failed to set video quality:", error); }
+	            try { this.ytPlayer.setPlaybackQuality('small'); }
+	            catch (e) { console.warn('Failed to set video quality:', e); }
 	        }, 200);
 	        this.isPlaying = true;
 	        this.updatePlayerUI();
@@ -2737,18 +2753,16 @@ class AdvancedMusicPlayer {
 	        if (this.currentSpeed !== 1) {
 	            setTimeout(() => {
 	                try { this.ytPlayer.setPlaybackRate(this.currentSpeed); }
-	                catch (error) { console.warn("Failed to set playback speed:", error); }
+	                catch (e) { console.warn('Failed to set playback speed:', e); }
 	            }, 500);
 	        }
 	        this.updateProgressBar();
 	        this.updatePageTitle();
 	        this._discordScheduleSend();
 	    } catch (error) {
-	        console.error("Error playing song with ID " + videoId + ":", error);
-	        alert("Failed to play the video. Please try again.");
-	        if (this.isAutoplayEnabled) {
-	            setTimeout(() => { this.playNextSong(); }, 1000);
-	        }
+	        console.error('Error playing song with ID ' + videoId + ':', error);
+	        alert('Failed to play the video. Please try again.');
+	        if (this.isAutoplayEnabled) setTimeout(() => this.playNextSong(), 1000);
 	    }
 	}
 	togglePlayPause() {
@@ -3257,7 +3271,11 @@ hideSidebar() {
 	    if (this.ytPlayer) {
 	        this.ytPlayer.setVolume(volume);
 	    }
-	    this.saveSetting("volume", volume);
+	    if (this.isLocalPlayback && this.localAudio) {
+	        this.localAudio.volume = volume / 100;
+	    }
+	    this.savedVolume = volume; 
+	    this.saveSetting('volume', volume);
 	}
 	toggleAutoplay() {
 		this.isAutoplayEnabled = !this.isAutoplayEnabled;
@@ -3497,15 +3515,18 @@ hideSidebar() {
 		}
 	}
 	setPlaybackSpeed(speed) {
-		this.currentSpeed = speed;
-		this.elements.speedBtn.textContent = speed + "x";
-		this.elements.speedOptions.classList.remove("show");
-		if (this.ytPlayer) {
-			this.ytPlayer.setPlaybackRate(speed);
-		}
-		this.saveSetting("playbackSpeed", speed).catch((error) => {
-			console.error("Error saving playback speed:", error);
-		});
+	    this.currentSpeed = speed;
+	    this.elements.speedBtn.textContent = speed + 'x';
+	    this.elements.speedOptions.classList.remove('show');
+	    if (this.ytPlayer) {
+	        this.ytPlayer.setPlaybackRate(speed);
+	    }
+	    if (this.isLocalPlayback && this.localAudio) {
+	        this.localAudio.playbackRate = speed;
+	    }
+	    this.saveSetting('playbackSpeed', speed).catch(err => {
+	        console.error('Error saving playback speed:', err);
+	    });
 	}
 	exportLibrary() {
 		let exportText = "";
@@ -4948,321 +4969,140 @@ hideSidebar() {
 		this.currentGhostRequestId = null;
 	}
 	openSongEditModal(songId) {
-	    const song = this.songLibrary.find((s) => s.id === songId);
+	    const song = this.songLibrary.find(s => s.id === songId);
 	    if (!song) return;
-	
-	    const modal = document.createElement("div");
-	    modal.classList.add("modal");
-	    modal.style.display = "flex";
-	    modal.style.position = "fixed";
-	    modal.style.top = "0";
-	    modal.style.left = "0";
-	    modal.style.width = "100%";
-	    modal.style.height = "100%";
-	    modal.style.backgroundColor = "rgba(0,0,0,0.7)";
-	    modal.style.zIndex = "1000";
-	    modal.style.justifyContent = "center";
-	    modal.style.alignItems = "center";
-	
-	    const modalContent = document.createElement("div");
-	    modalContent.classList.add("modal-content");
-	    modalContent.style.backgroundColor = "var(--bg-secondary)";
-	    modalContent.style.color = "var(--text-primary)";
-	    modalContent.style.padding = "20px";
-	    modalContent.style.borderRadius = "5px";
-	    modalContent.style.width = "80%";
-	    modalContent.style.maxWidth = "500px";
-	    modalContent.style.maxHeight = "80vh";
-	    modalContent.style.overflowY = "auto";
-	    modalContent.style.boxShadow = "0 0 15px rgba(0,0,0,0.3)";
-	    modalContent.style.position = "relative";
-	
-	    const headerContainer = document.createElement("div");
-	    headerContainer.style.position = "sticky";
-	    headerContainer.style.top = "0";
-	    headerContainer.style.backgroundColor = "var(--bg-secondary)";
-	    headerContainer.style.paddingBottom = "10px";
-	    headerContainer.style.marginBottom = "10px";
-	    headerContainer.style.borderBottom = "1px solid var(--border-color)";
-	    headerContainer.style.display = "flex";
-	    headerContainer.style.justifyContent = "space-between";
-	    headerContainer.style.alignItems = "center";
-	
-	    const header = document.createElement("h3");
-	    header.textContent = "Edit Song Details";
-	    header.style.margin = "0";
-	    header.style.color = "var(--text-primary)";
-	
-	    const closeBtn = document.createElement("span");
-	    closeBtn.innerHTML = "&times;";
-	    closeBtn.style.fontSize = "24px";
-	    closeBtn.style.cursor = "pointer";
-	    closeBtn.style.color = "var(--text-primary)";
-	    closeBtn.style.lineHeight = "24px";
-	    closeBtn.onclick = () => modal.remove();
-	
-	    headerContainer.appendChild(header);
-	    headerContainer.appendChild(closeBtn);
-	
-	    const form = document.createElement("form");
-	    form.style.display = "grid";
-	    form.style.gap = "10px";
-	
-	    const formGrid = document.createElement("div");
-	    formGrid.style.display = "grid";
-	    formGrid.style.gridTemplateColumns = "1fr 2fr";
-	    formGrid.style.gap = "10px";
-	    formGrid.style.alignItems = "center";
-	
-	    // --- Song name ---
-	    const nameLabel = document.createElement("label");
-	    nameLabel.textContent = "Song Name:";
-	    nameLabel.style.color = "var(--text-primary)";
-	
-	    const nameInput = document.createElement("input");
-	    nameInput.type = "text";
-	    nameInput.value = song.name;
-	    nameInput.style.padding = "8px";
-	    nameInput.style.borderRadius = "4px";
-	    nameInput.style.border = "1px solid var(--border-color)";
-	    nameInput.style.backgroundColor = "var(--bg-primary)";
-	    nameInput.style.color = "var(--text-primary)";
-	    nameInput.style.width = "140%";
-	    nameInput.required = true;
-	
-	    // --- Author ---
-	    const authorLabel = document.createElement("label");
-	    authorLabel.textContent = "Author:";
-	    authorLabel.style.color = "var(--text-primary)";
-	
-	    const authorInput = document.createElement("input");
-	    authorInput.type = "text";
-	    authorInput.value = song.author || "";
-	    authorInput.style.padding = "8px";
-	    authorInput.style.borderRadius = "4px";
-	    authorInput.style.border = "1px solid var(--border-color)";
-	    authorInput.style.backgroundColor = "var(--bg-primary)";
-	    authorInput.style.color = "var(--text-primary)";
-	    authorInput.style.width = "140%";
-	    authorInput.placeholder = "Author name (optional)";
-	
-	    // --- YouTube URL ---
-	    const urlLabel = document.createElement("label");
-	    urlLabel.textContent = "YouTube URL:";
-	    urlLabel.style.color = "var(--text-primary)";
-	
-	    const urlInput = document.createElement("input");
-	    urlInput.type = "text";
-	    urlInput.value = `https://www.youtube.com/watch?v=${song.videoId}`;
-	    urlInput.style.padding = "8px";
-	    urlInput.style.borderRadius = "4px";
-	    urlInput.style.border = "1px solid var(--border-color)";
-	    urlInput.style.backgroundColor = "var(--bg-primary)";
-	    urlInput.style.color = "var(--text-primary)";
-	    urlInput.style.width = "140%";
-	    urlInput.required = true;
-	
-	    formGrid.appendChild(nameLabel);
-	    formGrid.appendChild(nameInput);
-	    formGrid.appendChild(authorLabel);
-	    formGrid.appendChild(authorInput);
-	    formGrid.appendChild(urlLabel);
-	    formGrid.appendChild(urlInput);
-	
-	    // --- Local file picker ---
+	 
 	    let pendingLocalHandle = null;
 	    let pendingClearHandle = false;
-	
-	    const localFileLabel = document.createElement("label");
-	    localFileLabel.textContent = "Local file:";
-	    localFileLabel.style.color = "var(--text-primary)";
-	
-	    const localFileWrapper = document.createElement("div");
-	    localFileWrapper.style.display = "flex";
-	    localFileWrapper.style.gap = "6px";
-	    localFileWrapper.style.alignItems = "center";
-	    localFileWrapper.style.width = "140%";
-	
-	    const localFileBtn = document.createElement("button");
-	    localFileBtn.type = "button";
-	    localFileBtn.textContent = song.localFileName ? `📁 ${song.localFileName}` : "Link local file";
-	    localFileBtn.style.padding = "8px";
-	    localFileBtn.style.backgroundColor = "var(--bg-primary)";
-	    localFileBtn.style.color = "var(--text-primary)";
-	    localFileBtn.style.border = "1px solid var(--border-color)";
-	    localFileBtn.style.borderRadius = "4px";
-	    localFileBtn.style.cursor = "pointer";
-	    localFileBtn.style.flex = "1";
-	    localFileBtn.style.textAlign = "left";
-	    localFileBtn.style.overflow = "hidden";
-	    localFileBtn.style.textOverflow = "ellipsis";
-	    localFileBtn.style.whiteSpace = "nowrap";
-	
-	    const unlinkBtn = document.createElement("button");
-	    unlinkBtn.type = "button";
-	    unlinkBtn.textContent = "✕";
-	    unlinkBtn.title = "Remove local file";
-	    unlinkBtn.style.display = song.localFileName ? "block" : "none";
-	    unlinkBtn.style.padding = "8px 10px";
-	    unlinkBtn.style.backgroundColor = "transparent";
-	    unlinkBtn.style.color = "var(--text-primary)";
-	    unlinkBtn.style.border = "1px solid var(--border-color)";
-	    unlinkBtn.style.borderRadius = "4px";
-	    unlinkBtn.style.cursor = "pointer";
-	    unlinkBtn.style.flexShrink = "0";
-	
-	    localFileBtn.addEventListener("click", async () => {
+	 
+	    const modal = document.createElement('div');
+	    modal.className = 'modal';
+	    modal.style.display = 'flex';
+	 
+	    modal.innerHTML = `
+	        <div class="modal-content song-edit-modal-content">
+	            <div class="song-edit-modal-header">
+	                <h3>Edit Song Details</h3>
+	                <span class="close-btn song-edit-close-btn">&times;</span>
+	            </div>
+	            <form class="song-edit-form">
+	                <div class="song-edit-form-grid">
+	                    <label class="song-edit-form-label">Song Name:</label>
+	                    <input class="song-edit-form-input" data-field="name" type="text" required>
+	 
+	                    <label class="song-edit-form-label">Author:</label>
+	                    <input class="song-edit-form-input" data-field="author" type="text" placeholder="Author name (optional)">
+	 
+	                    <label class="song-edit-form-label">YouTube URL:</label>
+	                    <input class="song-edit-form-input" data-field="url" type="text" required>
+	 
+	                    <label class="song-edit-form-label">Local file:</label>
+	                    <div class="song-edit-local-file-wrapper">
+	                        <button type="button" class="song-edit-local-file-btn" data-field="localFileBtn"></button>
+	                        <button type="button" class="song-edit-unlink-btn" data-field="unlinkBtn" title="Remove local file">&#x2715;</button>
+	                    </div>
+	                </div>
+	 
+	                <div class="song-edit-thumbnail-container">
+	                    <img class="song-edit-thumbnail" data-field="thumbnail" alt="Video thumbnail">
+	                </div>
+	 
+	                <div class="song-edit-lyrics-container">
+	                    <label class="song-edit-lyrics-label">Lyrics (Format: "Lyric line [MM:SS]" - one per line):</label>
+	                    <textarea class="song-edit-lyrics-input" data-field="lyrics"
+	                        placeholder="Enter lyrics with timestamps like:&#10;This is the end [0:33]&#10;Hold your breath and count to ten [0:38]"></textarea>
+	                </div>
+	 
+	                <button type="submit" class="song-edit-save-btn">Save Changes</button>
+	            </form>
+	        </div>
+	    `;
+	 
+	    // Query refs — values set via .value/.textContent (XSS-safe)
+	    const nameInput    = modal.querySelector('[data-field="name"]');
+	    const authorInput  = modal.querySelector('[data-field="author"]');
+	    const urlInput     = modal.querySelector('[data-field="url"]');
+	    const localFileBtn = modal.querySelector('[data-field="localFileBtn"]');
+	    const unlinkBtn    = modal.querySelector('[data-field="unlinkBtn"]');
+	    const thumbnail    = modal.querySelector('[data-field="thumbnail"]');
+	    const lyricsInput  = modal.querySelector('[data-field="lyrics"]');
+	    const form         = modal.querySelector('.song-edit-form');
+	    const closeBtn     = modal.querySelector('.song-edit-close-btn');
+	 
+	    // Populate values safely
+	    nameInput.value        = song.name;
+	    authorInput.value      = song.author || '';
+	    urlInput.value         = `https://www.youtube.com/watch?v=${song.videoId}`;
+	    lyricsInput.value      = song.lyrics || '';
+	    thumbnail.src          = `https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg`;
+	    localFileBtn.textContent = song.localFileName ? `\uD83D\uDCC1 ${song.localFileName}` : 'Link local file';
+	    if (song.localFileName) unlinkBtn.classList.add('active');
+	 
+	    // Close handlers
+	    closeBtn.onclick = () => modal.remove();
+	    modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+	 
+	    // Thumbnail preview on URL change
+	    urlInput.addEventListener('input', () => {
+	        const videoId = this.extractYouTubeId(urlInput.value);
+	        thumbnail.style.display = videoId ? '' : 'none';
+	        if (videoId) thumbnail.src = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+	    });
+	 
+	    // Local file picker
+	    localFileBtn.addEventListener('click', async () => {
 	        if (!window.showOpenFilePicker) {
-	            alert("Local file linking requires Chrome or Edge.");
+	            this.showNotification('Local file linking requires Chrome or Edge.', 'error');
 	            return;
 	        }
 	        try {
 	            const [handle] = await window.showOpenFilePicker({
-	                types: [{
-	                    description: 'Audio files',
-	                    accept: { 'audio/*': ['.mp3', '.flac', '.wav', '.m4a', '.ogg', '.aac'] }
-	                }]
+	                types: [{ description: 'Audio files', accept: { 'audio/*': ['.mp3', '.flac', '.wav', '.m4a', '.ogg', '.aac'] } }]
 	            });
 	            pendingLocalHandle = handle;
 	            pendingClearHandle = false;
-	            localFileBtn.textContent = `📁 ${handle.name}`;
-	            unlinkBtn.style.display = "block";
+	            localFileBtn.textContent = `\uD83D\uDCC1 ${handle.name}`;
+	            unlinkBtn.classList.add('active');
 	        } catch (e) {
 	            if (e.name !== 'AbortError') console.warn('File picker error:', e);
 	        }
 	    });
-	
-	    unlinkBtn.addEventListener("click", () => {
+	 
+	    // Unlink
+	    unlinkBtn.addEventListener('click', () => {
 	        pendingLocalHandle = null;
 	        pendingClearHandle = true;
-	        localFileBtn.textContent = "Link local file";
-	        unlinkBtn.style.display = "none";
+	        localFileBtn.textContent = 'Link local file';
+	        unlinkBtn.classList.remove('active');
 	    });
-	
-	    localFileWrapper.appendChild(localFileBtn);
-	    localFileWrapper.appendChild(unlinkBtn);
-	
-	    formGrid.appendChild(localFileLabel);
-	    formGrid.appendChild(localFileWrapper);
-	
-	    // --- Thumbnail ---
-	    const thumbnailContainer = document.createElement("div");
-	    thumbnailContainer.style.marginTop = "10px";
-	    thumbnailContainer.style.textAlign = "center";
-	    thumbnailContainer.style.gridColumn = "span 2";
-	
-	    const thumbnail = document.createElement("img");
-	    thumbnail.src = `https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg`;
-	    thumbnail.alt = "Video thumbnail";
-	    thumbnail.style.maxWidth = "200px";
-	    thumbnail.style.height = "auto";
-	    thumbnail.style.borderRadius = "4px";
-	    thumbnailContainer.appendChild(thumbnail);
-	
-	    urlInput.addEventListener("input", () => {
-	        const videoId = this.extractYouTubeId(urlInput.value);
-	        if (videoId) {
-	            thumbnail.src = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
-	            thumbnail.style.display = "block";
-	        } else {
-	            thumbnail.style.display = "none";
-	        }
-	    });
-	
-	    // --- Lyrics ---
-	    const lyricsContainer = document.createElement("div");
-	    lyricsContainer.style.gridColumn = "span 2";
-	    lyricsContainer.style.marginTop = "10px";
-	
-	    const lyricsLabel = document.createElement("label");
-	    lyricsLabel.textContent = 'Lyrics (Format: "Lyric line [MM:SS]" - one per line):';
-	    lyricsLabel.style.color = "var(--text-primary)";
-	    lyricsLabel.style.display = "block";
-	    lyricsLabel.style.marginBottom = "5px";
-	
-	    const lyricsInput = document.createElement("textarea");
-	    lyricsInput.style.padding = "8px";
-	    lyricsInput.style.borderRadius = "4px";
-	    lyricsInput.style.border = "1px solid var(--border-color)";
-	    lyricsInput.style.backgroundColor = "var(--bg-primary)";
-	    lyricsInput.style.color = "var(--text-primary)";
-	    lyricsInput.style.width = "100%";
-	    lyricsInput.style.height = "100px";
-	    lyricsInput.placeholder =
-	        "Enter lyrics with timestamps like:\nThis is the end [0:33]\nHold your breath and count to ten [0:38]";
-	    lyricsInput.value = song.lyrics || "";
-	
-	    lyricsContainer.appendChild(lyricsLabel);
-	    lyricsContainer.appendChild(lyricsInput);
-	
-	    // --- Save button ---
-	    const saveBtn = document.createElement("button");
-	    saveBtn.type = "submit";
-	    saveBtn.textContent = "Save Changes";
-	    saveBtn.style.padding = "10px";
-	    saveBtn.style.backgroundColor = "var(--accent-color)";
-	    saveBtn.style.color = "white";
-	    saveBtn.style.border = "none";
-	    saveBtn.style.borderRadius = "4px";
-	    saveBtn.style.cursor = "pointer";
-	    saveBtn.style.marginTop = "15px";
-	    saveBtn.style.transition = "background-color 0.3s";
-	    saveBtn.style.width = "100%";
-	    saveBtn.style.gridColumn = "span 2";
-	
-	    saveBtn.addEventListener("mouseover", () => {
-	        saveBtn.style.backgroundColor = "var(--hover-color)";
-	    });
-	    saveBtn.addEventListener("mouseout", () => {
-	        saveBtn.style.backgroundColor = "var(--accent-color)";
-	    });
-	
-	    // --- Form submit ---
-	    form.addEventListener("submit", (e) => {
+	 
+	    // Submit
+	    form.addEventListener('submit', e => {
 	        e.preventDefault();
-	        const newName = nameInput.value.trim();
-	        const newAuthor = authorInput.value.trim();
-	        const newUrl = urlInput.value.trim();
+	        const newName    = nameInput.value.trim();
+	        const newAuthor  = authorInput.value.trim();
+	        const newUrl     = urlInput.value.trim();
 	        const newVideoId = this.extractYouTubeId(newUrl);
-	        const newLyrics = lyricsInput.value.trim();
-	
-	        if (!newName) { alert("Please enter a song name"); return; }
-	        if (!newVideoId) { alert("Please enter a valid YouTube URL"); return; }
-	
-	        // Determine handle args:
-	        // undefined = no change, null = unlink, handle object = update
-	        let handleArg = undefined;
-	        let handleNameArg = undefined;
-	        if (pendingClearHandle) {
-	            handleArg = null;
-	            handleNameArg = null;
-	        } else if (pendingLocalHandle) {
-	            handleArg = pendingLocalHandle;
-	            handleNameArg = pendingLocalHandle.name;
-	        }
-	
+	        const newLyrics  = lyricsInput.value.trim();
+	 
+	        if (!newName)    { this.showNotification('Please enter a song name.', 'error'); return; }
+	        if (!newVideoId) { this.showNotification('Please enter a valid YouTube URL.', 'error'); return; }
+	 
+	        let handleArg = undefined, handleNameArg = undefined;
+	        if (pendingClearHandle)       { handleArg = null;               handleNameArg = null; }
+	        else if (pendingLocalHandle)  { handleArg = pendingLocalHandle; handleNameArg = pendingLocalHandle.name; }
+	 
 	        this.updateSongDetails(song.id, newName, newAuthor, newVideoId, newLyrics, handleArg, handleNameArg)
-	            .then(() => {
-	                modal.remove();
-	                this.renderSongLibrary();
-	            })
-	            .catch((error) => {
-	                console.error("Error updating song details:", error);
-	                alert("Failed to update song details. Please try again.");
+	            .then(() => { modal.remove(); this.renderSongLibrary(); })
+	            .catch(err => {
+	                console.error('Error updating song details:', err);
+	                this.showNotification('Failed to update song details.', 'error');
 	            });
 	    });
-	
-	    form.appendChild(formGrid);
-	    form.appendChild(thumbnailContainer);
-	    form.appendChild(lyricsContainer);
-	    form.appendChild(saveBtn);
-	
-	    modalContent.appendChild(headerContainer);
-	    modalContent.appendChild(form);
-	    modal.appendChild(modalContent);
+	 
 	    document.body.appendChild(modal);
-	    modalContent.scrollTop = 0;
 	}
+	 
 	updateSongDetails(songId, newName, newAuthor, newVideoId, newLyrics = "", localFileHandle = undefined, localFileName = undefined) {
 	    return new Promise((resolve, reject) => {
 	        try {
@@ -14314,33 +14154,35 @@ updateNowPlayingView() {
     if (autoBtn) autoBtn.classList.toggle('active', this.isAutoplayEnabled);
 }
 playLocalAudio(url) {
-    // Stop YouTube player so it doesn't run in background
     if (this.ytPlayer) {
         try { this.ytPlayer.pauseVideo(); } catch (e) {}
     }
-
-    // Create audio element once, reuse forever
+ 
     if (!this.localAudio) {
         this.localAudio = new Audio();
-
+        let _lastUpdate = 0;
+ 
         this.localAudio.addEventListener('timeupdate', () => {
             if (!this.isLocalPlayback) return;
-            const current = this.localAudio.currentTime;
+            const now = Date.now();
+            if (now - _lastUpdate < 500) return; // throttle — ~2 updates/sec
+            _lastUpdate = now;
+ 
+            const current  = this.localAudio.currentTime;
             const duration = this.localAudio.duration || 0;
             if (duration > 0) {
                 const pct = (current / duration) * 100;
                 if (this.elements.progressBar) this.elements.progressBar.value = pct;
                 const npBar = document.getElementById('npProgressBar');
                 const npTime = document.getElementById('npTimeDisplay');
-                if (npBar) npBar.value = pct;
+                if (npBar)  npBar.value = pct;
                 if (npTime) npTime.textContent = `${this.formatTime(current)}/${this.formatTime(duration)}`;
                 if (this.elements.timeDisplay)
-                    this.elements.timeDisplay.textContent =
-                        `${this.formatTime(current)}/${this.formatTime(duration)}`;
+                    this.elements.timeDisplay.textContent = `${this.formatTime(current)}/${this.formatTime(duration)}`;
                 this.updateHighlightedLyric(current, this.currentLyrics ?? [], this.currentTimings ?? []);
             }
         });
-
+ 
         this.localAudio.addEventListener('ended', () => {
             if (!this.isLocalPlayback) return;
             this.isPlaying = false;
@@ -14351,12 +14193,12 @@ playLocalAudio(url) {
                 this.localAudio.play().catch(e => console.warn('Loop replay failed:', e));
                 this.isPlaying = true;
             } else if (this.isAutoplayEnabled) {
-                this.isLocalPlayback = false; // let playNextSong decide
+                this.isLocalPlayback = false;
                 this.playNextSong();
             }
             this.updatePlayerUI();
         });
-
+ 
         this.localAudio.addEventListener('pause', () => {
             if (!this.isLocalPlayback) return;
             this.isPlaying = false;
@@ -14367,30 +14209,26 @@ playLocalAudio(url) {
             }
             this.updatePageTitle();
         });
-
+ 
         this.localAudio.addEventListener('play', () => {
             if (!this.isLocalPlayback) return;
             this.isPlaying = true;
-            this.updatePlayerUI();
-            this.updatePageTitle();
         });
     }
-
+ 
     // Revoke previous blob URL to free memory
-    if (this.localAudio.src && this.localAudio.src.startsWith('blob:')) {
-        URL.revokeObjectURL(this.localAudio.src);
-    }
-
-    this.localAudio.src = url;
-    this.localAudio.volume = (this.savedVolume ?? 100) / 100;
-    if (this.currentSpeed !== 1) this.localAudio.playbackRate = this.currentSpeed;
-
+    if (this.localAudio.src?.startsWith('blob:')) URL.revokeObjectURL(this.localAudio.src);
+ 
+    this.localAudio.src          = url;
+    this.localAudio.volume       = (this.savedVolume ?? 100) / 100;
+    this.localAudio.playbackRate = this.currentSpeed || 1;
+ 
     this.isLocalPlayback = true;
-    this.isPlaying = true;
-
+    this.isPlaying       = true;
+ 
     if (this.elements.progressBar) this.elements.progressBar.value = 0;
     if (this.elements.timeDisplay) this.elements.timeDisplay.textContent = '0:00/0:00';
-
+ 
     this.localAudio.play().catch(e => console.error('Local audio play failed:', e));
     this.updatePlayerUI();
     this.updatePageTitle();
