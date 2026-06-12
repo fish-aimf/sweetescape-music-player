@@ -7159,15 +7159,19 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   text-decoration: line-through;
 }
 
-/* ── Song Edit Modal ──────────────────────────────────────────── */
+
+
+
 .song-edit-modal-content {
     padding: 20px;
     border-radius: 5px;
-    width: 80%;
-    max-width: 500px;
-    max-height: 80vh;
+    width: 90%;
+    max-width: 560px;
+    max-height: 85vh;
     overflow-y: auto;
+    overflow-x: hidden;
     box-shadow: 0 0 15px var(--shadow-color);
+    box-sizing: border-box;
 }
 .song-edit-modal-header {
     position: sticky;
@@ -7185,17 +7189,20 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     margin: 0;
 }
 .song-edit-form {
-    display: grid;
-    gap: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 .song-edit-form-grid {
     display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 10px;
+    grid-template-columns: 90px 1fr;
+    gap: 10px 12px;
     align-items: center;
 }
 .song-edit-form-label {
     font-size: 0.9em;
+    text-align: right;
+    white-space: nowrap;
 }
 .song-edit-form-input {
     padding: 8px;
@@ -7203,13 +7210,16 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     border: 1px solid var(--border-color);
     background-color: var(--bg-primary);
     color: var(--text-primary);
-    width: 140%;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 }
 .song-edit-local-file-wrapper {
     display: flex;
     gap: 6px;
     align-items: center;
-    width: 140%;
+    width: 100%;
+    min-width: 0;
 }
 .song-edit-local-file-btn {
     padding: 8px;
@@ -7224,6 +7234,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     text-overflow: ellipsis;
     white-space: nowrap;
     font-size: 0.9em;
+    min-width: 0;
 }
 .song-edit-unlink-btn {
     display: none;
@@ -7248,7 +7259,8 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     border-radius: 4px;
 }
 .song-edit-lyrics-container {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: 5px;
 }
 .song-edit-lyrics-label {
@@ -7264,6 +7276,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     height: 100px;
     resize: vertical;
     font-family: inherit;
+    box-sizing: border-box;
 }
 .song-edit-save-btn {
     padding: 10px;
