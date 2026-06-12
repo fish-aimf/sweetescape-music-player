@@ -633,3 +633,8 @@
 - fixed some script execution order bug. v63.2.0
 - fetches version number from the tiny current-version.txt instead of the huge changelog.md. v63.3.0
 - offline playback v64.0.0
+- fixed bug with volume for offline playback v64.0.1
+- fixed bug with speed for offline playback v64.0.2
+- various optimizations v64.1.0
+- better error codes for offline playback issues v64.2.0
+- improved modal for edit song details. v64.3.0
