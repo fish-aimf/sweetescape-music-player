@@ -642,4 +642,6 @@
 - changed saveplaylist to put preventing rare crashes v64.3.2
 - migration for loadsonglibrary. v64.3.3
 - optimizations to song play. v64.3.4
-- savequeue debounce added v64.3.5 
+- savequeue debounce added v64.3.5
+- added hotkeys to seek forwards and backwards 5 seconds v64.4.0
+- fixed restart song for offline playback. v64.5.0
