@@ -461,6 +461,13 @@ class AdvancedMusicPlayer {
 	    parent.addEventListener("mouseleave", this.handleHideLibraryDropdown.bind(this));
 
 	}
+	handleShowLibraryDropdown() {
+		this.elements.libraryOptionsDropdown.classList.add("show");
+	}
+	
+	handleHideLibraryDropdown() {
+		this.elements.libraryOptionsDropdown.classList.remove("show");
+	}
 	
 	_setupSpeedButton() {
 		if (this.elements.speedBtn) {
