@@ -881,43 +881,42 @@ class AdvancedMusicPlayer {
 	}
 
 	loadSongLibrary() {
-		return new Promise((resolve, reject) => {
-			if (!this.db) {
-				reject("Database not initialized");
-				return;
-			}
-			const transaction = this.db.transaction(["songLibrary"], "readonly");
-			const store = transaction.objectStore("songLibrary");
-			const request = store.getAll();
-			
-			request.onsuccess = () => {
-				this.songLibrary = request.result || [];
-				
-				// Ensure all songs have required properties
-				this.songLibrary = this.songLibrary.map((song) => {
-					if (song.favorite === undefined) song.favorite = false;
-					if (song.lyrics === undefined) song.lyrics = "";
-					if (song.author === undefined) song.author = "";
-					return song;
-				});
-				
-				// Save if any migrations were needed
-				if (this.songLibrary.some(song => 
-					song.favorite === undefined || 
-					song.lyrics === undefined || 
-					song.author === undefined
-				)) {
-					this.saveSongLibrary().then(resolve).catch(reject);
-				} else {
-					resolve();
-				}
-			};
-			
-			request.onerror = (event) => {
-				console.error("Error loading song library:", event.target.error);
-				reject("Could not load song library");
-			};
-		});
+	    return new Promise((resolve, reject) => {
+	        if (!this.db) { reject("Database not initialized"); return; }
+	        const transaction = this.db.transaction(["songLibrary"], "readonly");
+	        const store = transaction.objectStore("songLibrary");
+	        const request = store.getAll();
+	
+	        request.onsuccess = () => {
+	            const raw = request.result || [];
+	
+	            // Check BEFORE mapping so the condition isn't always false
+	            const needsMigration = raw.some(
+	                (song) =>
+	                    song.favorite === undefined ||
+	                    song.lyrics   === undefined ||
+	                    song.author   === undefined
+	            );
+	
+	            this.songLibrary = raw.map((song) => {
+	                if (song.favorite === undefined) song.favorite = false;
+	                if (song.lyrics   === undefined) song.lyrics   = "";
+	                if (song.author   === undefined) song.author   = "";
+	                return song;
+	            });
+	
+	            if (needsMigration) {
+	                this.saveSongLibrary().then(resolve).catch(reject);
+	            } else {
+	                resolve();
+	            }
+	        };
+	
+	        request.onerror = (event) => {
+	            console.error("Error loading song library:", event.target.error);
+	            reject("Could not load song library");
+	        };
+	    });
 	}
 
 
@@ -2835,48 +2834,45 @@ class AdvancedMusicPlayer {
 		this._discordScheduleSend();
 	}
 
-	// Complete playPreviousSong method with Discord RPC
 	playPreviousSong() {
-		const source = this.currentPlaylist ?
-			this.currentPlaylist.songs :
-			this.songLibrary;
-		if (!source.length) return;
-		if (this.currentPlaylist && this.temporarilySkippedSongs.size > 0) {
-			const totalSongs = source.length;
-			let prevIndex = (this.currentSongIndex - 1 + totalSongs) % totalSongs;
-			const startIndex = prevIndex;
-			while (this.isSongTemporarilySkipped(source[prevIndex])) {
-				prevIndex = (prevIndex - 1 + totalSongs) % totalSongs;
-				if (prevIndex === startIndex) {
-					return;
-				}
-			}
-			this.currentSongIndex = prevIndex;
-			this.currentSong = source[this.currentSongIndex];
-			this.saveRecentlyPlayedSong(source[this.currentSongIndex]);
-			this.playSongById(source[this.currentSongIndex].videoId);
-			this.updateCurrentSongDisplay();
-
-			// Send Discord RPC update
-			if (this.discordEnabled && this.discordConnected) {
-				this.sendDiscordRPC();
-			}
-			return;
-		}
-		this.currentSongIndex =
-			(this.currentSongIndex - 1 + source.length) % source.length;
-		const currentSong = source[this.currentSongIndex];
-		this.currentSong = currentSong;
-		this.saveRecentlyPlayedSong(currentSong);
-		if (this.currentPlaylist) {
-			this.playSongById(source[this.currentSongIndex].videoId);
-		} else {
-			this.playCurrentSong();
-		}
-		this.updateCurrentSongDisplay();
-
-		// Send Discord RPC update
-		this._discordScheduleSend();
+	    const source = this.currentPlaylist
+	        ? this.currentPlaylist.songs
+	        : this.songLibrary;
+	    if (!source.length) return;
+	
+	    if (this.currentPlaylist && this.temporarilySkippedSongs.size > 0) {
+	        const totalSongs = source.length;
+	        let prevIndex = (this.currentSongIndex - 1 + totalSongs) % totalSongs;
+	        const startIndex = prevIndex;
+	        while (this.isSongTemporarilySkipped(source[prevIndex])) {
+	            prevIndex = (prevIndex - 1 + totalSongs) % totalSongs;
+	            if (prevIndex === startIndex) return;
+	        }
+	        this.currentSongIndex = prevIndex;
+	        const song = source[this.currentSongIndex];
+	        // Resolve against library so localFileHandle is available
+	        this.currentSong = this.songLibrary.find(s => s.id === song.id) ?? song;
+	        this.saveRecentlyPlayedSong(song);
+	        this.playSongById(song.videoId);
+	        this.updateCurrentSongDisplay();
+	        this._discordScheduleSend();
+	        return;
+	    }
+	
+	    this.currentSongIndex = (this.currentSongIndex - 1 + source.length) % source.length;
+	    const song = source[this.currentSongIndex];
+	    // Resolve against library so localFileHandle is available
+	    this.currentSong = this.currentPlaylist
+	        ? (this.songLibrary.find(s => s.id === song.id) ?? song)
+	        : song; // songLibrary songs are already the master objects
+	    this.saveRecentlyPlayedSong(song);
+	    if (this.currentPlaylist) {
+	        this.playSongById(song.videoId);
+	    } else {
+	        this.playCurrentSong();
+	    }
+	    this.updateCurrentSongDisplay();
+	    this._discordScheduleSend();
 	}
 
 	playCurrentSong() {
@@ -2902,22 +2898,17 @@ class AdvancedMusicPlayer {
 		this.saveRecentlyPlayedSong(song);
 		this.playSongById(song.videoId);
 		this.updateCurrentSongDisplay();
-
-		// Send Discord RPC update
 		this._discordScheduleSend();
 	}
 	async saveSetting(key, value) {
-		if (!this.db) return;
-		return new Promise((resolve, reject) => {
-			const transaction = this.db.transaction(["settings"], "readwrite");
-			const store = transaction.objectStore("settings");
-			const request = store.put({
-				name: key,
-				value: value
-			});
-			request.onsuccess = () => resolve();
-			request.onerror = () => reject(request.error);
-		});
+	    if (!this.db) return;
+	    return new Promise((resolve, reject) => {
+	        const transaction = this.db.transaction(["settings"], "readwrite");
+	        const store = transaction.objectStore("settings");
+	        const request = store.put({ name: key, value: value });
+	        request.onsuccess = () => resolve();
+	        request.onerror  = () => reject(request.error);
+	    });
 	}
 	updatePlayerUI() {
 	    let currentSong;
@@ -3341,47 +3332,22 @@ hideSidebar() {
 	}
 	
 	savePlaylists() {
-		return new Promise((resolve, reject) => {
-			if (!this.db) {
-				reject("Database not initialized");
-				return;
-			}
-			const transaction = this.db.transaction(["playlists"], "readwrite");
-			const store = transaction.objectStore("playlists");
-			store.clear();
-			this.playlists.forEach((playlist) => {
-				store.add(playlist);
-			});
-			transaction.oncomplete = () => {
-				resolve();
-			};
-			transaction.onerror = (event) => {
-				console.error("Error saving playlists:", event.target.error);
-				reject("Could not save playlists");
-			};
-		});
+	    return new Promise((resolve, reject) => {
+	        if (!this.db) { reject(new Error("Database not initialized")); return; }
+	        const transaction = this.db.transaction(["playlists"], "readwrite");
+	        const store = transaction.objectStore("playlists");
+	        store.clear();
+	        this.playlists.forEach((playlist) => {
+	            store.put(playlist); // was store.add()
+	        });
+	        transaction.oncomplete = () => resolve();
+	        transaction.onerror = (event) => {
+	            console.error("Error saving playlists:", event.target.error);
+	            reject(new Error("Could not save playlists: " + event.target.error.message));
+	        };
+	    });
 	}
-	saveSetting(name, value) {
-		return new Promise((resolve, reject) => {
-			if (!this.db) {
-				reject("Database not initialized");
-				return;
-			}
-			const transaction = this.db.transaction(["settings"], "readwrite");
-			const store = transaction.objectStore("settings");
-			store.put({
-				name,
-				value
-			});
-			transaction.oncomplete = () => {
-				resolve();
-			};
-			transaction.onerror = (event) => {
-				console.error(`Error saving setting ${name}:`, event.target.error);
-				reject(`Could not save setting ${name}`);
-			};
-		});
-	}
+	
 	saveSongLibrary() {
 		return new Promise((resolve, reject) => {
 			if (!this.db) {
@@ -7932,13 +7898,17 @@ hideSidebar() {
 	    this.saveQueue();
 	    this._queueRefreshPanel();
 	}
+	_debouncedSaveQueue() {
+	    clearTimeout(this._saveQueueTimer);
+	    this._saveQueueTimer = setTimeout(() => this.saveQueue(), 300);
+	}
 	_consumeQueueHead() {
 	    if (!this.songQueue.length) return false;
 	    const block = this.songQueue[0];
 	
 	    if (block.type === 'stop') {
 	        this.songQueue.shift();
-	        this.saveQueue();
+	        this._debouncedSaveQueue();
 	        this.isAutoplayEnabled = false;
 	        this.saveSetting('isAutoplay', false);
 	        if (this.elements.autoplayBtn) this.elements.autoplayBtn.classList.remove('active');
@@ -7950,21 +7920,19 @@ hideSidebar() {
 	        return true;
 	    }
 	
-		if (block.type === 'loop') {
-		    this.songQueue.shift();
-		    this.saveQueue();
-		    this.isLooping = true;
-		    this.elements.loopBtn?.classList.add('active');
-		    this.saveSetting('isLooping', true);
-		    this.updateQueueVisualIndicators();
-		    this._queueRefreshPanel();
-		
-		    if (this.currentSong) {
-		        this.playSongById(this.currentSong.videoId);
-		    }
-		    this.updatePlayerUI();
-		    return true; 
-		}
+	    if (block.type === 'loop') {
+	        this.songQueue.shift();
+	        this._debouncedSaveQueue();
+	        this.isLooping = true;
+	        this.elements.loopBtn?.classList.add('active');
+	        this.saveSetting('isLooping', true);
+	        this.updateQueueVisualIndicators();
+	        this._queueRefreshPanel();
+	        // Do NOT call playSongById here — isLooping is now set,
+	        // the current song's natural onended will loop it correctly.
+	        this.updatePlayerUI();
+	        return true;
+	    }
 	
 	    if (block.type === 'song') {
 	        if (block.repeat === -1) {
@@ -7976,15 +7944,17 @@ hideSidebar() {
 	            block.repeat -= 1;
 	            if (block.repeat <= 0) this.songQueue.shift();
 	        }
-	        this.saveQueue();
+	        this._debouncedSaveQueue();
 	        this.updateQueueVisualIndicators();
 	        this._queueRefreshPanel();
 	
+	        // Always clear playlist context for queue songs —
+	        // even if no library match found, don't inherit a stale playlist
 	        const songInLibrary = this.songLibrary.find(s => s.videoId === block.videoId);
 	        if (songInLibrary) {
 	            this.currentSongIndex = this.songLibrary.findIndex(s => s.id === songInLibrary.id);
-	            this.currentPlaylist = null;
 	        }
+	        this.currentPlaylist = null; // moved outside the if — always clear
 	        this.currentSong = block;
 	        this.saveRecentlyPlayedSong(block);
 	        this.playSongById(block.videoId);
