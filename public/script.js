@@ -91,9 +91,7 @@ class AdvancedMusicPlayer {
 		// Feature toggles
 		this.adsEnabled = false;
 		this.visualizerEnabled = true;
-		this.showDeleteButtons = true;
-		this.showUnfavoriteButtons = true;
-		this.showEditButtons = true;
+	
 
 
 
@@ -232,7 +230,6 @@ class AdvancedMusicPlayer {
 				this.loadRecentlyPlayed(),
 				this.loadDiscoverMoreSettingsOnStartup(),
 				this.loadKeybinds(),
-				this.loadLibraryDisplaySettings(),
 				this.loadDiscordSettings(),
 				this.loadLibrarySortValue(),
 				this.loadLibraryReverseValue(),
@@ -269,7 +266,6 @@ class AdvancedMusicPlayer {
 	        this.elements.volumeSlider.value = this.savedVolume ?? 100;
 	    }
 	
-	    this.syncLibraryDisplayUI();
 	    this.syncVisualizerUI();
 	}
 	
@@ -446,9 +442,7 @@ class AdvancedMusicPlayer {
 			createPlaylistDiv: document.getElementById("createPlaylistDiv"),
 			togglePlaylistEditModeBtn: document.getElementById("togglePlaylistEditModeBtn"),
 			libraryOptionsDropdown: document.getElementById("libraryOptionsDropdown"),
-			showDeleteBtn: document.getElementById("showDeleteBtn"),
-			showUnfavoriteBtn: document.getElementById("showUnfavoriteBtn"),
-			showEditBtn: document.getElementById("showEditBtn"),
+	
 			switchLangBtn: document.getElementById('switchLangBtn'),
 			transcriptLangSelect: document.getElementById('transcriptLangSelect')
 		};
@@ -461,21 +455,11 @@ class AdvancedMusicPlayer {
 	}
 	
 	_setupLibraryDropdown() {
-		const parent = this.elements.modifyLibraryBtn?.parentElement;
-		if (!parent) return;
-		
-		parent.addEventListener("mouseenter", this.handleShowLibraryDropdown.bind(this));
-		parent.addEventListener("mouseleave", this.handleHideLibraryDropdown.bind(this));
-		
-		if (this.elements.showDeleteBtn) {
-			this.elements.showDeleteBtn.addEventListener("change", this.handleToggleDeleteButtons.bind(this));
-		}
-		if (this.elements.showUnfavoriteBtn) {
-			this.elements.showUnfavoriteBtn.addEventListener("change", this.handleToggleUnfavoriteButtons.bind(this));
-		}
-		if (this.elements.showEditBtn) {
-			this.elements.showEditBtn.addEventListener("change", this.handleToggleEditButtons.bind(this));
-		}
+	    const parent = this.elements.modifyLibraryBtn?.parentElement;
+	    if (!parent) return;
+	    parent.addEventListener("mouseenter", this.handleShowLibraryDropdown.bind(this));
+	    parent.addEventListener("mouseleave", this.handleHideLibraryDropdown.bind(this));
+
 	}
 	
 	_setupSpeedButton() {
@@ -892,7 +876,6 @@ class AdvancedMusicPlayer {
 	        request.onsuccess = () => {
 	            const raw = request.result || [];
 	
-	            // Check BEFORE mapping so the condition isn't always false
 	            const needsMigration = raw.some(
 	                (song) =>
 	                    song.favorite === undefined ||
@@ -1393,71 +1376,78 @@ class AdvancedMusicPlayer {
 		}
 	}
 	createSongElement(song) {
-		const songElement = document.createElement("div");
-		songElement.classList.add("song-item");
-
-		const favoriteBtn = song.favorite ?
-			`<button class="favorite-btn" data-song-id="${song.id}">
-               <i class="fa fa-star"></i>
-           </button>` :
-			(this.showUnfavoriteButtons ?
-				`<button class="favorite-btn" data-song-id="${song.id}">
-                   <i class="fa fa-star-o"></i>
-               </button>` :
-				'');
-
-		const deleteBtn = this.showDeleteButtons ?
-			`<button class="remove-btn" data-song-id="${song.id}">Remove</button>` :
-			'';
-
-		const editBtn = this.showEditButtons ?
-			`<button class="edit-btn" data-song-id="${song.id}">Edit</button>` :
-			'';
-
-		songElement.innerHTML = `
-        <span class="song-name" data-song-id="${song.id}">
-            ${this.escapeHtml(song.name)}
-            ${song.author
-                ? `<small style="color: var(--text-secondary); display: block; font-size: 0.4em;">by ${this.escapeHtml(song.author)}</small>`
-                : ""}
-        </span>
-        <div class="song-actions">
-            ${favoriteBtn}
-            <button class="play-btn" data-song-id="${song.id}">Play</button>
-            ${deleteBtn}
-            ${editBtn}
-        </div>
-    `;
-
-		return songElement;
-	}
-	setupSongLibraryDelegation() {
-		// Single delegated event listener for entire song library
-		this.elements.songLibrary.addEventListener('click', (e) => {
-			// Find the clicked button/element
-			const target = e.target.closest('button, .song-name');
-			if (!target) return; // Not a clickable element
-
-			// Extract song ID from data attribute
-			const songId = target.dataset.songId;
-			if (!songId) return; // No song ID found
-
-			// Convert to number for consistency with your existing code
-			const songIdNum = parseInt(songId, 10);
-
-			// Determine which action to take based on button class
-			if (target.classList.contains('favorite-btn')) {
-				this.toggleFavorite(songIdNum);
-			} else if (target.classList.contains('play-btn')) {
-				this.playSong(songIdNum);
-			} else if (target.classList.contains('remove-btn')) {
-				this.removeSong(songIdNum);
-			} else if (target.classList.contains('edit-btn')) {
-				this.openSongEditModal(songIdNum);
-			} else if (target.classList.contains('song-name')) {
-				this.playSong(songIdNum);
-			}
-		});
+	    const songElement = document.createElement('div');
+	    songElement.className = 'song-item';
+	    songElement.dataset.songId = song.id;
+	
+	    // Always-visible indicators (shown when NOT hovering via CSS)
+	    const indicators = document.createElement('div');
+	    indicators.className = 'song-indicators';
+	
+	    const starIndicator = document.createElement('span');
+	    starIndicator.className = 'song-indicator-star' + (song.favorite ? ' visible' : '');
+	    starIndicator.innerHTML = '<i class="fa fa-star"></i>';
+	    starIndicator.title = 'Favourited';
+	
+	    const localIndicator = document.createElement('span');
+	    localIndicator.className = 'song-indicator-local' + (song.localFileName ? ' visible' : '');
+	    localIndicator.innerHTML = '<i class="fa fa-hdd-o"></i>';
+	    localIndicator.title = 'Available offline';
+	
+	    indicators.appendChild(starIndicator);
+	    indicators.appendChild(localIndicator);
+	
+	    // Song name + author
+	    const nameSpan = document.createElement('span');
+	    nameSpan.className = 'song-name';
+	    nameSpan.dataset.songId = song.id;
+	
+	    const nameText = document.createElement('span');
+	    nameText.textContent = song.name;
+	    nameSpan.appendChild(nameText);
+	
+	    if (song.author) {
+	        const authorEl = document.createElement('small');
+	        authorEl.className = 'song-author';
+	        authorEl.textContent = 'by ' + song.author;
+	        nameSpan.appendChild(authorEl);
+	    }
+	
+	    // Action buttons — always in DOM, CSS controls visibility on hover
+	    const actions = document.createElement('div');
+	    actions.className = 'song-actions';
+	
+	    const favoriteBtn = document.createElement('button');
+	    favoriteBtn.className = 'favorite-btn';
+	    favoriteBtn.dataset.songId = song.id;
+	    favoriteBtn.title = song.favorite ? 'Unfavourite' : 'Favourite';
+	    favoriteBtn.innerHTML = `<i class="fa ${song.favorite ? 'fa-star' : 'fa-star-o'}"></i>`;
+	
+	    const playBtn = document.createElement('button');
+	    playBtn.className = 'play-btn';
+	    playBtn.dataset.songId = song.id;
+	    playBtn.textContent = 'Play';
+	
+	    const editBtn = document.createElement('button');
+	    editBtn.className = 'edit-btn';
+	    editBtn.dataset.songId = song.id;
+	    editBtn.textContent = 'Edit';
+	
+	    const removeBtn = document.createElement('button');
+	    removeBtn.className = 'remove-btn';
+	    removeBtn.dataset.songId = song.id;
+	    removeBtn.textContent = 'Remove';
+	
+	    actions.appendChild(favoriteBtn);
+	    actions.appendChild(playBtn);
+	    actions.appendChild(editBtn);
+	    actions.appendChild(removeBtn);
+	
+	    songElement.appendChild(indicators);
+	    songElement.appendChild(nameSpan);
+	    songElement.appendChild(actions);
+	
+	    return songElement;
 	}
 	escapeHtml(text) {
 	    return text
@@ -2014,12 +2004,55 @@ class AdvancedMusicPlayer {
 	            return Promise.resolve();
 	        })
 	        .then(() => {
-	            const st = this.elements.librarySearch ? this.elements.librarySearch.value.trim() : '';
-	            st === '' ? this.renderLibraryView() : this.renderSongLibrary(st);
-	            this.renderPlaylists();
-	            this.updatePlaylistSelection();
-	            this.renderAdditionalDetails();
-	        })
+			    document.querySelectorAll(`.song-item[data-song-id="${songId}"]`).forEach(el => el.remove());
+			.then(() => {
+    modal.remove();
+
+    // Update every rendered card for this song in-place
+    document.querySelectorAll(`.song-item[data-song-id="${song.id}"]`).forEach(el => {
+        const updatedSong = this.songLibrary.find(s => s.id === song.id);
+        if (!updatedSong) return;
+
+        // Name
+        const nameText = el.querySelector('.song-name > span');
+        if (nameText) nameText.textContent = updatedSong.name;
+
+        // Author — add, update, or remove the small element
+        const nameSpan = el.querySelector('.song-name');
+        let authorEl = el.querySelector('.song-author');
+        if (updatedSong.author) {
+            if (!authorEl) {
+                authorEl = document.createElement('small');
+                authorEl.className = 'song-author';
+                nameSpan.appendChild(authorEl);
+            }
+            authorEl.textContent = 'by ' + updatedSong.author;
+        } else if (authorEl) {
+            authorEl.remove();
+        }
+
+        // Local file indicator
+        const localIndicator = el.querySelector('.song-indicator-local');
+        if (localIndicator) localIndicator.classList.toggle('visible', !!updatedSong.localFileName);
+    });
+})
+			    if (this.songLibrary.length === 0 && this.elements.songLibrary) {
+			        const emptyMessage = document.createElement('div');
+			        emptyMessage.className = 'empty-library-message';
+			        emptyMessage.textContent = 'Your library is empty.';
+			        const addSongsButton = document.createElement('button');
+			        addSongsButton.className = 'add-songs-button';
+			        addSongsButton.textContent = 'Add Songs';
+			        addSongsButton.addEventListener('click', () => this.openFindSongs());
+			        emptyMessage.appendChild(document.createElement('br'));
+			        emptyMessage.appendChild(addSongsButton);
+			        this.elements.songLibrary.appendChild(emptyMessage);
+			    }
+			
+			    this.renderPlaylists();
+			    this.updatePlaylistSelection();
+			    this.renderAdditionalDetails();
+			})
 	        .catch((error) => {
 	            console.error("Error removing song:", error);
 	            alert("Failed to remove song. Please try again.");
@@ -4299,19 +4332,25 @@ hideSidebar() {
 		).element;
 	}
 	toggleFavorite(songId) {
-		const songIndex = this.songLibrary.findIndex((song) => song.id === songId);
-		if (songIndex === -1) return;
-		const song = this.songLibrary[songIndex];
-		const newFavoriteStatus = !song.favorite;
-		song.favorite = newFavoriteStatus;
-		const favoriteBtn = document.querySelector(
-			`.favorite-btn[data-song-id="${songId}"]`
-		);
-		if (favoriteBtn) {
-			const icon = favoriteBtn.querySelector("i");
-			icon.className = `fa ${newFavoriteStatus ? "fa-star" : "fa-star-o"}`;
-		}
-		this.batchFavoriteUpdate(song, newFavoriteStatus);
+	    const songIndex = this.songLibrary.findIndex(s => s.id === songId);
+	    if (songIndex === -1) return;
+	    const song = this.songLibrary[songIndex];
+	    const newFavoriteStatus = !song.favorite;
+	    song.favorite = newFavoriteStatus;
+	
+	    // Update every card for this song in the DOM (main list + expanded lists)
+	    document.querySelectorAll(`.song-item[data-song-id="${songId}"]`).forEach(el => {
+	        const icon = el.querySelector('.favorite-btn i');
+	        if (icon) icon.className = `fa ${newFavoriteStatus ? 'fa-star' : 'fa-star-o'}`;
+	
+	        const favBtn = el.querySelector('.favorite-btn');
+	        if (favBtn) favBtn.title = newFavoriteStatus ? 'Unfavourite' : 'Favourite';
+	
+	        const starIndicator = el.querySelector('.song-indicator-star');
+	        if (starIndicator) starIndicator.classList.toggle('visible', newFavoriteStatus);
+	    });
+	
+	    this.batchFavoriteUpdate(song, newFavoriteStatus);
 	}
 	syncFavoritesOnLoad() {
 		return new Promise((resolve) => {
@@ -5096,7 +5135,37 @@ hideSidebar() {
 	        else if (pendingLocalHandle)  { handleArg = pendingLocalHandle; handleNameArg = pendingLocalHandle.name; }
 	 
 	        this.updateSongDetails(song.id, newName, newAuthor, newVideoId, newLyrics, handleArg, handleNameArg)
-	            .then(() => { modal.remove(); this.renderSongLibrary(); })
+	            .then(() => {
+				    modal.remove();
+				
+				    // Update every rendered card for this song in-place
+				    document.querySelectorAll(`.song-item[data-song-id="${song.id}"]`).forEach(el => {
+				        const updatedSong = this.songLibrary.find(s => s.id === song.id);
+				        if (!updatedSong) return;
+				
+				        // Name
+				        const nameText = el.querySelector('.song-name > span');
+				        if (nameText) nameText.textContent = updatedSong.name;
+				
+				        // Author — add, update, or remove the small element
+				        const nameSpan = el.querySelector('.song-name');
+				        let authorEl = el.querySelector('.song-author');
+				        if (updatedSong.author) {
+				            if (!authorEl) {
+				                authorEl = document.createElement('small');
+				                authorEl.className = 'song-author';
+				                nameSpan.appendChild(authorEl);
+				            }
+				            authorEl.textContent = 'by ' + updatedSong.author;
+				        } else if (authorEl) {
+				            authorEl.remove();
+				        }
+				
+				        // Local file indicator
+				        const localIndicator = el.querySelector('.song-indicator-local');
+				        if (localIndicator) localIndicator.classList.toggle('visible', !!updatedSong.localFileName);
+				    });
+				})
 	            .catch(err => {
 	                console.error('Error updating song details:', err);
 	                this.showNotification('Failed to update song details.', 'error');
@@ -12293,75 +12362,12 @@ closeBillboardHot100Modal() {
 		}
 	}
 
-	handleShowLibraryDropdown() {
-		this.elements.libraryOptionsDropdown.classList.add("show");
-	}
-
-	handleHideLibraryDropdown() {
-		this.elements.libraryOptionsDropdown.classList.remove("show");
-	}
-
-	handleToggleDeleteButtons(e) {
-		this.showDeleteButtons = e.target.checked;
-		this.saveLibraryDisplaySettings();
-		this.renderSongLibrary();
-	}
-
-	handleToggleUnfavoriteButtons(e) {
-		this.showUnfavoriteButtons = e.target.checked;
-		this.saveLibraryDisplaySettings();
-		this.renderSongLibrary();
-	}
-
-	handleToggleEditButtons(e) {
-		this.showEditButtons = e.target.checked;
-		this.saveLibraryDisplaySettings();
-		this.renderSongLibrary();
-	}
-
-	saveLibraryDisplaySettings() {
-		if (!this.db) return;
-		const transaction = this.db.transaction(["userSettings"], "readwrite");
-		const store = transaction.objectStore("userSettings");
-		store.put({
-			category: "libraryDisplay",
-			showDeleteButtons: this.showDeleteButtons,
-			showUnfavoriteButtons: this.showUnfavoriteButtons,
-			showEditButtons: this.showEditButtons
-		});
-	}
-
-	loadLibraryDisplaySettings() {
-		return new Promise((resolve) => {
-			if (!this.db) {
-				resolve();
-				return;
-			}
-			const transaction = this.db.transaction(["userSettings"], "readonly");
-			const store = transaction.objectStore("userSettings");
-			const request = store.get("libraryDisplay");
-
-			request.onsuccess = () => {
-				if (request.result) {
-					this.showDeleteButtons = request.result.showDeleteButtons ?? true;
-					this.showUnfavoriteButtons = request.result.showUnfavoriteButtons ?? true;
-					this.showEditButtons = request.result.showEditButtons ?? true;
-				}
-				resolve();
-			};
-
-			request.onerror = () => resolve();
-		});
-	}
 
 
-	syncLibraryDisplayUI() {
-		if (this.elements && this.elements.showDeleteBtn) {
-			this.elements.showDeleteBtn.checked = this.showDeleteButtons;
-			this.elements.showUnfavoriteBtn.checked = this.showUnfavoriteButtons;
-			this.elements.showEditBtn.checked = this.showEditButtons;
-		}
-	}
+
+
+
+
 
 
 
