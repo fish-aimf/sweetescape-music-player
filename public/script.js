@@ -1971,6 +1971,10 @@ class AdvancedMusicPlayer {
 	
 	    if (this.currentSong && this.currentSong.id === songId) {
 	        if (this.ytPlayer) this.ytPlayer.stopVideo();
+	        if (this.isLocalPlayback && this.localAudio) {
+	            this.localAudio.pause();
+	            this.isLocalPlayback = false;
+	        }
 	        this.isPlaying = false;
 	        this.currentSong = null;
 	        this.updatePlayerUI();
@@ -1983,14 +1987,15 @@ class AdvancedMusicPlayer {
 	    }
 	
 	    this.songLibrary = this.songLibrary.filter((song) => song.id !== songId);
+	
 	    return this.saveSongLibrary()
 	        .then(() => {
 	            let favoritesPlaylist = this.playlists.find(
 	                (p) =>
-	                p.name.toLowerCase() === "favorites" ||
-	                p.name.toLowerCase() === "favourite" ||
-	                p.name.toLowerCase() === "favourite songs" ||
-	                p.name.toLowerCase() === "favorite songs"
+	                    p.name.toLowerCase() === "favorites" ||
+	                    p.name.toLowerCase() === "favourite" ||
+	                    p.name.toLowerCase() === "favourite songs" ||
+	                    p.name.toLowerCase() === "favorite songs"
 	            );
 	            if (favoritesPlaylist) {
 	                const originalLength = favoritesPlaylist.songs.length;
@@ -2004,55 +2009,44 @@ class AdvancedMusicPlayer {
 	            return Promise.resolve();
 	        })
 	        .then(() => {
-			    document.querySelectorAll(`.song-item[data-song-id="${songId}"]`).forEach(el => el.remove());
-			.then(() => {
-    modal.remove();
-
-    // Update every rendered card for this song in-place
-    document.querySelectorAll(`.song-item[data-song-id="${song.id}"]`).forEach(el => {
-        const updatedSong = this.songLibrary.find(s => s.id === song.id);
-        if (!updatedSong) return;
-
-        // Name
-        const nameText = el.querySelector('.song-name > span');
-        if (nameText) nameText.textContent = updatedSong.name;
-
-        // Author — add, update, or remove the small element
-        const nameSpan = el.querySelector('.song-name');
-        let authorEl = el.querySelector('.song-author');
-        if (updatedSong.author) {
-            if (!authorEl) {
-                authorEl = document.createElement('small');
-                authorEl.className = 'song-author';
-                nameSpan.appendChild(authorEl);
-            }
-            authorEl.textContent = 'by ' + updatedSong.author;
-        } else if (authorEl) {
-            authorEl.remove();
-        }
-
-        // Local file indicator
-        const localIndicator = el.querySelector('.song-indicator-local');
-        if (localIndicator) localIndicator.classList.toggle('visible', !!updatedSong.localFileName);
-    });
-})
-			    if (this.songLibrary.length === 0 && this.elements.songLibrary) {
-			        const emptyMessage = document.createElement('div');
-			        emptyMessage.className = 'empty-library-message';
-			        emptyMessage.textContent = 'Your library is empty.';
-			        const addSongsButton = document.createElement('button');
-			        addSongsButton.className = 'add-songs-button';
-			        addSongsButton.textContent = 'Add Songs';
-			        addSongsButton.addEventListener('click', () => this.openFindSongs());
-			        emptyMessage.appendChild(document.createElement('br'));
-			        emptyMessage.appendChild(addSongsButton);
-			        this.elements.songLibrary.appendChild(emptyMessage);
-			    }
-			
-			    this.renderPlaylists();
-			    this.updatePlaylistSelection();
-			    this.renderAdditionalDetails();
-			})
+	            // Surgically remove every rendered card for this song —
+	            // covers main list, filtered results, and expanded card lists
+	            document.querySelectorAll(`.song-item[data-song-id="${songId}"]`).forEach(el => el.remove());
+	
+	            // If the main library list container is now visually empty, show the empty state
+	            if (this.elements.songLibrary) {
+	                const remainingItems = this.elements.songLibrary.querySelectorAll('.song-item');
+	                if (remainingItems.length === 0) {
+	                    if (this.songLibrary.length === 0) {
+	                        // Truly empty — show empty state with Add Songs button
+	                        const emptyMessage = document.createElement('div');
+	                        emptyMessage.className = 'empty-library-message';
+	                        emptyMessage.textContent = 'Your library is empty.';
+	                        const addSongsButton = document.createElement('button');
+	                        addSongsButton.className = 'add-songs-button';
+	                        addSongsButton.textContent = 'Add Songs';
+	                        addSongsButton.addEventListener('click', () => this.openFindSongs());
+	                        emptyMessage.appendChild(document.createElement('br'));
+	                        emptyMessage.appendChild(addSongsButton);
+	                        this.elements.songLibrary.appendChild(emptyMessage);
+	                    } else {
+	                        // Songs remain but none match the current search filter
+	                        const searchTerm = this.elements.librarySearch?.value?.trim() ?? '';
+	                        if (searchTerm) {
+	                            const noResults = document.createElement('div');
+	                            noResults.className = 'empty-library-message';
+	                            noResults.innerHTML = `No songs found matching "<strong>${this.escapeHtml(searchTerm)}</strong>"<br>
+	                                <small style="color: var(--text-secondary); margin-top: 8px; display: block;">Press Enter to search YouTube</small>`;
+	                            this.elements.songLibrary.appendChild(noResults);
+	                        }
+	                    }
+	                }
+	            }
+	
+	            this.renderPlaylists();
+	            this.updatePlaylistSelection();
+	            this.renderAdditionalDetails();
+	        })
 	        .catch((error) => {
 	            console.error("Error removing song:", error);
 	            alert("Failed to remove song. Please try again.");
