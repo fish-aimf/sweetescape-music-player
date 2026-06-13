@@ -787,7 +787,6 @@ class AdvancedMusicPlayer {
 		this.setupLayoutEventListeners();
 		this.setupGlobalLibraryEventListeners();
 		this.setupExportButtonListeners();
-		this.setupSongLibraryDelegation();
 	}
 	
 	_setupDelegatedListeners() {
