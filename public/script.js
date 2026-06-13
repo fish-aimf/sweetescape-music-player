@@ -171,8 +171,8 @@ class AdvancedMusicPlayer {
 			cycleFavicon: 'KeyB',
 			toggleWebEmbed: 'KeyN',
 			toggleMusicExplorer: 'KeyO',
-			seekForward:  'KeyF',
-  		    seekBackward: 'KeyG'
+			seekForward:  'KeyG',
+  		    seekBackward: 'KeyF'
 		};
 		this.currentKeybinds = { ...this.defaultKeybinds };
 		this.isRecordingKeybind = false;
