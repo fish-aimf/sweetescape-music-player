@@ -639,3 +639,7 @@
 - better error codes for offline playback issues v64.2.0
 - improved modal for edit song details. v64.3.0
 - fixed some style issues v64.3.1
+- changed saveplaylist to put preventing rare crashes v64.3.2
+- migration for loadsonglibrary. v64.3.3
+- optimizations to song play. v64.3.4
+- savequeue debounce added v64.3.5 
