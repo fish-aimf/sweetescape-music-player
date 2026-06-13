@@ -645,3 +645,4 @@
 - savequeue debounce added v64.3.5
 - added hotkeys to seek forwards and backwards 5 seconds v64.4.0
 - fixed restart song for offline playback. v64.5.0
+- switched hotkey v64.5.1
