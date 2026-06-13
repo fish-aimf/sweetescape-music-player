@@ -170,7 +170,9 @@ class AdvancedMusicPlayer {
 			showQueue: 'KeyY',
 			cycleFavicon: 'KeyB',
 			toggleWebEmbed: 'KeyN',
-			toggleMusicExplorer: 'KeyO'
+			toggleMusicExplorer: 'KeyO',
+			seekForward:  'KeyF',
+  		    seekBackward: 'KeyG'
 		};
 		this.currentKeybinds = { ...this.defaultKeybinds };
 		this.isRecordingKeybind = false;
@@ -1139,6 +1141,41 @@ class AdvancedMusicPlayer {
 	}
 	handleTouchEnd(e) {
 		this.isDragging = false;
+	}
+	seekBy(seconds) {
+	    if (this.isLocalPlayback && this.localAudio) {
+	        const duration = this.localAudio.duration || 0;
+	        if (!duration) return;
+	        this.localAudio.currentTime = Math.max(0, Math.min(duration, this.localAudio.currentTime + seconds));
+	        // Sync UI immediately — don't wait for the 500ms throttled timeupdate
+	        const current = this.localAudio.currentTime;
+	        const pct = (current / duration) * 100;
+	        if (this.elements.progressBar) this.elements.progressBar.value = pct;
+	        if (this.elements.timeDisplay)
+	            this.elements.timeDisplay.textContent = `${this.formatTime(current)}/${this.formatTime(duration)}`;
+	        const npBar  = document.getElementById('npProgressBar');
+	        const npTime = document.getElementById('npTimeDisplay');
+	        if (npBar)  npBar.value = pct;
+	        if (npTime) npTime.textContent = `${this.formatTime(current)}/${this.formatTime(duration)}`;
+	        this.updateHighlightedLyric(current, this.currentLyrics ?? [], this.currentTimings ?? []);
+	        return;
+	    }
+	    if (!this.ytPlayer || !this.ytPlayerReady) return;
+	    try {
+	        const duration = this.ytPlayer.getDuration();
+	        if (!duration) return;
+	        const current = this.ytPlayer.getCurrentTime();
+	        const target  = Math.max(0, Math.min(duration, current + seconds));
+	        this.ytPlayer.seekTo(target, true);
+	        // Sync UI immediately
+	        const pct = (target / duration) * 100;
+	        if (this.elements.progressBar) this.elements.progressBar.value = pct;
+	        if (this.elements.timeDisplay)
+	            this.elements.timeDisplay.textContent = `${this.formatTime(target)}/${this.formatTime(duration)}`;
+	        this.updateHighlightedLyric(target, this.currentLyrics ?? [], this.currentTimings ?? []);
+	    } catch (e) {
+	        console.warn('seekBy failed:', e);
+	    }
 	}
 	addSongToLibrary() {
 		const songName = this.elements.songNameInput.value.trim();
@@ -12062,15 +12099,7 @@ closeBillboardHot100Modal() {
 		} else if (code === k.toggleLoop && k.toggleLoop !== '') {
 			this.toggleLoop();
 		} else if (code === k.restartSong && k.restartSong !== '') {
-	    if (this.ytPlayer) {
-	        this.ytPlayer.seekTo(0, true);
-	        if (this.elements.progressBar) this.elements.progressBar.value = 0;
-	        if (this.elements.timeDisplay) {
-	            const duration = this.ytPlayer.getDuration();
-	            this.elements.timeDisplay.textContent = `0:00/${this.formatTime(duration)}`;
-	        }
-	        this.updateHighlightedLyric(0, this.currentLyrics ?? [], this.currentTimings ?? []);
-	    }
+	    	this.restartCurrentSong();
 		} else if (code === k.toggleTheme && k.toggleTheme !== '') {
 			this.toggleTheme();
 		} else if (code === k.openTimer && k.openTimer !== '') {
@@ -12094,7 +12123,12 @@ closeBillboardHot100Modal() {
 			this.showQueueOverlay();
 		} else if (code === k.toggleMusicExplorer && k.toggleMusicExplorer !== '') {
 			this.toggleAdditionalDetails();
+		} else if (code === k.seekForward && k.seekForward !== '') {
+		    this.seekBy(5);
+		} else if (code === k.seekBackward && k.seekBackward !== '') {
+		    this.seekBy(-5);
 		}
+		
 	}
 
 	loadKeybindsSettings() {
@@ -12185,7 +12219,9 @@ closeBillboardHot100Modal() {
 			showQueue: 'Show Queue',
 			cycleFavicon: 'Cycle Favicon',
 			toggleWebEmbed: 'Toggle Web Embed',
-			toggleMusicExplorer: 'Toggle Music Explorer' // NEW: Add this line
+			toggleMusicExplorer: 'Toggle Music Explorer',
+			seekForward:  'Seek Forward 5s',
+			seekBackward: 'Seek Backward 5s'
 		};
 
 		return actionNames[action] || action;
@@ -14203,6 +14239,29 @@ playLocalAudio(url) {
     this.updatePlayerUI();
     this.updatePageTitle();
     this._discordScheduleSend();
+}
+
+
+restartCurrentSong() {
+    if (this.isLocalPlayback && this.localAudio) {
+        this.localAudio.currentTime = 0;
+        if (this.elements.progressBar) this.elements.progressBar.value = 0;
+        if (this.elements.timeDisplay) {
+            const duration = this.localAudio.duration || 0;
+            this.elements.timeDisplay.textContent = `0:00/${this.formatTime(duration)}`;
+        }
+        this.updateHighlightedLyric(0, this.currentLyrics ?? [], this.currentTimings ?? []);
+        return;
+    }
+    if (this.ytPlayer) {
+        this.ytPlayer.seekTo(0, true);
+        if (this.elements.progressBar) this.elements.progressBar.value = 0;
+        if (this.elements.timeDisplay) {
+            const duration = this.ytPlayer.getDuration();
+            this.elements.timeDisplay.textContent = `0:00/${this.formatTime(duration)}`;
+        }
+        this.updateHighlightedLyric(0, this.currentLyrics ?? [], this.currentTimings ?? []);
+    }
 }
 
 
