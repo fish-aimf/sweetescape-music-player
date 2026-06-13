@@ -646,3 +646,4 @@
 - added hotkeys to seek forwards and backwards 5 seconds v64.4.0
 - fixed restart song for offline playback. v64.5.0
 - switched hotkey v64.5.1
+- reworked the whole library v64.6.0
