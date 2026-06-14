@@ -1371,18 +1371,17 @@ class AdvancedMusicPlayer {
 	    const songElement = document.createElement("div");
 	    songElement.classList.add("song-item");
 	
-	    const isFav = song.favorite;
-	    const isDl  = !!song.localFileHandle;
+	    const isFav     = song.favorite;
+		const isDl      = !!song.localFileHandle;
 		const hasLyrics = !!(song.lyrics && song.lyrics.trim());
-
-	
-	    let indicatorsHtml = '';
-	    if (isFav || isDl) {
-			const lyricsHtml = hasLyrics ? `<span class="song-lyrics-indicator" title="Has lyrics"><i class="fa fa-closed-captioning"></i></span>` : '';
-	        const dlHtml  = isDl  ? `<span class="song-dl-indicator" title="Downloaded"><i class="fa fa-download"></i></span>` : '';
-	        const favHtml = isFav ? `<span class="song-fav-indicator" title="Favourited"><i class="fa fa-star"></i></span>` : '';
-	        indicatorsHtml = `<div class="song-status-indicators">${dlHtml}${favHtml}</div>`;
-	    }
+		
+		let indicatorsHtml = '';
+		if (isFav || isDl || hasLyrics) {
+		    const lyricsHtml = hasLyrics ? `<span class="song-lyrics-indicator" title="Has lyrics"><i class="fa fa-closed-captioning"></i></span>` : '';
+		    const dlHtml     = isDl      ? `<span class="song-dl-indicator"     title="Downloaded"><i class="fa fa-download"></i></span>` : '';
+		    const favHtml    = isFav     ? `<span class="song-fav-indicator"    title="Favourited"><i class="fa fa-star"></i></span>` : '';
+		    indicatorsHtml = `<div class="song-status-indicators">${lyricsHtml}${dlHtml}${favHtml}</div>`;
+		}
 	
 	    songElement.innerHTML = `
 	        <span class="song-name" data-song-id="${song.id}">
