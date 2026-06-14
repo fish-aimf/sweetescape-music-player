@@ -3358,44 +3358,39 @@ hideSidebar() {
 	    });
 	}
 	
-	saveSongLibrary() {
-		return new Promise((resolve, reject) => {
-			if (!this.db) {
-				reject(new Error("Database not initialized"));
-				return;
-			}
-			try {
-				const transaction = this.db.transaction(["songLibrary"], "readwrite");
-				const store = transaction.objectStore("songLibrary"); // FIXED!
-
-				// Clear first to remove deleted songs
-				const clearRequest = store.clear();
-
-				clearRequest.onsuccess = () => {
-					// Then use put() instead of add() (faster and safer)
-					this.songLibrary.forEach((song) => {
-						store.put(song);
-					});
-				};
-
-				transaction.oncomplete = () => {
-					console.log(`Saved ${this.songLibrary.length} songs to library`);
-					resolve();
-				};
-
-				transaction.onerror = (event) => {
-					console.error("Error saving song library:", event.target.error);
-					reject(new Error("Failed to save song library: " + event.target.error.message));
-				};
-			} catch (error) {
-				console.error("Exception in saveSongLibrary:", error);
-				reject(error);
-			}
-		});
+	saveSongLibrary(singleSong = null) {
+	    return new Promise((resolve, reject) => {
+	        if (!this.db) { reject(new Error("Database not initialized")); return; }
+	        try {
+	            const transaction = this.db.transaction(["songLibrary"], "readwrite");
+	            const store = transaction.objectStore("songLibrary");
+	
+	            if (singleSong) {
+	                store.put(singleSong);
+	            } else {
+	                const clearRequest = store.clear();
+	                clearRequest.onsuccess = () => {
+	                    this.songLibrary.forEach(song => store.put(song));
+	                };
+	            }
+	
+	            transaction.oncomplete = () => {
+	                if (!singleSong) console.log(`Saved ${this.songLibrary.length} songs to library`);
+	                resolve();
+	            };
+	            transaction.onerror = (event) => {
+	                console.error("Error saving song library:", event.target.error);
+	                reject(new Error("Failed to save song library: " + event.target.error.message));
+	            };
+	        } catch (error) {
+	            console.error("Exception in saveSongLibrary:", error);
+	            reject(error);
+	        }
+	    });
 	}
 	renderInitialState() {
 	    this.renderPlaylists();
-	    this.renderLibraryView(); // ← changed
+	    this.renderLibraryView(); 
 	    this.updatePlaylistSelection();
 	    this.updateListeningTimeDisplay();
 	    this.renderAdditionalDetails();
@@ -4352,23 +4347,30 @@ hideSidebar() {
 	            this.saveSongLibrary(),
 	            this.updateFavoritesPlaylist(song, isFavorited),
 	        ])
-	        .then(() => {
-	            const st = this.elements.librarySearch ? this.elements.librarySearch.value.trim() : '';
-	            if (st === '') {
-	                this.renderLibraryView();
-	            } else if (this.shouldReorderLibrary()) {
-	                this.renderSongLibrary(st);
-	            }
-	        })
 	        .catch((error) => {
 	            console.error("Error updating favorite:", error);
+	            // Revert in-memory and DOM on failure
 	            song.favorite = !isFavorited;
 	            const favoriteBtn = document.querySelector(
 	                `.favorite-btn[data-song-id="${song.id}"]`
 	            );
 	            if (favoriteBtn) {
-	                const icon = favoriteBtn.querySelector("i");
-	                icon.className = `fa ${song.favorite ? "fa-star" : "fa-star-o"}`;
+	                favoriteBtn.querySelector("i").className = `fa ${song.favorite ? "fa-star" : "fa-star-o"}`;
+	                favoriteBtn.title = song.favorite ? 'Unfavourite' : 'Favourite';
+	            }
+	            // Revert indicator
+	            const songItem = favoriteBtn?.closest('.song-item');
+	            if (songItem) {
+	                const right = songItem.querySelector('.song-item-right');
+	                let indicators = right?.querySelector('.song-status-indicators');
+	                const isDl = !!song.localFileHandle;
+	                if (!song.favorite && !isDl) {
+	                    indicators?.remove();
+	                } else if (indicators) {
+	                    const dlHtml  = isDl          ? `<span class="song-dl-indicator" title="Downloaded"><i class="fa fa-download"></i></span>` : '';
+	                    const favHtml = song.favorite ? `<span class="song-fav-indicator" title="Favourited"><i class="fa fa-star"></i></span>` : '';
+	                    indicators.innerHTML = dlHtml + favHtml;
+	                }
 	            }
 	        });
 	    }, 300);
@@ -5092,11 +5094,66 @@ hideSidebar() {
 	        else if (pendingLocalHandle)  { handleArg = pendingLocalHandle; handleNameArg = pendingLocalHandle.name; }
 	 
 	        this.updateSongDetails(song.id, newName, newAuthor, newVideoId, newLyrics, handleArg, handleNameArg)
-	            .then(() => { modal.remove(); this.renderSongLibrary(); })
-	            .catch(err => {
-	                console.error('Error updating song details:', err);
-	                this.showNotification('Failed to update song details.', 'error');
-	            });
+			    .then(() => {
+			        modal.remove();
+			
+			        // Update the song-item in DOM directly — no re-render
+			        const songItem = document.querySelector(`.song-name[data-song-id="${song.id}"]`)?.closest('.song-item');
+			        if (songItem) {
+			            // Update name and author in the song-name span
+			            const nameSpan = songItem.querySelector('.song-name');
+			            if (nameSpan) {
+			                nameSpan.childNodes[0].textContent = newName;
+			                let authorEl = nameSpan.querySelector('.song-author');
+			                if (newAuthor) {
+			                    if (!authorEl) {
+			                        authorEl = document.createElement('small');
+			                        authorEl.className = 'song-author';
+			                        nameSpan.appendChild(authorEl);
+			                    }
+			                    authorEl.textContent = `by ${newAuthor}`;
+			                } else {
+			                    authorEl?.remove();
+			                }
+			            }
+			
+			            // Update download indicator if handle changed
+			            const updatedSong = this.songLibrary.find(s => s.id === song.id);
+			            const isDl  = !!updatedSong?.localFileHandle;
+			            const isFav = !!updatedSong?.favorite;
+			            const right = songItem.querySelector('.song-item-right');
+			            if (right) {
+			                let indicators = right.querySelector('.song-status-indicators');
+			                if (isFav || isDl) {
+			                    if (!indicators) {
+			                        indicators = document.createElement('div');
+			                        indicators.className = 'song-status-indicators';
+			                        right.insertBefore(indicators, right.querySelector('.song-actions'));
+			                    }
+			                    const dlHtml  = isDl  ? `<span class="song-dl-indicator" title="Downloaded"><i class="fa fa-download"></i></span>` : '';
+			                    const favHtml = isFav ? `<span class="song-fav-indicator" title="Favourited"><i class="fa fa-star"></i></span>` : '';
+			                    indicators.innerHTML = dlHtml + favHtml;
+			                } else {
+			                    indicators?.remove();
+			                }
+			            }
+			
+			            // Update all button data attributes if videoId changed
+			            if (newVideoId !== song.videoId) {
+			                // Thumbnail in fav card if visible
+			                const favThumb = document.querySelector(`.fav-thumb[data-song-id="${song.id}"] img`);
+			                if (favThumb) favThumb.src = `https://img.youtube.com/vi/${newVideoId}/mqdefault.jpg`;
+			                const discThumb = document.querySelector(`.discovery-song-item[data-song-id="${song.id}"] img`);
+			                if (discThumb) discThumb.src = `https://img.youtube.com/vi/${newVideoId}/mqdefault.jpg`;
+			            }
+			        }
+			
+			        this.showNotification('Song updated.', 'success');
+			    })
+			    .catch(err => {
+			        console.error('Error updating song details:', err);
+			        this.showNotification('Failed to update song details.', 'error');
+			    });
 	    });
 	 
 	    document.body.appendChild(modal);
