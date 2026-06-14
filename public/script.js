@@ -3388,6 +3388,19 @@ hideSidebar() {
 	        }
 	    });
 	}
+	saveSingleSong(song) {
+	    return new Promise((resolve, reject) => {
+	        if (!this.db) { reject(new Error("Database not initialized")); return; }
+	        try {
+	            const transaction = this.db.transaction(["songLibrary"], "readwrite");
+	            transaction.objectStore("songLibrary").put(song);
+	            transaction.oncomplete = () => resolve();
+	            transaction.onerror = (e) => reject(new Error("Failed to save song: " + e.target.error.message));
+	        } catch (error) {
+	            reject(error);
+	        }
+	    });
+	}
 	renderInitialState() {
 	    this.renderPlaylists();
 	    this.renderLibraryView(); 
@@ -4344,7 +4357,7 @@ hideSidebar() {
 	    clearTimeout(this.favoriteUpdateTimeout);
 	    this.favoriteUpdateTimeout = setTimeout(() => {
 	        Promise.all([
-	            this.saveSongLibrary(),
+	            this.saveSingleSong(song),  
 	            this.updateFavoritesPlaylist(song, isFavorited),
 	        ])
 	        .catch((error) => {
@@ -5187,24 +5200,24 @@ hideSidebar() {
 	                }
 	            });
 	
-	            this.saveSongLibrary()
-	                .then(() => this.savePlaylists())
-	                .then(() => {
-	                    if (this.currentPlaylist &&
-	                        this.currentPlaylist.songs[this.currentSongIndex]?.id === songId) {
-	                        if (this.elements.currentSongName)
-	                            this.elements.currentSongName.textContent = newName;
-	                        if (document.getElementById("lyrics").classList.contains("active"))
-	                            this.renderLyricsTab();
-	                    }
-	                    if (this.isSidebarVisible && this.currentPlaylist)
-	                        this.renderCurrentPlaylistInSidebar();
-	                    resolve();
-	                })
-	                .catch(error => {
-	                    console.error("Error saving updated song details:", error);
-	                    reject(error);
-	                });
+	            this.saveSingleSong(this.songLibrary[songIndex])
+				    .then(() => this.savePlaylists())
+				    .then(() => {
+				        if (this.currentPlaylist &&
+				            this.currentPlaylist.songs[this.currentSongIndex]?.id === songId) {
+				            if (this.elements.currentSongName)
+				                this.elements.currentSongName.textContent = newName;
+				            if (document.getElementById("lyrics").classList.contains("active"))
+				                this.renderLyricsTab();
+				        }
+				        if (this.isSidebarVisible && this.currentPlaylist)
+				            this.renderCurrentPlaylistInSidebar();
+				        resolve();
+				    })
+				    .catch(error => {
+				        console.error("Error saving updated song details:", error);
+				        reject(error);
+				    });
 	        } catch (error) {
 	            console.error("Exception in updateSongDetails:", error);
 	            reject(error);
