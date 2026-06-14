@@ -646,4 +646,14 @@
 - added hotkeys to seek forwards and backwards 5 seconds v64.4.0
 - fixed restart song for offline playback. v64.5.0
 - switched hotkey v64.5.1
-- reworked the whole library v64.6.0
+- reworked the whole library v65.0.0
+- removed settings to modify library for simplicity. v65.1.0
+- all song buttons are hidden until song card is hovered over v65.2.0
+- fixed annoying bug where updating a song will trigger the whole menu to collapse. v65.3.0
+- added offline saved indicator. v65.4.0
+- added seperated favorited indicator v65.5.0
+- updating a song only saves that song instead of whole library v65.6.0
+- style changes such that the indicators will disappear when buttons appear v65.6.0
+- moved the indicator buttons to the right. v65.7.0
+- removed large words of remove, play, edit and replaced them with fa-icons v65.8.0
+-  either of the attributes, saved or favorited will be pushed to the right most of the song card if only one is present. v65.9.0
