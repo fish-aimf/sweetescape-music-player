@@ -3389,6 +3389,8 @@ hideSidebar() {
 	    });
 	}
 	saveSingleSong(song) {
+		    console.log(`%c✅ saveSingleSong → 1 record: "${song?.name}"`, 'color:#4caf50;font-weight:bold');
+
 	    return new Promise((resolve, reject) => {
 	        if (!this.db) { reject(new Error("Database not initialized")); return; }
 	        try {
