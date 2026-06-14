@@ -91,9 +91,7 @@ class AdvancedMusicPlayer {
 		// Feature toggles
 		this.adsEnabled = false;
 		this.visualizerEnabled = true;
-		this.showDeleteButtons = true;
-		this.showUnfavoriteButtons = true;
-		this.showEditButtons = true;
+
 
 
 
@@ -232,7 +230,7 @@ class AdvancedMusicPlayer {
 				this.loadRecentlyPlayed(),
 				this.loadDiscoverMoreSettingsOnStartup(),
 				this.loadKeybinds(),
-				this.loadLibraryDisplaySettings(),
+			
 				this.loadDiscordSettings(),
 				this.loadLibrarySortValue(),
 				this.loadLibraryReverseValue(),
@@ -269,7 +267,6 @@ class AdvancedMusicPlayer {
 	        this.elements.volumeSlider.value = this.savedVolume ?? 100;
 	    }
 	
-	    this.syncLibraryDisplayUI();
 	    this.syncVisualizerUI();
 	}
 	
@@ -446,38 +443,17 @@ class AdvancedMusicPlayer {
 			createPlaylistDiv: document.getElementById("createPlaylistDiv"),
 			togglePlaylistEditModeBtn: document.getElementById("togglePlaylistEditModeBtn"),
 			libraryOptionsDropdown: document.getElementById("libraryOptionsDropdown"),
-			showDeleteBtn: document.getElementById("showDeleteBtn"),
-			showUnfavoriteBtn: document.getElementById("showUnfavoriteBtn"),
-			showEditBtn: document.getElementById("showEditBtn"),
 			switchLangBtn: document.getElementById('switchLangBtn'),
 			transcriptLangSelect: document.getElementById('transcriptLangSelect')
 		};
 		
 		// Setup specialized UI handlers
-		this._setupLibraryDropdown();
 		this._setupSpeedButton();
 		this._setupLibraryModificationModalTabs();
 		this._checkControlBarVisibility();
 	}
 	
-	_setupLibraryDropdown() {
-		const parent = this.elements.modifyLibraryBtn?.parentElement;
-		if (!parent) return;
-		
-		parent.addEventListener("mouseenter", this.handleShowLibraryDropdown.bind(this));
-		parent.addEventListener("mouseleave", this.handleHideLibraryDropdown.bind(this));
-		
-		if (this.elements.showDeleteBtn) {
-			this.elements.showDeleteBtn.addEventListener("change", this.handleToggleDeleteButtons.bind(this));
-		}
-		if (this.elements.showUnfavoriteBtn) {
-			this.elements.showUnfavoriteBtn.addEventListener("change", this.handleToggleUnfavoriteButtons.bind(this));
-		}
-		if (this.elements.showEditBtn) {
-			this.elements.showEditBtn.addEventListener("change", this.handleToggleEditButtons.bind(this));
-		}
-	}
-	
+
 	_setupSpeedButton() {
 		if (this.elements.speedBtn) {
 			this.elements.speedBtn.textContent = this.currentSpeed + "x";
@@ -892,7 +868,6 @@ class AdvancedMusicPlayer {
 	        request.onsuccess = () => {
 	            const raw = request.result || [];
 	
-	            // Check BEFORE mapping so the condition isn't always false
 	            const needsMigration = raw.some(
 	                (song) =>
 	                    song.favorite === undefined ||
@@ -1393,71 +1368,60 @@ class AdvancedMusicPlayer {
 		}
 	}
 	createSongElement(song) {
-		const songElement = document.createElement("div");
-		songElement.classList.add("song-item");
-
-		const favoriteBtn = song.favorite ?
-			`<button class="favorite-btn" data-song-id="${song.id}">
-               <i class="fa fa-star"></i>
-           </button>` :
-			(this.showUnfavoriteButtons ?
-				`<button class="favorite-btn" data-song-id="${song.id}">
-                   <i class="fa fa-star-o"></i>
-               </button>` :
-				'');
-
-		const deleteBtn = this.showDeleteButtons ?
-			`<button class="remove-btn" data-song-id="${song.id}">Remove</button>` :
-			'';
-
-		const editBtn = this.showEditButtons ?
-			`<button class="edit-btn" data-song-id="${song.id}">Edit</button>` :
-			'';
-
-		songElement.innerHTML = `
-        <span class="song-name" data-song-id="${song.id}">
-            ${this.escapeHtml(song.name)}
-            ${song.author
-                ? `<small style="color: var(--text-secondary); display: block; font-size: 0.4em;">by ${this.escapeHtml(song.author)}</small>`
-                : ""}
-        </span>
-        <div class="song-actions">
-            ${favoriteBtn}
-            <button class="play-btn" data-song-id="${song.id}">Play</button>
-            ${deleteBtn}
-            ${editBtn}
-        </div>
-    `;
-
-		return songElement;
+	    const songElement = document.createElement("div");
+	    songElement.classList.add("song-item");
+	    const favIndicator = song.favorite
+	        ? `<span class="song-fav-indicator" title="Favourited"><i class="fa fa-star"></i></span>`
+	        : '';
+	
+	    songElement.innerHTML = `
+	        <span class="song-name" data-song-id="${song.id}">
+	            ${this.escapeHtml(song.name)}
+	            ${song.author
+	                ? `<small class="song-author">by ${this.escapeHtml(song.author)}</small>`
+	                : ""}
+	        </span>
+	        ${favIndicator}
+	        <div class="song-actions">
+	            <button class="song-card-btn favorite-btn" data-song-id="${song.id}" title="${song.favorite ? 'Unfavourite' : 'Favourite'}">
+	                <i class="fa ${song.favorite ? 'fa-star' : 'fa-star-o'}"></i>
+	            </button>
+	            <button class="song-card-btn play-btn" data-song-id="${song.id}" title="Play">
+	                <i class="fa fa-play"></i>
+	            </button>
+	            <button class="song-card-btn delete-btn" data-song-id="${song.id}" title="Delete">
+	                <i class="fa fa-trash"></i>
+	            </button>
+	            <button class="song-card-btn edit-btn" data-song-id="${song.id}" title="Edit">
+	                <i class="fa fa-pencil"></i>
+	            </button>
+	        </div>
+	    `;
+	
+	    return songElement;
 	}
 	setupSongLibraryDelegation() {
-		// Single delegated event listener for entire song library
-		this.elements.songLibrary.addEventListener('click', (e) => {
-			// Find the clicked button/element
-			const target = e.target.closest('button, .song-name');
-			if (!target) return; // Not a clickable element
-
-			// Extract song ID from data attribute
-			const songId = target.dataset.songId;
-			if (!songId) return; // No song ID found
-
-			// Convert to number for consistency with your existing code
-			const songIdNum = parseInt(songId, 10);
-
-			// Determine which action to take based on button class
-			if (target.classList.contains('favorite-btn')) {
-				this.toggleFavorite(songIdNum);
-			} else if (target.classList.contains('play-btn')) {
-				this.playSong(songIdNum);
-			} else if (target.classList.contains('remove-btn')) {
-				this.removeSong(songIdNum);
-			} else if (target.classList.contains('edit-btn')) {
-				this.openSongEditModal(songIdNum);
-			} else if (target.classList.contains('song-name')) {
-				this.playSong(songIdNum);
-			}
-		});
+	    this.elements.songLibrary.addEventListener('click', (e) => {
+	        const target = e.target.closest('button, .song-name');
+	        if (!target) return;
+	
+	        const songId = target.dataset.songId;
+	        if (!songId) return;
+	
+	        const songIdNum = parseInt(songId, 10);
+	
+	        if (target.classList.contains('favorite-btn')) {
+	            this.toggleFavorite(songIdNum);
+	        } else if (target.classList.contains('play-btn')) {
+	            this.playSong(songIdNum);
+	        } else if (target.classList.contains('delete-btn')) {
+	            this.removeSong(songIdNum);
+	        } else if (target.classList.contains('edit-btn')) {
+	            this.openSongEditModal(songIdNum);
+	        } else if (target.classList.contains('song-name')) {
+	            this.playSong(songIdNum);
+	        }
+	    });
 	}
 	escapeHtml(text) {
 	    return text
@@ -4299,19 +4263,36 @@ hideSidebar() {
 		).element;
 	}
 	toggleFavorite(songId) {
-		const songIndex = this.songLibrary.findIndex((song) => song.id === songId);
-		if (songIndex === -1) return;
-		const song = this.songLibrary[songIndex];
-		const newFavoriteStatus = !song.favorite;
-		song.favorite = newFavoriteStatus;
-		const favoriteBtn = document.querySelector(
-			`.favorite-btn[data-song-id="${songId}"]`
-		);
-		if (favoriteBtn) {
-			const icon = favoriteBtn.querySelector("i");
-			icon.className = `fa ${newFavoriteStatus ? "fa-star" : "fa-star-o"}`;
-		}
-		this.batchFavoriteUpdate(song, newFavoriteStatus);
+	    const songIndex = this.songLibrary.findIndex((song) => song.id === songId);
+	    if (songIndex === -1) return;
+	    const song = this.songLibrary[songIndex];
+	    const newFavoriteStatus = !song.favorite;
+	    song.favorite = newFavoriteStatus;
+	
+	    const favoriteBtn = document.querySelector(`.favorite-btn[data-song-id="${songId}"]`);
+	    if (favoriteBtn) {
+	        const icon = favoriteBtn.querySelector("i");
+	        icon.className = `fa ${newFavoriteStatus ? "fa-star" : "fa-star-o"}`;
+	        favoriteBtn.title = newFavoriteStatus ? 'Unfavourite' : 'Favourite';
+	    }
+
+	    const songItem = favoriteBtn?.closest('.song-item');
+	    if (songItem) {
+	        let indicator = songItem.querySelector('.song-fav-indicator');
+	        if (newFavoriteStatus) {
+	            if (!indicator) {
+	                indicator = document.createElement('span');
+	                indicator.className = 'song-fav-indicator';
+	                indicator.title = 'Favourited';
+	                indicator.innerHTML = '<i class="fa fa-star"></i>';
+	                songItem.insertBefore(indicator, songItem.querySelector('.song-actions'));
+	            }
+	        } else {
+	            indicator?.remove();
+	        }
+	    }
+	
+	    this.batchFavoriteUpdate(song, newFavoriteStatus);
 	}
 	syncFavoritesOnLoad() {
 		return new Promise((resolve) => {
@@ -12293,75 +12274,14 @@ closeBillboardHot100Modal() {
 		}
 	}
 
-	handleShowLibraryDropdown() {
-		this.elements.libraryOptionsDropdown.classList.add("show");
-	}
-
-	handleHideLibraryDropdown() {
-		this.elements.libraryOptionsDropdown.classList.remove("show");
-	}
-
-	handleToggleDeleteButtons(e) {
-		this.showDeleteButtons = e.target.checked;
-		this.saveLibraryDisplaySettings();
-		this.renderSongLibrary();
-	}
-
-	handleToggleUnfavoriteButtons(e) {
-		this.showUnfavoriteButtons = e.target.checked;
-		this.saveLibraryDisplaySettings();
-		this.renderSongLibrary();
-	}
-
-	handleToggleEditButtons(e) {
-		this.showEditButtons = e.target.checked;
-		this.saveLibraryDisplaySettings();
-		this.renderSongLibrary();
-	}
-
-	saveLibraryDisplaySettings() {
-		if (!this.db) return;
-		const transaction = this.db.transaction(["userSettings"], "readwrite");
-		const store = transaction.objectStore("userSettings");
-		store.put({
-			category: "libraryDisplay",
-			showDeleteButtons: this.showDeleteButtons,
-			showUnfavoriteButtons: this.showUnfavoriteButtons,
-			showEditButtons: this.showEditButtons
-		});
-	}
-
-	loadLibraryDisplaySettings() {
-		return new Promise((resolve) => {
-			if (!this.db) {
-				resolve();
-				return;
-			}
-			const transaction = this.db.transaction(["userSettings"], "readonly");
-			const store = transaction.objectStore("userSettings");
-			const request = store.get("libraryDisplay");
-
-			request.onsuccess = () => {
-				if (request.result) {
-					this.showDeleteButtons = request.result.showDeleteButtons ?? true;
-					this.showUnfavoriteButtons = request.result.showUnfavoriteButtons ?? true;
-					this.showEditButtons = request.result.showEditButtons ?? true;
-				}
-				resolve();
-			};
-
-			request.onerror = () => resolve();
-		});
-	}
 
 
-	syncLibraryDisplayUI() {
-		if (this.elements && this.elements.showDeleteBtn) {
-			this.elements.showDeleteBtn.checked = this.showDeleteButtons;
-			this.elements.showUnfavoriteBtn.checked = this.showUnfavoriteButtons;
-			this.elements.showEditBtn.checked = this.showEditButtons;
-		}
-	}
+
+	
+
+
+
+
 
 
 
