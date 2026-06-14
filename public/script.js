@@ -1373,9 +1373,12 @@ class AdvancedMusicPlayer {
 	
 	    const isFav = song.favorite;
 	    const isDl  = !!song.localFileHandle;
+		const hasLyrics = !!(song.lyrics && song.lyrics.trim());
+
 	
 	    let indicatorsHtml = '';
 	    if (isFav || isDl) {
+			const lyricsHtml = hasLyrics ? `<span class="song-lyrics-indicator" title="Has lyrics"><i class="fa fa-closed-captioning"></i></span>` : '';
 	        const dlHtml  = isDl  ? `<span class="song-dl-indicator" title="Downloaded"><i class="fa fa-download"></i></span>` : '';
 	        const favHtml = isFav ? `<span class="song-fav-indicator" title="Favourited"><i class="fa fa-star"></i></span>` : '';
 	        indicatorsHtml = `<div class="song-status-indicators">${dlHtml}${favHtml}</div>`;
@@ -5134,23 +5137,23 @@ hideSidebar() {
 			
 			            // Update download indicator if handle changed
 			            const updatedSong = this.songLibrary.find(s => s.id === song.id);
-			            const isDl  = !!updatedSong?.localFileHandle;
-			            const isFav = !!updatedSong?.favorite;
-			            const right = songItem.querySelector('.song-item-right');
-			            if (right) {
-			                let indicators = right.querySelector('.song-status-indicators');
-			                if (isFav || isDl) {
-			                    if (!indicators) {
-			                        indicators = document.createElement('div');
-			                        indicators.className = 'song-status-indicators';
-			                        right.insertBefore(indicators, right.querySelector('.song-actions'));
-			                    }
-			                    const dlHtml  = isDl  ? `<span class="song-dl-indicator" title="Downloaded"><i class="fa fa-download"></i></span>` : '';
-			                    const favHtml = isFav ? `<span class="song-fav-indicator" title="Favourited"><i class="fa fa-star"></i></span>` : '';
-			                    indicators.innerHTML = dlHtml + favHtml;
-			                } else {
-			                    indicators?.remove();
-			                }
+			            const isDl      = !!updatedSong?.localFileHandle;
+						const isFav     = !!updatedSong?.favorite;
+						const hasLyrics = !!(updatedSong?.lyrics && updatedSong.lyrics.trim());
+						
+						if (isFav || isDl || hasLyrics) {
+						    if (!indicators) {
+						        indicators = document.createElement('div');
+						        indicators.className = 'song-status-indicators';
+						        right.insertBefore(indicators, right.querySelector('.song-actions'));
+						    }
+						    const lyricsHtml = hasLyrics ? `<span class="song-lyrics-indicator" title="Has lyrics"><i class="fa fa-closed-captioning"></i></span>` : '';
+						    const dlHtml     = isDl      ? `<span class="song-dl-indicator"     title="Downloaded"><i class="fa fa-download"></i></span>` : '';
+						    const favHtml    = isFav     ? `<span class="song-fav-indicator"    title="Favourited"><i class="fa fa-star"></i></span>` : '';
+						    indicators.innerHTML = lyricsHtml + dlHtml + favHtml;
+						} else {
+						    indicators?.remove();
+						}
 			            }
 			
 			            // Update all button data attributes if videoId changed
