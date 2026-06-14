@@ -194,6 +194,31 @@ body {
     margin-bottom: 5px;
     border-radius: 4px;
 }
+.song-item {
+    position: relative;
+}
+.song-item:hover .song-actions,
+.song-item:focus-within .song-actions {
+    opacity: 1;
+    pointer-events: auto;
+}
+.song-fav-indicator {
+    color: #f5c518;
+    font-size: 0.85em;
+    flex-shrink: 0;
+    margin-right: 4px;
+    transition: opacity 0.15s ease;
+    pointer-events: none;
+    line-height: 1;
+}
+.song-card-btn.favorite-btn:hover {
+    color: #f5c518;
+}
+
+.song-item:hover .song-fav-indicator,
+.song-item:focus-within .song-fav-indicator {
+    opacity: 0;
+}
 .playlist-actions button, .song-actions button {
     margin-left: 0;
     padding: 6px 16px;
@@ -1135,9 +1160,12 @@ body.dark-mode .thumbnail-preview {
     border-radius: 50%;
     transition: .2s;
 }
-.loop-playlist-btn:hover, .sidebar-mode-toggle-btn:hover, .song-card-btn:hover {
+.loop-playlist-btn:hover, .sidebar-mode-toggle-btn:hover {
     color: #fff;
     background-color: rgba(255, 255, 255, .1);
+}
+.song-card-btn:hover {
+    background: var(--bg-primary);
 }
 .loop-playlist-btn.active, .sidebar-mode-toggle-btn.expanded, .song-card-btn.play-btn:hover {
     color: #1db954;
@@ -3536,9 +3564,13 @@ body:has(#ytPlayer.fullscreen-video) {
 }
 .song-actions {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     flex-shrink: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
 }
+
 .add-single-song-btn {
     background: var(--accent-color);
     color: var(--button-text-color);
@@ -5245,20 +5277,30 @@ body.playlist-expanded-active .app-container {
     flex-shrink: 0;
 }
 .song-card-btn {
-    background: 0 0;
-    border: currentcolor;
-    border-image: initial;
-    color: #888;
-    font-size: 16px;
+    background: none;
+    border: none;
     cursor: pointer;
-    padding: 6px;
-    border-radius: 50%;
-    transition: .2s;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    padding: 4px 6px;
+    border-radius: 4px;
+    color: var(--text-secondary);
+    font-size: 0.9em;
+    transition: color 0.15s ease, background 0.15s ease;
+    line-height: 1;
+}
+.song-card-btn.edit-btn:hover {
+    color: var(--accent-color);
+}
+.song-author {
+    color: var(--text-secondary);
+    display: block;
+    font-size: 0.4em;
+}
+.song-card-btn.delete-btn:hover {
+    color: var(--error-color);
+}
+
+.song-card-btn.play-btn:hover {
+    color: var(--accent-color);
 }
 .song-card-btn.skip-btn.active, .song-card-btn.skip-btn:hover {
     color: #ff6b6b;
