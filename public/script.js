@@ -1374,10 +1374,9 @@ class AdvancedMusicPlayer {
 	    const isFav = song.favorite;
 	    const isDl  = !!song.localFileHandle;
 	
-	    // Build indicators — only render wrapper if at least one is active
 	    let indicatorsHtml = '';
 	    if (isFav || isDl) {
-	        const dlHtml  = isDl  ? `<span class="song-dl-indicator"  title="Downloaded"><i class="fa fa-download"></i></span>` : '';
+	        const dlHtml  = isDl  ? `<span class="song-dl-indicator" title="Downloaded"><i class="fa fa-download"></i></span>` : '';
 	        const favHtml = isFav ? `<span class="song-fav-indicator" title="Favourited"><i class="fa fa-star"></i></span>` : '';
 	        indicatorsHtml = `<div class="song-status-indicators">${dlHtml}${favHtml}</div>`;
 	    }
@@ -1389,20 +1388,22 @@ class AdvancedMusicPlayer {
 	                ? `<small class="song-author">by ${this.escapeHtml(song.author)}</small>`
 	                : ""}
 	        </span>
-	        ${indicatorsHtml}
-	        <div class="song-actions">
-	            <button class="song-card-btn favorite-btn" data-song-id="${song.id}" title="${isFav ? 'Unfavourite' : 'Favourite'}">
-	                <i class="fa ${isFav ? 'fa-star' : 'fa-star-o'}"></i>
-	            </button>
-	            <button class="song-card-btn play-btn" data-song-id="${song.id}" title="Play">
-	                <i class="fa fa-play"></i>
-	            </button>
-	            <button class="song-card-btn delete-btn" data-song-id="${song.id}" title="Delete">
-	                <i class="fa fa-trash"></i>
-	            </button>
-	            <button class="song-card-btn edit-btn" data-song-id="${song.id}" title="Edit">
-	                <i class="fa fa-pencil"></i>
-	            </button>
+	        <div class="song-item-right">
+	            ${indicatorsHtml}
+	            <div class="song-actions">
+	                <button class="song-card-btn favorite-btn" data-song-id="${song.id}" title="${isFav ? 'Unfavourite' : 'Favourite'}">
+	                    <i class="fa ${isFav ? 'fa-star' : 'fa-star-o'}"></i>
+	                </button>
+	                <button class="song-card-btn play-btn" data-song-id="${song.id}" title="Play">
+	                    <i class="fa fa-play"></i>
+	                </button>
+	                <button class="song-card-btn delete-btn" data-song-id="${song.id}" title="Delete">
+	                    <i class="fa fa-trash"></i>
+	                </button>
+	                <button class="song-card-btn edit-btn" data-song-id="${song.id}" title="Edit">
+	                    <i class="fa fa-pencil"></i>
+	                </button>
+	            </div>
 	        </div>
 	    `;
 	
@@ -4286,24 +4287,26 @@ hideSidebar() {
 
 		const songItem = favoriteBtn?.closest('.song-item');
 		if (songItem) {
-		    let indicators = songItem.querySelector('.song-status-indicators');
+		    const right = songItem.querySelector('.song-item-right');
+		    let indicators = right?.querySelector('.song-status-indicators');
 		    const isDl = !!this.songLibrary.find(s => s.id === songId)?.localFileHandle;
 		
 		    if (newFavoriteStatus || isDl) {
-		        if (!indicators) {
+		        if (!indicators && right) {
 		            indicators = document.createElement('div');
 		            indicators.className = 'song-status-indicators';
-		            songItem.insertBefore(indicators, songItem.querySelector('.song-actions'));
+		            right.insertBefore(indicators, right.querySelector('.song-actions'));
 		        }
-		        // Rebuild contents — only two small spans at most
-		        const dlHtml  = isDl              ? `<span class="song-dl-indicator"  title="Downloaded"><i class="fa fa-download"></i></span>` : '';
-		        const favHtml = newFavoriteStatus ? `<span class="song-fav-indicator" title="Favourited"><i class="fa fa-star"></i></span>` : '';
-		        indicators.innerHTML = dlHtml + favHtml;
+		        if (indicators) {
+		            const dlHtml  = isDl              ? `<span class="song-dl-indicator" title="Downloaded"><i class="fa fa-download"></i></span>` : '';
+		            const favHtml = newFavoriteStatus ? `<span class="song-fav-indicator" title="Favourited"><i class="fa fa-star"></i></span>` : '';
+		            indicators.innerHTML = dlHtml + favHtml;
+		        }
 		    } else {
 		        indicators?.remove();
 		    }
 		}
-	
+			
 	    this.batchFavoriteUpdate(song, newFavoriteStatus);
 	}
 	syncFavoritesOnLoad() {
