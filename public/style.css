@@ -235,6 +235,12 @@ body {
     flex-shrink: 0;
     line-height: 1;
 }
+.song-lyrics-indicator {
+    color: #4a9eff;
+    font-size: 0.85em;
+    flex-shrink: 0;
+    line-height: 1;
+}
 .song-item:hover .song-actions,
 .song-item:focus-within .song-actions {
     opacity: 1;
