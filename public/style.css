@@ -197,28 +197,47 @@ body {
 .song-item {
     position: relative;
 }
+/* Push indicators to the right edge, gap between them */
+.song-status-indicators {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+    padding-right: 8px;
+    flex-shrink: 0;
+    transition: opacity 0.15s ease;
+    pointer-events: none;
+}
+
+.song-item:hover .song-status-indicators,
+.song-item:focus-within .song-status-indicators {
+    opacity: 0;
+}
+
+.song-fav-indicator {
+    color: #f5c518;
+    font-size: 0.85em;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.song-dl-indicator {
+    color: #4caf50;
+    font-size: 0.85em;
+    flex-shrink: 0;
+    line-height: 1;
+}
 .song-item:hover .song-actions,
 .song-item:focus-within .song-actions {
     opacity: 1;
     pointer-events: auto;
 }
-.song-fav-indicator {
-    color: #f5c518;
-    font-size: 0.85em;
-    flex-shrink: 0;
-    margin-right: 4px;
-    transition: opacity 0.15s ease;
-    pointer-events: none;
-    line-height: 1;
-}
+
 .song-card-btn.favorite-btn:hover {
     color: #f5c518;
 }
 
-.song-item:hover .song-fav-indicator,
-.song-item:focus-within .song-fav-indicator {
-    opacity: 0;
-}
+
 .playlist-actions button, .song-actions button {
     margin-left: 0;
     padding: 6px 16px;
