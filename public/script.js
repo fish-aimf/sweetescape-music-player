@@ -4978,8 +4978,6 @@ hideSidebar() {
 		
 		// Cleanup event listeners
 		this.cleanupGhostEventListeners();
-		
-		// Cancel any pending fetches
 		if (this.ghostPreviewAbortController) {
 			this.ghostPreviewAbortController.abort();
 			this.ghostPreviewAbortController = null;
@@ -4990,14 +4988,14 @@ hideSidebar() {
 	openSongEditModal(songId) {
 	    const song = this.songLibrary.find(s => s.id === songId);
 	    if (!song) return;
-	 
+	
 	    let pendingLocalHandle = null;
 	    let pendingClearHandle = false;
-	 
+	
 	    const modal = document.createElement('div');
 	    modal.className = 'modal';
 	    modal.style.display = 'flex';
-	 
+	
 	    modal.innerHTML = `
 	        <div class="modal-content song-edit-modal-content">
 	            <div class="song-edit-modal-header">
@@ -5008,35 +5006,35 @@ hideSidebar() {
 	                <div class="song-edit-form-grid">
 	                    <label class="song-edit-form-label">Song Name:</label>
 	                    <input class="song-edit-form-input" data-field="name" type="text" required>
-	 
+	
 	                    <label class="song-edit-form-label">Author:</label>
 	                    <input class="song-edit-form-input" data-field="author" type="text" placeholder="Author name (optional)">
-	 
+	
 	                    <label class="song-edit-form-label">YouTube URL:</label>
 	                    <input class="song-edit-form-input" data-field="url" type="text" required>
-	 
+	
 	                    <label class="song-edit-form-label">Local file:</label>
 	                    <div class="song-edit-local-file-wrapper">
 	                        <button type="button" class="song-edit-local-file-btn" data-field="localFileBtn"></button>
 	                        <button type="button" class="song-edit-unlink-btn" data-field="unlinkBtn" title="Remove local file">&#x2715;</button>
 	                    </div>
 	                </div>
-	 
+	
 	                <div class="song-edit-thumbnail-container">
 	                    <img class="song-edit-thumbnail" data-field="thumbnail" alt="Video thumbnail">
 	                </div>
-	 
+	
 	                <div class="song-edit-lyrics-container">
 	                    <label class="song-edit-lyrics-label">Lyrics (Format: "Lyric line [MM:SS]" - one per line):</label>
 	                    <textarea class="song-edit-lyrics-input" data-field="lyrics"
 	                        placeholder="Enter lyrics with timestamps like:&#10;This is the end [0:33]&#10;Hold your breath and count to ten [0:38]"></textarea>
 	                </div>
-	 
+	
 	                <button type="submit" class="song-edit-save-btn">Save Changes</button>
 	            </form>
 	        </div>
 	    `;
-	 
+	
 	    // Query refs — values set via .value/.textContent (XSS-safe)
 	    const nameInput    = modal.querySelector('[data-field="name"]');
 	    const authorInput  = modal.querySelector('[data-field="author"]');
@@ -5047,7 +5045,7 @@ hideSidebar() {
 	    const lyricsInput  = modal.querySelector('[data-field="lyrics"]');
 	    const form         = modal.querySelector('.song-edit-form');
 	    const closeBtn     = modal.querySelector('.song-edit-close-btn');
-	 
+	
 	    // Populate values safely
 	    nameInput.value        = song.name;
 	    authorInput.value      = song.author || '';
@@ -5056,18 +5054,18 @@ hideSidebar() {
 	    thumbnail.src          = `https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg`;
 	    localFileBtn.textContent = song.localFileName ? `\uD83D\uDCC1 ${song.localFileName}` : 'Link local file';
 	    if (song.localFileName) unlinkBtn.classList.add('active');
-	 
+	
 	    // Close handlers
 	    closeBtn.onclick = () => modal.remove();
 	    modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
-	 
+	
 	    // Thumbnail preview on URL change
 	    urlInput.addEventListener('input', () => {
 	        const videoId = this.extractYouTubeId(urlInput.value);
 	        thumbnail.style.display = videoId ? '' : 'none';
 	        if (videoId) thumbnail.src = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
 	    });
-	 
+	
 	    // Local file picker
 	    localFileBtn.addEventListener('click', async () => {
 	        if (!window.showOpenFilePicker) {
@@ -5086,7 +5084,7 @@ hideSidebar() {
 	            if (e.name !== 'AbortError') console.warn('File picker error:', e);
 	        }
 	    });
-	 
+	
 	    // Unlink
 	    unlinkBtn.addEventListener('click', () => {
 	        pendingLocalHandle = null;
@@ -5094,8 +5092,6 @@ hideSidebar() {
 	        localFileBtn.textContent = 'Link local file';
 	        unlinkBtn.classList.remove('active');
 	    });
-	 
-	    // Submit
 	    form.addEventListener('submit', e => {
 	        e.preventDefault();
 	        const newName    = nameInput.value.trim();
@@ -5103,77 +5099,72 @@ hideSidebar() {
 	        const newUrl     = urlInput.value.trim();
 	        const newVideoId = this.extractYouTubeId(newUrl);
 	        const newLyrics  = lyricsInput.value.trim();
-	 
+	
 	        if (!newName)    { this.showNotification('Please enter a song name.', 'error'); return; }
 	        if (!newVideoId) { this.showNotification('Please enter a valid YouTube URL.', 'error'); return; }
-	 
+	
 	        let handleArg = undefined, handleNameArg = undefined;
-	        if (pendingClearHandle)       { handleArg = null;               handleNameArg = null; }
-	        else if (pendingLocalHandle)  { handleArg = pendingLocalHandle; handleNameArg = pendingLocalHandle.name; }
-	 
+	        if (pendingClearHandle)      { handleArg = null;               handleNameArg = null; }
+	        else if (pendingLocalHandle) { handleArg = pendingLocalHandle; handleNameArg = pendingLocalHandle.name; }
+	
 	        this.updateSongDetails(song.id, newName, newAuthor, newVideoId, newLyrics, handleArg, handleNameArg)
-			    .then(() => {
-			        modal.remove();
-			
-			        // Update the song-item in DOM directly — no re-render
-			        const songItem = document.querySelector(`.song-name[data-song-id="${song.id}"]`)?.closest('.song-item');
-			        if (songItem) {
-			            // Update name and author in the song-name span
-			            const nameSpan = songItem.querySelector('.song-name');
-			            if (nameSpan) {
-			                nameSpan.childNodes[0].textContent = newName;
-			                let authorEl = nameSpan.querySelector('.song-author');
-			                if (newAuthor) {
-			                    if (!authorEl) {
-			                        authorEl = document.createElement('small');
-			                        authorEl.className = 'song-author';
-			                        nameSpan.appendChild(authorEl);
-			                    }
-			                    authorEl.textContent = `by ${newAuthor}`;
-			                } else {
-			                    authorEl?.remove();
-			                }
-			            }
-			
-			            // Update download indicator if handle changed
-			            const updatedSong = this.songLibrary.find(s => s.id === song.id);
-			            const isDl      = !!updatedSong?.localFileHandle;
-						const isFav     = !!updatedSong?.favorite;
-						const hasLyrics = !!(updatedSong?.lyrics && updatedSong.lyrics.trim());
-						
-						if (isFav || isDl || hasLyrics) {
-						    if (!indicators) {
-						        indicators = document.createElement('div');
-						        indicators.className = 'song-status-indicators';
-						        right.insertBefore(indicators, right.querySelector('.song-actions'));
-						    }
-						    const lyricsHtml = hasLyrics ? `<span class="song-lyrics-indicator" title="Has lyrics"><i class="fa fa-closed-captioning"></i></span>` : '';
-						    const dlHtml     = isDl      ? `<span class="song-dl-indicator"     title="Downloaded"><i class="fa fa-download"></i></span>` : '';
-						    const favHtml    = isFav     ? `<span class="song-fav-indicator"    title="Favourited"><i class="fa fa-star"></i></span>` : '';
-						    indicators.innerHTML = lyricsHtml + dlHtml + favHtml;
-						} else {
-						    indicators?.remove();
-						}
-			            }
-			
-			            // Update all button data attributes if videoId changed
-			            if (newVideoId !== song.videoId) {
-			                // Thumbnail in fav card if visible
-			                const favThumb = document.querySelector(`.fav-thumb[data-song-id="${song.id}"] img`);
-			                if (favThumb) favThumb.src = `https://img.youtube.com/vi/${newVideoId}/mqdefault.jpg`;
-			                const discThumb = document.querySelector(`.discovery-song-item[data-song-id="${song.id}"] img`);
-			                if (discThumb) discThumb.src = `https://img.youtube.com/vi/${newVideoId}/mqdefault.jpg`;
-			            }
-			        }
-			
-			        this.showNotification('Song updated.', 'success');
-			    })
-			    .catch(err => {
-			        console.error('Error updating song details:', err);
-			        this.showNotification('Failed to update song details.', 'error');
-			    });
+	            .then(() => {
+	                modal.remove();
+	                const songItem = document.querySelector(`.song-name[data-song-id="${song.id}"]`)?.closest('.song-item');
+	                if (songItem) {
+	                    const nameSpan = songItem.querySelector('.song-name');
+	                    if (nameSpan) {
+	                        nameSpan.childNodes[0].textContent = newName;
+	                        let authorEl = nameSpan.querySelector('.song-author');
+	                        if (newAuthor) {
+	                            if (!authorEl) {
+	                                authorEl = document.createElement('small');
+	                                authorEl.className = 'song-author';
+	                                nameSpan.appendChild(authorEl);
+	                            }
+	                            authorEl.textContent = `by ${newAuthor}`;
+	                        } else {
+	                            authorEl?.remove();
+	                        }
+	                    }
+	                    const updatedSong = this.songLibrary.find(s => s.id === song.id);
+	                    const isDl      = !!updatedSong?.localFileHandle;
+	                    const isFav     = !!updatedSong?.favorite;
+	                    const hasLyrics = !!(updatedSong?.lyrics && updatedSong.lyrics.trim());
+	                    const right     = songItem.querySelector('.song-item-right');
+	
+	                    if (right) {
+	                        let indicators = right.querySelector('.song-status-indicators');
+	                        if (isFav || isDl || hasLyrics) {
+	                            if (!indicators) {
+	                                indicators = document.createElement('div');
+	                                indicators.className = 'song-status-indicators';
+	                                right.insertBefore(indicators, right.querySelector('.song-actions'));
+	                            }
+	                            const lyricsHtml = hasLyrics ? `<span class="song-lyrics-indicator" title="Has lyrics"><i class="fa fa-closed-captioning"></i></span>` : '';
+	                            const dlHtml     = isDl      ? `<span class="song-dl-indicator"     title="Downloaded"><i class="fa fa-download"></i></span>` : '';
+	                            const favHtml    = isFav     ? `<span class="song-fav-indicator"    title="Favourited"><i class="fa fa-star"></i></span>` : '';
+	                            indicators.innerHTML = lyricsHtml + dlHtml + favHtml;
+	                        } else {
+	                            indicators?.remove();
+	                        }
+	                    }
+	                    if (newVideoId !== song.videoId) {
+	                        const favThumb = document.querySelector(`.fav-thumb[data-song-id="${song.id}"] img`);
+	                        if (favThumb) favThumb.src = `https://img.youtube.com/vi/${newVideoId}/mqdefault.jpg`;
+	                        const discThumb = document.querySelector(`.discovery-song-item[data-song-id="${song.id}"] img`);
+	                        if (discThumb) discThumb.src = `https://img.youtube.com/vi/${newVideoId}/mqdefault.jpg`;
+	                    }
+	                }
+	
+	                this.showNotification('Song updated.', 'success');
+	            })
+	            .catch(err => {
+	                console.error('Error updating song details:', err);
+	                this.showNotification('Failed to update song details.', 'error');
+	            });
 	    });
-	 
+	
 	    document.body.appendChild(modal);
 	}
 	 
@@ -5187,14 +5178,10 @@ hideSidebar() {
 	            this.songLibrary[songIndex].author = newAuthor;
 	            this.songLibrary[songIndex].videoId = newVideoId;
 	            this.songLibrary[songIndex].lyrics = newLyrics;
-	
-	            // Only update handle if explicitly passed (undefined = keep existing)
 	            if (localFileHandle !== undefined) {
-	                this.songLibrary[songIndex].localFileHandle = localFileHandle; // null clears it
+	                this.songLibrary[songIndex].localFileHandle = localFileHandle; 
 	                this.songLibrary[songIndex].localFileName = localFileName ?? null;
 	            }
-	
-	            // Sync name/author/videoId/lyrics to playlist copies (no handle needed there)
 	            this.playlists.forEach(playlist => {
 	                const idx = playlist.songs.findIndex(s => s.id === songId);
 	                if (idx !== -1) {
@@ -5288,8 +5275,6 @@ hideSidebar() {
 	const leftBanner = document.querySelector('.left-advertisement-banner');
 	const rightBanner = document.querySelector('.right-advertisement-banner');
 	const spacerDiv = document.getElementById("controlBarSpacer");
-	
-	// Playlist sidebar spacers
 	const overlayModeSpacer = document.getElementById("overlayModeSpacer");
 	const expandedModeSpacer = document.getElementById("expandedModeSpacer");
 	
@@ -5307,8 +5292,6 @@ hideSidebar() {
 			layoutToggleBtn.style.position = "";
 			layoutToggleBtn.style.pointerEvents = "auto";
 		}
-		
-		// Hide all spacers
 		if (spacerDiv) spacerDiv.style.display = "none";
 		if (overlayModeSpacer) overlayModeSpacer.style.display = "none";
 		if (expandedModeSpacer) expandedModeSpacer.style.display = "none";
@@ -5321,14 +5304,11 @@ hideSidebar() {
 		
 		if (leftBanner) leftBanner.classList.remove('expanded');
 		if (rightBanner) rightBanner.classList.remove('expanded');
-		
-		// Show spacers
+	
 		if (spacerDiv) spacerDiv.style.display = "block";
 		if (overlayModeSpacer) overlayModeSpacer.style.display = "block";
 		if (expandedModeSpacer) expandedModeSpacer.style.display = "block";
 	}
-	
-	// Re-render playlist sidebar if it's open to refresh spacers
 	if (this.isSidebarVisible && this.currentPlaylist) {
 		this.renderPlaylistSidebar();
 	}
@@ -5423,23 +5403,19 @@ hideSidebar() {
 		const songName = this.elements.currentSongName.textContent;
 		const fullTitle = `Music - ${songName}`;
 		
-		// Clear any existing scroll interval
 		if (this.titleScrollInterval) {
 			clearInterval(this.titleScrollInterval);
 			this.titleScrollInterval = null;
 		}
 		
-		// If it fits with "Music - ", use that
 		if (fullTitle.length <= MAX_TITLE_LENGTH) {
 			document.title = fullTitle;
 		}
-		// If removing "Music - " makes it fit (or close), just use song name
 		else if (songName.length <= MAX_TITLE_LENGTH + 5) {
 			document.title = songName.length <= MAX_TITLE_LENGTH 
 				? songName 
 				: songName.substring(0, MAX_TITLE_LENGTH - 3) + '...';
 		}
-		// Only scroll if it's really long
 		else if (songName.length > SCROLL_THRESHOLD) {
 			let currentPosition = 0;
 			const scrollTitle = `${songName} • `;
@@ -5452,7 +5428,6 @@ hideSidebar() {
 				document.title = scrolledTitle;
 			}, 500);
 		}
-		// Otherwise just truncate
 		else {
 			document.title = songName.substring(0, MAX_TITLE_LENGTH - 3) + '...';
 		}
@@ -5828,14 +5803,11 @@ hideSidebar() {
 	saveRecentlyPlayedSong(song) {
 		if (!this.db || !song) return;
 
-		// Check if currently playing from a playlist
 		if (this.currentPlaylist) {
-			// Save as playlist instead of individual song
 			this.saveRecentlyPlayedPlaylist(this.currentPlaylist);
 			return;
 		}
 
-		// Continue with regular song saving
 		const songData = {
 			id: song.id,
 			name: song.name,
@@ -5930,8 +5902,6 @@ hideSidebar() {
 	    if (this.isAdditionalDetailsHidden) return;
 	
 	    this.elements.additionalDetails.innerHTML = '';
-	
-	    // Header
 	    const headerContainer = document.createElement('div');
 	    headerContainer.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border-color);flex-shrink:0;';
 	
@@ -5953,8 +5923,6 @@ hideSidebar() {
 	    headerContainer.appendChild(headerText);
 	    headerContainer.appendChild(hideBtn);
 	    this.elements.additionalDetails.appendChild(headerContainer);
-	
-	    // Now Playing
 	    const currentSongDiv = document.createElement('div');
 	    currentSongDiv.id = 'currentSongSection';
 	    currentSongDiv.className = 'current-song-section';
@@ -5970,8 +5938,6 @@ hideSidebar() {
 	        </div>`;
 	    this.elements.additionalDetails.appendChild(currentSongDiv);
 		this.updateCurrentSongDisplay();
-			
-	    // Ordered sections — skip any with limit === 0
 	    const defs = this._getDefaultSectionOrder();
 	    const order = this.sectionOrder || defs.map(s => s.key);
 	
@@ -6324,7 +6290,6 @@ hideSidebar() {
 		if (additionalDetails.style.display === 'none') {
 			additionalDetails.style.display = 'flex';
 			this.isAdditionalDetailsHidden = false;
-			// Re-render when showing
 			this.renderAdditionalDetails();
 		} else {
 			additionalDetails.style.display = 'none';
@@ -6694,13 +6659,9 @@ hideSidebar() {
 	            btn.style.transform = 'scale(1)';
 	        });
 	    };
-	
-	    // Initialize autocenter state if not already set
 	    if (this.autoCenterLyrics === undefined) {
 	        this.autoCenterLyrics = true;
 	    }
-	    
-	    // Toggle Autocenter button
 	    const autoCenterButton = document.createElement("button");
 	    autoCenterButton.innerHTML = '<i class="fas fa-align-center"></i>';
 	    autoCenterButton.title = this.autoCenterLyrics ? "Auto-center: ON" : "Auto-center: OFF";
@@ -6746,8 +6707,6 @@ hideSidebar() {
 	        updateAutoCenterStyle();
 	    });
 	    floatingButtonsContainer.appendChild(autoCenterButton);
-	    
-	    // Share button (only show if has timestamps)
 	    if (hasTimestamps) {
 	        const shareButton = document.createElement("button");
 	        shareButton.innerHTML = '<i class="fas fa-share-alt"></i>';
@@ -6776,8 +6735,6 @@ hideSidebar() {
 	        });
 	        floatingButtonsContainer.appendChild(shareButton);
 	    }
-	    
-	    // Expand button
 	    const expandButton = document.createElement("button");
 	    expandButton.innerHTML = '<i class="fas fa-expand"></i>';
 	    expandButton.title = "Expand Lyrics";
@@ -6858,7 +6815,6 @@ hideSidebar() {
 	}
 	
 	shareKaraokeURL() {
-		// Get current song
 		const currentSong = this.currentPlaylist 
 			? this.currentPlaylist.songs[this.currentSongIndex]
 			: this.songLibrary[this.currentSongIndex];
@@ -6867,8 +6823,6 @@ hideSidebar() {
 			this.showNotification('No song is currently playing', 'error');
 			return;
 		}
-		
-		// Find song with lyrics
 		let songWithLyrics = currentSong;
 		if (this.currentPlaylist) {
 			const libraryMatch = this.songLibrary.find(
@@ -6878,25 +6832,17 @@ hideSidebar() {
 				songWithLyrics = libraryMatch;
 			}
 		}
-		
-		// Check if lyrics exist and have timestamps
 		if (!songWithLyrics.lyrics || songWithLyrics.lyrics.trim() === '') {
 			this.showNotification('No lyrics available for this song', 'error');
 			return;
 		}
-		
-		// Check if lyrics have timestamps
 		const hasTimestamps = songWithLyrics.lyrics.match(/.*\s*\[(\d+):(\d+)\]/);
 		if (!hasTimestamps) {
 			this.showNotification('Lyrics need timestamps to create karaoke. Use the lyric maker.', 'error');
 			return;
 		}
-		
-		// Generate karaoke URL
 		const url = this.generateKaraokeURL(songWithLyrics, songWithLyrics.lyrics);
 		if (!url) return;
-		
-		// Copy to clipboard
 		const tempInput = document.createElement('input');
 		tempInput.value = url;
 		document.body.appendChild(tempInput);
@@ -7139,9 +7085,7 @@ hideSidebar() {
 		const titleElement = document.getElementById('lyricsTitle');
 		
 		titleElement.textContent = `Lyrics Maker for: ${song.name}`;
-		// Only reinitialize if it's a different song
 		if (this.currentLyricMakerSongId !== songId) {
-			// Clean up previous song's listeners if they exist
 			if (this.lyricMakerCleanup) {
 				this.lyricMakerCleanup();
 			}
@@ -7175,8 +7119,6 @@ hideSidebar() {
 				isRecording: false,
 				timeUpdateInterval: null,
 			};
-			
-			// Close modal function - just hides, doesn't clean up
 			const closeModal = () => {
 				modal.classList.add('hidden');
 				if (state.timeUpdateInterval) {
@@ -7185,7 +7127,6 @@ hideSidebar() {
 				if (player.ytPlayer) {
 					player.ytPlayer.destroy();
 				}
-				// Don't clean up listeners or reset currentLyricMakerSongId
 			};
 			
 			closeBtn.onclick = closeModal;
@@ -7200,7 +7141,6 @@ hideSidebar() {
 				});
 			};
 			
-			// Tab navigation event listeners
 			const tabClickHandler = (tab) => {
 				return () => showTab(tab.dataset.tab);
 			};
@@ -7383,7 +7323,6 @@ hideSidebar() {
 	if (state.currentLineIndex < state.lyrics.length) {
 		let lineToMark = state.currentLineIndex;
 		
-		// ORIGINAL LOGIC: Find correct insertion point
 		for (let i = 0; i < state.currentLineIndex; i++) {
 			if (state.timings[i] !== null && currentTime < state.timings[i]) {
 				lineToMark = i;
@@ -7426,11 +7365,8 @@ hideSidebar() {
 					skipBtn.disabled = true;
 					return;
 				}
-				
-				// Redo enabled if currentLineIndex > 0 (there's a previous line)
+			
 				redoBtn.disabled = state.currentLineIndex <= 0;
-				
-				// Skip enabled if there's a next line available
 				skipBtn.disabled = state.currentLineIndex >= state.lyrics.length - 1;
 			};
 			const updateLyricMakerVisualTimeline = () => {
@@ -7442,14 +7378,10 @@ hideSidebar() {
 	if (duration === 0) return;
 	
 	const percentage = (currentTime / duration) * 100;
-	
-	// Update progress fill
 	const progressFill = document.getElementById('lyricmakerProgressFill');
 	if (progressFill) {
 		progressFill.style.width = `${percentage}%`;
 	}
-	
-	// Update playback indicator
 	const indicator = document.getElementById('lyricmakerProgressIndicator');
 	if (indicator) {
 		indicator.style.left = `${percentage}%`;
@@ -7460,8 +7392,6 @@ hideSidebar() {
 	const previewArea = document.getElementById('lyricmakerPreviewArea');
 	
 	if (!singleLane || !previewArea) return;
-	
-	// Clear existing
 	singleLane.innerHTML = '';
 	previewArea.innerHTML = '';
 	
@@ -7477,8 +7407,6 @@ hideSidebar() {
 		if (time === null) return;
 		
 		const percentage = (time / duration) * 100;
-		
-		// Find best layer with least overlap
 		let bestLayer = 0;
 		let minConflict = Infinity;
 		
@@ -7494,8 +7422,6 @@ hideSidebar() {
 		}
 		
 		usedPositions[bestLayer].push(percentage);
-		
-		// Create triangle marker (all on single lane)
 		const marker = document.createElement('div');
 		marker.className = 'lyricmaker-timeline-marker';
 		marker.style.left = `${percentage}%`;
@@ -7504,8 +7430,6 @@ hideSidebar() {
 		marker.dataset.layer = bestLayer;
 		
 		singleLane.appendChild(marker);
-		
-		// Create text preview (on assigned layer)
 		const preview = document.createElement('div');
 		preview.className = 'lyricmaker-preview-item';
 		preview.style.left = `${percentage}%`;
@@ -7516,8 +7440,6 @@ hideSidebar() {
 		preview.dataset.layer = bestLayer;
 		
 		previewArea.appendChild(preview);
-		
-		// Connector line from marker to text
 		const connector = document.createElement('div');
 		connector.className = 'lyricmaker-connector-line';
 		connector.style.left = `${percentage}%`;
@@ -7526,8 +7448,6 @@ hideSidebar() {
 		connector.dataset.index = index;
 		
 		previewArea.appendChild(connector);
-		
-		// Unified drag handler for marker, connector, and text
 		const setupDragForMarkerGroup = () => {
 			let isDragging = false;
 			let dragStartX = 0;
@@ -7548,12 +7468,10 @@ hideSidebar() {
 				const newPercentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
 				const newTime = (newPercentage / 100) * duration;
 				
-				// Update positions
 				marker.style.left = `${newPercentage}%`;
 				preview.style.left = `${newPercentage}%`;
 				connector.style.left = `${newPercentage}%`;
 				
-				// Update timing data
 				state.timings[index] = newTime;
 				
 				const timeElement = document.getElementById(`time-${index}`);
@@ -7568,8 +7486,6 @@ hideSidebar() {
 					marker.classList.remove('lyricmaker-marker-dragging');
 				}
 			};
-			
-			// Attach to all three elements
 			marker.addEventListener('mousedown', startDrag);
 			preview.addEventListener('mousedown', startDrag);
 			connector.addEventListener('mousedown', startDrag);
@@ -7585,17 +7501,13 @@ hideSidebar() {
 
 			const redoCurrentLyricLine = () => {
 				if (!state.isRecording || state.currentLineIndex <= 0) return;
-				
-				// Move back one line
+			
 				state.currentLineIndex--;
-				
-				// If this line was already timed, seek video to that timestamp
 				const previousTimestamp = state.timings[state.currentLineIndex];
 				if (previousTimestamp !== null) {
 					seekVideoToLyricTime(previousTimestamp);
 				}
-				
-				// Update UI
+			
 				updateLyricsDisplay();
 				updateLyricMakerButtonStates();
 			};
@@ -7620,14 +7532,7 @@ hideSidebar() {
 			const skipCurrentLyricLine = () => {
 				if (!state.isRecording) return;
 				if (state.currentLineIndex >= state.lyrics.length - 1) return;
-				
-				// Move to next line without marking timestamp
 				state.currentLineIndex++;
-				
-				// Ensure the skipped line stays as null (not timed)
-				// No need to set it, just move forward
-				
-				// Update UI
 				updateLyricsDisplay();
 				updateLyricMakerButtonStates();
 			};
@@ -7692,15 +7597,11 @@ hideSidebar() {
 						alert("Failed to save lyrics. Please try again.");
 					});
 			};
-			
-			// Keyboard handler
 			const handleKeyDown = (e) => {
 				if (e.key === 'Escape') {
 					closeModal();
 				}
 			};
-			
-			// Add event listeners
 			document.getElementById('prepareLyricsBtn').addEventListener('click', prepareLyrics);
 			document.getElementById('nextToRecordBtn').addEventListener('click', () => showTab('recordTab'));
 			document.getElementById('startRecording').addEventListener('click', startRecording);
@@ -7715,10 +7616,7 @@ hideSidebar() {
 			document.getElementById('geniusBtn').addEventListener('click', searchGenius);
 			document.getElementById('googleBtn').addEventListener('click', searchGoogle);
 			document.addEventListener('keydown', handleKeyDown);
-			
-			// Store cleanup function to remove all listeners when switching to a different song
 			this.lyricMakerCleanup = () => {
-				// Remove all event listeners
 				document.getElementById('prepareLyricsBtn').removeEventListener('click', prepareLyrics);
 				const nextToRecordBtn = document.getElementById('nextToRecordBtn');
 				const recordTabHandler = () => showTab('recordTab');
@@ -7735,21 +7633,15 @@ hideSidebar() {
 				document.getElementById('geniusBtn').removeEventListener('click', searchGenius);
 				document.getElementById('googleBtn').removeEventListener('click', searchGoogle);
 				document.addEventListener('keydown', handleKeyDown);
-				
-				// Remove tab handlers
 				tabHandlers.forEach(({ element, handler }) => {
 					element.removeEventListener('click', handler);
 				});
-				
-				// Clean up state
 				if (state.timeUpdateInterval) {
 					clearInterval(state.timeUpdateInterval);
 				}
 				if (player.ytPlayer) {
 					player.ytPlayer.destroy();
 				}
-				
-				// Reset UI
 				state.lyrics = [];
 				state.timings = [];
 				state.currentLineIndex = -1;
@@ -7886,10 +7778,7 @@ hideSidebar() {
 	    }
 	    this.updateQueueVisualIndicators();
 	}
-	 
-	// ─── ADD TO QUEUE (public API, unchanged call signature) ─────
 	addToQueue(song, repeat = 1) {
-	    // Check if last block is the same song — merge instead of appending
 	    const last = this.songQueue[this.songQueue.length - 1];
 	    if (last && last.type === 'song' && last.videoId === song.videoId && last.repeat !== -1 && repeat !== -1) {
 	        last.repeat = Math.min(99, last.repeat + repeat);
@@ -7955,8 +7844,6 @@ hideSidebar() {
 	    this.showQueueNotification(`Removed "${name}"`);
 	    this._queueRefreshPanel();
 	}
-	 
-	// ─── CLEAR QUEUE ─────────────────────────────────────────────
 	clearQueue() {
 	    this.songQueue = [];
 	    this.saveQueue();
@@ -8036,8 +7923,6 @@ hideSidebar() {
 	        this.saveSetting('isLooping', true);
 	        this.updateQueueVisualIndicators();
 	        this._queueRefreshPanel();
-	        // Do NOT call playSongById here — isLooping is now set,
-	        // the current song's natural onended will loop it correctly.
 	        this.updatePlayerUI();
 	        return true;
 	    }
@@ -8055,14 +7940,11 @@ hideSidebar() {
 	        this._debouncedSaveQueue();
 	        this.updateQueueVisualIndicators();
 	        this._queueRefreshPanel();
-	
-	        // Always clear playlist context for queue songs —
-	        // even if no library match found, don't inherit a stale playlist
 	        const songInLibrary = this.songLibrary.find(s => s.videoId === block.videoId);
 	        if (songInLibrary) {
 	            this.currentSongIndex = this.songLibrary.findIndex(s => s.id === songInLibrary.id);
 	        }
-	        this.currentPlaylist = null; // moved outside the if — always clear
+	        this.currentPlaylist = null; 
 	        this.currentSong = block;
 	        this.saveRecentlyPlayedSong(block);
 	        this.playSongById(block.videoId);
@@ -8084,12 +7966,9 @@ hideSidebar() {
 	    this.updateQueueVisualIndicators();
 	    this.updatePlayerUI();
 	}
-	 
-	// ─── VISUAL INDICATORS (unchanged behaviour) ─────────────────
 	updateQueueVisualIndicators() {
 	    document.querySelectorAll('.queue-indicator').forEach(el => el.remove());
-	    // Track position per videoId for badge numbering
-	    const seen = new Map(); // videoId -> display position (1-based)
+	    const seen = new Map(); 
 	    let pos = 0;
 	    this.songQueue.forEach(block => {
 	        if (block.type === 'stop') return;
@@ -8115,7 +7994,6 @@ hideSidebar() {
 	}
 	
 	 
-	// ─── NOTIFICATION ─────────────────────────────────────────────
 	showQueueNotification(message) {
 	    const existing = document.querySelector('.queue-notification');
 	    if (existing) existing.remove();
@@ -8123,7 +8001,6 @@ hideSidebar() {
 	    n.className = 'queue-notification';
 	    n.textContent = message;
 	    document.body.appendChild(n);
-	    // Use rAF to trigger transition
 	    requestAnimationFrame(() => n.classList.add('queue-notification--in'));
 	    const hide = () => {
 	        n.classList.remove('queue-notification--in');
@@ -8132,10 +8009,9 @@ hideSidebar() {
 	    this._queueNotifTimer = setTimeout(hide, 2200);
 	}
 	 
-	// ─── REFRESH PANEL (no-op if closed) ─────────────────────────
 	_queueRefreshPanel() {
 	    const panel = document.getElementById('qv2-panel');
-	    if (!panel) return; // panel not open — skip
+	    if (!panel) return;
 	    this._queueRenderRows();
 	}
 	_queueBuildOverlay() {
@@ -8201,17 +8077,12 @@ hideSidebar() {
 	
 	    backdrop.appendChild(panel);
 	    document.body.appendChild(backdrop);
-	
-	    // Render rows immediately
 	    this._queueRenderRows();
-	
-	    // Bind search
 	    this._queueBindSearch(
 	        document.getElementById('qv2-search-input'),
 	        document.getElementById('qv2-dropdown')
 	    );
 	
-	    // Header buttons
 	    document.getElementById('qv2-shuffle').addEventListener('click', () => this.shuffleQueue());
 	    document.getElementById('qv2-add-stop').addEventListener('click', () => this.addStopBlock());
 		document.getElementById('qv2-add-loop').addEventListener('click', () => this.addLoopBlock());
@@ -8221,10 +8092,8 @@ hideSidebar() {
 	    });
 	    document.getElementById('qv2-close').addEventListener('click', () => backdrop.remove());
 	
-	    // Backdrop click to close
 	    backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
 	
-	    // Keyboard close — cleaned up on removal
 	    const onKey = e => {
 	        if (e.key === 'Escape') {
 	            backdrop.remove();
