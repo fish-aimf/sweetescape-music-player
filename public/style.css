@@ -197,16 +197,25 @@ body {
 .song-item {
     position: relative;
 }
-/* Push indicators to the right edge, gap between them */
+
+.song-item-right {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    position: relative;
+}
+
 .song-status-indicators {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
     display: flex;
     align-items: center;
     gap: 6px;
-    margin-left: auto;
-    padding-right: 8px;
-    flex-shrink: 0;
-    transition: opacity 0.15s ease;
     pointer-events: none;
+    transition: opacity 0.15s ease;
+    z-index: 1;
 }
 
 .song-item:hover .song-status-indicators,
@@ -220,7 +229,6 @@ body {
     flex-shrink: 0;
     line-height: 1;
 }
-
 .song-dl-indicator {
     color: #4caf50;
     font-size: 0.85em;
@@ -3589,7 +3597,25 @@ body:has(#ytPlayer.fullscreen-video) {
     pointer-events: none;
     transition: opacity 0.15s ease;
 }
+.song-actions .song-card-btn {
+    padding: 4px 6px !important;
+    background-color: transparent !important;
+    color: var(--text-secondary);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    line-height: 1;
+    transition: color 0.15s ease, background 0.15s ease;
+}
+.song-actions .song-card-btn:hover {
+    background: var(--bg-secondary) !important;
+}
 
+.song-actions .song-card-btn.favorite-btn:hover { color: #f5c518; }
+.song-actions .song-card-btn.play-btn:hover     { color: var(--accent-color); }
+.song-actions .song-card-btn.delete-btn:hover   { color: var(--error-color); }
+.song-actions .song-card-btn.edit-btn:hover     { color: var(--accent-color); }
 .add-single-song-btn {
     background: var(--accent-color);
     color: var(--button-text-color);
