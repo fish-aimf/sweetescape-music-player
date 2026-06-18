@@ -48,27 +48,8 @@
         </style>
 
       
-         <script>
-         window.__se_vq_promise = (async () => {
-           try {
-             const res = await fetch('/current-version.txt', { cache: 'no-store' });
-             const v = (await res.text()).trim();
-             const q = v !== localStorage.getItem('se_version') ? `?v=${v}` : '';
-             if (q) localStorage.setItem('se_version', v);
-             for (const href of [`all.min.css${q}`, `style.css${q}`]) {
-               const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = href;
-               document.head.appendChild(l);
-             }
-             return q;
-           } catch {
-             for (const href of ['all.min.css', 'style.css']) {
-               const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = href;
-               document.head.appendChild(l);
-             }
-             return '';
-           }
-         })();
-         </script>
+         <link rel="stylesheet" href="all.min.css">
+         <link rel="stylesheet" href="style.css">
          <noscript><link rel="stylesheet" href="all.min.css"><link rel="stylesheet" href="style.css"></noscript>
       
         <meta property="og:title" content="SweetEscape – Music Player">
@@ -669,7 +650,6 @@ Another Playlist{
          </div>
       </div>
       <div id="controlBarSpacer" class="control-bar-spacer"></div>
-      <!-- Add this to your index.html body, preferably near the end -->
       <div id="subtitlesImportModal" class="subtitles-import-modal-overlay" style="display: none;">
          <div class="subtitles-import-modal-content">
             <div class="subtitles-import-modal-header">
@@ -1349,20 +1329,10 @@ Another Playlist{
         </div>
       </div>
 
-      <script>
-      (async () => {
-        const q = await window.__se_vq_promise;
-        for (const src of [`/karaoke-encoder.js${q}`, `script.js${q}`]) {
-          await new Promise((resolve, reject) => {
-            const s = document.createElement('script');
-            s.src = src;
-            s.onload = resolve;
-            s.onerror = reject;
-            document.body.appendChild(s);
-          });
-        }
-      })();
-      </script>
+      <script src="/karaoke-encoder.js"></script>
+      <script src="script.js"></script>
+      <script src="/register-sw.js"></script>
+
       <script src="https://www.youtube.com/iframe_api" defer></script>
       <script>
         window.addEventListener('load', () => {
