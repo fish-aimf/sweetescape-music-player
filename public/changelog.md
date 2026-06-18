@@ -658,3 +658,5 @@
 - removed large words of remove, play, edit and replaced them with fa-icons v65.8.0
 -  either of the attributes, saved or favorited will be pushed to the right most of the song card if only one is present. v65.9.0
 -  added service worker so website can be visited while offline. v66.0.0
+-  fixed numerous offline induced bugs. v66.1.0
+-  playing song youtube player doesn't require in the case of when offline playback is avaliable v66.2.0
