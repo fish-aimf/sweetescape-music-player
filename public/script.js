@@ -1030,7 +1030,6 @@ class AdvancedMusicPlayer {
 	    if (!this.elements.progressBar) return;
 	    if (!this.isTabVisible) return;
 	
-	    // Local audio uses timeupdate event — no polling interval needed
 	    if (this.isLocalPlayback) return;
 	
 	    if (!this.ytPlayer) return;
@@ -1955,12 +1954,17 @@ class AdvancedMusicPlayer {
 	    const videoId = song.videoId;
 	
 	    if (this.currentSong && this.currentSong.id === songId) {
-	        if (this.ytPlayer) this.ytPlayer.stopVideo();
+	        if (this.isLocalPlayback && this.localAudio) {
+	            this.localAudio.pause();
+	        } else if (this.ytPlayer) {
+	            this.ytPlayer.stopVideo();
+	        }
 	        this.isPlaying = false;
+	        this.isLocalPlayback = false;
 	        this.currentSong = null;
 	        this.updatePlayerUI();
 	    }
-	
+		
 	    this.recentlyPlayedSongs = this.recentlyPlayedSongs.filter(s => s.id !== songId);
 	    if (this.db) {
 	        const tx = this.db.transaction(['recentlyPlayed'], 'readwrite');
@@ -2612,11 +2616,14 @@ class AdvancedMusicPlayer {
 		);
 		if (!confirmDelete) return;
 		if (this.currentPlaylist && this.currentPlaylist.id === playlistId) {
-			if (this.ytPlayer) {
+			if (this.isLocalPlayback && this.localAudio) {
+				this.localAudio.pause();
+			} else if (this.ytPlayer) {
 				this.ytPlayer.stopVideo();
 			}
 			this.currentPlaylist = null;
 			this.isPlaying = false;
+			this.isLocalPlayback = false;
 			this.updatePlayerUI();
 			this.hideSidebar();
 		}
@@ -2706,15 +2713,11 @@ class AdvancedMusicPlayer {
 		}
 	}
 	async playSongById(videoId) {
-	    if (!this.ytPlayer)      { console.error('YouTube player not initialized'); return; }
-	    if (!videoId)            { console.error('No video ID provided'); return; }
-	    if (!this.ytPlayerReady) { console.log('Player not ready yet, please wait a moment...'); return; }
-	 
-	    // Look up master song from library — playlist/queue copies won't have the handle
+	    if (!videoId) { console.error('No video ID provided'); return; }
 	    const currentId = this.currentSong?.id;
 	    const masterSong = (currentId && this.songLibrary.find(s => s.id === currentId))
 	                     || this.songLibrary.find(s => s.videoId === videoId);
-	 
+	
 	    if (masterSong?.localFileHandle) {
 	        try {
 	            const perm = await masterSong.localFileHandle.requestPermission({ mode: 'read' });
@@ -2733,8 +2736,6 @@ class AdvancedMusicPlayer {
 	            };
 	            const msg = errorMessages[err.name] || `Local file error (${err.name}).`;
 	            this.showNotification(`${msg} Falling back to YouTube.`, 'error');
-	 
-	            // Only auto-clear if the file is genuinely gone
 	            if (err.name === 'NotFoundError') {
 	                const idx = this.songLibrary.findIndex(s => s.id === masterSong.id);
 	                if (idx !== -1) {
@@ -2745,11 +2746,18 @@ class AdvancedMusicPlayer {
 	            }
 	        }
 	    }
-	 
-	    // Stop local audio if switching back to YouTube
 	    if (this.localAudio && !this.localAudio.paused) this.localAudio.pause();
 	    this.isLocalPlayback = false;
-	 
+	    if (!this.ytPlayer) {
+	        console.error('YouTube player not initialized');
+	        this.showNotification?.('No internet connection or YouTube unavailable.', 'error');
+	        return;
+	    }
+	    if (!this.ytPlayerReady) {
+	        console.log('Player not ready yet, please wait a moment...');
+	        return;
+	    }
+	
 	    try {
 	        console.log('Loading video:', videoId);
 	        this.ytPlayer.loadVideoById({ videoId, suggestedQuality: 'small' });
@@ -2777,7 +2785,6 @@ class AdvancedMusicPlayer {
 	    }
 	}
 	togglePlayPause() {
-	    // Local audio path
 	    if (this.isLocalPlayback && this.localAudio) {
 	        try {
 	            if (!this.localAudio.paused) {
@@ -2785,14 +2792,11 @@ class AdvancedMusicPlayer {
 	            } else {
 	                this.localAudio.play();
 	            }
-	            // pause/play event listeners on localAudio handle isPlaying + UI
 	        } catch (error) {
 	            console.error("Error toggling local audio:", error);
 	        }
 	        return;
 	    }
-	
-	    // YouTube path (unchanged)
 	    if (!this.ytPlayer) { console.warn("YouTube player not initialized"); return; }
 	    try {
 	        const playerState = this.ytPlayer.getPlayerState();
@@ -2814,7 +2818,6 @@ class AdvancedMusicPlayer {
 	        console.error("Error toggling play/pause:", error);
 	    }
 	}
-	// Complete playNextSong method with Discord RPC
 	playNextSong() {
 		if (this._consumeQueueHead()) return;
 		const source = this.currentPlaylist ? this.currentPlaylist.songs : this.songLibrary;
@@ -2824,11 +2827,14 @@ class AdvancedMusicPlayer {
 			return;
 		}
 		if (this.currentSongIndex === source.length - 1 && !this.isPlaylistLooping) {
-			if (this.ytPlayer) {
+			if (this.isLocalPlayback && this.localAudio) {
+				this.localAudio.pause();
+			} else if (this.ytPlayer) {
 				this.ytPlayer.stopVideo();
-				this.isPlaying = false;
-				this.updatePlayerUI();
 			}
+			this.isPlaying = false;
+			this.isLocalPlayback = false;
+			this.updatePlayerUI();
 			return;
 		}
 		this.currentSongIndex = (this.currentSongIndex + 1) % source.length;
@@ -2841,8 +2847,6 @@ class AdvancedMusicPlayer {
 			this.playCurrentSong();
 		}
 		this.updateCurrentSongDisplay();
-
-		// Send Discord RPC update
 		this._discordScheduleSend();
 	}
 
@@ -2896,7 +2900,6 @@ class AdvancedMusicPlayer {
 	    this._discordScheduleSend();
 	}
 
-	// Complete playSongFromPlaylist method with Discord RPC
 	playSongFromPlaylist(index) {
 		if (!this.currentPlaylist || index >= this.currentPlaylist.songs.length)
 			return;
@@ -5230,7 +5233,7 @@ hideSidebar() {
 	}
 
 	adjustVolume(change) {
-		if (!this.ytPlayer || !this.elements.volumeSlider) return;
+		if (!this.elements.volumeSlider) return;
 		const currentVolume = parseFloat(this.elements.volumeSlider.value);
 		let newVolume = Math.min(100, Math.max(0, currentVolume + change * 100));
 		this.elements.volumeSlider.value = newVolume;
@@ -5365,8 +5368,13 @@ hideSidebar() {
 				return;
 			}
 			if (nextIndex === 0 && !this.isPlaylistLooping) {
-				this.ytPlayer.stopVideo();
+				if (this.isLocalPlayback && this.localAudio) {
+					this.localAudio.pause();
+				} else if (this.ytPlayer) {
+					this.ytPlayer.stopVideo();
+				}
 				this.isPlaying = false;
+				this.isLocalPlayback = false;
 				this.updatePlayerUI();
 				return;
 			}
@@ -8548,7 +8556,20 @@ hideSidebar() {
 		this.updateTimerCountdown();
 	}
 	stopMusic() {
-		if (this.ytPlayer) {
+		if (this.isLocalPlayback && this.localAudio) {
+			try {
+				this.localAudio.pause();
+				this.isPlaying = false;
+				this.updatePlayerUI();
+				if (this.titleScrollInterval) {
+					clearInterval(this.titleScrollInterval);
+					this.titleScrollInterval = null;
+					document.title = "Music Player";
+				}
+			} catch (error) {
+				console.error("Error stopping local audio:", error);
+			}
+		} else if (this.ytPlayer) {
 			try {
 				this.ytPlayer.pauseVideo();
 				this.isPlaying = false;
@@ -12736,25 +12757,40 @@ closeBillboardHot100Modal() {
 
 	
 	syncUIWithCurrentState() {
-		if (this.ytPlayer && this.ytPlayerReady) {
-			try {
-				const currentTime = this.ytPlayer.getCurrentTime() || 0;
-				const duration = this.ytPlayer.getDuration() || 0;
-
-				if (duration > 0 && this.elements.progressBar) {
-					const progressPercent = (currentTime / duration) * 100;
-					this.elements.progressBar.value = progressPercent;
-
-					if (this.elements.timeDisplay) {
-						const formattedCurrentTime = this.formatTime(currentTime);
-						const formattedDuration = this.formatTime(duration);
-						this.elements.timeDisplay.textContent = `${formattedCurrentTime}/${formattedDuration}`;
-					}
-				}
-			} catch (error) {
-				console.warn('Could not sync UI state:', error);
-			}
-		}
+	    if (this.isLocalPlayback && this.localAudio) {
+	        try {
+	            const currentTime = this.localAudio.currentTime || 0;
+	            const duration = this.localAudio.duration || 0;
+	            if (duration > 0 && this.elements.progressBar) {
+	                const progressPercent = (currentTime / duration) * 100;
+	                this.elements.progressBar.value = progressPercent;
+	                if (this.elements.timeDisplay) {
+	                    this.elements.timeDisplay.textContent =
+	                        `${this.formatTime(currentTime)}/${this.formatTime(duration)}`;
+	                }
+	            }
+	        } catch (error) {
+	            console.warn('Could not sync local UI state:', error);
+	        }
+	        return;
+	    }
+	    if (this.ytPlayer && this.ytPlayerReady) {
+	        try {
+	            const currentTime = this.ytPlayer.getCurrentTime() || 0;
+	            const duration = this.ytPlayer.getDuration() || 0;
+	            if (duration > 0 && this.elements.progressBar) {
+	                const progressPercent = (currentTime / duration) * 100;
+	                this.elements.progressBar.value = progressPercent;
+	                if (this.elements.timeDisplay) {
+	                    const formattedCurrentTime = this.formatTime(currentTime);
+	                    const formattedDuration = this.formatTime(duration);
+	                    this.elements.timeDisplay.textContent = `${formattedCurrentTime}/${formattedDuration}`;
+	                }
+	            }
+	        } catch (error) {
+	            console.warn('Could not sync UI state:', error);
+	        }
+	    }
 	}
 	loadLibrarySortValue() {
 		return new Promise((resolve) => {
@@ -13948,6 +13984,14 @@ initNowPlayingTab() {
 
     // Progress bar
     document.getElementById('npProgressBar')?.addEventListener('change', (e) => {
+        if (this.isLocalPlayback && this.localAudio) {
+            const duration = this.localAudio.duration || 0;
+            if (!duration) return;
+            const seekTime = (e.target.value / 100) * duration;
+            this.localAudio.currentTime = seekTime;
+            this.updateHighlightedLyric(seekTime, this.currentLyrics ?? [], this.currentTimings ?? []);
+            return;
+        }
         if (!this.ytPlayer) return;
         const duration = this.ytPlayer.getDuration();
         const seekTime = (e.target.value / 100) * duration;
