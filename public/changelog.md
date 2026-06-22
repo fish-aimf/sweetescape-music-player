@@ -660,3 +660,5 @@
 -  added service worker so website can be visited while offline. v66.0.0
 -  fixed numerous offline induced bugs. v66.1.0
 -  playing song youtube player doesn't require in the case of when offline playback is avaliable v66.2.0
+-  fixed initializing error while offline v66.3.0
+-  fixed infinite console log and network attempts v66.4.0
