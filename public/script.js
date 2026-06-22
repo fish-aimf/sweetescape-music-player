@@ -175,19 +175,6 @@ class AdvancedMusicPlayer {
 		this.currentKeybinds = { ...this.defaultKeybinds };
 		this.isRecordingKeybind = false;
 		this.recordingAction = null;
-
-		this.THUMB_FALLBACK_SONG = 'data:image/svg+xml;utf8,' + encodeURIComponent(
-			'<svg xmlns="http://www.w3.org/2000/svg" width="120" height="90">' +
-			'<rect width="120" height="90" fill="#333"/>' +
-			'<text x="60" y="48" fill="#fff" font-size="11" ' +
-			'font-family="sans-serif" text-anchor="middle">No Image</text></svg>'
-		);
-		this.THUMB_FALLBACK_PLAYLIST = 'data:image/svg+xml;utf8,' + encodeURIComponent(
-			'<svg xmlns="http://www.w3.org/2000/svg" width="120" height="90">' +
-			'<rect width="120" height="90" fill="#333"/>' +
-			'<text x="60" y="48" fill="#fff" font-size="11" ' +
-			'font-family="sans-serif" text-anchor="middle">Playlist</text></svg>'
-		);
 		
 		// Discord integration
 		this.discordWs = null;
@@ -6170,8 +6157,8 @@ hideSidebar() {
 					item.thumbnailUrl ||
 					`https://img.youtube.com/vi/${item.videoId}/default.jpg`;
 				thumbnailImg.alt = item.name;
-				thumbnailImg.onerror = (e) => {
-					this.applyImageFallback(e.target, this.THUMB_FALLBACK_SONG);
+				thumbnailImg.onerror = function() {
+					this.src = "https://placehold.it/120x90/333/fff?text=No+Image";
 				};
 				thumbnail.appendChild(thumbnailImg);
 			} else {
@@ -6179,8 +6166,8 @@ hideSidebar() {
 					const thumbnailImg = document.createElement("img");
 					thumbnailImg.src = item.thumbnailUrl;
 					thumbnailImg.alt = item.name;
-					thumbnailImg.onerror = (e) => {
-						this.applyImageFallback(e.target, this.THUMB_FALLBACK_PLAYLIST);
+					thumbnailImg.onerror = function() {
+						this.src = "https://placehold.it/120x90/333/fff?text=Playlist";
 					};
 					thumbnail.appendChild(thumbnailImg);
 				} else {
@@ -6407,8 +6394,8 @@ hideSidebar() {
 			thumbnail.src = song.thumbnailUrl || `https://img.youtube.com/vi/${song.videoId}/default.jpg`;
 			thumbnail.alt = song.name;
 			thumbnail.classList.add("recently-played-thumbnail");
-			thumbnail.onerror = (e) => {
-				this.applyImageFallback(e.target, this.THUMB_FALLBACK_SONG);
+			thumbnail.onerror = function() {
+				this.src = "https://placehold.it/120x90/333/fff?text=No+Image";
 			};
 
 			const info = document.createElement("div");
@@ -13416,794 +13403,788 @@ initializeTemporarySongPlayer() {
 		}
 	});
 }
-	
-	// Play the temporary song
-	playTemporarySong(videoId) {
-		if (!this.tempYtPlayer) {
-			this.initializeTemporarySongPlayer();
-			setTimeout(() => {
-				if (this.tempYtPlayerReady) {
-					this.tempYtPlayer.loadVideoById(videoId);
-				}
-			}, 1000);
-		} else {
-			this.tempYtPlayer.loadVideoById(videoId);
-		}
-	}
-	
-	// Cleanup temporary player
-	cleanupTemporarySongPlayer() {
-		if (this.tempYtPlayer) {
-			try {
-				this.tempYtPlayer.stopVideo();
-				this.tempYtPlayer.destroy();
-			} catch (e) {
-				console.warn("Error destroying temp player:", e);
+
+// Play the temporary song
+playTemporarySong(videoId) {
+	if (!this.tempYtPlayer) {
+		this.initializeTemporarySongPlayer();
+		setTimeout(() => {
+			if (this.tempYtPlayerReady) {
+				this.tempYtPlayer.loadVideoById(videoId);
 			}
-			this.tempYtPlayer = null;
-			this.tempYtPlayerReady = false;
+		}, 1000);
+	} else {
+		this.tempYtPlayer.loadVideoById(videoId);
+	}
+}
+
+// Cleanup temporary player
+cleanupTemporarySongPlayer() {
+	if (this.tempYtPlayer) {
+		try {
+			this.tempYtPlayer.stopVideo();
+			this.tempYtPlayer.destroy();
+		} catch (e) {
+			console.warn("Error destroying temp player:", e);
 		}
-		this.isTemporarySongPlaying = false;
+		this.tempYtPlayer = null;
+		this.tempYtPlayerReady = false;
 	}
-	cleanupBillboardAndGlobalLibrary() {
-	    console.log("Cleaning up Billboard and Global Library resources");
-	    
-	    // Remove Billboard Hot 100 modal if exists
-	    const billboardModal = document.getElementById('billboardHot100Modal');
-	    if (billboardModal) {
-	        billboardModal.remove();
-	        console.log("Billboard Hot 100 modal removed");
-	    }
-	    
-	    // Remove detailed playlist modals if any exist
-	    const detailedModals = document.querySelectorAll('.detailed-playlist-modal');
-	    detailedModals.forEach(modal => {
-	        modal.remove();
-	    });
-	    if (detailedModals.length > 0) {
-	        console.log(`Removed ${detailedModals.length} detailed playlist modal(s)`);
-	    }
-	    
-	    // Clear cached data arrays
-	    if (this.allArtists && this.allArtists.length > 0) {
-	        this.allArtists = [];
-	        console.log("Cleared allArtists cache");
-	    }
-	    
-	    if (this.allSongs && this.allSongs.length > 0) {
-	        this.allSongs = [];
-	        console.log("Cleared allSongs cache");
-	    }
-	    
-	    if (this.globalLibraryArtists && this.globalLibraryArtists.length > 0) {
-	        this.globalLibraryArtists = [];
-	        console.log("Cleared globalLibraryArtists cache");
-	    }
-	    
-	    // Clear search filters
-	    this.globalLibrarySearchFilter = '';
-	    this.currentViewMode = 'playlists';
-	    
-	    // Clear pending imports
-	    this.pendingGlobalImport = null;
-	    
-	    // Logout global library user if logged in
-	    if (this.globalLibraryCurrentUser) {
-	        console.log("Logging out global library user");
-	        this.globalLibraryCurrentUser = null;
-	    }
-	    
-	    // Close Supabase connection if exists
-	    if (this.supabase) {
-	        // Supabase clients don't need explicit cleanup, but clear the reference
-	        this.supabase = null;
-	        this.globalLibrarySupabase = null;
-	        console.log("Cleared Supabase client references");
-	    }
-	    
-	    console.log("Billboard and Global Library cleanup complete");
-	}
-	getRandomYouTubeApiKey() {
-	    return this.activeYoutubeKeyIndex;
-	}
-	
-	rotateYouTubeApiKey() {
-	    this.activeYoutubeKeyIndex = (this.activeYoutubeKeyIndex + 1) % this.YOUTUBE_API_KEYS_COUNT;
-	    console.log(`Rotated to YouTube API key ${this.activeYoutubeKeyIndex + 1}`);
-	}
-	async searchYouTubeForLibraryMatches(searchTerm, pageToken = null) {
-	    const maxResults = 5;
-	    
-	    for (let attempt = 0; attempt < this.YOUTUBE_API_KEYS_COUNT; attempt++) {
-	        const keyIndex = this.getRandomYouTubeApiKey();
-	        
-	        try {
-	            let url = `/api/youtube?query=${encodeURIComponent(searchTerm)}&maxResults=${maxResults}&type=combined&keyIndex=${keyIndex}`;
-	            if (pageToken) url += `&pageToken=${encodeURIComponent(pageToken)}`;
-	
-	            const response = await fetch(url);
-	            const result = await response.json();
-	            
-	            if (result.status !== 200) {
-	                if (result.status === 403) {
-	                    console.warn(`API key ${this.activeYoutubeKeyIndex + 1} quota exceeded`);
-	                    this.rotateYouTubeApiKey();
-	                    continue;
-	                }
-	                throw new Error(`YouTube API error: ${result.status}`);
-	            }
-	            
-	            const data = result.data;
-	            
-	            if (data.error && data.error.code === 403) {
-	                this.rotateYouTubeApiKey();
-	                continue;
-	            }
-	            
-	            return {
-	                items: data.items || [],
-	                nextPageToken: data.nextPageToken || null
-	            };
-	            
-	        } catch (error) {
-	            console.error(`YouTube API attempt ${attempt + 1} failed:`, error);
-	            this.rotateYouTubeApiKey();
-	        }
-	    }
-	    
-	    throw new Error('All YouTube API keys exhausted');
-	}
-	renderYouTubeLibrarySearchResults(results, searchTerm, nextPageToken = null) {
-	    this.currentLibrarySearchTerm = searchTerm;
-	    this.currentLibraryNextPageToken = nextPageToken;
-	
-	    const fragment = document.createDocumentFragment();
-	    
-	    const youtubeResultsContainer = document.createElement('div');
-	    youtubeResultsContainer.classList.add('youtube-library-results');
-	    
-	    results.forEach(video => {
-	        const card = this.createYouTubeLibraryResultCard(video);
-	        youtubeResultsContainer.appendChild(card);
-	    });
-	    
-	    fragment.appendChild(youtubeResultsContainer);
-	
-	    if (nextPageToken) {
-	        const loadMoreBtn = document.createElement('button');
-	        loadMoreBtn.id = 'loadMoreYouTubeBtn';
-	        loadMoreBtn.className = 'load-more-youtube-btn';
-	        loadMoreBtn.textContent = 'Load more results';
-	        loadMoreBtn.addEventListener('click', () => this.loadMoreYouTubeLibraryResults());
-	        fragment.appendChild(loadMoreBtn);
-	    }
-	    
-	    this.elements.songLibrary.innerHTML = '';
-	    this.elements.songLibrary.appendChild(fragment);
-	    
-	    this.showYouTubeSearchSuggestion(searchTerm);
-	}
-	
-	async loadMoreYouTubeLibraryResults() {
-	    if (!this.currentLibraryNextPageToken || !this.currentLibrarySearchTerm) return;
-	
-	    const btn = document.getElementById('loadMoreYouTubeBtn');
-	    if (btn) {
-	        btn.textContent = 'Loading...';
-	        btn.disabled = true;
-	    }
-	
-	    try {
-	        const { items, nextPageToken } = await this.searchYouTubeForLibraryMatches(
-	            this.currentLibrarySearchTerm,
-	            this.currentLibraryNextPageToken
-	        );
-	
-	        this.currentLibraryNextPageToken = nextPageToken;
-	
-	        const container = this.elements.songLibrary.querySelector('.youtube-library-results');
-	        items.forEach(video => {
-	            const card = this.createYouTubeLibraryResultCard(video);
-	            container.appendChild(card);
-	        });
-	
-	        if (nextPageToken) {
-	            btn.textContent = 'Load more results';
-	            btn.disabled = false;
-	        } else {
-	            btn?.remove();
-	        }
-	
-	    } catch (error) {
-	        console.error('Failed to load more results:', error);
-	        if (btn) {
-	            btn.textContent = 'Load more results';
-	            btn.disabled = false;
-	        }
-	    }
-	}
-	createYouTubeLibraryResultCard(video) {
-	    const videoId = video.id.videoId;
-	    const title = video.snippet.title;
-	    const channel = video.snippet.channelTitle;
-	    const publishedAt = new Date(video.snippet.publishedAt);
-	    const thumbnail = video.snippet.thumbnails.high?.url || video.snippet.thumbnails.medium.url;
-	    const uploadDate = this.formatYouTubeUploadDate(publishedAt);
-	    const viewCount = video.statistics?.viewCount
-	        ? this.formatYouTubeViewCount(parseInt(video.statistics.viewCount))
-	        : null;
-	    const meta = viewCount ? `${viewCount} • ${uploadDate}` : uploadDate;
-	
-	    const card = document.createElement('div');
-	    card.classList.add('youtube-library-result-card');
-	    
-	    card.innerHTML = `
-	        <img src="${thumbnail}" alt="${this.escapeHtml(title)}" class="youtube-result-thumbnail">
-	        <div class="youtube-result-info">
-	            <div class="youtube-result-title">${this.decodeHtmlEntities(title)}</div>
-	            <div class="youtube-result-channel">${this.decodeHtmlEntities(channel)}</div>
-	            <div class="youtube-result-meta">${meta}</div>
-	        </div>
-	        <div class="youtube-result-actions">
-	            <button class="youtube-result-preview-btn" data-video-id="${videoId}" title="Preview">
-	                <i class="fas fa-play"></i> Preview
-	            </button>
-	            <button class="youtube-result-add-btn" data-video-id="${videoId}" data-title="${this.escapeHtml(title)}" data-channel="${this.escapeHtml(channel)}">
-	                <i class="fas fa-plus"></i> Add
-	            </button>
-	        </div>
-	    `;
-	    
-	    return card;
-	}
-	setupYouTubeLibraryResultsDelegation() {
-	    this.elements.songLibrary.addEventListener('click', (e) => {
-	        const previewBtn = e.target.closest('.youtube-result-preview-btn');
-	        if (previewBtn) {
-	            const videoId = previewBtn.dataset.videoId;
-	            const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
-	            this.samplePlayTemporarySong(youtubeUrl);
-	            return;
-	        }
-	
-	        const addBtn = e.target.closest('.youtube-result-add-btn');
-	        if (!addBtn) return;
-	        
-	        const videoId = addBtn.dataset.videoId;
-	        const title = addBtn.dataset.title;
-	        const channel = addBtn.dataset.channel;
-	        
-	        this.autofillYouTubeVideoFromSearch(videoId, title, channel);
-	    });
-	}
-	
-	
-	formatYouTubeViewCount(count) {
-	    if (count >= 1000000000) {
-	        return `${(count / 1000000000).toFixed(1)}B views`;
-	    } else if (count >= 1000000) {
-	        return `${(count / 1000000).toFixed(1)}M views`;
-	    } else if (count >= 1000) {
-	        return `${(count / 1000).toFixed(1)}K views`;
-	    } else {
-	        return `${count} views`;
-	    }
-	}
-	autofillYouTubeVideoFromSearch(videoId, title, channel) {
-	    const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
-	    
-	    this.openLibraryModal();
-	    
-	    // Autofill the form
-	    this.elements.songUrlInput.value = youtubeUrl;
-	    this.elements.songNameInput.value = title;
-	    this.elements.songAuthorInput.value = channel;
-	    
-	    // Trigger URL paste handler to show thumbnail
-	    this.handleUrlPaste();
-	    
-	    // Clear the library search
-	    this.elements.librarySearch.value = '';
-	    this.hideYouTubeSearchSuggestion();
-	}
-	
-	formatYouTubeUploadDate(date) {
-	    const now = new Date();
-	    const diffTime = Math.abs(now - date);
-	    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-	    const diffMonths = Math.floor(diffDays / 30);
-	    const diffYears = Math.floor(diffDays / 365);
-	    
-	    if (diffYears > 0) {
-	        return `${diffYears} year${diffYears > 1 ? 's' : ''} ago`;
-	    } else if (diffMonths > 0) {
-	        return `${diffMonths} month${diffMonths > 1 ? 's' : ''} ago`;
-	    } else if (diffDays > 0) {
-	        return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
-	    } else {
-	        return 'Today';
-	    }
-	}
-	
-	
-	
-	resetLibrarySearchTimeout() {
-	    clearTimeout(this.librarySearchTimeout);
-	    
-	    this.librarySearchTimeout = setTimeout(() => {
-	        if (this.elements.librarySearch) {
-	            this.elements.librarySearch.blur();
-	        }
-	    }, 60000);
-	}
-	initDownloadModal() {
-	  const overlay = document.getElementById('downloadModal');
-	  const closeBtn = document.getElementById('dlCloseBtn');
-	  const modeBtns = document.querySelectorAll('.dl-mode-btn');
-	  const panels = {
-	    current: document.getElementById('dlPanelCurrent'),
-	    search: document.getElementById('dlPanelSearch'),
-	    url: document.getElementById('dlPanelUrl')
-	  };
-	  const searchInput = document.getElementById('dlSearchInput');
-	  const searchResults = document.getElementById('dlSearchResults');
-	  const urlInput = document.getElementById('dlUrlInput');
-	  const addUrlBtn = document.getElementById('dlAddUrlBtn');
-	  const queueSection = document.getElementById('dlQueueSection');
-	  const queueList = document.getElementById('dlQueueList');
-	  const downloadAllBtn = document.getElementById('dlDownloadAllBtn');
-	  const downloadAllLabel = document.getElementById('dlDownloadAllLabel');
-	
-	  const escHtml = s => s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : '';
-	
-	  const open = () => {
-	    overlay.style.display = 'flex';
-	    refreshCurrentPanel();
-	    setMode('current');
-	    if (!this.currentSong) setMode('search');
-	  };
-	
-	  const close = () => { overlay.style.display = 'none'; };
-	
-	  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
-	  closeBtn.addEventListener('click', close);
-	  document.addEventListener('keydown', e => {
-	    if (e.key === 'Escape' && overlay.style.display !== 'none') close();
-	  });
-	
-	  document.getElementById('downloadButton').addEventListener('click', open);
-	
-	  const setMode = (mode) => {
-	    modeBtns.forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
-	    Object.entries(panels).forEach(([k, el]) => el.style.display = k === mode ? '' : 'none');
-	    if (mode === 'search') setTimeout(() => searchInput.focus(), 50);
-	    if (mode === 'url') setTimeout(() => urlInput.focus(), 50);
-	  };
-	
-	  modeBtns.forEach(btn => btn.addEventListener('click', () => setMode(btn.dataset.mode)));
-	
-	  const refreshCurrentPanel = () => {
-	    const song = this.currentSong;
-	    const modeBtn = document.getElementById('dlModeCurrent');
-	    if (!song) {
-	      modeBtn.style.display = 'none';
-	      return;
-	    }
-	    modeBtn.style.display = '';
-	    document.getElementById('dlCurrentName').textContent = song.name || 'Unknown';
-	    document.getElementById('dlCurrentAuthor').textContent = song.author || '';
-	    const thumb = document.getElementById('dlCurrentThumb');
-	    if (song.videoId) thumb.style.backgroundImage = `url(https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg)`;
-	    const addBtn = document.getElementById('dlCurrentAddBtn');
-	    const alreadyQueued = this.dlQueue.some(q => q.videoId === song.videoId);
-	    addBtn.disabled = alreadyQueued;
-	    addBtn.title = alreadyQueued ? 'Already in queue' : 'Add to queue';
-	    addBtn.onclick = () => {
-	      addToQueue({ videoId: song.videoId, name: song.name, author: song.author });
-	      addBtn.disabled = true;
-	    };
-	  };
-	
-	  // Search
-	  let _debounce = null;
-	  searchInput.addEventListener('input', () => {
-	    clearTimeout(_debounce);
-	    _debounce = setTimeout(() => renderSearch(searchInput.value.trim()), 120);
-	  });
-	
-	  const renderSearch = (term) => {
-	    if (!term) { searchResults.hidden = true; return; }
-	    const lower = term.toLowerCase();
-	    const results = this.songLibrary
-	      .filter(s => s.name.toLowerCase().includes(lower) || (s.author && s.author.toLowerCase().includes(lower)))
-	      .slice(0, 5);
-	    if (!results.length) { searchResults.hidden = true; return; }
-	    searchResults.hidden = false;
-	    searchResults.innerHTML = results.map((s, i) => `
-	      <div class="dl-result${i === 0 ? ' focused' : ''}" data-idx="${i}">
-	        <div style="flex:1;min-width:0;">
-	          <span class="dl-result-name">${escHtml(s.name)}</span>
-	          ${s.author ? `<span class="dl-result-author">${escHtml(s.author)}</span>` : ''}
-	        </div>
-	        <button class="dl-result-add" title="Add to queue"><i class="fas fa-plus"></i></button>
-	      </div>`).join('');
-	
-	    searchResults.querySelectorAll('.dl-result').forEach((el, i) => {
-	      el.querySelector('.dl-result-add').addEventListener('click', (e) => {
-	        e.stopPropagation();
-	        addToQueue({ videoId: results[i].videoId, name: results[i].name, author: results[i].author });
-	      });
-	      el.addEventListener('click', () => {
-	        addToQueue({ videoId: results[i].videoId, name: results[i].name, author: results[i].author });
-	      });
-	    });
-	  };
-	
-	  const handleSearchKey = (e) => {
-	    const items = [...searchResults.querySelectorAll('.dl-result')];
-	    const focused = searchResults.querySelector('.dl-result.focused');
-	    let idx = focused ? items.indexOf(focused) : 0;
-	    if (e.key === 'Enter') {
-	      e.preventDefault();
-	      if (items[idx]) items[idx].click();
-	      searchInput.value = ''; searchResults.hidden = true;
-	    } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-	      e.preventDefault();
-	      focused?.classList.remove('focused');
-	      idx = e.key === 'ArrowDown' ? Math.min(idx+1, items.length-1) : Math.max(idx-1, 0);
-	      items[idx].classList.add('focused');
-	    } else if (e.key === 'Escape') {
-	      searchResults.hidden = true; searchInput.value = '';
-	    }
-	  };
-	  searchInput.addEventListener('keydown', handleSearchKey);
-	
-	  const addFromUrl = () => {
-	    const id = this.extractYouTubeId(urlInput.value.trim());
-	    if (!id) { urlInput.style.borderColor = 'var(--error-color)'; setTimeout(() => urlInput.style.borderColor = '', 1200); return; }
-	    addToQueue({ videoId: id, name: id, author: '' });
-	    fetch(`/api/song/${id}`)
-	      .then(r => r.text())
-	      .then(html => {
-	        const m = html.match(/<title>(.*?)<\/title>/);
-	        if (m) {
-	          const item = this.dlQueue.find(q => q.videoId === id);
-	          if (item) { item.name = m[1].replace(/ - .*/, '').trim(); renderQueue(); }
-	        }
-	      }).catch(() => {});
-	    urlInput.value = '';
-	  };
-	  addUrlBtn.addEventListener('click', addFromUrl);
-	  urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') addFromUrl(); });
-	
-	  const addToQueue = (song) => {
-	    if (this.dlQueue.some(q => q.videoId === song.videoId)) return;
-	    this.dlQueue.push({ ...song, status: 'idle', link: null, opened: false });
-	    renderQueue();
-	    convertItem(this.dlQueue[this.dlQueue.length - 1]);
-	  };
-	
-	  const renderQueue = () => {
-	    if (!this.dlQueue.length) { queueSection.style.display = 'none'; return; }
-	    queueSection.style.display = '';
-	
-	    const totalDone = this.dlQueue.filter(q => q.status === 'done').length;
-	    const notOpened = this.dlQueue.filter(q => q.status === 'done' && !q.opened).length;
-	    const anyOpened = this.dlQueue.some(q => q.opened);
-	
-	    if (anyOpened) {
-	      downloadAllLabel.textContent = notOpened > 0 ? `Download rest (${notOpened})` : 'All downloaded';
-	    } else {
-	      downloadAllLabel.textContent = `Download all (${totalDone}/${this.dlQueue.length})`;
-	    }
-	    downloadAllBtn.disabled = notOpened === 0;
-	
-	    queueList.innerHTML = this.dlQueue.map((item, i) => `
-	      <div class="dl-queue-item${item.opened ? ' dl-qi-opened' : ''}" data-idx="${i}">
-	        <div class="dl-qi-thumb" style="${item.videoId ? `background-image:url(https://img.youtube.com/vi/${item.videoId}/mqdefault.jpg)` : ''}"></div>
-	        <div class="dl-qi-info">
-	          <div class="dl-qi-name">${escHtml(item.name)}</div>
-	          <div class="dl-qi-status ${item.status}">
-	            ${item.status === 'idle' ? 'Waiting…'
-	            : item.status === 'converting' ? '<span class="dl-spinner"></span> Converting…'
-	            : item.status === 'done' && item.opened ? '<i class="fas fa-check"></i> Downloaded'
-	            : item.status === 'done' ? 'Ready'
-	            : item._quotaExceeded ? 'API limit reached' : 'Failed — tap retry'}
-	          </div>
-	        </div>
-	        <div class="dl-qi-actions">
-	          ${item.status === 'done' && item.opened
-	            ? `<span class="dl-qi-tick" style="color:#5D9C59"><i class="fas fa-check-circle"></i></span>`
-	            : item.status === 'done'
-	            ? `<button class="dl-qi-download" title="Download"><i class="fas fa-download"></i></button>`
-	            : item.status === 'error'
-	            ? `<button class="dl-qi-download" title="Retry"><i class="fas fa-redo"></i></button>`
-	            : ''}
-	          <button class="dl-qi-remove" title="Remove"><i class="fas fa-times"></i></button>
-	        </div>
-	      </div>`).join('');
-	
-	    queueList.querySelectorAll('.dl-queue-item').forEach((el, i) => {
-	      const item = this.dlQueue[i];
-	      el.querySelector('.dl-qi-remove')?.addEventListener('click', () => {
-	        this.dlQueue.splice(i, 1); renderQueue();
-	      });
-	      const dlBtn = el.querySelector('.dl-qi-download');
-	      if (dlBtn) {
-	        dlBtn.addEventListener('click', () => {
-	          if (item.status === 'done' && item.link) {
-	            item.opened = true;
-	            window.open(item.link, '_blank');
-	            renderQueue();
-	          } else if (item.status === 'error') {
-	            item.status = 'idle'; renderQueue(); convertItem(item);
-	          }
-	        });
-	      }
-	    });
-	  };
-	
-	  const convertItem = async (item) => {
-		  if (item.status === 'done' || item.status === 'converting') return;
-		  const activeCount = this.dlQueue.filter(q => q.status === 'converting').length;
-		  if (activeCount >= 2) {
-		    setTimeout(() => convertItem(item), 2000);
+	this.isTemporarySongPlaying = false;
+}
+cleanupBillboardAndGlobalLibrary() {
+    console.log("Cleaning up Billboard and Global Library resources");
+    
+    // Remove Billboard Hot 100 modal if exists
+    const billboardModal = document.getElementById('billboardHot100Modal');
+    if (billboardModal) {
+        billboardModal.remove();
+        console.log("Billboard Hot 100 modal removed");
+    }
+    
+    // Remove detailed playlist modals if any exist
+    const detailedModals = document.querySelectorAll('.detailed-playlist-modal');
+    detailedModals.forEach(modal => {
+        modal.remove();
+    });
+    if (detailedModals.length > 0) {
+        console.log(`Removed ${detailedModals.length} detailed playlist modal(s)`);
+    }
+    
+    // Clear cached data arrays
+    if (this.allArtists && this.allArtists.length > 0) {
+        this.allArtists = [];
+        console.log("Cleared allArtists cache");
+    }
+    
+    if (this.allSongs && this.allSongs.length > 0) {
+        this.allSongs = [];
+        console.log("Cleared allSongs cache");
+    }
+    
+    if (this.globalLibraryArtists && this.globalLibraryArtists.length > 0) {
+        this.globalLibraryArtists = [];
+        console.log("Cleared globalLibraryArtists cache");
+    }
+    
+    // Clear search filters
+    this.globalLibrarySearchFilter = '';
+    this.currentViewMode = 'playlists';
+    
+    // Clear pending imports
+    this.pendingGlobalImport = null;
+    
+    // Logout global library user if logged in
+    if (this.globalLibraryCurrentUser) {
+        console.log("Logging out global library user");
+        this.globalLibraryCurrentUser = null;
+    }
+    
+    // Close Supabase connection if exists
+    if (this.supabase) {
+        // Supabase clients don't need explicit cleanup, but clear the reference
+        this.supabase = null;
+        this.globalLibrarySupabase = null;
+        console.log("Cleared Supabase client references");
+    }
+    
+    console.log("Billboard and Global Library cleanup complete");
+}
+getRandomYouTubeApiKey() {
+    return this.activeYoutubeKeyIndex;
+}
+
+rotateYouTubeApiKey() {
+    this.activeYoutubeKeyIndex = (this.activeYoutubeKeyIndex + 1) % this.YOUTUBE_API_KEYS_COUNT;
+    console.log(`Rotated to YouTube API key ${this.activeYoutubeKeyIndex + 1}`);
+}
+async searchYouTubeForLibraryMatches(searchTerm, pageToken = null) {
+    const maxResults = 5;
+    
+    for (let attempt = 0; attempt < this.YOUTUBE_API_KEYS_COUNT; attempt++) {
+        const keyIndex = this.getRandomYouTubeApiKey();
+        
+        try {
+            let url = `/api/youtube?query=${encodeURIComponent(searchTerm)}&maxResults=${maxResults}&type=combined&keyIndex=${keyIndex}`;
+            if (pageToken) url += `&pageToken=${encodeURIComponent(pageToken)}`;
+
+            const response = await fetch(url);
+            const result = await response.json();
+            
+            if (result.status !== 200) {
+                if (result.status === 403) {
+                    console.warn(`API key ${this.activeYoutubeKeyIndex + 1} quota exceeded`);
+                    this.rotateYouTubeApiKey();
+                    continue;
+                }
+                throw new Error(`YouTube API error: ${result.status}`);
+            }
+            
+            const data = result.data;
+            
+            if (data.error && data.error.code === 403) {
+                this.rotateYouTubeApiKey();
+                continue;
+            }
+            
+            return {
+                items: data.items || [],
+                nextPageToken: data.nextPageToken || null
+            };
+            
+        } catch (error) {
+            console.error(`YouTube API attempt ${attempt + 1} failed:`, error);
+            this.rotateYouTubeApiKey();
+        }
+    }
+    
+    throw new Error('All YouTube API keys exhausted');
+}
+renderYouTubeLibrarySearchResults(results, searchTerm, nextPageToken = null) {
+    this.currentLibrarySearchTerm = searchTerm;
+    this.currentLibraryNextPageToken = nextPageToken;
+
+    const fragment = document.createDocumentFragment();
+    
+    const youtubeResultsContainer = document.createElement('div');
+    youtubeResultsContainer.classList.add('youtube-library-results');
+    
+    results.forEach(video => {
+        const card = this.createYouTubeLibraryResultCard(video);
+        youtubeResultsContainer.appendChild(card);
+    });
+    
+    fragment.appendChild(youtubeResultsContainer);
+
+    if (nextPageToken) {
+        const loadMoreBtn = document.createElement('button');
+        loadMoreBtn.id = 'loadMoreYouTubeBtn';
+        loadMoreBtn.className = 'load-more-youtube-btn';
+        loadMoreBtn.textContent = 'Load more results';
+        loadMoreBtn.addEventListener('click', () => this.loadMoreYouTubeLibraryResults());
+        fragment.appendChild(loadMoreBtn);
+    }
+    
+    this.elements.songLibrary.innerHTML = '';
+    this.elements.songLibrary.appendChild(fragment);
+    
+    this.showYouTubeSearchSuggestion(searchTerm);
+}
+
+async loadMoreYouTubeLibraryResults() {
+    if (!this.currentLibraryNextPageToken || !this.currentLibrarySearchTerm) return;
+
+    const btn = document.getElementById('loadMoreYouTubeBtn');
+    if (btn) {
+        btn.textContent = 'Loading...';
+        btn.disabled = true;
+    }
+
+    try {
+        const { items, nextPageToken } = await this.searchYouTubeForLibraryMatches(
+            this.currentLibrarySearchTerm,
+            this.currentLibraryNextPageToken
+        );
+
+        this.currentLibraryNextPageToken = nextPageToken;
+
+        const container = this.elements.songLibrary.querySelector('.youtube-library-results');
+        items.forEach(video => {
+            const card = this.createYouTubeLibraryResultCard(video);
+            container.appendChild(card);
+        });
+
+        if (nextPageToken) {
+            btn.textContent = 'Load more results';
+            btn.disabled = false;
+        } else {
+            btn?.remove();
+        }
+
+    } catch (error) {
+        console.error('Failed to load more results:', error);
+        if (btn) {
+            btn.textContent = 'Load more results';
+            btn.disabled = false;
+        }
+    }
+}
+createYouTubeLibraryResultCard(video) {
+    const videoId = video.id.videoId;
+    const title = video.snippet.title;
+    const channel = video.snippet.channelTitle;
+    const publishedAt = new Date(video.snippet.publishedAt);
+    const thumbnail = video.snippet.thumbnails.high?.url || video.snippet.thumbnails.medium.url;
+    const uploadDate = this.formatYouTubeUploadDate(publishedAt);
+    const viewCount = video.statistics?.viewCount
+        ? this.formatYouTubeViewCount(parseInt(video.statistics.viewCount))
+        : null;
+    const meta = viewCount ? `${viewCount} • ${uploadDate}` : uploadDate;
+
+    const card = document.createElement('div');
+    card.classList.add('youtube-library-result-card');
+    
+    card.innerHTML = `
+        <img src="${thumbnail}" alt="${this.escapeHtml(title)}" class="youtube-result-thumbnail">
+        <div class="youtube-result-info">
+            <div class="youtube-result-title">${this.decodeHtmlEntities(title)}</div>
+            <div class="youtube-result-channel">${this.decodeHtmlEntities(channel)}</div>
+            <div class="youtube-result-meta">${meta}</div>
+        </div>
+        <div class="youtube-result-actions">
+            <button class="youtube-result-preview-btn" data-video-id="${videoId}" title="Preview">
+                <i class="fas fa-play"></i> Preview
+            </button>
+            <button class="youtube-result-add-btn" data-video-id="${videoId}" data-title="${this.escapeHtml(title)}" data-channel="${this.escapeHtml(channel)}">
+                <i class="fas fa-plus"></i> Add
+            </button>
+        </div>
+    `;
+    
+    return card;
+}
+setupYouTubeLibraryResultsDelegation() {
+    this.elements.songLibrary.addEventListener('click', (e) => {
+        const previewBtn = e.target.closest('.youtube-result-preview-btn');
+        if (previewBtn) {
+            const videoId = previewBtn.dataset.videoId;
+            const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
+            this.samplePlayTemporarySong(youtubeUrl);
+            return;
+        }
+
+        const addBtn = e.target.closest('.youtube-result-add-btn');
+        if (!addBtn) return;
+        
+        const videoId = addBtn.dataset.videoId;
+        const title = addBtn.dataset.title;
+        const channel = addBtn.dataset.channel;
+        
+        this.autofillYouTubeVideoFromSearch(videoId, title, channel);
+    });
+}
+
+
+formatYouTubeViewCount(count) {
+    if (count >= 1000000000) {
+        return `${(count / 1000000000).toFixed(1)}B views`;
+    } else if (count >= 1000000) {
+        return `${(count / 1000000).toFixed(1)}M views`;
+    } else if (count >= 1000) {
+        return `${(count / 1000).toFixed(1)}K views`;
+    } else {
+        return `${count} views`;
+    }
+}
+autofillYouTubeVideoFromSearch(videoId, title, channel) {
+    const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
+    
+    this.openLibraryModal();
+    
+    // Autofill the form
+    this.elements.songUrlInput.value = youtubeUrl;
+    this.elements.songNameInput.value = title;
+    this.elements.songAuthorInput.value = channel;
+    
+    // Trigger URL paste handler to show thumbnail
+    this.handleUrlPaste();
+    
+    // Clear the library search
+    this.elements.librarySearch.value = '';
+    this.hideYouTubeSearchSuggestion();
+}
+
+formatYouTubeUploadDate(date) {
+    const now = new Date();
+    const diffTime = Math.abs(now - date);
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const diffMonths = Math.floor(diffDays / 30);
+    const diffYears = Math.floor(diffDays / 365);
+    
+    if (diffYears > 0) {
+        return `${diffYears} year${diffYears > 1 ? 's' : ''} ago`;
+    } else if (diffMonths > 0) {
+        return `${diffMonths} month${diffMonths > 1 ? 's' : ''} ago`;
+    } else if (diffDays > 0) {
+        return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    } else {
+        return 'Today';
+    }
+}
+
+
+
+resetLibrarySearchTimeout() {
+    clearTimeout(this.librarySearchTimeout);
+    
+    this.librarySearchTimeout = setTimeout(() => {
+        if (this.elements.librarySearch) {
+            this.elements.librarySearch.blur();
+        }
+    }, 60000);
+}
+initDownloadModal() {
+  const overlay = document.getElementById('downloadModal');
+  const closeBtn = document.getElementById('dlCloseBtn');
+  const modeBtns = document.querySelectorAll('.dl-mode-btn');
+  const panels = {
+    current: document.getElementById('dlPanelCurrent'),
+    search: document.getElementById('dlPanelSearch'),
+    url: document.getElementById('dlPanelUrl')
+  };
+  const searchInput = document.getElementById('dlSearchInput');
+  const searchResults = document.getElementById('dlSearchResults');
+  const urlInput = document.getElementById('dlUrlInput');
+  const addUrlBtn = document.getElementById('dlAddUrlBtn');
+  const queueSection = document.getElementById('dlQueueSection');
+  const queueList = document.getElementById('dlQueueList');
+  const downloadAllBtn = document.getElementById('dlDownloadAllBtn');
+  const downloadAllLabel = document.getElementById('dlDownloadAllLabel');
+
+  const escHtml = s => s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : '';
+
+  const open = () => {
+    overlay.style.display = 'flex';
+    refreshCurrentPanel();
+    setMode('current');
+    if (!this.currentSong) setMode('search');
+  };
+
+  const close = () => { overlay.style.display = 'none'; };
+
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+  closeBtn.addEventListener('click', close);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && overlay.style.display !== 'none') close();
+  });
+
+  document.getElementById('downloadButton').addEventListener('click', open);
+
+  const setMode = (mode) => {
+    modeBtns.forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+    Object.entries(panels).forEach(([k, el]) => el.style.display = k === mode ? '' : 'none');
+    if (mode === 'search') setTimeout(() => searchInput.focus(), 50);
+    if (mode === 'url') setTimeout(() => urlInput.focus(), 50);
+  };
+
+  modeBtns.forEach(btn => btn.addEventListener('click', () => setMode(btn.dataset.mode)));
+
+  const refreshCurrentPanel = () => {
+    const song = this.currentSong;
+    const modeBtn = document.getElementById('dlModeCurrent');
+    if (!song) {
+      modeBtn.style.display = 'none';
+      return;
+    }
+    modeBtn.style.display = '';
+    document.getElementById('dlCurrentName').textContent = song.name || 'Unknown';
+    document.getElementById('dlCurrentAuthor').textContent = song.author || '';
+    const thumb = document.getElementById('dlCurrentThumb');
+    if (song.videoId) thumb.style.backgroundImage = `url(https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg)`;
+    const addBtn = document.getElementById('dlCurrentAddBtn');
+    const alreadyQueued = this.dlQueue.some(q => q.videoId === song.videoId);
+    addBtn.disabled = alreadyQueued;
+    addBtn.title = alreadyQueued ? 'Already in queue' : 'Add to queue';
+    addBtn.onclick = () => {
+      addToQueue({ videoId: song.videoId, name: song.name, author: song.author });
+      addBtn.disabled = true;
+    };
+  };
+
+  // Search
+  let _debounce = null;
+  searchInput.addEventListener('input', () => {
+    clearTimeout(_debounce);
+    _debounce = setTimeout(() => renderSearch(searchInput.value.trim()), 120);
+  });
+
+  const renderSearch = (term) => {
+    if (!term) { searchResults.hidden = true; return; }
+    const lower = term.toLowerCase();
+    const results = this.songLibrary
+      .filter(s => s.name.toLowerCase().includes(lower) || (s.author && s.author.toLowerCase().includes(lower)))
+      .slice(0, 5);
+    if (!results.length) { searchResults.hidden = true; return; }
+    searchResults.hidden = false;
+    searchResults.innerHTML = results.map((s, i) => `
+      <div class="dl-result${i === 0 ? ' focused' : ''}" data-idx="${i}">
+        <div style="flex:1;min-width:0;">
+          <span class="dl-result-name">${escHtml(s.name)}</span>
+          ${s.author ? `<span class="dl-result-author">${escHtml(s.author)}</span>` : ''}
+        </div>
+        <button class="dl-result-add" title="Add to queue"><i class="fas fa-plus"></i></button>
+      </div>`).join('');
+
+    searchResults.querySelectorAll('.dl-result').forEach((el, i) => {
+      el.querySelector('.dl-result-add').addEventListener('click', (e) => {
+        e.stopPropagation();
+        addToQueue({ videoId: results[i].videoId, name: results[i].name, author: results[i].author });
+      });
+      el.addEventListener('click', () => {
+        addToQueue({ videoId: results[i].videoId, name: results[i].name, author: results[i].author });
+      });
+    });
+  };
+
+  const handleSearchKey = (e) => {
+    const items = [...searchResults.querySelectorAll('.dl-result')];
+    const focused = searchResults.querySelector('.dl-result.focused');
+    let idx = focused ? items.indexOf(focused) : 0;
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (items[idx]) items[idx].click();
+      searchInput.value = ''; searchResults.hidden = true;
+    } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      focused?.classList.remove('focused');
+      idx = e.key === 'ArrowDown' ? Math.min(idx+1, items.length-1) : Math.max(idx-1, 0);
+      items[idx].classList.add('focused');
+    } else if (e.key === 'Escape') {
+      searchResults.hidden = true; searchInput.value = '';
+    }
+  };
+  searchInput.addEventListener('keydown', handleSearchKey);
+
+  const addFromUrl = () => {
+    const id = this.extractYouTubeId(urlInput.value.trim());
+    if (!id) { urlInput.style.borderColor = 'var(--error-color)'; setTimeout(() => urlInput.style.borderColor = '', 1200); return; }
+    addToQueue({ videoId: id, name: id, author: '' });
+    fetch(`/api/song/${id}`)
+      .then(r => r.text())
+      .then(html => {
+        const m = html.match(/<title>(.*?)<\/title>/);
+        if (m) {
+          const item = this.dlQueue.find(q => q.videoId === id);
+          if (item) { item.name = m[1].replace(/ - .*/, '').trim(); renderQueue(); }
+        }
+      }).catch(() => {});
+    urlInput.value = '';
+  };
+  addUrlBtn.addEventListener('click', addFromUrl);
+  urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') addFromUrl(); });
+
+  const addToQueue = (song) => {
+    if (this.dlQueue.some(q => q.videoId === song.videoId)) return;
+    this.dlQueue.push({ ...song, status: 'idle', link: null, opened: false });
+    renderQueue();
+    convertItem(this.dlQueue[this.dlQueue.length - 1]);
+  };
+
+  const renderQueue = () => {
+    if (!this.dlQueue.length) { queueSection.style.display = 'none'; return; }
+    queueSection.style.display = '';
+
+    const totalDone = this.dlQueue.filter(q => q.status === 'done').length;
+    const notOpened = this.dlQueue.filter(q => q.status === 'done' && !q.opened).length;
+    const anyOpened = this.dlQueue.some(q => q.opened);
+
+    if (anyOpened) {
+      downloadAllLabel.textContent = notOpened > 0 ? `Download rest (${notOpened})` : 'All downloaded';
+    } else {
+      downloadAllLabel.textContent = `Download all (${totalDone}/${this.dlQueue.length})`;
+    }
+    downloadAllBtn.disabled = notOpened === 0;
+
+    queueList.innerHTML = this.dlQueue.map((item, i) => `
+      <div class="dl-queue-item${item.opened ? ' dl-qi-opened' : ''}" data-idx="${i}">
+        <div class="dl-qi-thumb" style="${item.videoId ? `background-image:url(https://img.youtube.com/vi/${item.videoId}/mqdefault.jpg)` : ''}"></div>
+        <div class="dl-qi-info">
+          <div class="dl-qi-name">${escHtml(item.name)}</div>
+          <div class="dl-qi-status ${item.status}">
+            ${item.status === 'idle' ? 'Waiting…'
+            : item.status === 'converting' ? '<span class="dl-spinner"></span> Converting…'
+            : item.status === 'done' && item.opened ? '<i class="fas fa-check"></i> Downloaded'
+            : item.status === 'done' ? 'Ready'
+            : item._quotaExceeded ? 'API limit reached' : 'Failed — tap retry'}
+          </div>
+        </div>
+        <div class="dl-qi-actions">
+          ${item.status === 'done' && item.opened
+            ? `<span class="dl-qi-tick" style="color:#5D9C59"><i class="fas fa-check-circle"></i></span>`
+            : item.status === 'done'
+            ? `<button class="dl-qi-download" title="Download"><i class="fas fa-download"></i></button>`
+            : item.status === 'error'
+            ? `<button class="dl-qi-download" title="Retry"><i class="fas fa-redo"></i></button>`
+            : ''}
+          <button class="dl-qi-remove" title="Remove"><i class="fas fa-times"></i></button>
+        </div>
+      </div>`).join('');
+
+    queueList.querySelectorAll('.dl-queue-item').forEach((el, i) => {
+      const item = this.dlQueue[i];
+      el.querySelector('.dl-qi-remove')?.addEventListener('click', () => {
+        this.dlQueue.splice(i, 1); renderQueue();
+      });
+      const dlBtn = el.querySelector('.dl-qi-download');
+      if (dlBtn) {
+        dlBtn.addEventListener('click', () => {
+          if (item.status === 'done' && item.link) {
+            item.opened = true;
+            window.open(item.link, '_blank');
+            renderQueue();
+          } else if (item.status === 'error') {
+            item.status = 'idle'; renderQueue(); convertItem(item);
+          }
+        });
+      }
+    });
+  };
+
+  const convertItem = async (item) => {
+	  if (item.status === 'done' || item.status === 'converting') return;
+	  const activeCount = this.dlQueue.filter(q => q.status === 'converting').length;
+	  if (activeCount >= 2) {
+	    setTimeout(() => convertItem(item), 2000);
+	    return;
+	  }
+    item.status = 'converting'; renderQueue();
+    try {
+      const res = await fetch(`/api/download?videoId=${item.videoId}`);
+      const data = await res.json();
+      if (data.status === 'ok' && data.link) {
+        item.status = 'done'; item.link = data.link;
+        if (data.title && item.name === item.videoId) item.name = data.title;
+      } else if (data.progress !== undefined && data.progress < 100) {
+		  item._retries = (item._retries || 0) + 1;
+		  if (item._retries >= 5) {
+		    item.status = 'error';
+		  } else {
+		    item.status = 'idle'; renderQueue();
+		    setTimeout(() => convertItem(item), 8000);
 		    return;
 		  }
-	    item.status = 'converting'; renderQueue();
-	    try {
-	      const res = await fetch(`/api/download?videoId=${item.videoId}`);
-	      const data = await res.json();
-	      if (data.status === 'ok' && data.link) {
-	        item.status = 'done'; item.link = data.link;
-	        if (data.title && item.name === item.videoId) item.name = data.title;
-	      } else if (data.progress !== undefined && data.progress < 100) {
-			  item._retries = (item._retries || 0) + 1;
-			  if (item._retries >= 5) {
-			    item.status = 'error';
-			  } else {
-			    item.status = 'idle'; renderQueue();
-			    setTimeout(() => convertItem(item), 8000);
-			    return;
-			  }
-	      } else {
-	        item.status = 'error';
-	      }
-	    } catch {
-		  item.status = 'error';
-		  item._quotaExceeded = true;
-		}
-	    renderQueue();
-	  };
-	
-	  downloadAllBtn.addEventListener('click', () => {
-	    this.dlQueue
-	      .filter(item => item.status === 'done' && item.link && !item.opened)
-	      .forEach(item => {
-	        item.opened = true;
-	        window.open(item.link, '_blank');
-	      });
-	    renderQueue();
-	  });
+      } else {
+        item.status = 'error';
+      }
+    } catch {
+	  item.status = 'error';
+	  item._quotaExceeded = true;
 	}
-	initNowPlayingTab() {
-	    // Wire up all NP controls to existing handlers
-	    document.getElementById('npPlayPauseBtn')?.addEventListener('click', () => this.togglePlayPause());
-	    document.getElementById('npPrevBtn')?.addEventListener('click', () => this.playPreviousSong());
-	    document.getElementById('npNextBtn')?.addEventListener('click', () => this.playNextSong());
-	    document.getElementById('npLoopBtn')?.addEventListener('click', () => this.toggleLoop());
-	    document.getElementById('npAutoplayBtn')?.addEventListener('click', () => this.toggleAutoplay());
-	    document.getElementById('npShowPlaylistBtn')?.addEventListener('click', () => this.togglePlaylistSidebar());
+    renderQueue();
+  };
+
+  downloadAllBtn.addEventListener('click', () => {
+    this.dlQueue
+      .filter(item => item.status === 'done' && item.link && !item.opened)
+      .forEach(item => {
+        item.opened = true;
+        window.open(item.link, '_blank');
+      });
+    renderQueue();
+  });
+}
+initNowPlayingTab() {
+    // Wire up all NP controls to existing handlers
+    document.getElementById('npPlayPauseBtn')?.addEventListener('click', () => this.togglePlayPause());
+    document.getElementById('npPrevBtn')?.addEventListener('click', () => this.playPreviousSong());
+    document.getElementById('npNextBtn')?.addEventListener('click', () => this.playNextSong());
+    document.getElementById('npLoopBtn')?.addEventListener('click', () => this.toggleLoop());
+    document.getElementById('npAutoplayBtn')?.addEventListener('click', () => this.toggleAutoplay());
+    document.getElementById('npShowPlaylistBtn')?.addEventListener('click', () => this.togglePlaylistSidebar());
+
+    // Progress bar
+    document.getElementById('npProgressBar')?.addEventListener('change', (e) => {
+        if (this.isLocalPlayback && this.localAudio) {
+            const duration = this.localAudio.duration || 0;
+            if (!duration) return;
+            const seekTime = (e.target.value / 100) * duration;
+            this.localAudio.currentTime = seekTime;
+            this.updateHighlightedLyric(seekTime, this.currentLyrics ?? [], this.currentTimings ?? []);
+            return;
+        }
+        if (!this.ytPlayer) return;
+        const duration = this.ytPlayer.getDuration();
+        const seekTime = (e.target.value / 100) * duration;
+        this.ytPlayer.seekTo(seekTime, true);
+        this.updateHighlightedLyric(seekTime, this.currentLyrics ?? [], this.currentTimings ?? []);
+    });
+
+    // Volume
+    document.getElementById('npVolumeSlider')?.addEventListener('input', (e) => {
+        this.setVolume(e.target.value);
+        // Keep main slider in sync
+        if (this.elements.volumeSlider) this.elements.volumeSlider.value = e.target.value;
+    });
+
+    // Speed options
+    const npSpeedBtn = document.getElementById('npSpeedBtn');
+	const npSpeedOptions = document.getElementById('npSpeedOptions');
 	
-	    // Progress bar
-	    document.getElementById('npProgressBar')?.addEventListener('change', (e) => {
-	        if (this.isLocalPlayback && this.localAudio) {
-	            const duration = this.localAudio.duration || 0;
-	            if (!duration) return;
-	            const seekTime = (e.target.value / 100) * duration;
-	            this.localAudio.currentTime = seekTime;
-	            this.updateHighlightedLyric(seekTime, this.currentLyrics ?? [], this.currentTimings ?? []);
-	            return;
-	        }
-	        if (!this.ytPlayer) return;
-	        const duration = this.ytPlayer.getDuration();
-	        const seekTime = (e.target.value / 100) * duration;
-	        this.ytPlayer.seekTo(seekTime, true);
-	        this.updateHighlightedLyric(seekTime, this.currentLyrics ?? [], this.currentTimings ?? []);
+	npSpeedBtn?.addEventListener('click', (e) => {
+	    e.stopPropagation();
+	    npSpeedOptions?.classList.toggle('show');
+	});
+	
+	document.querySelectorAll('#npSpeedOptions .speed-option').forEach(opt => {
+	    opt.addEventListener('click', () => {
+	        const speed = parseFloat(opt.dataset.speed);
+	        this.setPlaybackSpeed(speed);
+	        if (npSpeedBtn) npSpeedBtn.textContent = speed + 'x';
+	        npSpeedOptions?.classList.remove('show');
 	    });
+	});
 	
-	    // Volume
-	    document.getElementById('npVolumeSlider')?.addEventListener('input', (e) => {
-	        this.setVolume(e.target.value);
-	        // Keep main slider in sync
-	        if (this.elements.volumeSlider) this.elements.volumeSlider.value = e.target.value;
-	    });
-	
-	    // Speed options
-	    const npSpeedBtn = document.getElementById('npSpeedBtn');
-		const npSpeedOptions = document.getElementById('npSpeedOptions');
-		
-		npSpeedBtn?.addEventListener('click', (e) => {
-		    e.stopPropagation();
-		    npSpeedOptions?.classList.toggle('show');
-		});
-		
-		document.querySelectorAll('#npSpeedOptions .speed-option').forEach(opt => {
-		    opt.addEventListener('click', () => {
-		        const speed = parseFloat(opt.dataset.speed);
-		        this.setPlaybackSpeed(speed);
-		        if (npSpeedBtn) npSpeedBtn.textContent = speed + 'x';
-		        npSpeedOptions?.classList.remove('show');
-		    });
-		});
-		
-		document.addEventListener('click', () => {
-		    npSpeedOptions?.classList.remove('show');
-		});
-	}
-	showNowPlayingTab() {
-	    const tab = document.querySelector('.tab[data-tab="nowplaying"]');
-	    if (tab) tab.classList.add('visible');
-	    this.elements.tabs = document.querySelectorAll('.tab');
-	    this.elements.tabPanes = document.querySelectorAll('.tab-pane');
-	}
-	
-	hideNowPlayingTab() {
-	    const tab = document.querySelector('.tab[data-tab="nowplaying"]');
-	    if (tab) tab.classList.remove('visible');
-	    this.elements.tabs = document.querySelectorAll('.tab');
-	    this.elements.tabPanes = document.querySelectorAll('.tab-pane');
-	}
-	
-	updateNowPlayingView() {
-	    if (!this.currentSong) return;
-	
-	    const song = this.currentPlaylist
-	        ? (this.songLibrary.find(s => s.videoId === this.currentSong.videoId) || this.currentSong)
-	        : this.currentSong;
-	
-	    const thumb = document.getElementById('npThumbnail');
-	    const name = document.getElementById('npSongName');
-	    const author = document.getElementById('npSongAuthor');
-	    const vol = document.getElementById('npVolumeSlider');
-	    const ppBtn = document.getElementById('npPlayPauseBtn');
-	    const loopBtn = document.getElementById('npLoopBtn');
-	    const autoBtn = document.getElementById('npAutoplayBtn');
-	
-	    if (thumb) {
-		    thumb.src = `https://img.youtube.com/vi/${song.videoId}/maxresdefault.jpg`;
-	
-		    thumb.onload = function () {
-		        if (thumb.naturalHeight <= 90) {
-		            thumb.onload = null;
-		            thumb.src = `https://img.youtube.com/vi/${song.videoId}/hqdefault.jpg`;
-		        }
-		    };
-		    thumb.onerror = () => {
-		        thumb.onerror = null;
-		        thumb.onload = null;
-		        thumb.src = `https://img.youtube.com/vi/${song.videoId}/hqdefault.jpg`;
-		    };
-		}
-	    if (name) name.textContent = song.name || '';
-	    if (author) author.textContent = song.author || '';
-	    if (vol && this.elements.volumeSlider) vol.value = this.elements.volumeSlider.value;
-	    if (ppBtn) ppBtn.innerHTML = this.isPlaying
-	        ? '<i class="fas fa-pause"></i>'
-	        : '<i class="fas fa-play"></i>';
-	    if (loopBtn) loopBtn.classList.toggle('active', this.isLooping);
-	    if (autoBtn) autoBtn.classList.toggle('active', this.isAutoplayEnabled);
-	}
-	playLocalAudio(url) {
-	    if (this.ytPlayer) {
-	        try { this.ytPlayer.pauseVideo(); } catch (e) {}
-	    }
-	 
-	    if (!this.localAudio) {
-	        this.localAudio = new Audio();
-	        let _lastUpdate = 0;
-	 
-	        this.localAudio.addEventListener('timeupdate', () => {
-	            if (!this.isLocalPlayback) return;
-	            const now = Date.now();
-	            if (now - _lastUpdate < 500) return; // throttle — ~2 updates/sec
-	            _lastUpdate = now;
-	 
-	            const current  = this.localAudio.currentTime;
-	            const duration = this.localAudio.duration || 0;
-	            if (duration > 0) {
-	                const pct = (current / duration) * 100;
-	                if (this.elements.progressBar) this.elements.progressBar.value = pct;
-	                const npBar = document.getElementById('npProgressBar');
-	                const npTime = document.getElementById('npTimeDisplay');
-	                if (npBar)  npBar.value = pct;
-	                if (npTime) npTime.textContent = `${this.formatTime(current)}/${this.formatTime(duration)}`;
-	                if (this.elements.timeDisplay)
-	                    this.elements.timeDisplay.textContent = `${this.formatTime(current)}/${this.formatTime(duration)}`;
-	                this.updateHighlightedLyric(current, this.currentLyrics ?? [], this.currentTimings ?? []);
-	            }
-	        });
-	 
-	        this.localAudio.addEventListener('ended', () => {
-	            if (!this.isLocalPlayback) return;
-	            this.isPlaying = false;
-	            if (this.elements.progressBar) this.elements.progressBar.value = 0;
-	            if (this.elements.timeDisplay) this.elements.timeDisplay.textContent = '0:00/0:00';
-	            if (this.isLooping) {
-	                this.localAudio.currentTime = 0;
-	                this.localAudio.play().catch(e => console.warn('Loop replay failed:', e));
-	                this.isPlaying = true;
-	            } else if (this.isAutoplayEnabled) {
-	                this.isLocalPlayback = false;
-	                this.playNextSong();
-	            }
-	            this.updatePlayerUI();
-	        });
-	 
-	        this.localAudio.addEventListener('pause', () => {
-	            if (!this.isLocalPlayback) return;
-	            this.isPlaying = false;
-	            this.updatePlayerUI();
-	            if (this.titleScrollInterval) {
-	                clearInterval(this.titleScrollInterval);
-	                this.titleScrollInterval = null;
-	            }
-	            this.updatePageTitle();
-	        });
-	 
-	        this.localAudio.addEventListener('play', () => {
-	            if (!this.isLocalPlayback) return;
-	            this.isPlaying = true;
-	        });
-	    }
-	 
-	    // Revoke previous blob URL to free memory
-	    if (this.localAudio.src?.startsWith('blob:')) URL.revokeObjectURL(this.localAudio.src);
-	 
-	    this.localAudio.src          = url;
-	    this.localAudio.volume       = (this.savedVolume ?? 100) / 100;
-	    this.localAudio.playbackRate = this.currentSpeed || 1;
-	 
-	    this.isLocalPlayback = true;
-	    this.isPlaying       = true;
-	 
-	    if (this.elements.progressBar) this.elements.progressBar.value = 0;
-	    if (this.elements.timeDisplay) this.elements.timeDisplay.textContent = '0:00/0:00';
-	 
-	    this.localAudio.play().catch(e => console.error('Local audio play failed:', e));
-	    this.updatePlayerUI();
-	    this.updatePageTitle();
-	    this._discordScheduleSend();
-	}
-	
-	
-	restartCurrentSong() {
-	    if (this.isLocalPlayback && this.localAudio) {
-	        this.localAudio.currentTime = 0;
-	        if (this.elements.progressBar) this.elements.progressBar.value = 0;
-	        if (this.elements.timeDisplay) {
-	            const duration = this.localAudio.duration || 0;
-	            this.elements.timeDisplay.textContent = `0:00/${this.formatTime(duration)}`;
+	document.addEventListener('click', () => {
+	    npSpeedOptions?.classList.remove('show');
+	});
+}
+showNowPlayingTab() {
+    const tab = document.querySelector('.tab[data-tab="nowplaying"]');
+    if (tab) tab.classList.add('visible');
+    this.elements.tabs = document.querySelectorAll('.tab');
+    this.elements.tabPanes = document.querySelectorAll('.tab-pane');
+}
+
+hideNowPlayingTab() {
+    const tab = document.querySelector('.tab[data-tab="nowplaying"]');
+    if (tab) tab.classList.remove('visible');
+    this.elements.tabs = document.querySelectorAll('.tab');
+    this.elements.tabPanes = document.querySelectorAll('.tab-pane');
+}
+
+updateNowPlayingView() {
+    if (!this.currentSong) return;
+
+    const song = this.currentPlaylist
+        ? (this.songLibrary.find(s => s.videoId === this.currentSong.videoId) || this.currentSong)
+        : this.currentSong;
+
+    const thumb = document.getElementById('npThumbnail');
+    const name = document.getElementById('npSongName');
+    const author = document.getElementById('npSongAuthor');
+    const vol = document.getElementById('npVolumeSlider');
+    const ppBtn = document.getElementById('npPlayPauseBtn');
+    const loopBtn = document.getElementById('npLoopBtn');
+    const autoBtn = document.getElementById('npAutoplayBtn');
+
+    if (thumb) {
+	    thumb.src = `https://img.youtube.com/vi/${song.videoId}/maxresdefault.jpg`;
+
+	    thumb.onload = function () {
+	        if (thumb.naturalHeight <= 90) {
+	            thumb.onload = null;
+	            thumb.src = `https://img.youtube.com/vi/${song.videoId}/hqdefault.jpg`;
 	        }
-	        this.updateHighlightedLyric(0, this.currentLyrics ?? [], this.currentTimings ?? []);
-	        return;
-	    }
-	    if (this.ytPlayer) {
-	        this.ytPlayer.seekTo(0, true);
-	        if (this.elements.progressBar) this.elements.progressBar.value = 0;
-	        if (this.elements.timeDisplay) {
-	            const duration = this.ytPlayer.getDuration();
-	            this.elements.timeDisplay.textContent = `0:00/${this.formatTime(duration)}`;
-	        }
-	        this.updateHighlightedLyric(0, this.currentLyrics ?? [], this.currentTimings ?? []);
-	    }
+	    };
+	    thumb.onerror = () => {
+	        thumb.onerror = null;
+	        thumb.onload = null;
+	        thumb.src = `https://img.youtube.com/vi/${song.videoId}/hqdefault.jpg`;
+	    };
 	}
-	applyImageFallback(img, fallbackSrc) {
-		if (img.dataset.fallbackApplied) return;
-		img.dataset.fallbackApplied = "true";
-		img.onerror = null;
-		img.src = fallbackSrc;
-	}
+    if (name) name.textContent = song.name || '';
+    if (author) author.textContent = song.author || '';
+    if (vol && this.elements.volumeSlider) vol.value = this.elements.volumeSlider.value;
+    if (ppBtn) ppBtn.innerHTML = this.isPlaying
+        ? '<i class="fas fa-pause"></i>'
+        : '<i class="fas fa-play"></i>';
+    if (loopBtn) loopBtn.classList.toggle('active', this.isLooping);
+    if (autoBtn) autoBtn.classList.toggle('active', this.isAutoplayEnabled);
+}
+playLocalAudio(url) {
+    if (this.ytPlayer) {
+        try { this.ytPlayer.pauseVideo(); } catch (e) {}
+    }
+ 
+    if (!this.localAudio) {
+        this.localAudio = new Audio();
+        let _lastUpdate = 0;
+ 
+        this.localAudio.addEventListener('timeupdate', () => {
+            if (!this.isLocalPlayback) return;
+            const now = Date.now();
+            if (now - _lastUpdate < 500) return; // throttle — ~2 updates/sec
+            _lastUpdate = now;
+ 
+            const current  = this.localAudio.currentTime;
+            const duration = this.localAudio.duration || 0;
+            if (duration > 0) {
+                const pct = (current / duration) * 100;
+                if (this.elements.progressBar) this.elements.progressBar.value = pct;
+                const npBar = document.getElementById('npProgressBar');
+                const npTime = document.getElementById('npTimeDisplay');
+                if (npBar)  npBar.value = pct;
+                if (npTime) npTime.textContent = `${this.formatTime(current)}/${this.formatTime(duration)}`;
+                if (this.elements.timeDisplay)
+                    this.elements.timeDisplay.textContent = `${this.formatTime(current)}/${this.formatTime(duration)}`;
+                this.updateHighlightedLyric(current, this.currentLyrics ?? [], this.currentTimings ?? []);
+            }
+        });
+ 
+        this.localAudio.addEventListener('ended', () => {
+            if (!this.isLocalPlayback) return;
+            this.isPlaying = false;
+            if (this.elements.progressBar) this.elements.progressBar.value = 0;
+            if (this.elements.timeDisplay) this.elements.timeDisplay.textContent = '0:00/0:00';
+            if (this.isLooping) {
+                this.localAudio.currentTime = 0;
+                this.localAudio.play().catch(e => console.warn('Loop replay failed:', e));
+                this.isPlaying = true;
+            } else if (this.isAutoplayEnabled) {
+                this.isLocalPlayback = false;
+                this.playNextSong();
+            }
+            this.updatePlayerUI();
+        });
+ 
+        this.localAudio.addEventListener('pause', () => {
+            if (!this.isLocalPlayback) return;
+            this.isPlaying = false;
+            this.updatePlayerUI();
+            if (this.titleScrollInterval) {
+                clearInterval(this.titleScrollInterval);
+                this.titleScrollInterval = null;
+            }
+            this.updatePageTitle();
+        });
+ 
+        this.localAudio.addEventListener('play', () => {
+            if (!this.isLocalPlayback) return;
+            this.isPlaying = true;
+        });
+    }
+ 
+    // Revoke previous blob URL to free memory
+    if (this.localAudio.src?.startsWith('blob:')) URL.revokeObjectURL(this.localAudio.src);
+ 
+    this.localAudio.src          = url;
+    this.localAudio.volume       = (this.savedVolume ?? 100) / 100;
+    this.localAudio.playbackRate = this.currentSpeed || 1;
+ 
+    this.isLocalPlayback = true;
+    this.isPlaying       = true;
+ 
+    if (this.elements.progressBar) this.elements.progressBar.value = 0;
+    if (this.elements.timeDisplay) this.elements.timeDisplay.textContent = '0:00/0:00';
+ 
+    this.localAudio.play().catch(e => console.error('Local audio play failed:', e));
+    this.updatePlayerUI();
+    this.updatePageTitle();
+    this._discordScheduleSend();
+}
+
+
+restartCurrentSong() {
+    if (this.isLocalPlayback && this.localAudio) {
+        this.localAudio.currentTime = 0;
+        if (this.elements.progressBar) this.elements.progressBar.value = 0;
+        if (this.elements.timeDisplay) {
+            const duration = this.localAudio.duration || 0;
+            this.elements.timeDisplay.textContent = `0:00/${this.formatTime(duration)}`;
+        }
+        this.updateHighlightedLyric(0, this.currentLyrics ?? [], this.currentTimings ?? []);
+        return;
+    }
+    if (this.ytPlayer) {
+        this.ytPlayer.seekTo(0, true);
+        if (this.elements.progressBar) this.elements.progressBar.value = 0;
+        if (this.elements.timeDisplay) {
+            const duration = this.ytPlayer.getDuration();
+            this.elements.timeDisplay.textContent = `0:00/${this.formatTime(duration)}`;
+        }
+        this.updateHighlightedLyric(0, this.currentLyrics ?? [], this.currentTimings ?? []);
+    }
+}
 
 
 
