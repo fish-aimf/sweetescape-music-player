@@ -1,4 +1,7 @@
 const CACHE_PREFIX = "se-cache-";
+const IMAGE_HOSTS = ["img.youtube.com", "i.ytimg.com"];
+const IMAGE_CACHE = "se-image-cache";
+const IMAGE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 const VERSION_TIMEOUT_MS = 2500;
 
 const STATIC_ASSETS = [
@@ -98,20 +101,25 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
+  if (event.request.method !== "GET") return;
+
   const url = new URL(event.request.url);
 
-  if (url.pathname.startsWith("/api/")) {
-    return; 
+  if (IMAGE_HOSTS.includes(url.hostname)) {
+    event.respondWith(handleImageRequest(event.request));
+    return;
   }
+
+  if (url.origin !== self.location.origin) return;
+
+  if (url.pathname.startsWith("/api/")) return;
 
   if (url.pathname === "/current-version.txt") {
     event.respondWith(handleVersionRequest());
     return;
   }
 
-  if (event.request.method === "GET") {
-    event.respondWith(handleStaticRequest(event.request));
-  }
+  event.respondWith(handleStaticRequest(event.request));
 });
 
 async function handleStaticRequest(request) {
@@ -152,4 +160,64 @@ async function handleVersionRequest() {
   }
 
   return new Response(liveVersion, { status: 200 });
+}
+
+
+async function handleImageRequest(request) {
+  const cache = await caches.open(IMAGE_CACHE);
+  const cached = await cache.match(request);
+
+  if (cached) {
+    const fetchedOn = cached.headers.get("x-sw-fetched-on");
+    const age = fetchedOn ? Date.now() - Number(fetchedOn) : Infinity;
+    if (age < IMAGE_MAX_AGE_MS) {
+      if (age > IMAGE_MAX_AGE_MS / 2) revalidateImage(request, cache);
+      return cached;
+    }
+  }
+
+  try {
+    const res = await fetch(request);
+    if (res.ok) {
+      const stamped = new Response(await res.blob(), {
+        status: res.status,
+        headers: {
+          ...Object.fromEntries(res.headers),
+          "x-sw-fetched-on": String(Date.now()),
+        },
+      });
+      cache.put(request, stamped.clone());
+      return stamped;
+    }
+    return cached || inlineSvgFallback();
+  } catch {
+    return cached || inlineSvgFallback();
+  }
+}
+
+function revalidateImage(request, cache) {
+  fetch(request).then(res => {
+    if (res.ok) {
+      res.blob().then(blob => {
+        cache.put(request, new Response(blob, {
+          status: res.status,
+          headers: {
+            ...Object.fromEntries(res.headers),
+            "x-sw-fetched-on": String(Date.now()),
+          },
+        }));
+      });
+    }
+  }).catch(() => {});
+}
+
+function inlineSvgFallback() {
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="90">' +
+    '<rect width="120" height="90" fill="#333"/>' +
+    '<text x="60" y="48" fill="#fff" font-size="11" ' +
+    'font-family="sans-serif" text-anchor="middle">No Image</text></svg>';
+  return new Response(svg, {
+    status: 200,
+    headers: { "Content-Type": "image/svg+xml" },
+  });
 }
