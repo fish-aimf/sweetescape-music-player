@@ -177,17 +177,18 @@ async function handleImageRequest(request) {
   }
 
   try {
-    const res = await fetch(request);
-    if (res.ok) {
-      const stamped = new Response(await res.blob(), {
-        status: res.status,
+    const res = await fetch(request, { mode: "no-cors" });
+    const blob = await res.blob();
+    if (blob.size > 0) {
+      const toStore = new Response(blob, {
+        status: 200,
         headers: {
-          ...Object.fromEntries(res.headers),
+          "Content-Type": blob.type || "image/jpeg",
           "x-sw-fetched-on": String(Date.now()),
         },
       });
-      cache.put(request, stamped.clone());
-      return stamped;
+      cache.put(request, toStore.clone());
+      return toStore;
     }
     return cached || inlineSvgFallback();
   } catch {
