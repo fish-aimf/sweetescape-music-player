@@ -14403,27 +14403,33 @@ restartCurrentSong() {
     }, false);
 }
 initLibraryFilter() {
-    // Session-only state, never persisted
     this._libFilters = { favorite: null, lyrics: null, downloaded: null };
 
     const btn   = document.getElementById('libFilterBtn');
     const panel = document.getElementById('libFilterPanel');
     if (!btn || !panel) return;
 
-    // Toggle panel on button click
-    btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        panel.classList.toggle('open');
-    });
+    let _hideTimer = null;
 
-    // Close on outside click
-    document.addEventListener('click', (e) => {
-        if (!panel.contains(e.target) && e.target !== btn) {
-            panel.classList.remove('open');
-        }
-    });
+    const showPanel = () => {
+        clearTimeout(_hideTimer);
+        panel.classList.add('open');
+    };
 
-    // Handle toggle button clicks via delegation
+    const hidePanel = () => {
+        clearTimeout(_hideTimer);
+        _hideTimer = setTimeout(() => panel.classList.remove('open'), 300);
+    };
+
+    // Hover on the button itself
+    btn.addEventListener('mouseenter', showPanel);
+    btn.addEventListener('mouseleave', hidePanel);
+
+    // Hover on the panel — cancel the hide timer while mouse is inside
+    panel.addEventListener('mouseenter', showPanel);
+    panel.addEventListener('mouseleave', hidePanel);
+
+    // Toggle buttons inside panel
     panel.addEventListener('click', (e) => {
         const toggleBtn = e.target.closest('.lib-filter-toggle button');
         if (!toggleBtn) return;
@@ -14433,18 +14439,14 @@ initLibraryFilter() {
         const raw    = toggleBtn.dataset.val;
         const val    = raw === 'null' ? null : raw === 'true';
 
-        // Update active state in toggle
         group.querySelectorAll('button').forEach(b => b.classList.remove('active'));
         toggleBtn.classList.add('active');
 
-        // Store filter
         this._libFilters[filter] = val;
 
-        // Update filter button indicator
         const anyActive = Object.values(this._libFilters).some(v => v !== null);
         btn.classList.toggle('is-active', anyActive);
 
-        // Re-render immediately
         this._applyLibraryFiltersAndRender();
     });
 }
