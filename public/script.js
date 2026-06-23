@@ -17,6 +17,7 @@ class AdvancedMusicPlayer {
 		this.isAutoplayEnabled = true;
 		this.currentSpeed = 1;
 		this.allowDuplicates = true;
+		this._libFilters = { favorite: null, lyrics: null, downloaded: null };
 		
 		// YouTube player
 		this.ytPlayer = null;
@@ -291,6 +292,7 @@ class AdvancedMusicPlayer {
 		this.initNowPlayingTab();
 		this.initDownloadModal();
 		this.addQueueStyles(); 
+		this.initLibraryFilter();
 	}
 	
 	_handleInitializationError(error) {
@@ -1302,7 +1304,10 @@ class AdvancedMusicPlayer {
 	                    || name.includes(latinized) || author.includes(latinized);
 	            });
 	        }
-	
+			if (this._libFilters && Object.values(this._libFilters).some(v => v !== null)) {
+			    filteredLibrary = this._applyFilters(filteredLibrary);
+			}
+				
 	        let sortedLibrary;
 	        if (this.librarySortAlphabetically !== false) {
 	            sortedLibrary = [...filteredLibrary].sort((a, b) => {
@@ -1659,7 +1664,13 @@ class AdvancedMusicPlayer {
 	    card.className = 'favorites-card';
 	    card.id = 'favoritesCard';
 	
-	    const favorites = this.songLibrary.filter(s => s.favorite);
+	    const f = this._libFilters;
+		const favoritesExcluded = f?.favorite === false;
+		const favorites = favoritesExcluded
+		    ? []
+		    : this._applyFilters
+		        ? this._applyFilters(this.songLibrary.filter(s => s.favorite))
+		        : this.songLibrary.filter(s => s.favorite);
 	    const inner = document.createElement('div');
 	    inner.className = 'favorites-card-inner';
 	
@@ -1735,9 +1746,15 @@ class AdvancedMusicPlayer {
 	                card.appendChild(expList);
 	            }
 	            expList.innerHTML = '';
-	            const favSongs = this.songLibrary.filter(s => s.favorite);
-	            if (favSongs.length === 0) {
-	                expList.innerHTML = '<div class="empty-library-message">No favourites yet.</div>';
+	            const favSongs = favoritesExcluded
+				    ? []
+				    : this._applyFilters
+				        ? this._applyFilters(this.songLibrary.filter(s => s.favorite))
+				        : this.songLibrary.filter(s => s.favorite);
+				if (favoritesExcluded) {
+				    expList.innerHTML = '<div class="empty-library-message">Filter excludes favourites.</div>';
+				} else if (favSongs.length === 0) {
+				    expList.innerHTML = '<div class="empty-library-message">No favourites yet.</div>';
 	            } else {
 	                const frag = document.createDocumentFragment();
 	                favSongs.forEach(song => frag.appendChild(this.createSongElement(song)));
@@ -1808,7 +1825,7 @@ class AdvancedMusicPlayer {
 	    card.className = 'discovery-card';
 	    card.id = 'discoveryCard';
 	
-	    let pool = [...this.songLibrary];
+	    let pool = this._applyFilters ? this._applyFilters([...this.songLibrary]) : [...this.songLibrary];
 	    if (this.librarySortAlphabetically !== false) {
 	        pool.sort((a, b) => {
 	            if (a.favorite !== b.favorite) return a.favorite ? -1 : 1;
@@ -1865,7 +1882,7 @@ class AdvancedMusicPlayer {
 	        const song = this.songLibrary.find(s => s.id === parseInt(item.dataset.songId));
 	        if (song) this.addToQueue(song);
 	    });
-
+	
 	    let lastCols = 0;
 	    let rafId = null;
 	    let resizeTimer = null;
@@ -1877,7 +1894,6 @@ class AdvancedMusicPlayer {
 	        const padding = 24;
 	        const cols = Math.max(1, Math.floor((containerWidth - padding + gap) / (cellSize + gap)));
 	
-	        // Skip re-render if column count hasn't changed
 	        if (cols === lastCols && grid.children.length > 0) return;
 	        lastCols = cols;
 	
@@ -1908,13 +1924,12 @@ class AdvancedMusicPlayer {
 	
 	    shuffleBtn.addEventListener('click', () => {
 	        this._shuffleArray(shuffled);
-	        lastCols = 0; // Force re-render
+	        lastCols = 0;
 	        renderGrid();
 	    });
 	
 	    expandBtn.addEventListener('click', () => {
 	        const isExpanded = card.classList.toggle('expanded');
-	        // Explicit icon swap — no CSS rotation interference
 	        expandBtn.innerHTML = isExpanded
 	            ? `<i class="fa fa-chevron-up"></i> Less`
 	            : `<i class="fa fa-chevron-down"></i> All`;
@@ -1927,16 +1942,19 @@ class AdvancedMusicPlayer {
 	                card.appendChild(expList);
 	            }
 	            expList.innerHTML = '';
-	            let allSongs = [...this.songLibrary];
-				if (this.librarySortAlphabetically !== false) {
-				    allSongs.sort((a, b) => {
-				        if (a.favorite !== b.favorite) return a.favorite ? -1 : 1;
-				        const result = a.name.localeCompare(b.name);
-				        return this.libraryReverseOrder ? -result : result;
-				    });
-				} else {
-				    if (this.libraryReverseOrder) allSongs.reverse();
-				}
+	
+	            // ← fix: was allSongs throughout, now consistently allSongs declared here
+	            let allSongs = this._applyFilters ? this._applyFilters([...this.songLibrary]) : [...this.songLibrary];
+	            if (this.librarySortAlphabetically !== false) {
+	                allSongs.sort((a, b) => {
+	                    if (a.favorite !== b.favorite) return a.favorite ? -1 : 1;
+	                    const result = a.name.localeCompare(b.name);
+	                    return this.libraryReverseOrder ? -result : result;
+	                });
+	            } else {
+	                if (this.libraryReverseOrder) allSongs.reverse();
+	            }
+	
 	            const frag = document.createDocumentFragment();
 	            allSongs.forEach(song => frag.appendChild(this.createSongElement(song)));
 	            expList.appendChild(frag);
@@ -1948,7 +1966,6 @@ class AdvancedMusicPlayer {
 	    card.appendChild(header);
 	    card.appendChild(grid);
 	
-	    // Throttled ResizeObserver — debounced 100ms, skips if col count unchanged
 	    if (this._discoveryResizeObserver) this._discoveryResizeObserver.disconnect();
 	    this._discoveryResizeObserver = new ResizeObserver(() => {
 	        if (card.classList.contains('expanded')) return;
@@ -1961,7 +1978,6 @@ class AdvancedMusicPlayer {
 	        this._discoveryResizeObserver.observe(card);
 	    });
 	
-	    // Cleanup on removal
 	    const cleanup = () => {
 	        cancelAnimationFrame(rafId);
 	        clearTimeout(resizeTimer);
@@ -3101,9 +3117,6 @@ hideSidebar() {
 	
 	// Remove expanded mode styling from body when closing
 	document.body.classList.remove("playlist-expanded-active");
-	
-	// Don't remove expanded-mode class from sidebar - keep the mode setting
-	// Just hide it with the 'visible' class removal
 	
 	// Clear search
 	if (this.elements.sidebarSearchInput) {
@@ -14388,6 +14401,72 @@ restartCurrentSong() {
             this.showNotification('Failed to link file.', 'error');
         }
     }, false);
+}
+initLibraryFilter() {
+    // Session-only state, never persisted
+    this._libFilters = { favorite: null, lyrics: null, downloaded: null };
+
+    const btn   = document.getElementById('libFilterBtn');
+    const panel = document.getElementById('libFilterPanel');
+    if (!btn || !panel) return;
+
+    // Toggle panel on button click
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        panel.classList.toggle('open');
+    });
+
+    // Close on outside click
+    document.addEventListener('click', (e) => {
+        if (!panel.contains(e.target) && e.target !== btn) {
+            panel.classList.remove('open');
+        }
+    });
+
+    // Handle toggle button clicks via delegation
+    panel.addEventListener('click', (e) => {
+        const toggleBtn = e.target.closest('.lib-filter-toggle button');
+        if (!toggleBtn) return;
+
+        const group  = toggleBtn.closest('.lib-filter-toggle');
+        const filter = group.dataset.filter;
+        const raw    = toggleBtn.dataset.val;
+        const val    = raw === 'null' ? null : raw === 'true';
+
+        // Update active state in toggle
+        group.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        toggleBtn.classList.add('active');
+
+        // Store filter
+        this._libFilters[filter] = val;
+
+        // Update filter button indicator
+        const anyActive = Object.values(this._libFilters).some(v => v !== null);
+        btn.classList.toggle('is-active', anyActive);
+
+        // Re-render immediately
+        this._applyLibraryFiltersAndRender();
+    });
+}
+
+// Central filter applicator — called after any filter or search change
+_applyFilters(songs) {
+    const f = this._libFilters;
+    return songs.filter(song => {
+        if (f.favorite   !== null && !!song.favorite !== f.favorite) return false;
+        if (f.lyrics     !== null && !!(song.lyrics?.trim()) !== f.lyrics) return false;
+        if (f.downloaded !== null && !!song.localFileHandle !== f.downloaded) return false;
+        return true;
+    });
+}
+
+_applyLibraryFiltersAndRender() {
+    const searchTerm = this.elements.librarySearch?.value.toLowerCase().trim() || '';
+    if (searchTerm === '') {
+        this.renderLibraryView();
+    } else {
+        this.renderSongLibrary(searchTerm);
+    }
 }
 
 
