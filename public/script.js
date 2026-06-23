@@ -6158,7 +6158,8 @@ hideSidebar() {
 					`https://img.youtube.com/vi/${item.videoId}/default.jpg`;
 				thumbnailImg.alt = item.name;
 				thumbnailImg.onerror = function() {
-					this.src = "https://placehold.it/120x90/333/fff?text=No+Image";
+					this.onerror = null;
+					this.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='90'%3E%3Crect width='120' height='90' fill='%23333'/%3E%3Ctext x='60' y='50' text-anchor='middle' font-size='11' fill='%23fff' font-family='sans-serif'%3ENo Image%3C/text%3E%3C/svg%3E";
 				};
 				thumbnail.appendChild(thumbnailImg);
 			} else {
@@ -6167,7 +6168,8 @@ hideSidebar() {
 					thumbnailImg.src = item.thumbnailUrl;
 					thumbnailImg.alt = item.name;
 					thumbnailImg.onerror = function() {
-						this.src = "https://placehold.it/120x90/333/fff?text=Playlist";
+					    this.onerror = null;
+					    this.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='90'%3E%3Crect width='120' height='90' fill='%23333'/%3E%3Ctext x='60' y='50' text-anchor='middle' font-size='11' fill='%23fff' font-family='sans-serif'%3EPlaylist%3C/text%3E%3C/svg%3E";
 					};
 					thumbnail.appendChild(thumbnailImg);
 				} else {
@@ -6253,7 +6255,8 @@ hideSidebar() {
 					`https://img.youtube.com/vi/${item.videoId}/default.jpg`;
 				thumbnailImg.alt = item.name;
 				thumbnailImg.onerror = function() {
-					this.src = "https://placehold.it/120x90/333/fff?text=No+Image";
+				    this.onerror = null;
+				    this.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='90'%3E%3Crect width='120' height='90' fill='%23333'/%3E%3Ctext x='60' y='50' text-anchor='middle' font-size='11' fill='%23fff' font-family='sans-serif'%3ENo Image%3C/text%3E%3C/svg%3E";
 				};
 				thumbnail.appendChild(thumbnailImg);
 			} else {
@@ -6395,7 +6398,8 @@ hideSidebar() {
 			thumbnail.alt = song.name;
 			thumbnail.classList.add("recently-played-thumbnail");
 			thumbnail.onerror = function() {
-				this.src = "https://placehold.it/120x90/333/fff?text=No+Image";
+			    this.onerror = null;
+			    this.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='90'%3E%3Crect width='120' height='90' fill='%23333'/%3E%3Ctext x='60' y='50' text-anchor='middle' font-size='11' fill='%23fff' font-family='sans-serif'%3ENo Image%3C/text%3E%3C/svg%3E";
 			};
 
 			const info = document.createElement("div");
