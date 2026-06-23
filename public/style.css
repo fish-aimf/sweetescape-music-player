@@ -7363,3 +7363,29 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 .song-edit-save-btn:hover {
     background-color: var(--hover-color);
 }
+/* Drag-to-link visual states */
+.song-item.drag-audio-over {
+    outline: 2px dashed var(--accent-color);
+    outline-offset: -2px;
+    background: color-mix(in srgb, var(--accent-color) 8%, transparent);
+}
+
+.song-item.drag-audio-done {
+    outline: 2px solid var(--accent-color);
+    outline-offset: -2px;
+}
+
+.drag-link-toast {
+    font-size: 0.78em;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    pointer-events: none;
+    margin-right: 6px;
+}
+
+.drag-link-toast.drag-link-success { color: rgb(76, 175, 80); border-color: rgb(76, 175, 80); }
+.drag-link-toast.drag-link-error   { color: var(--error-color); border-color: var(--error-color); }
