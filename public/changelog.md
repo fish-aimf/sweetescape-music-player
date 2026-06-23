@@ -664,3 +664,8 @@
 -  fixed infinite console log and network attempts v66.4.0
 -  fixed some offline bugs v66.5.0
 -  removed all dependency on placehold.it opting for svg offline, reducing third party count. v66.6.0
+-  song library display now virtualized, saving memory resources v66.7.0
+-  favorite button styles now consistent with rest v66.8.0
+-  favorite button will now have a grey star to better indicate its location v66.9.0
+-  you can now drag audio files onto song items to quickly add them to offline playback. v66.10.0
+-  render size is dynamically calculated now. v66.11.0
