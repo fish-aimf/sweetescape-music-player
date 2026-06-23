@@ -663,3 +663,4 @@
 -  fixed initializing error while offline v66.3.0
 -  fixed infinite console log and network attempts v66.4.0
 -  fixed some offline bugs v66.5.0
+-  removed all dependency on placehold.it opting for svg offline, reducing third party count. v66.6.0
