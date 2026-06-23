@@ -7389,3 +7389,120 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 
 .drag-link-toast.drag-link-success { color: rgb(76, 175, 80); border-color: rgb(76, 175, 80); }
 .drag-link-toast.drag-link-error   { color: var(--error-color); border-color: var(--error-color); }
+
+/* Wrap input + filter btn as one unified input */
+.library-search-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1 1 0%;
+    margin-right: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--bg-primary);
+    transition: border-color 0.15s;
+}
+.library-search-wrap:focus-within {
+    border-color: var(--accent-color);
+}
+
+/* Strip the input's own border — the wrapper owns it now */
+#librarySearch {
+    flex: 1 1 0%;
+    margin-right: 0;
+    padding: 8px;
+    border: none !important;
+    border-radius: 4px 0 0 4px;
+    background: transparent;
+    color: var(--text-primary);
+    font-size: inherit;
+    outline: none;
+    min-width: 0;
+}
+
+/* Filter button flush inside wrapper */
+.lib-filter-btn {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: 0 4px 4px 0;
+    font-size: 0.95em;
+    transition: color 0.15s, background 0.15s;
+}
+.lib-filter-btn:hover {
+    background: var(--bg-secondary);
+}
+.lib-filter-btn.is-active {
+    color: var(--accent-color);
+}
+
+/* Popover panel */
+.lib-filter-panel {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 10px;
+    z-index: 999;
+    min-width: 220px;
+    box-shadow: 0 4px 12px var(--shadow-color);
+}
+.lib-filter-panel.open {
+    display: block;
+}
+
+.lib-filter-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 0;
+}
+.lib-filter-row + .lib-filter-row {
+    border-top: 1px solid var(--border-color);
+}
+.lib-filter-label {
+    font-size: 0.82em;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* 3-way toggle */
+.lib-filter-toggle {
+    display: flex;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    overflow: hidden;
+}
+.lib-filter-toggle button {
+    flex: 1;
+    padding: 3px 8px;
+    font-size: 0.78em;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background 0.1s, color 0.1s;
+    white-space: nowrap;
+}
+.lib-filter-toggle button + button {
+    border-left: 1px solid var(--border-color);
+}
+.lib-filter-toggle button.active {
+    background: var(--accent-color);
+    color: #fff;
+}
+.lib-filter-toggle button:hover:not(.active) {
+    background: var(--bg-primary);
+}
