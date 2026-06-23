@@ -979,22 +979,7 @@ body {
     flex-grow: 1;
     cursor: pointer;
 }
-.favorite-btn {
-    background: 0 0;
-    border: currentcolor;
-    border-image: initial;
-    cursor: pointer;
-    font-size: 1.1em;
-    color: #999;
-    transition: color .2s;
-    line-height: .7;
-    padding: 0;
-    margin: 0;
-    height: auto;
-    vertical-align: middle;
-    transform: scale(.9);
-    transform-origin: center center;
-}
+
 .import-btn, .input-row button {
     color: #fff;
     border-image: initial;
@@ -1002,16 +987,8 @@ body {
 .lyrics-expand-btn i, .video-hint i {
     margin-right: 8px;
 }
-.favorite-btn i {
-    font-size: .85em;
-    display: inline-block;
-    vertical-align: middle;
-    position: relative;
-    top: -1px;
-}
-.favorite-btn .fa-star, .favorite-btn:hover {
-    color: gold;
-}
+
+
 .song-item.favorite {
     background-color: rgba(255, 215, 0, .1);
 }
@@ -3619,6 +3596,8 @@ body:has(#ytPlayer.fullscreen-video) {
 }
 
 .song-actions .song-card-btn.favorite-btn:hover { color: #f5c518; }
+.song-actions .song-card-btn.favorite-btn .fa-star { color: #f5c518; }
+
 .song-actions .song-card-btn.play-btn:hover     { color: var(--accent-color); }
 .song-actions .song-card-btn.delete-btn:hover   { color: var(--error-color); }
 .song-actions .song-card-btn.edit-btn:hover     { color: var(--accent-color); }
