@@ -14480,21 +14480,119 @@ restartCurrentSong() {
 
 
 	cleanup() {
-		console.log("Starting cleanup process");
-		this.saveCurrentState();
-		this.clearTimersAndIntervals();
-		this.cleanupYouTubePlayer();
-		this.cleanupBillboardAndGlobalLibrary();
-		this.restorePageAppearance();
-		this.disconnectObservers();
-		this.removeDynamicEventListeners();
-		if (this.handleVisibilityChange) {
-			document.removeEventListener('visibilitychange', this.handleVisibilityChange);
-		}
-
-		this.closeDiscordConnection();
-		this.gracefulDatabaseClose();
-		console.log("Cleanup process completed successfully");
+	    console.log("Starting cleanup process");
+	    this.saveCurrentState();
+	    this.clearTimersAndIntervals();
+	    this.cleanupYouTubePlayer();
+	    this.cleanupLocalAudio();         
+	    this.cleanupVisualizer(); 
+	    this.cleanupBillboardAndGlobalLibrary();
+	    this.cleanupVirtualScroll(); 
+	    this.cleanupDiscoveryObserver();
+	    this.cleanupMiscState();
+	    this.restorePageAppearance();
+	    this.disconnectObservers();
+	    this.removeDynamicEventListeners();
+	    if (this.handleVisibilityChange) {
+	        document.removeEventListener('visibilitychange', this.handleVisibilityChange);
+	        this.handleVisibilityChange = null;
+	    }
+	    this.closeDiscordConnection();
+	    this.gracefulDatabaseClose();
+	    console.log("Cleanup process completed successfully");
+	}
+	
+	cleanupLocalAudio() {
+	    if (!this.localAudio) return;
+	    try {
+	        if (!this.localAudio.paused) {
+	            this.localAudio.pause();
+	        }
+	        // Revoke blob URL to free memory
+	        if (this.localAudio.src?.startsWith('blob:')) {
+	            URL.revokeObjectURL(this.localAudio.src);
+	        }
+	        this.localAudio.removeAttribute('src');
+	        this.localAudio.load(); // aborts any pending network activity
+	        console.log("Local audio cleaned up");
+	    } catch (error) {
+	        console.warn("Error cleaning up local audio:", error.message);
+	    }
+	}
+	
+	cleanupVisualizer() {
+	    try {
+	        this.destroyVisualizer(); // cancels animationId, sets isActive false
+	        if (this.visualizer) {
+	            this.visualizer.bars      = [];
+	            this.visualizer.particles = [];
+	            if (this.visualizer.ctx && this.visualizer.canvas) {
+	                this.visualizer.ctx.clearRect(
+	                    0, 0,
+	                    this.visualizer.canvas.width,
+	                    this.visualizer.canvas.height
+	                );
+	            }
+	            this.visualizer.ctx    = null;
+	            this.visualizer.canvas = null;
+	        }
+	        console.log("Visualizer cleaned up");
+	    } catch (error) {
+	        console.warn("Error cleaning up visualizer:", error.message);
+	    }
+	}
+	
+	cleanupVirtualScroll() {
+	    try {
+	        if (this._vsCleanup) {
+	            this._vsCleanup();
+	            this._vsCleanup = null;
+	        }
+	        if (this._vsContainer) {
+	            this._vsContainer.style.height    = "";
+	            this._vsContainer.style.position  = "";
+	            this._vsContainer.style.overflowY = "";
+	            this._vsContainer = null;
+	        }
+	        console.log("Virtual scroll cleaned up");
+	    } catch (error) {
+	        console.warn("Error cleaning up virtual scroll:", error.message);
+	    }
+	}
+	
+	cleanupDiscoveryObserver() {
+	    try {
+	        if (this._discoveryResizeObserver) {
+	            this._discoveryResizeObserver.disconnect();
+	            this._discoveryResizeObserver = null;
+	            console.log("Discovery ResizeObserver disconnected");
+	        }
+	    } catch (error) {
+	        console.warn("Error disconnecting discovery observer:", error.message);
+	    }
+	}
+	
+	cleanupMiscState() {
+	    try {
+	        // Discord send timer missed by closeDiscordConnection
+	        if (this._discordSendTimer) {
+	            clearTimeout(this._discordSendTimer);
+	            clearInterval(this._discordSendTimer);
+	            this._discordSendTimer = null;
+	            console.log("Discord send timer cleared");
+	        }
+	        // Clear skipped songs set
+	        if (this.temporarilySkippedSongs) {
+	            this.temporarilySkippedSongs.clear();
+	        }
+	        // Remove the saveCustomTheme onclick
+	        if (this.elements?.saveCustomTheme) {
+	            this.elements.saveCustomTheme.onclick = null;
+	        }
+	        console.log("Misc state cleaned up");
+	    } catch (error) {
+	        console.warn("Error cleaning up misc state:", error.message);
+	    }
 	}
 	saveCurrentState() {
 		try {
@@ -14548,7 +14646,9 @@ restartCurrentSong() {
 			{
 				ref: 'appTimer',
 				timer: this.appTimer
-			}
+			},
+			{ ref: '_discordSendTimer',       timer: this._discordSendTimer },
+			{ ref: 'discordReconnectTimer',   timer: this.discordReconnectTimer }
 		];
 		let clearedCount = 0;
 		timers.forEach(({
