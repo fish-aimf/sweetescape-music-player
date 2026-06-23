@@ -669,3 +669,4 @@
 -  favorite button will now have a grey star to better indicate its location v66.9.0
 -  you can now drag audio files onto song items to quickly add them to offline playback. v66.10.0
 -  render size is dynamically calculated now. v66.11.0
+-  buffed cleanup method to mop up previously missed. v66.12.0
