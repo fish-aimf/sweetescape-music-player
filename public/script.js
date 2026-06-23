@@ -1700,9 +1700,12 @@ class AdvancedMusicPlayer {
 	    img.alt = song.name;
 	    img.loading = 'lazy';
 	    img.decoding = 'async';
-	    // Set src last to avoid premature network request before decoding hint is set
 	    img.src = song.thumbnailUrl || `https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg`;
-	    img.onerror = () => { img.src = `https://img.youtube.com/vi/${song.videoId}/default.jpg`; };
+	    img.onerror = () => {
+		    img.onerror = null; 
+		    img.src = `https://img.youtube.com/vi/${song.videoId}/default.jpg`;
+		};
+
 	
 	    const label = document.createElement('div');
 	    label.className = 'fav-thumb-label';
@@ -1918,8 +1921,10 @@ class AdvancedMusicPlayer {
 	    img.alt = song.name;
 	    img.loading = 'lazy';
 	    img.decoding = 'async';
-	    img.onerror = () => { img.src = `https://img.youtube.com/vi/${song.videoId}/default.jpg`; };
-	
+	    img.onerror = () => {
+		    img.onerror = null; // prevent re-firing
+		    img.src = `https://img.youtube.com/vi/${song.videoId}/default.jpg`;
+		};
 	    const overlay = document.createElement('div');
 	    overlay.className = 'discovery-play-overlay';
 	    overlay.innerHTML = `<i class="fa fa-play"></i>`;
@@ -1935,9 +1940,6 @@ class AdvancedMusicPlayer {
 	    return item;
 	}
 	
-	// ------------------------------------------------------------------
-	// UTILITY: Fisher-Yates shuffle
-	// ------------------------------------------------------------------
 	_shuffleArray(arr) {
 	    let i = arr.length;
 	    while (i--) {
@@ -3078,12 +3080,10 @@ hideSidebar() {
 		}
 	}
 	loadYouTubeAPI() {
-		// Check if API is already loaded
 		if (window.YT && window.YT.Player) {
 			return;
 		}
 
-		// Check if script is already being loaded
 		if (document.querySelector('script[src*="youtube.com/iframe_api"]')) {
 			return;
 		}
