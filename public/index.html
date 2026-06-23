@@ -154,7 +154,38 @@
                   <div class="tab-pane active" id="library">
                      <div class="library-manager">
                         <div class="search-section" title="find some premade playlists from famous artists">
-                           <input type="text" id="librarySearch" placeholder="Search songs..." autocomplete="off">
+                           <div class="library-search-wrap">
+                               <input type="text" id="librarySearch" placeholder="Search songs..." autocomplete="off">
+                               <button class="lib-filter-btn" id="libFilterBtn" title="Filter library" aria-label="Filter library">
+                                   <i class="fa fa-sliders"></i>
+                               </button>
+                               <div class="lib-filter-panel" id="libFilterPanel">
+                                   <div class="lib-filter-row">
+                                       <span class="lib-filter-label"><i class="fa fa-star"></i> Favourite</span>
+                                       <div class="lib-filter-toggle" data-filter="favorite">
+                                           <button data-val="true" title="Must be favourited">Yes</button>
+                                           <button data-val="null" class="active" title="Doesn't matter">Any</button>
+                                           <button data-val="false" title="Not favourited">No</button>
+                                       </div>
+                                   </div>
+                                   <div class="lib-filter-row">
+                                       <span class="lib-filter-label"><i class="fa fa-closed-captioning"></i> Lyrics</span>
+                                       <div class="lib-filter-toggle" data-filter="lyrics">
+                                           <button data-val="true" title="Has lyrics">Yes</button>
+                                           <button data-val="null" class="active" title="Doesn't matter">Any</button>
+                                           <button data-val="false" title="No lyrics">No</button>
+                                       </div>
+                                   </div>
+                                   <div class="lib-filter-row">
+                                       <span class="lib-filter-label"><i class="fa fa-download"></i> Downloaded</span>
+                                       <div class="lib-filter-toggle" data-filter="downloaded">
+                                           <button data-val="true" title="Is downloaded">Yes</button>
+                                           <button data-val="null" class="active" title="Doesn't matter">Any</button>
+                                           <button data-val="false" title="Not downloaded">No</button>
+                                       </div>
+                                   </div>
+                               </div>
+                           </div>
                            <button id="findSongsBtn" class="action-button find-songs-btn">
                            <i class="fas fa-search"></i> Global library
                            </button>
