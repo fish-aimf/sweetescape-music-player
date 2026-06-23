@@ -671,3 +671,5 @@
 -  render size is dynamically calculated now. v66.11.0
 -  buffed cleanup method to mop up previously missed. v66.12.0
 -  added filter option for library v67.0.0
+-  changed icon to fa filter instead v67.1.0
+-  instead of clicking, hovering will appear and disappear the ui. v67.2.0
