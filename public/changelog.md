@@ -662,3 +662,4 @@
 -  playing song youtube player doesn't require in the case of when offline playback is avaliable v66.2.0
 -  fixed initializing error while offline v66.3.0
 -  fixed infinite console log and network attempts v66.4.0
+-  fixed some offline bugs v66.5.0
