@@ -1284,87 +1284,155 @@ class AdvancedMusicPlayer {
 	    });
 	}
 	renderSongLibrary(searchTerm = null) {
-		try {
-			if (!this.elements.songLibrary) return;
+	    try {
+	        if (!this.elements.songLibrary) return;
+	
+	        if (searchTerm === null && this.elements.librarySearch) {
+	            searchTerm = this.elements.librarySearch.value.toLowerCase().trim();
+	        }
+	
+	        let filteredLibrary = this.songLibrary;
+	        if (searchTerm && searchTerm !== "") {
+	            const LAT_TO_CYR = {'a':'а','b':'б','v':'в','g':'г','d':'д','e':'е','z':'з','i':'и','j':'й','k':'к','l':'л','m':'м','n':'н','o':'о','p':'п','r':'р','s':'с','t':'т','u':'у','f':'ф','y':'ы'};
+	            const latinized = searchTerm.split('').map(c => LAT_TO_CYR[c] || c).join('');
+	            filteredLibrary = this.songLibrary.filter(song => {
+	                const name = song.name.toLowerCase();
+	                const author = (song.author || '').toLowerCase();
+	                return name.includes(searchTerm) || author.includes(searchTerm)
+	                    || name.includes(latinized) || author.includes(latinized);
+	            });
+	        }
+	
+	        let sortedLibrary;
+	        if (this.librarySortAlphabetically !== false) {
+	            sortedLibrary = [...filteredLibrary].sort((a, b) => {
+	                if (a.favorite !== b.favorite) return a.favorite ? -1 : 1;
+	                const result = a.name.localeCompare(b.name);
+	                return this.libraryReverseOrder ? -result : result;
+	            });
+	        } else {
+	            sortedLibrary = [...filteredLibrary].sort((a, b) => {
+	                if (a.favorite !== b.favorite) return a.favorite ? -1 : 1;
+	                return this.libraryReverseOrder ? -1 : 0;
+	            });
+	        }
+	
+	        const container = this.elements.songLibrary;
+	
+	        if (this.songLibrary.length === 0) {
+	            const emptyMessage = document.createElement("div");
+	            emptyMessage.classList.add("empty-library-message");
+	            emptyMessage.textContent = "Your library is empty.";
+	            const addSongsButton = document.createElement("button");
+	            addSongsButton.classList.add("add-songs-button");
+	            addSongsButton.textContent = "Add Songs";
+	            addSongsButton.addEventListener("click", () => this.openFindSongs());
+	            emptyMessage.appendChild(document.createElement("br"));
+	            emptyMessage.appendChild(addSongsButton);
+	            container.innerHTML = "";
+	            container.appendChild(emptyMessage);
+	            this._destroyVirtualScroll();
+	            return;
+	        }
+	
+	        if (searchTerm && sortedLibrary.length === 0) {
+	            const noResultsMessage = document.createElement("div");
+	            noResultsMessage.classList.add("empty-library-message");
+	            noResultsMessage.textContent = `No songs found matching "${searchTerm}"`;
+	            container.innerHTML = "";
+	            container.appendChild(noResultsMessage);
+	            this._destroyVirtualScroll();
+	            return;
+	        }
+	
+	        this._mountVirtualScroll(container, sortedLibrary);
+	
+	    } catch (error) {
+	        console.error("Error rendering song library:", error);
+	        this.elements.songLibrary.innerHTML =
+	            '<div class="error-message">Failed to display song library</div>';
+	    }
+	}
+	
+	_mountVirtualScroll(container, songs) {
+	    const BUFFER = 5;
 
-			// Get search term from input if not provided
-			if (searchTerm === null && this.elements.librarySearch) {
-				searchTerm = this.elements.librarySearch.value.toLowerCase().trim();
-			}
-
-			// Filter library based on search term
-			let filteredLibrary = this.songLibrary;
-			if (searchTerm && searchTerm !== "") {
-			    const LAT_TO_CYR = {'a':'а','b':'б','v':'в','g':'г','d':'д','e':'е','z':'з','i':'и','j':'й','k':'к','l':'л','m':'м','n':'н','o':'о','p':'п','r':'р','s':'с','t':'т','u':'у','f':'ф','y':'ы'};
-			    const latinized = searchTerm.split('').map(c => LAT_TO_CYR[c] || c).join('');
-			
-			    filteredLibrary = this.songLibrary.filter(song => {
-			        const name = song.name.toLowerCase();
-			        const author = (song.author || '').toLowerCase();
-			        return name.includes(searchTerm) || author.includes(searchTerm)
-			            || name.includes(latinized) || author.includes(latinized);
-			    });
-			}
-
-			// Sort the filtered library
-			let sortedLibrary;
-			if (this.librarySortAlphabetically !== false) {
-				sortedLibrary = [...filteredLibrary].sort((a, b) => {
-					if (a.favorite !== b.favorite) {
-						return a.favorite ? -1 : 1;
-					}
-					const result = a.name.localeCompare(b.name);
-					return this.libraryReverseOrder ? -result : result;
-				});
-			} else {
-				sortedLibrary = [...filteredLibrary].sort((a, b) => {
-					if (a.favorite !== b.favorite) {
-						return a.favorite ? -1 : 1;
-					}
-					return this.libraryReverseOrder ? -1 : 0;
-				});
-			}
-
-			const fragment = document.createDocumentFragment();
-
-			// Handle empty library
-			if (this.songLibrary.length === 0) {
-				const emptyMessage = document.createElement("div");
-				emptyMessage.classList.add("empty-library-message");
-				emptyMessage.textContent = "Your library is empty.";
-				const addSongsButton = document.createElement("button");
-				addSongsButton.classList.add("add-songs-button");
-				addSongsButton.textContent = "Add Songs";
-				addSongsButton.addEventListener("click", () => {
-					this.openFindSongs();
-				});
-				emptyMessage.appendChild(document.createElement("br"));
-				emptyMessage.appendChild(addSongsButton);
-				fragment.appendChild(emptyMessage);
-			}
-			// Handle no search results
-			else if (searchTerm && sortedLibrary.length === 0) {
-				const noResultsMessage = document.createElement("div");
-				noResultsMessage.classList.add("empty-library-message");
-				noResultsMessage.textContent = `No songs found matching "${searchTerm}"`;
-				fragment.appendChild(noResultsMessage);
-			}
-			// Render songs
-			else {
-				sortedLibrary.forEach((song) => {
-					const songElement = this.createSongElement(song);
-					fragment.appendChild(songElement);
-				});
-			}
-
-			this.elements.songLibrary.innerHTML = "";
-			this.elements.songLibrary.appendChild(fragment);
-
-		} catch (error) {
-			console.error("Error rendering song library:", error);
-			this.elements.songLibrary.innerHTML =
-				'<div class="error-message">Failed to display song library</div>';
-		}
+	    const probe = this.createSongElement(songs[0]);
+	    probe.style.cssText = 'position:absolute;visibility:hidden;pointer-events:none;';
+	    container.appendChild(probe);
+	    const ITEM_H = probe.getBoundingClientRect().height || 44;
+	    probe.remove();
+	    const CONTAINER_H = container.clientHeight || 480;
+		
+	    this._destroyVirtualScroll();
+	
+	    container.innerHTML = "";
+	    container.style.overflowY = "auto";
+	    container.style.position  = "relative";
+	    container.style.height    = CONTAINER_H + "px";
+	
+	    // Spacer creates the full scrollable height
+	    const spacer = document.createElement("div");
+	    spacer.style.cssText = `height:${songs.length * ITEM_H}px;width:100%;pointer-events:none;`;
+	    container.appendChild(spacer);
+	
+	    // Render window — positioned absolutely, slides as user scrolls
+	    const window_ = document.createElement("div");
+	    window_.style.cssText = "position:absolute;top:0;left:0;right:0;";
+	    container.appendChild(window_);
+	
+	    let lastStart = -1;
+	
+	    const render = () => {
+	        const scrollTop = container.scrollTop;
+	        const start = Math.max(0, Math.floor(scrollTop / ITEM_H) - BUFFER);
+	        const visible = Math.ceil(CONTAINER_H / ITEM_H) + BUFFER * 2;
+	        const end   = Math.min(songs.length, start + visible);
+	
+	        if (start === lastStart && window_.childElementCount === (end - start)) return;
+	        lastStart = start;
+	
+	        window_.style.transform = `translateY(${start * ITEM_H}px)`;
+	        window_.innerHTML = "";
+	
+	        const frag = document.createDocumentFragment();
+	        for (let i = start; i < end; i++) {
+	            const el = this.createSongElement(songs[i]);
+	            el.style.height = ITEM_H + "px";
+	            el.style.boxSizing = "border-box";
+	            frag.appendChild(el);
+	        }
+	        window_.appendChild(frag);
+	    };
+	
+	    const onScroll = () => render();
+	    container.addEventListener("scroll", onScroll, { passive: true });
+	
+	    const resizeObserver = new ResizeObserver(() => {
+	        lastStart = -1;
+	        render();
+	    });
+	    resizeObserver.observe(container);
+	
+	    this._vsCleanup = () => {
+	        container.removeEventListener("scroll", onScroll);
+	        resizeObserver.disconnect();  
+	    };
+	
+	    render(); 
+	}
+	
+	_destroyVirtualScroll() {
+	    if (this._vsCleanup) {
+	        this._vsCleanup();
+	        this._vsCleanup = null;
+	    }
+	    if (this._vsContainer) {
+	        this._vsContainer.style.height   = "";
+	        this._vsContainer.style.position = "";
+	        this._vsContainer.style.overflowY = "";
+	        this._vsContainer = null;
+	    }
 	}
 	createSongElement(song) {
 	    const songElement = document.createElement("div");
@@ -1432,6 +1500,7 @@ class AdvancedMusicPlayer {
 	            this.playSong(songIdNum);
 	        }
 	    });
+		this._setupSongItemDragDrop();
 	}
 	escapeHtml(text) {
 	    return text
@@ -14188,6 +14257,137 @@ restartCurrentSong() {
         }
         this.updateHighlightedLyric(0, this.currentLyrics ?? [], this.currentTimings ?? []);
     }
+}
+	_setupSongItemDragDrop() {
+    const AUDIO_EXTS = new Set(['.mp3','.flac','.wav','.m4a','.ogg','.aac','.opus','.weba']);
+    const container  = this.elements.songLibrary;
+    let activeItem   = null;
+
+    const getAudioFile = (dt) => {
+        const files = [...(dt.files || [])];
+        return files.find(f => {
+            const ext = '.' + f.name.split('.').pop().toLowerCase();
+            return AUDIO_EXTS.has(ext);
+        }) || null;
+    };
+
+    const getSongItem = (el) => el?.closest?.('.song-item') || null;
+
+    const highlight = (item, on) => {
+        if (!item) return;
+        item.classList.toggle('drag-audio-over', on);
+    };
+
+    container.addEventListener('dragenter', (e) => {
+        const file = [...(e.dataTransfer?.items || [])].find(i => i.kind === 'file');
+        if (!file) return;
+        const item = getSongItem(e.target);
+        if (!item) return;
+        e.preventDefault();
+        if (activeItem && activeItem !== item) highlight(activeItem, false);
+        activeItem = item;
+        highlight(item, true);
+    }, false);
+
+    container.addEventListener('dragover', (e) => {
+        const item = getSongItem(e.target);
+        if (!item) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'link';
+    }, false);
+
+    container.addEventListener('dragleave', (e) => {
+        const item = getSongItem(e.target);
+        if (!item || item.contains(e.relatedTarget)) return;
+        highlight(item, false);
+        if (activeItem === item) activeItem = null;
+    }, false);
+
+    container.addEventListener('drop', async (e) => {
+        const item = getSongItem(e.target);
+        if (!item) return;
+        e.preventDefault();
+        highlight(item, false);
+        activeItem = null;
+
+        const audioFile = getAudioFile(e.dataTransfer);
+        if (!audioFile) {
+            this.showNotification('Drop an audio file (.mp3, .flac, .wav…)', 'error');
+            return;
+        }
+
+        if (!window.showOpenFilePicker) {
+            // Fallback: no File System Access API — can't get a FileSystemFileHandle,
+            // but we can still store the File object for this session
+            this.showNotification('File linked for this session only (Chrome/Edge needed for persistent link).', 'info');
+        }
+
+        const songId  = parseInt(item.querySelector('[data-song-id]')?.dataset.songId);
+        const song    = this.songLibrary.find(s => s.id === songId);
+        if (!song) return;
+
+        // Show inline progress state on the item
+        item.classList.add('drag-audio-linking');
+        const right = item.querySelector('.song-item-right');
+        let toast = right?.querySelector('.drag-link-toast');
+        if (!toast && right) {
+            toast = document.createElement('span');
+            toast.className = 'drag-link-toast';
+            toast.textContent = '⏳ Linking…';
+            right.prepend(toast);
+        }
+
+        try {
+            let handle = null;
+            const dtItem = [...e.dataTransfer.items].find(i => i.kind === 'file');
+            if (dtItem?.getAsFileSystemHandle) {
+                handle = await dtItem.getAsFileSystemHandle();
+            }
+
+            const songIndex = this.songLibrary.findIndex(s => s.id === songId);
+            if (songIndex !== -1) {
+                this.songLibrary[songIndex].localFileHandle = handle;
+                this.songLibrary[songIndex].localFileName   = audioFile.name;
+                await this.saveSingleSong(this.songLibrary[songIndex]);
+            }
+
+            // Update DOM indicators in-place
+            if (toast) {
+                toast.textContent = `✓ ${audioFile.name}`;
+                toast.classList.add('drag-link-success');
+            }
+            item.classList.add('drag-audio-done');
+
+            let indicators = right?.querySelector('.song-status-indicators');
+            if (!indicators && right) {
+                indicators = document.createElement('div');
+                indicators.className = 'song-status-indicators';
+                right.insertBefore(indicators, right.querySelector('.song-actions'));
+            }
+            if (indicators) {
+                const updatedSong = this.songLibrary.find(s => s.id === songId);
+                const isFav     = !!updatedSong?.favorite;
+                const hasLyrics = !!(updatedSong?.lyrics?.trim());
+                const lyricsHtml = hasLyrics ? `<span class="song-lyrics-indicator" title="Has lyrics"><i class="fa fa-closed-captioning"></i></span>` : '';
+                const dlHtml     = `<span class="song-dl-indicator" title="Downloaded"><i class="fa fa-download"></i></span>`;
+                const favHtml    = isFav ? `<span class="song-fav-indicator" title="Favourited"><i class="fa fa-star"></i></span>` : '';
+                indicators.innerHTML = lyricsHtml + dlHtml + favHtml;
+            }
+
+            setTimeout(() => {
+                toast?.remove();
+                item.classList.remove('drag-audio-done', 'drag-audio-linking');
+            }, 2500);
+
+            this.showNotification(`Linked: ${audioFile.name}`, 'success');
+
+        } catch (err) {
+            console.error('Drag-link error:', err);
+            if (toast) { toast.textContent = '✗ Failed'; toast.classList.add('drag-link-error'); }
+            setTimeout(() => { toast?.remove(); item.classList.remove('drag-audio-linking'); }, 2000);
+            this.showNotification('Failed to link file.', 'error');
+        }
+    }, false);
 }
 
 
