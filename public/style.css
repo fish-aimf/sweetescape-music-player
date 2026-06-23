@@ -7457,7 +7457,8 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     min-width: 220px;
     box-shadow: 0 4px 12px var(--shadow-color);
 }
-.lib-filter-panel.open {
+.lib-filter-panel.open,
+.library-search-wrap:hover .lib-filter-panel {
     display: block;
 }
 
