@@ -673,3 +673,4 @@
 -  added filter option for library v67.0.0
 -  changed icon to fa filter instead v67.1.0
 -  instead of clicking, hovering will appear and disappear the ui. v67.2.0
+-  fixed filter modal from appearing when hovering over search bar. v67.3.0
