@@ -91,6 +91,9 @@
                 <i class="fab fa-discord"></i>
                 <span class="discord-status-dot" id="discordStatusDot"></span>
             </button>
+            <button id="shazamButton" class="timer-button" title="Identify Song">
+                <i class="fas fa-search"></i>
+            </button>
             <button id="downloadButton" class="timer-button" title="Download Song">
                 <i class="fas fa-download"></i>
             </button>
@@ -1351,6 +1354,57 @@ Another Playlist{
             <div id="dlQueueList" class="dl-queue-list"></div>
           </div>
       
+        </div>
+      </div>
+      <div id="shazamModal" class="sz-overlay" style="display:none;" role="dialog" aria-modal="true" aria-label="Identify song">
+        <div class="sz-modal">
+      
+          <div class="sz-header">
+            <span class="sz-title"><i class="fas fa-search"></i> Identify Song</span>
+            <button class="sz-close" id="szCloseBtn" title="Close"><i class="fas fa-times"></i></button>
+          </div>
+      
+          <div class="sz-panel">
+      
+            <div class="sz-source-row">
+              <button class="sz-source-btn" id="szCaptureTabBtn"><i class="fas fa-desktop"></i><span>Tab / System audio</span></button>
+              <button class="sz-source-btn" id="szMicBtn"><i class="fas fa-microphone"></i><span>Microphone</span></button>
+              <button class="sz-source-btn" id="szUploadBtn"><i class="fas fa-file-audio"></i><span>Upload clip</span></button>
+              <input type="file" id="szFileInput" accept="audio/*,video/*" hidden>
+            </div>
+      
+            <div class="sz-gain-row">
+              <label for="szGainSlider"><i class="fas fa-sliders-h"></i> Input gain</label>
+              <input type="range" id="szGainSlider" min="0.5" max="4" step="0.1" value="1.5">
+            </div>
+      
+            <div class="sz-meter"><div class="sz-meter-fill" id="szMeterFill"></div></div>
+      
+            <div class="sz-wave-wrap" id="szWaveWrap">
+              <canvas id="szWaveCanvas" width="300" height="70"></canvas>
+            </div>
+            <div class="sz-sel-info" id="szSelInfo">Drag across the waveform to select part of the clip</div>
+      
+            <div class="sz-identify-row" id="szIdentifyRow">
+              <button class="sz-btn" id="szIdentifySelBtn" disabled><i class="fas fa-crop-alt"></i> Identify selection</button>
+              <button class="sz-btn sz-btn-primary" id="szIdentifyAllBtn" disabled><i class="fas fa-magic"></i> Identify clip</button>
+            </div>
+      
+            <audio id="szPlayback" class="sz-playback" controls></audio>
+            <p class="sz-status" id="szStatus">Capture audio or upload a clip to identify it</p>
+      
+            <div class="sz-result" id="szResultCard">
+              <div class="sz-result-art" id="szArt"></div>
+              <div class="sz-result-info">
+                <p class="sz-result-title" id="szTitle"></p>
+                <p class="sz-result-artist" id="szArtist"></p>
+                <p class="sz-result-album" id="szAlbum"></p>
+                <div class="sz-result-links" id="szLinks"></div>
+              </div>
+              <button class="sz-result-add" id="szAddToQueueBtn" title="Add to download queue"><i class="fas fa-plus"></i></button>
+            </div>
+      
+          </div>
         </div>
       </div>
 
