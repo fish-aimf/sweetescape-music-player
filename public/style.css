@@ -662,8 +662,8 @@ body {
     right: auto;
     margin: 0;
 }
-#downloadButton {
-    margin-left: 4px;
+#shazamButton {
+  margin-left: 4px;
 }
 
 #timerDisplay {
