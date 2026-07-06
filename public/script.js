@@ -291,6 +291,7 @@ class AdvancedMusicPlayer {
 		this.setupYouTubeLibraryResultsDelegation();
 		this.initNowPlayingTab();
 		this.initDownloadModal();
+		this.initShazamModal();
 		this.addQueueStyles(); 
 		this.initLibraryFilter();
 	}
@@ -8467,13 +8468,10 @@ hideSidebar() {
 	    }, { passive: true });
 	}
 	 
-	// ─── ADD STYLES ───────────────────────────────────────────────
 	addQueueStyles() {
 	    if (document.getElementById('qv2-styles')) return;
 	    const style = document.createElement('style');
 	    style.id = 'qv2-styles';
-	    // Note: Full CSS is in queue-system-styles.css
-	    // This is the minimal inline injection for notification animation
 	    style.textContent = `
 	        .queue-notification {
 	            position: fixed;
@@ -14469,6 +14467,338 @@ _applyLibraryFiltersAndRender() {
     } else {
         this.renderSongLibrary(searchTerm);
     }
+}
+	initShazamModal() {
+  const MAX_SECONDS   = 12;     // capped — keeps payload well under Vercel's body limit
+  const PX_PER_SECOND = 40;
+
+  const overlay        = document.getElementById('shazamModal');
+  const closeBtn        = document.getElementById('szCloseBtn');
+  const captureTabBtn    = document.getElementById('szCaptureTabBtn');
+  const micBtn           = document.getElementById('szMicBtn');
+  const uploadBtn        = document.getElementById('szUploadBtn');
+  const fileInput        = document.getElementById('szFileInput');
+  const gainSlider       = document.getElementById('szGainSlider');
+  const meterFill        = document.getElementById('szMeterFill');
+  const waveWrap         = document.getElementById('szWaveWrap');
+  const waveCanvas       = document.getElementById('szWaveCanvas');
+  const waveCtx          = waveCanvas.getContext('2d');
+  const selInfo          = document.getElementById('szSelInfo');
+  const identifyRow      = document.getElementById('szIdentifyRow');
+  const identifySelBtn   = document.getElementById('szIdentifySelBtn');
+  const identifyAllBtn   = document.getElementById('szIdentifyAllBtn');
+  const playback         = document.getElementById('szPlayback');
+  const statusEl         = document.getElementById('szStatus');
+  const resultCard       = document.getElementById('szResultCard');
+  const artEl            = document.getElementById('szArt');
+  const rTitle           = document.getElementById('szTitle');
+  const rArtist          = document.getElementById('szArtist');
+  const rAlbum           = document.getElementById('szAlbum');
+  const rLinks           = document.getElementById('szLinks');
+  const addToQueueBtn    = document.getElementById('szAddToQueueBtn');
+
+  let audioCtx, sourceNode, gainNode, processorNode, mediaStream;
+  let sampleRate = 48000;
+  let chunks = [], levels = [], totalSamples = 0;
+  let isListening = false, activeSource = null;
+  let selStart = 0, selEnd = 0, dragging = false;
+  let currentClipUrl = null;
+  let lastMatchedTrack = null;
+
+  const setStatus = (msg) => { statusEl.textContent = msg; };
+
+  const open = () => { overlay.style.display = 'flex'; };
+  const close = () => {
+    overlay.style.display = 'none';
+    if (isListening) stopCapture();
+  };
+  document.getElementById('shazamButton').addEventListener('click', open);
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+  closeBtn.addEventListener('click', close);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && overlay.style.display !== 'none') close();
+  });
+
+  // ---- Source acquisition ----
+  const acquireDisplayAudioStream = async () => {
+    const displayStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+    displayStream.getVideoTracks().forEach(t => t.stop());
+    const audioTracks = displayStream.getAudioTracks();
+    if (audioTracks.length === 0) throw new Error('no-audio-track');
+    audioTracks[0].addEventListener('ended', () => { if (activeSource === 'display') stopCapture(); });
+    return new MediaStream(audioTracks);
+  };
+  const acquireMicStream = () => navigator.mediaDevices.getUserMedia({
+    audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false, channelCount: 1 }
+  });
+
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+    captureTabBtn.disabled = true;
+    captureTabBtn.title = 'Not supported in this browser';
+  }
+
+  // ---- Capture pipeline ----
+  const startCapture = async (kind) => {
+    if (isListening) return;
+    try {
+      mediaStream = kind === 'display' ? await acquireDisplayAudioStream() : await acquireMicStream();
+    } catch (err) {
+      if (kind === 'display' && err.message === 'no-audio-track') {
+        setStatus('That share had no audio — pick "Share tab audio", or use the microphone');
+      } else if (kind === 'display') {
+        setStatus('Screen/tab share cancelled or unsupported — try the microphone');
+      } else {
+        setStatus('Microphone access was denied');
+      }
+      return;
+    }
+
+    chunks = []; levels = []; totalSamples = 0; selStart = 0; selEnd = 0;
+    identifySelBtn.disabled = true; identifyAllBtn.disabled = true;
+    selInfo.style.display = 'none';
+    waveWrap.style.display = 'block';
+    identifyRow.style.display = 'flex';
+    resultCard.style.display = 'none';
+
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    sampleRate = audioCtx.sampleRate;
+    sourceNode = audioCtx.createMediaStreamSource(mediaStream);
+    gainNode = audioCtx.createGain();
+    gainNode.gain.value = parseFloat(gainSlider.value);
+    sourceNode.connect(gainNode);
+
+    processorNode = audioCtx.createScriptProcessor(4096, 1, 1);
+    gainNode.connect(processorNode);
+    const silent = audioCtx.createGain();
+    silent.gain.value = 0;
+    processorNode.connect(silent);
+    silent.connect(audioCtx.destination);
+
+    processorNode.onaudioprocess = (e) => {
+      const copy = new Float32Array(e.inputBuffer.getChannelData(0));
+      chunks.push(copy);
+      let peak = 0;
+      for (let i = 0; i < copy.length; i++) { const v = Math.abs(copy[i]); if (v > peak) peak = v; }
+      levels.push(peak);
+      meterFill.style.width = Math.min(100, peak * 140) + '%';
+      totalSamples += copy.length;
+      drawWaveform();
+      if (totalSamples / sampleRate >= MAX_SECONDS) stopCapture();
+    };
+
+    isListening = true; activeSource = kind;
+    updateSourceButtons();
+    setStatus((kind === 'display' ? 'Capturing tab/system audio' : 'Listening on microphone')
+      + `… up to ${MAX_SECONDS}s, then drag to select the music`);
+  };
+
+  const stopCapture = () => {
+    if (!isListening) return;
+    processorNode?.disconnect(); gainNode?.disconnect(); sourceNode?.disconnect();
+    mediaStream?.getTracks().forEach(t => t.stop());
+    audioCtx?.close();
+    isListening = false; activeSource = null;
+    updateSourceButtons();
+    meterFill.style.width = '0%';
+    setStatus('Stopped — drag a selection, then identify it');
+    identifySelBtn.disabled = selEnd <= selStart;
+    identifyAllBtn.disabled = totalSamples === 0;
+  };
+
+  const updateSourceButtons = () => {
+    captureTabBtn.classList.toggle('sz-recording', isListening && activeSource === 'display');
+    micBtn.classList.toggle('sz-recording', isListening && activeSource === 'mic');
+    captureTabBtn.disabled = isListening && activeSource !== 'display';
+    micBtn.disabled = isListening && activeSource !== 'mic';
+    uploadBtn.disabled = isListening;
+  };
+
+  gainSlider.addEventListener('input', () => { if (gainNode) gainNode.gain.value = parseFloat(gainSlider.value); });
+  captureTabBtn.addEventListener('click', () => (isListening && activeSource === 'display') ? stopCapture() : startCapture('display'));
+  micBtn.addEventListener('click', () => (isListening && activeSource === 'mic') ? stopCapture() : startCapture('mic'));
+
+  // ---- Waveform + drag-select ----
+  const chunkDurationSec = () => 4096 / sampleRate;
+  const drawWaveform = () => {
+    const totalDur = totalSamples / sampleRate;
+    const width = Math.max(300, Math.ceil(totalDur * PX_PER_SECOND));
+    waveCanvas.width = width; waveCanvas.height = 70;
+    waveCtx.clearRect(0, 0, width, 70);
+    waveCtx.fillStyle = 'rgba(255,255,255,0.15)';
+    waveCtx.fillRect(0, 34, width, 2);
+    const pxPerChunk = PX_PER_SECOND * chunkDurationSec();
+    waveCtx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim() || '#4C8DFF';
+    levels.forEach((lvl, i) => {
+      const h = Math.max(2, lvl * 60);
+      waveCtx.fillRect(i * pxPerChunk, 35 - h / 2, Math.max(1, pxPerChunk - 1), h);
+    });
+    if (selEnd > selStart) {
+      const x1 = selStart * PX_PER_SECOND, x2 = selEnd * PX_PER_SECOND;
+      waveCtx.fillStyle = 'rgba(93,156,89,0.25)';
+      waveCtx.fillRect(x1, 0, x2 - x1, 70);
+    }
+  };
+  const pixelToTime = (px) => Math.max(0, Math.min(totalSamples / sampleRate, px / PX_PER_SECOND));
+
+  waveCanvas.addEventListener('mousedown', (e) => { dragging = true; const t = pixelToTime(e.offsetX); selStart = t; selEnd = t; });
+  waveCanvas.addEventListener('mousemove', (e) => { if (!dragging) return; selEnd = pixelToTime(e.offsetX); drawWaveform(); });
+  window.addEventListener('mouseup', () => {
+    if (!dragging) return;
+    dragging = false;
+    if (selEnd < selStart) { const t = selStart; selStart = selEnd; selEnd = t; }
+    const dur = (selEnd - selStart).toFixed(1);
+    selInfo.style.display = 'block';
+    selInfo.textContent = dur > 0 ? `Selected ${dur}s` : 'Drag across the waveform to select part of the clip';
+    identifySelBtn.disabled = selEnd <= selStart;
+    drawWaveform();
+  });
+
+  // ---- PCM extraction + WAV encode ----
+  const extractSamples = (startSec, endSec) => {
+    const startSample = Math.floor(startSec * sampleRate);
+    const endSample = Math.floor(endSec * sampleRate);
+    const out = new Float32Array(Math.max(0, endSample - startSample));
+    let pos = 0, outIdx = 0;
+    for (const chunk of chunks) {
+      const chunkStart = pos, chunkEnd = pos + chunk.length;
+      if (chunkEnd > startSample && chunkStart < endSample) {
+        const from = Math.max(0, startSample - chunkStart);
+        const to = Math.min(chunk.length, endSample - chunkStart);
+        out.set(chunk.subarray(from, to), outIdx);
+        outIdx += (to - from);
+      }
+      pos = chunkEnd;
+      if (pos >= endSample) break;
+    }
+    return out;
+  };
+
+  const encodeWAV = (samples, rate) => {
+    const buffer = new ArrayBuffer(44 + samples.length * 2);
+    const view = new DataView(buffer);
+    const writeStr = (o, s) => { for (let i = 0; i < s.length; i++) view.setUint8(o + i, s.charCodeAt(i)); };
+    writeStr(0, 'RIFF'); view.setUint32(4, 36 + samples.length * 2, true); writeStr(8, 'WAVE');
+    writeStr(12, 'fmt '); view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
+    view.setUint32(24, rate, true); view.setUint32(28, rate * 2, true);
+    view.setUint16(32, 2, true); view.setUint16(34, 16, true);
+    writeStr(36, 'data'); view.setUint32(40, samples.length * 2, true);
+    let off = 44;
+    for (let i = 0; i < samples.length; i++) {
+      const s = Math.max(-1, Math.min(1, samples[i]));
+      view.setInt16(off, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+      off += 2;
+    }
+    return new Blob([view], { type: 'audio/wav' });
+  };
+
+  const setClipForPlayback = (blob) => {
+    if (currentClipUrl) URL.revokeObjectURL(currentClipUrl);
+    currentClipUrl = URL.createObjectURL(blob);
+    playback.src = currentClipUrl;
+    playback.style.display = 'block';
+  };
+
+  identifySelBtn.addEventListener('click', () => {
+    const wav = encodeWAV(extractSamples(selStart, selEnd), sampleRate);
+    setClipForPlayback(wav);
+    recognize(wav);
+  });
+  identifyAllBtn.addEventListener('click', () => {
+    const wav = encodeWAV(extractSamples(0, totalSamples / sampleRate), sampleRate);
+    setClipForPlayback(wav);
+    recognize(wav);
+  });
+
+  uploadBtn.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+    if (file.size > 3 * 1024 * 1024) {
+      setStatus('That file is too large — please trim it to a few seconds first');
+      return;
+    }
+    setStatus('Matching uploaded clip…');
+    setClipForPlayback(file);
+    recognize(file);
+  });
+
+  // ---- Recognition via our own serverless proxy (key stays server-side) ----
+  const recognize = async (blob) => {
+    setStatus('Matching…');
+    resultCard.style.display = 'none';
+    lastMatchedTrack = null;
+    identifySelBtn.disabled = true; identifyAllBtn.disabled = true;
+
+    try {
+      const res = await fetch('/api/shazam', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/octet-stream' },
+        body: blob
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setStatus(data.error === 'quota_exceeded'
+          ? 'Recognition quota exhausted for this month'
+          : data.message || `Recognition failed (${res.status})`);
+        return;
+      }
+      if (!data.matches || data.matches.length === 0 || !data.track) {
+        setStatus('No match found — try a different part of the clip');
+        return;
+      }
+      renderTrack(data.track);
+      setStatus('Matched');
+    } catch (err) {
+      setStatus('Network error reaching the recognition service');
+    } finally {
+      identifySelBtn.disabled = selEnd <= selStart;
+      identifyAllBtn.disabled = totalSamples === 0;
+    }
+  };
+
+  const renderTrack = (track) => {
+    rTitle.textContent = track.title || 'Unknown title';
+    rArtist.textContent = track.subtitle || '';
+
+    let album = '';
+    if (Array.isArray(track.sections)) {
+      for (const section of track.sections) {
+        const meta = section.metadata;
+        if (!Array.isArray(meta)) continue;
+        const albumEntry = meta.find(m => /album/i.test(m.title || ''));
+        if (albumEntry) { album = albumEntry.text; break; }
+      }
+    }
+    rAlbum.textContent = album;
+
+    const artwork = track.images?.coverarthq || track.images?.coverart || '';
+    artEl.style.backgroundImage = artwork ? `url(${artwork})` : '';
+
+    rLinks.innerHTML = '';
+    if (track.url) rLinks.innerHTML += `<a href="${track.url}" target="_blank" rel="noopener">Shazam</a>`;
+    if (Array.isArray(track.hub?.providers)) {
+      for (const provider of track.hub.providers) {
+        const uri = provider.actions?.[0]?.uri;
+        if (uri) rLinks.innerHTML += `<a href="${uri}" target="_blank" rel="noopener">${provider.type || 'Listen'}</a>`;
+      }
+    }
+    if (track.hub?.type === 'APPLEMUSIC') {
+      const appleUri = track.hub.actions?.find(a => a.type === 'uri')?.uri;
+      if (appleUri) rLinks.innerHTML += `<a href="${appleUri}" target="_blank" rel="noopener">Apple Music</a>`;
+    }
+
+    lastMatchedTrack = track;
+    addToQueueBtn.disabled = false;
+    resultCard.style.display = 'flex';
+  };
+
+  addToQueueBtn.addEventListener('click', () => {
+    if (!lastMatchedTrack) return;
+    const query = `${lastMatchedTrack.title} ${lastMatchedTrack.subtitle || ''}`.trim();
+    this.searchAndQueueByTitle?.(query); 
+    addToQueueBtn.disabled = true;
+  });
 }
 
 
