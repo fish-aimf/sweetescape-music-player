@@ -14773,20 +14773,24 @@ _applyLibraryFiltersAndRender() {
 		    resultCard.style.display = 'flex';
 		  };
 		
-		  // Fills the library search box and fires it exactly as if the user typed
-		  // the match and pressed Enter — rides the existing librarySearchKeydown
-		  // logic instead of duplicating it.
-		  const sendMatchToLibrarySearch = () => {
-		    if (!lastMatchedTrack) return;
-		    const query = `${lastMatchedTrack.title || ''} ${lastMatchedTrack.subtitle || ''}`.trim();
-		    closeModal();
-		    this.openLibraryModal();
-		    this.elements.librarySearch.value = query;
-		    this.elements.librarySearch.dispatchEvent(new Event('input', { bubbles: true }));
-		    this.elements.librarySearch.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
-		  };
 		
-		  // ---- Bindings (single pass, consistent with the rest of the app) ----
+		  const sendMatchToLibrarySearch = () => {
+			  if (!lastMatchedTrack) return;
+			  const query = `${lastMatchedTrack.title || ''} ${lastMatchedTrack.subtitle || ''}`.trim();
+			
+			  closeModal();
+			
+			  const libTabBtn = document.querySelector('.tabs [data-tab="library"]');
+			  if (libTabBtn && !libTabBtn.classList.contains('active')) {
+			    libTabBtn.click();
+			  }
+			
+			  this.elements.librarySearch.value = query;
+			  this.elements.librarySearch.dispatchEvent(new Event('input', { bubbles: true }));
+			  this.elements.librarySearch.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+			  this.elements.librarySearch.focus();
+			};
+	
 		  const bindings = [
 		    [document.getElementById('shazamButton'), 'click', openModal],
 		    [overlay, 'click', (e) => { if (e.target === overlay) closeModal(); }],
