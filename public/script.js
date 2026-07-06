@@ -1179,7 +1179,7 @@ class AdvancedMusicPlayer {
 			favorite: false,
 		};
 		this.songLibrary.push(newSong);
-		this.saveSongLibrary()
+		this.saveSingleSong(newSong)
 			.then(() => {
 				this.renderSongLibrary();
 				this.updatePlaylistSelection();
@@ -2060,7 +2060,7 @@ class AdvancedMusicPlayer {
 	    }
 	
 	    this.songLibrary = this.songLibrary.filter((song) => song.id !== songId);
-	    return this.saveSongLibrary()
+	    return this.deleteSingleSong(songId)
 	        .then(() => {
 	            let favoritesPlaylist = this.playlists.find(
 	                (p) =>
@@ -3477,7 +3477,7 @@ hideSidebar() {
 	    });
 	}
 	saveSingleSong(song) {
-		    console.log(`%c✅ saveSingleSong → 1 record: "${song?.name}"`, 'color:#4caf50;font-weight:bold');
+		    console.log(`%csaveSingleSong → 1 record: "${song?.name}"`, 'color:#4caf50;font-weight:bold');
 
 	    return new Promise((resolve, reject) => {
 	        if (!this.db) { reject(new Error("Database not initialized")); return; }
@@ -3486,6 +3486,20 @@ hideSidebar() {
 	            transaction.objectStore("songLibrary").put(song);
 	            transaction.oncomplete = () => resolve();
 	            transaction.onerror = (e) => reject(new Error("Failed to save song: " + e.target.error.message));
+	        } catch (error) {
+	            reject(error);
+	        }
+	    });
+	}
+	deleteSingleSong(songId) {
+	    console.log(`%cdeleteSingleSong → 1 record: "${songId}"`, 'color:#e53935;font-weight:bold');
+	    return new Promise((resolve, reject) => {
+	        if (!this.db) { reject(new Error("Database not initialized")); return; }
+	        try {
+	            const transaction = this.db.transaction(["songLibrary"], "readwrite");
+	            transaction.objectStore("songLibrary").delete(songId);
+	            transaction.oncomplete = () => resolve();
+	            transaction.onerror = (e) => reject(new Error("Failed to delete song: " + e.target.error.message));
 	        } catch (error) {
 	            reject(error);
 	        }
