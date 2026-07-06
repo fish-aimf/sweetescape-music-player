@@ -675,3 +675,16 @@
 -  instead of clicking, hovering will appear and disappear the ui. v67.2.0
 -  fixed filter modal from appearing when hovering over search bar. v67.3.0
 -  straight up removed google analytics tags. v67.4.0
+-  added shazam song recognition modal v68.0.0
+-  fixed css spacing bugs between the fa search icon and fa download icons v68.1.0
+-  added microphone input v68.2.0
+-  edited microphone input to remove noise cancellation v68.3.0
+-  added file upload to shazam v68.4.0
+-  added share system audio. v68.5.0
+-  added recording and trimming options v68.6.0
+-  addeed playback to check your audio before sending it to identification. v68.7.0
+-  added input gain option to make audio more clear.  v68.8.0
+-  limited length to conserve api requests v68.9.0
+-  added song card as response and links to open in shazam, youtube music, youtube or spotify. v68.10.0
+-  added a + button to directly add it to the song library will open search and search up song name in search bar v68.11.0
+-  Optimized resources such that adding and deleting song will only save specific song instead of whole song library v68.12.0
