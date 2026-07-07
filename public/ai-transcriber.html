@@ -24,12 +24,8 @@
 
       try {
         const file = fileInput.files[0];
-        // Puter.js AI chat call, passing the audio file for transcription
-        const result = await puter.ai.chat(
-          "Transcribe this audio.",
-          file
-        );
-        output.textContent = result;
+        const result = await puter.ai.speech2txt(file);
+        output.textContent = result.text ?? result;
       } catch (err) {
         output.textContent = 'Error: ' + err.message;
       }
