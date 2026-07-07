@@ -7,12 +7,18 @@
 
   <h3>Puter.js Transcription Test</h3>
   <input type="file" id="audioFile" accept="audio/*">
+  <select id="model">
+    <option value="whisper-1">whisper-1 (most tolerant)</option>
+    <option value="gpt-4o-mini-transcribe">gpt-4o-mini-transcribe</option>
+    <option value="gpt-4o-transcribe">gpt-4o-transcribe</option>
+  </select>
   <button onclick="transcribe()">Transcribe</button>
   <pre id="output"></pre>
 
   <script>
     async function transcribe() {
       const fileInput = document.getElementById('audioFile');
+      const model = document.getElementById('model').value;
       const output = document.getElementById('output');
 
       if (!fileInput.files.length) {
@@ -20,11 +26,11 @@
         return;
       }
 
-      output.textContent = 'Transcribing...';
+      output.textContent = 'Transcribing with ' + model + '...';
 
       try {
         const file = fileInput.files[0];
-        const result = await puter.ai.speech2txt(file);
+        const result = await puter.ai.speech2txt(file, { model: model });
         output.textContent = result.text ?? result;
       } catch (err) {
         output.textContent = 'Error: ' + err.message;
