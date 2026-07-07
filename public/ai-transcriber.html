@@ -23,13 +23,14 @@
 <h2>Step 1 — Transcribe</h2>
 <input type="file" id="audioFile" accept="audio/*">
 <select id="model">
-  <option value="whisper-1">whisper-1 (most tolerant)</option>
-  <option value="gpt-4o-mini-transcribe">gpt-4o-mini-transcribe</option>
-  <option value="gpt-4o-transcribe">gpt-4o-transcribe</option>
-  <option value="gpt-4o-transcribe-diarize">gpt-4o-transcribe-diarize (speakers)</option>
+  <option value="whisper-1">whisper-1 (supports word-level timestamps — recommended)</option>
+  <option value="gpt-4o-mini-transcribe">gpt-4o-mini-transcribe (chunk-level timestamps only)</option>
+  <option value="gpt-4o-transcribe">gpt-4o-transcribe (chunk-level timestamps only)</option>
+  <option value="gpt-4o-transcribe-diarize">gpt-4o-transcribe-diarize (speakers, chunk-level only)</option>
 </select>
 <button onclick="transcribe()">Transcribe</button>
 <pre id="output">(transcription will appear here, and also fill the box below)</pre>
+<p id="wordStatus" style="font-size:13px;color:#555"></p>
 
 <h2>Step 2 — Repair against the real lyrics</h2>
 <p style="font-size:13px;color:#555">
@@ -52,6 +53,15 @@
   <input type="checkbox" id="keepUnmatched"> Keep transcribed words that have no match in the correct
   lyrics (e.g. ad-libs), marking them with [brackets], instead of dropping them
 </label>
+<label class="opts">
+  <input type="checkbox" id="useWordLevel" checked> Use precise word-level timestamps from Step 1, if
+  available (uncheck to force parsing the pasted [m:ss] text instead)
+</label>
+<label class="opts">
+  <input type="checkbox" id="splitLines" checked> Break each transcribed chunk into multiple lines using
+  the line breaks from the correct lyrics (recommended — paste the correct lyrics with their normal line
+  breaks, one lyric line per line, for this to work)
+</label>
 
 <button onclick="repair()">Repair Lyrics</button>
 
@@ -63,33 +73,56 @@
 /* Step 1: transcription (unchanged from original)                        */
 /* ---------------------------------------------------------------------- */
 
+// Holds {word, start}[] from the most recent whisper-1 transcription that
+// included word-level timestamps. Used by repair() for exact timing instead
+// of estimating positions within a chunk.
+let wordLevelData = null;
+
 async function transcribe() {
   const fileInput = document.getElementById('audioFile');
   const model = document.getElementById('model').value;
   const output = document.getElementById('output');
+  const statusEl = document.getElementById('wordStatus');
   if (!fileInput.files.length) {
     output.textContent = 'Please choose an audio file first.';
     return;
   }
   output.textContent = 'Transcribing with ' + model + '...';
+  statusEl.textContent = '';
+  wordLevelData = null;
   try {
     const file = fileInput.files[0];
-    let responseFormat = 'json';
+    let options;
     if (model === 'whisper-1') {
-      responseFormat = 'verbose_json';
+      // whisper-1 is the only model that currently supports word-level
+      // timestamps via timestamp_granularities.
+      options = {
+        model,
+        response_format: 'verbose_json',
+        timestamp_granularities: ['word', 'segment']
+      };
     } else if (model === 'gpt-4o-transcribe-diarize') {
-      responseFormat = 'diarized_json';
+      options = { model, response_format: 'diarized_json' };
+    } else {
+      options = { model, response_format: 'json' };
     }
-    const result = await puter.ai.speech2txt(file, {
-      model: model,
-      response_format: responseFormat
-    });
+    const result = await puter.ai.speech2txt(file, options);
     const text = formatAsLyricLines(result);
     output.textContent = text;
-    // Auto-fill the repair step's input box so the workflow flows straight through.
     document.getElementById('brokenInput').value = text;
+
+    if (Array.isArray(result.words) && result.words.length) {
+      wordLevelData = result.words
+        .filter(w => typeof w.word === 'string' && typeof w.start === 'number')
+        .map(w => ({ word: w.word.trim(), start: w.start }))
+        .filter(w => w.word);
+      statusEl.textContent = `✓ Word-level timestamps captured (${wordLevelData.length} words) — Step 2 will use exact per-word timing.`;
+    } else {
+      statusEl.textContent = `No word-level timestamps from this model — Step 2 will estimate line timing from chunk positions instead.`;
+    }
   } catch (err) {
     output.textContent = 'Error: ' + err.message;
+    statusEl.textContent = '';
   }
 }
 
@@ -257,63 +290,175 @@ function alignWords(seqA, seqB) {
   return alignment;
 }
 
+// Split correct lyrics on real line breaks, tokenize each line, and tag
+// every word with which original lyric-line it belongs to. Blank lines are
+// skipped (not counted) so they don't create empty output lines.
+function parseCorrectLyricsLines(raw) {
+  const words = []; // {orig, norm, lineIdx}
+  let lineIdx = -1;
+  raw.split(/\r?\n/).forEach(line => {
+    const toks = tokenize(line);
+    if (!toks.length) return;
+    lineIdx++;
+    toks.forEach(w => words.push({ orig: w, norm: normalizeWord(w), lineIdx }));
+  });
+  return words;
+}
+
 function repair() {
   const brokenRaw = document.getElementById('brokenInput').value;
   const correctRaw = document.getElementById('correctInput').value;
   const keepUnmatched = document.getElementById('keepUnmatched').checked;
+  const splitLines = document.getElementById('splitLines').checked;
+  const useWordLevel = document.getElementById('useWordLevel').checked;
   const outEl = document.getElementById('repairedOutput');
 
-  if (!brokenRaw.trim() || !correctRaw.trim()) {
-    outEl.textContent = 'Please fill in both the broken transcript and the correct lyrics.';
+  if (!correctRaw.trim()) {
+    outEl.textContent = 'Please paste the correct lyrics.';
     return;
   }
 
-  // Build the flat, timestamped broken-word list.
-  const segments = parseBrokenTranscript(brokenRaw);
-  if (!segments.length) {
-    outEl.textContent = 'Could not find any "[m:ss]" timestamps in the broken transcript.';
-    return;
-  }
-  const brokenWords = []; // {orig, norm, segIdx}
-  segments.forEach((seg, segIdx) => {
-    tokenize(seg.text).forEach(w => {
-      brokenWords.push({ orig: w, norm: normalizeWord(w), segIdx });
-    });
-  });
+  const correctWords = splitLines
+    ? parseCorrectLyricsLines(correctRaw)
+    : tokenize(correctRaw).map(w => ({ orig: w, norm: normalizeWord(w), lineIdx: null }));
 
-  // Build the flat correct-word list (no timestamps).
-  const correctWords = tokenize(correctRaw).map(w => ({ orig: w, norm: normalizeWord(w) }));
+  if (useWordLevel && wordLevelData && wordLevelData.length) {
+    repairWithWordLevelTimestamps(correctWords, keepUnmatched, outEl);
+  } else {
+    repairWithChunkInterpolation(brokenRaw, correctWords, keepUnmatched, splitLines, outEl);
+  }
+}
+
+// --- Path A: exact timing, using per-word timestamps from whisper-1 -------
+function repairWithWordLevelTimestamps(correctWords, keepUnmatched, outEl) {
+  const brokenWords = wordLevelData.map(w => ({ orig: w.word, norm: normalizeWord(w.word), start: w.start }));
 
   const alignment = alignWords(
     brokenWords.map(w => w.norm),
     correctWords.map(w => w.norm)
   );
 
-  // Rebuild segments' word lists from the alignment.
-  const rebuilt = segments.map(seg => ({ time: seg.time, words: [] }));
+  // Each aligned entry: {word, lineIdx, time}. time is exact when it comes
+  // from a matched/dropped broken word; inserted correct-only words borrow
+  // the time of the most recent broken word seen so far (still accurate to
+  // within a word or two, since nothing is being stretched over a whole chunk).
+  const entries = [];
+  let lastTime = brokenWords.length ? brokenWords[0].start : 0;
+
+  for (const pair of alignment) {
+    if (pair.a !== null) lastTime = brokenWords[pair.a].start;
+
+    if (pair.a !== null && pair.b !== null) {
+      entries.push({ word: correctWords[pair.b].orig, lineIdx: correctWords[pair.b].lineIdx, time: lastTime });
+    } else if (pair.a !== null && pair.b === null) {
+      if (keepUnmatched) entries.push({ word: '[' + brokenWords[pair.a].orig + ']', lineIdx: null, time: lastTime });
+    } else if (pair.a === null && pair.b !== null) {
+      entries.push({ word: correctWords[pair.b].orig, lineIdx: correctWords[pair.b].lineIdx, time: lastTime });
+    }
+  }
+
+  outEl.textContent = groupEntriesIntoLines(entries).join('\n');
+}
+
+// Groups a flat list of {word, lineIdx, time} entries into output lines,
+// starting a new line whenever lineIdx changes (correct-lyrics line breaks).
+// Each line is timestamped with the time of its first word.
+function groupEntriesIntoLines(entries) {
+  const lines = [];
+  let group = [];
+  let currentLineIdx = null;
+
+  const flush = () => {
+    if (!group.length) return;
+    lines.push(`${group.map(e => e.word).join(' ')} [${toMinSec(group[0].time)}]`);
+    group = [];
+  };
+
+  entries.forEach(entry => {
+    const isNewLine = entry.lineIdx !== null && entry.lineIdx !== currentLineIdx && group.length > 0;
+    if (isNewLine) flush();
+    group.push(entry);
+    if (entry.lineIdx !== null) currentLineIdx = entry.lineIdx;
+  });
+  flush();
+  return lines;
+}
+
+// --- Path B: fallback, interpolating within Whisper's coarser chunks ------
+function repairWithChunkInterpolation(brokenRaw, correctWords, keepUnmatched, splitLines, outEl) {
+  const segments = parseBrokenTranscript(brokenRaw);
+  if (!segments.length) {
+    outEl.textContent = 'Could not find any "[m:ss]" timestamps in the broken transcript, and no word-level timestamp data is available. Transcribe with whisper-1, or paste a transcript with [m:ss] tags.';
+    return;
+  }
+  const brokenWords = [];
+  segments.forEach((seg, segIdx) => {
+    tokenize(seg.text).forEach(w => brokenWords.push({ orig: w, norm: normalizeWord(w), segIdx }));
+  });
+
+  const alignment = alignWords(
+    brokenWords.map(w => w.norm),
+    correctWords.map(w => w.norm)
+  );
+
+  const segEntries = segments.map(() => []);
   let currentSeg = 0;
 
   for (const pair of alignment) {
     if (pair.a !== null) currentSeg = brokenWords[pair.a].segIdx;
 
     if (pair.a !== null && pair.b !== null) {
-      // Matched (exactly or fuzzily) -> use the correct spelling.
-      rebuilt[currentSeg].words.push(correctWords[pair.b].orig);
+      segEntries[currentSeg].push({ word: correctWords[pair.b].orig, lineIdx: correctWords[pair.b].lineIdx });
     } else if (pair.a !== null && pair.b === null) {
-      // Broken word with nothing to match in the correct lyrics.
-      if (keepUnmatched) rebuilt[currentSeg].words.push('[' + brokenWords[pair.a].orig + ']');
-      // else: drop it (treated as mis-hearing/noise)
+      if (keepUnmatched) segEntries[currentSeg].push({ word: '[' + brokenWords[pair.a].orig + ']', lineIdx: null });
     } else if (pair.a === null && pair.b !== null) {
-      // Correct word missing entirely from the transcript -> insert here.
-      rebuilt[currentSeg].words.push(correctWords[pair.b].orig);
+      segEntries[currentSeg].push({ word: correctWords[pair.b].orig, lineIdx: correctWords[pair.b].lineIdx });
     }
   }
 
-  const lines = rebuilt
-    .filter(seg => seg.words.length)
-    .map(seg => `${seg.words.join(' ')} [${toMinSec(seg.time)}]`);
+  let avgGap = 3;
+  if (segments.length > 1) {
+    const gaps = [];
+    for (let i = 1; i < segments.length; i++) gaps.push(segments[i].time - segments[i - 1].time);
+    avgGap = gaps.reduce((a, b) => a + b, 0) / gaps.length || 3;
+  }
 
-  outEl.textContent = lines.join('\n');
+  const outputLines = [];
+
+  segEntries.forEach((entries, segIdx) => {
+    if (!entries.length) return;
+    const segStart = segments[segIdx].time;
+    const segEnd = segIdx + 1 < segments.length ? segments[segIdx + 1].time : segStart + avgGap;
+    const n = entries.length;
+
+    if (!splitLines) {
+      outputLines.push(`${entries.map(e => e.word).join(' ')} [${toMinSec(segStart)}]`);
+      return;
+    }
+
+    let group = [];
+    let groupStartIdx = 0;
+    let currentLineIdx = null;
+
+    const flush = () => {
+      if (!group.length) return;
+      const frac = n > 1 ? groupStartIdx / n : 0;
+      const time = segStart + frac * (segEnd - segStart);
+      outputLines.push(`${group.map(e => e.word).join(' ')} [${toMinSec(time)}]`);
+      group = [];
+    };
+
+    entries.forEach((entry, idx) => {
+      const isNewLine = entry.lineIdx !== null && entry.lineIdx !== currentLineIdx && group.length > 0;
+      if (isNewLine) { flush(); groupStartIdx = idx; }
+      if (group.length === 0) groupStartIdx = idx;
+      group.push(entry);
+      if (entry.lineIdx !== null) currentLineIdx = entry.lineIdx;
+    });
+    flush();
+  });
+
+  outEl.textContent = outputLines.join('\n');
 }
 </script>
 </body>
