@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://js.puter.com/v2/"></script>
+</head>
+<body>
+
+  <h3>Puter.js Transcription Test</h3>
+  <input type="file" id="audioFile" accept="audio/*">
+  <button onclick="transcribe()">Transcribe</button>
+  <pre id="output"></pre>
+
+  <script>
+    async function transcribe() {
+      const fileInput = document.getElementById('audioFile');
+      const output = document.getElementById('output');
+
+      if (!fileInput.files.length) {
+        output.textContent = 'Please choose an audio file first.';
+        return;
+      }
+
+      output.textContent = 'Transcribing...';
+
+      try {
+        const file = fileInput.files[0];
+        // Puter.js AI chat call, passing the audio file for transcription
+        const result = await puter.ai.chat(
+          "Transcribe this audio.",
+          file
+        );
+        output.textContent = result;
+      } catch (err) {
+        output.textContent = 'Error: ' + err.message;
+      }
+    }
+  </script>
+
+</body>
+</html>
