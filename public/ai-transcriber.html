@@ -11,6 +11,7 @@
     <option value="whisper-1">whisper-1 (most tolerant)</option>
     <option value="gpt-4o-mini-transcribe">gpt-4o-mini-transcribe</option>
     <option value="gpt-4o-transcribe">gpt-4o-transcribe</option>
+    <option value="gpt-4o-transcribe-diarize">gpt-4o-transcribe-diarize (speakers)</option>
   </select>
   <button onclick="transcribe()">Transcribe</button>
   <pre id="output"></pre>
@@ -30,18 +31,33 @@
 
       try {
         const file = fileInput.files[0];
+
+        // Only whisper-1 and the diarize model support timestamped formats.
+        // Plain gpt-4o-transcribe / gpt-4o-mini-transcribe only accept json or text.
+        let responseFormat = 'json';
+        if (model === 'whisper-1') {
+          responseFormat = 'verbose_json';
+        } else if (model === 'gpt-4o-transcribe-diarize') {
+          responseFormat = 'diarized_json';
+        }
+
         const result = await puter.ai.speech2txt(file, {
           model: model,
-          response_format: 'verbose_json'
+          response_format: responseFormat
         });
 
         if (result.segments && result.segments.length) {
           output.textContent = result.segments
-            .map(seg => `[${seg.start.toFixed(1)}s - ${seg.end.toFixed(1)}s] ${seg.text}`)
+            .map(seg => {
+              const start = (seg.start ?? 0).toFixed(1);
+              const end = (seg.end ?? 0).toFixed(1);
+              const speaker = seg.speaker ? `${seg.speaker}: ` : '';
+              return `[${start}s - ${end}s] ${speaker}${seg.text}`;
+            })
             .join('\n');
         } else {
-          // Fallback if the model/format didn't return segments
-          output.textContent = JSON.stringify(result, null, 2);
+          output.textContent = (result.text ?? result) +
+            '\n\n(No timestamps available for this model/format — try whisper-1 or gpt-4o-transcribe-diarize.)';
         }
       } catch (err) {
         output.textContent = 'Error: ' + err.message;
