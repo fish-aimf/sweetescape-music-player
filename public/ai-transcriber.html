@@ -1,91 +1,320 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <script src="https://js.puter.com/v2/"></script>
+<meta charset="utf-8">
+<title>Lyric Transcription + Repair</title>
+<script src="https://js.puter.com/v2/"></script>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 780px; margin: 30px auto; padding: 0 16px; color: #222; }
+  h2 { margin-top: 40px; border-bottom: 2px solid #eee; padding-bottom: 6px; }
+  textarea { width: 100%; box-sizing: border-box; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; }
+  button { padding: 8px 16px; margin: 8px 0; cursor: pointer; }
+  pre { background: #f7f7f7; padding: 12px; border-radius: 6px; white-space: pre-wrap; }
+  .row { display: flex; gap: 16px; }
+  .col { flex: 1; }
+  label { display: block; margin-top: 10px; font-weight: 600; font-size: 13px; }
+  .opts { font-weight: normal; font-size: 13px; margin-top: 6px; }
+  .diff-add { background: #d4f7d4; }
+  .diff-drop { background: #f7d4d4; text-decoration: line-through; }
+</style>
 </head>
 <body>
 
-  <h3>Puter.js Transcription Test</h3>
-  <input type="file" id="audioFile" accept="audio/*">
-  <select id="model">
-    <option value="whisper-1">whisper-1 (most tolerant)</option>
-    <option value="gpt-4o-mini-transcribe">gpt-4o-mini-transcribe</option>
-    <option value="gpt-4o-transcribe">gpt-4o-transcribe</option>
-    <option value="gpt-4o-transcribe-diarize">gpt-4o-transcribe-diarize (speakers)</option>
-  </select>
-  <button onclick="transcribe()">Transcribe</button>
-  <pre id="output"></pre>
+<h2>Step 1 — Transcribe</h2>
+<input type="file" id="audioFile" accept="audio/*">
+<select id="model">
+  <option value="whisper-1">whisper-1 (most tolerant)</option>
+  <option value="gpt-4o-mini-transcribe">gpt-4o-mini-transcribe</option>
+  <option value="gpt-4o-transcribe">gpt-4o-transcribe</option>
+  <option value="gpt-4o-transcribe-diarize">gpt-4o-transcribe-diarize (speakers)</option>
+</select>
+<button onclick="transcribe()">Transcribe</button>
+<pre id="output">(transcription will appear here, and also fill the box below)</pre>
 
-  <script>
-    async function transcribe() {
-      const fileInput = document.getElementById('audioFile');
-      const model = document.getElementById('model').value;
-      const output = document.getElementById('output');
+<h2>Step 2 — Repair against the real lyrics</h2>
+<p style="font-size:13px;color:#555">
+  Paste the raw transcription (with <code>[m:ss]</code> tags) on the left, and the correct/official
+  lyrics (plain text, no timestamps) on the right. The tool aligns the two word-by-word and rebuilds
+  the timestamped lines using the correct words wherever they diverge.
+</p>
+<div class="row">
+  <div class="col">
+    <label>Broken transcript (with timestamps)</label>
+    <textarea id="brokenInput" rows="14"></textarea>
+  </div>
+  <div class="col">
+    <label>Correct lyrics (plain)</label>
+    <textarea id="correctInput" rows="14" placeholder="Paste the real lyrics here..."></textarea>
+  </div>
+</div>
 
-      if (!fileInput.files.length) {
-        output.textContent = 'Please choose an audio file first.';
-        return;
-      }
+<label class="opts">
+  <input type="checkbox" id="keepUnmatched"> Keep transcribed words that have no match in the correct
+  lyrics (e.g. ad-libs), marking them with [brackets], instead of dropping them
+</label>
 
-      output.textContent = 'Transcribing with ' + model + '...';
+<button onclick="repair()">Repair Lyrics</button>
 
-      try {
-        const file = fileInput.files[0];
+<h3>Repaired output</h3>
+<pre id="repairedOutput">(repaired lyrics will appear here)</pre>
 
-        // Only whisper-1 and the diarize model support timestamped formats.
-        // Plain gpt-4o-transcribe / gpt-4o-mini-transcribe only accept json or text.
-        let responseFormat = 'json';
-        if (model === 'whisper-1') {
-          responseFormat = 'verbose_json';
-        } else if (model === 'gpt-4o-transcribe-diarize') {
-          responseFormat = 'diarized_json';
-        }
+<script>
+/* ---------------------------------------------------------------------- */
+/* Step 1: transcription (unchanged from original)                        */
+/* ---------------------------------------------------------------------- */
 
-        const result = await puter.ai.speech2txt(file, {
-          model: model,
-          response_format: responseFormat
-        });
-
-        output.textContent = formatAsLyricLines(result);
-      } catch (err) {
-        output.textContent = 'Error: ' + err.message;
-      }
+async function transcribe() {
+  const fileInput = document.getElementById('audioFile');
+  const model = document.getElementById('model').value;
+  const output = document.getElementById('output');
+  if (!fileInput.files.length) {
+    output.textContent = 'Please choose an audio file first.';
+    return;
+  }
+  output.textContent = 'Transcribing with ' + model + '...';
+  try {
+    const file = fileInput.files[0];
+    let responseFormat = 'json';
+    if (model === 'whisper-1') {
+      responseFormat = 'verbose_json';
+    } else if (model === 'gpt-4o-transcribe-diarize') {
+      responseFormat = 'diarized_json';
     }
+    const result = await puter.ai.speech2txt(file, {
+      model: model,
+      response_format: responseFormat
+    });
+    const text = formatAsLyricLines(result);
+    output.textContent = text;
+    // Auto-fill the repair step's input box so the workflow flows straight through.
+    document.getElementById('brokenInput').value = text;
+  } catch (err) {
+    output.textContent = 'Error: ' + err.message;
+  }
+}
 
-    // Converts seconds -> "m:ss"
-    function toMinSec(totalSeconds) {
-      const s = Math.max(0, Math.round(totalSeconds));
-      const m = Math.floor(s / 60);
-      const sec = String(s % 60).padStart(2, '0');
-      return `${m}:${sec}`;
+function toMinSec(totalSeconds) {
+  const s = Math.max(0, Math.round(totalSeconds));
+  const m = Math.floor(s / 60);
+  const sec = String(s % 60).padStart(2, '0');
+  return `${m}:${sec}`;
+}
+
+function formatAsLyricLines(result) {
+  try {
+    if (result && Array.isArray(result.segments) && result.segments.length) {
+      return result.segments
+        .map(seg => {
+          if (typeof seg.text !== 'string' || typeof seg.start !== 'number') {
+            throw new Error('Segment missing text/start');
+          }
+          const line = seg.text.trim();
+          if (!line) return null;
+          return `${line} [${toMinSec(seg.start)}]`;
+        })
+        .filter(Boolean)
+        .join('\n');
     }
+    throw new Error('No segments in response');
+  } catch (e) {
+    if (result && typeof result.text === 'string') return result.text;
+    return JSON.stringify(result, null, 2);
+  }
+}
 
-    // Tries to build "line text [m:ss]" output from segments.
-    // Falls back to raw text/JSON if segments aren't usable.
-    function formatAsLyricLines(result) {
-      try {
-        if (result && Array.isArray(result.segments) && result.segments.length) {
-          return result.segments
-            .map(seg => {
-              if (typeof seg.text !== 'string' || typeof seg.start !== 'number') {
-                throw new Error('Segment missing text/start');
-              }
-              const line = seg.text.trim();
-              if (!line) return null;
-              return `${line} [${toMinSec(seg.start)}]`;
-            })
-            .filter(Boolean)
-            .join('\n');
-        }
-        // No segments available (e.g. plain gpt-4o json/text) — nothing to time-align.
-        throw new Error('No segments in response');
-      } catch (e) {
-        // Fallback: raw text if present, else raw JSON
-        if (result && typeof result.text === 'string') return result.text;
-        return JSON.stringify(result, null, 2);
-      }
+/* ---------------------------------------------------------------------- */
+/* Step 2: repair broken lyrics against a correct reference               */
+/*                                                                        */
+/* Approach:                                                              */
+/*  1. Parse the broken transcript into timestamped segments, then flatten*/
+/*     every segment into a word list, tagging each word with the segment*/
+/*     (timestamp) it came from.                                          */
+/*  2. Flatten the correct lyrics into a plain word list (no timestamps). */
+/*  3. Run a Needleman-Wunsch global alignment between the two word lists,*/
+/*     using a fuzzy (Levenshtein-based) similarity score so that near-   */
+/*     miss transcriptions ("lovin'" vs "loving", "craving" vs "cryin'")  */
+/*     still line up instead of being treated as unrelated words.         */
+/*  4. Walk the alignment: wherever a correct word is matched (exactly or */
+/*     fuzzily) to a broken word, use the correct word's real spelling,   */
+/*     but keep the broken word's timestamp/segment. Correct words that   */
+/*     were missing entirely from the transcript get inserted into the   */
+/*     nearest timestamped segment. Broken words that don't correspond to */
+/*     anything in the correct lyrics are dropped (or kept bracketed).    */
+/* ---------------------------------------------------------------------- */
+
+// Parse "...text... [m:ss] ...text... [m:ss]" into segments, robust to both
+// one-timestamp-per-line and multiple timestamps inline in one blob.
+function parseBrokenTranscript(raw) {
+  const segments = [];
+  const re = /([\s\S]*?)\[(\d+):(\d{2})\]/g;
+  let match;
+  let lastIndex = 0;
+  while ((match = re.exec(raw)) !== null) {
+    const text = match[1].trim();
+    const minutes = parseInt(match[2], 10);
+    const seconds = parseInt(match[3], 10);
+    if (text) {
+      segments.push({ time: minutes * 60 + seconds, text });
     }
-  </script>
+    lastIndex = re.lastIndex;
+  }
+  // Anything left after the final timestamp (no closing tag) becomes a final
+  // untimed segment, inheriting the last known timestamp.
+  const remainder = raw.slice(lastIndex).trim();
+  if (remainder) {
+    const lastTime = segments.length ? segments[segments.length - 1].time : 0;
+    segments.push({ time: lastTime, text: remainder });
+  }
+  return segments;
+}
 
+// Normalize a word for comparison: lowercase, strip surrounding punctuation,
+// keep internal apostrophes/hyphens since they're meaningful in lyrics.
+function normalizeWord(w) {
+  return w.toLowerCase().replace(/^[^a-z0-9']+|[^a-z0-9']+$/gi, '');
+}
+
+function tokenize(text) {
+  return text.split(/\s+/).filter(Boolean);
+}
+
+function levenshtein(a, b) {
+  const m = a.length, n = b.length;
+  if (m === 0) return n;
+  if (n === 0) return m;
+  const dp = new Array(n + 1);
+  for (let j = 0; j <= n; j++) dp[j] = j;
+  for (let i = 1; i <= m; i++) {
+    let prev = dp[0];
+    dp[0] = i;
+    for (let j = 1; j <= n; j++) {
+      const tmp = dp[j];
+      dp[j] = Math.min(
+        dp[j] + 1,          // deletion
+        dp[j - 1] + 1,      // insertion
+        prev + (a[i - 1] === b[j - 1] ? 0 : 1) // substitution
+      );
+      prev = tmp;
+    }
+  }
+  return dp[n];
+}
+
+// Similarity in [-1, 1]: 1 = identical, negative = very different.
+function wordScore(normA, normB) {
+  if (normA === normB) return 2;
+  if (!normA || !normB) return -1;
+  const dist = levenshtein(normA, normB);
+  const maxLen = Math.max(normA.length, normB.length);
+  const similarity = 1 - dist / maxLen; // 0..1
+  return similarity * 3 - 1; // maps 0..1 -> -1..2, matching identical-word scale roughly
+}
+
+const GAP_PENALTY = -1;
+
+// Needleman-Wunsch global alignment between two arrays of normalized words.
+// Returns a list of {a: indexOrNull, b: indexOrNull} pairs in order.
+function alignWords(seqA, seqB) {
+  const n = seqA.length, m = seqB.length;
+  // score[i][j] = best score aligning seqA[0..i) with seqB[0..j)
+  const score = new Array(n + 1);
+  const trace = new Array(n + 1); // 0 = diag, 1 = up (gap in B), 2 = left (gap in A)
+  for (let i = 0; i <= n; i++) {
+    score[i] = new Float64Array(m + 1);
+    trace[i] = new Uint8Array(m + 1);
+  }
+  for (let i = 1; i <= n; i++) { score[i][0] = i * GAP_PENALTY; trace[i][0] = 1; }
+  for (let j = 1; j <= m; j++) { score[0][j] = j * GAP_PENALTY; trace[0][j] = 2; }
+
+  for (let i = 1; i <= n; i++) {
+    for (let j = 1; j <= m; j++) {
+      const diag = score[i - 1][j - 1] + wordScore(seqA[i - 1], seqB[j - 1]);
+      const up = score[i - 1][j] + GAP_PENALTY;
+      const left = score[i][j - 1] + GAP_PENALTY;
+      let best = diag, dir = 0;
+      if (up > best) { best = up; dir = 1; }
+      if (left > best) { best = left; dir = 2; }
+      score[i][j] = best;
+      trace[i][j] = dir;
+    }
+  }
+
+  const alignment = [];
+  let i = n, j = m;
+  while (i > 0 || j > 0) {
+    if (i > 0 && j > 0 && trace[i][j] === 0) {
+      alignment.push({ a: i - 1, b: j - 1 });
+      i--; j--;
+    } else if (i > 0 && (j === 0 || trace[i][j] === 1)) {
+      alignment.push({ a: i - 1, b: null });
+      i--;
+    } else {
+      alignment.push({ a: null, b: j - 1 });
+      j--;
+    }
+  }
+  alignment.reverse();
+  return alignment;
+}
+
+function repair() {
+  const brokenRaw = document.getElementById('brokenInput').value;
+  const correctRaw = document.getElementById('correctInput').value;
+  const keepUnmatched = document.getElementById('keepUnmatched').checked;
+  const outEl = document.getElementById('repairedOutput');
+
+  if (!brokenRaw.trim() || !correctRaw.trim()) {
+    outEl.textContent = 'Please fill in both the broken transcript and the correct lyrics.';
+    return;
+  }
+
+  // Build the flat, timestamped broken-word list.
+  const segments = parseBrokenTranscript(brokenRaw);
+  if (!segments.length) {
+    outEl.textContent = 'Could not find any "[m:ss]" timestamps in the broken transcript.';
+    return;
+  }
+  const brokenWords = []; // {orig, norm, segIdx}
+  segments.forEach((seg, segIdx) => {
+    tokenize(seg.text).forEach(w => {
+      brokenWords.push({ orig: w, norm: normalizeWord(w), segIdx });
+    });
+  });
+
+  // Build the flat correct-word list (no timestamps).
+  const correctWords = tokenize(correctRaw).map(w => ({ orig: w, norm: normalizeWord(w) }));
+
+  const alignment = alignWords(
+    brokenWords.map(w => w.norm),
+    correctWords.map(w => w.norm)
+  );
+
+  // Rebuild segments' word lists from the alignment.
+  const rebuilt = segments.map(seg => ({ time: seg.time, words: [] }));
+  let currentSeg = 0;
+
+  for (const pair of alignment) {
+    if (pair.a !== null) currentSeg = brokenWords[pair.a].segIdx;
+
+    if (pair.a !== null && pair.b !== null) {
+      // Matched (exactly or fuzzily) -> use the correct spelling.
+      rebuilt[currentSeg].words.push(correctWords[pair.b].orig);
+    } else if (pair.a !== null && pair.b === null) {
+      // Broken word with nothing to match in the correct lyrics.
+      if (keepUnmatched) rebuilt[currentSeg].words.push('[' + brokenWords[pair.a].orig + ']');
+      // else: drop it (treated as mis-hearing/noise)
+    } else if (pair.a === null && pair.b !== null) {
+      // Correct word missing entirely from the transcript -> insert here.
+      rebuilt[currentSeg].words.push(correctWords[pair.b].orig);
+    }
+  }
+
+  const lines = rebuilt
+    .filter(seg => seg.words.length)
+    .map(seg => `${seg.words.join(' ')} [${toMinSec(seg.time)}]`);
+
+  outEl.textContent = lines.join('\n');
+}
+</script>
 </body>
 </html>
