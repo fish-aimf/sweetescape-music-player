@@ -46,21 +46,43 @@
           response_format: responseFormat
         });
 
-        if (result.segments && result.segments.length) {
-          output.textContent = result.segments
-            .map(seg => {
-              const start = (seg.start ?? 0).toFixed(1);
-              const end = (seg.end ?? 0).toFixed(1);
-              const speaker = seg.speaker ? `${seg.speaker}: ` : '';
-              return `[${start}s - ${end}s] ${speaker}${seg.text}`;
-            })
-            .join('\n');
-        } else {
-          output.textContent = (result.text ?? result) +
-            '\n\n(No timestamps available for this model/format — try whisper-1 or gpt-4o-transcribe-diarize.)';
-        }
+        output.textContent = formatAsLyricLines(result);
       } catch (err) {
         output.textContent = 'Error: ' + err.message;
+      }
+    }
+
+    // Converts seconds -> "m:ss"
+    function toMinSec(totalSeconds) {
+      const s = Math.max(0, Math.round(totalSeconds));
+      const m = Math.floor(s / 60);
+      const sec = String(s % 60).padStart(2, '0');
+      return `${m}:${sec}`;
+    }
+
+    // Tries to build "line text [m:ss]" output from segments.
+    // Falls back to raw text/JSON if segments aren't usable.
+    function formatAsLyricLines(result) {
+      try {
+        if (result && Array.isArray(result.segments) && result.segments.length) {
+          return result.segments
+            .map(seg => {
+              if (typeof seg.text !== 'string' || typeof seg.start !== 'number') {
+                throw new Error('Segment missing text/start');
+              }
+              const line = seg.text.trim();
+              if (!line) return null;
+              return `${line} [${toMinSec(seg.start)}]`;
+            })
+            .filter(Boolean)
+            .join('\n');
+        }
+        // No segments available (e.g. plain gpt-4o json/text) — nothing to time-align.
+        throw new Error('No segments in response');
+      } catch (e) {
+        // Fallback: raw text if present, else raw JSON
+        if (result && typeof result.text === 'string') return result.text;
+        return JSON.stringify(result, null, 2);
       }
     }
   </script>
