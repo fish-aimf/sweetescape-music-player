@@ -30,8 +30,19 @@
 
       try {
         const file = fileInput.files[0];
-        const result = await puter.ai.speech2txt(file, { model: model });
-        output.textContent = result.text ?? result;
+        const result = await puter.ai.speech2txt(file, {
+          model: model,
+          response_format: 'verbose_json'
+        });
+
+        if (result.segments && result.segments.length) {
+          output.textContent = result.segments
+            .map(seg => `[${seg.start.toFixed(1)}s - ${seg.end.toFixed(1)}s] ${seg.text}`)
+            .join('\n');
+        } else {
+          // Fallback if the model/format didn't return segments
+          output.textContent = JSON.stringify(result, null, 2);
+        }
       } catch (err) {
         output.textContent = 'Error: ' + err.message;
       }
