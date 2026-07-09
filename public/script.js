@@ -15,6 +15,8 @@ class AdvancedMusicPlayer {
 		this.autoCenterLyrics = true;
 		this.isPlaylistLooping = true;
 		this.isAutoplayEnabled = true;
+		this.listeningStatsEnabled = false;
+		this._statCountedForCurrentPlay = false;
 		this.currentSpeed = 1;
 		this.allowDuplicates = true;
 		this._libFilters = { favorite: null, lyrics: null, downloaded: null };
@@ -269,6 +271,9 @@ class AdvancedMusicPlayer {
 	    }
 	
 	    this.syncVisualizerUI();
+		if (this.elements.listeningStatsToggle) {
+		    this.elements.listeningStatsToggle.checked = this.listeningStatsEnabled;
+		}
 	}
 	
 	_setupComponents() {
@@ -305,36 +310,46 @@ class AdvancedMusicPlayer {
 	}
 
 	initDatabase() {
-		return new Promise((resolve, reject) => {
-			const request = indexedDB.open("MusicPlayerDB", 1);
-			
-			request.onerror = (event) => {
-				console.error("IndexedDB error:", event.target.error);
-				reject("Could not open IndexedDB");
-			};
-			
-			request.onsuccess = (event) => {
-				this.db = event.target.result;
-				resolve();
-			};
-			
-			request.onupgradeneeded = (event) => {
-				const db = event.target.result;
-				const stores = [
-					{ name: "songLibrary", keyPath: "id" },
-					{ name: "playlists", keyPath: "id" },
-					{ name: "settings", keyPath: "name" },
-					{ name: "recentlyPlayed", keyPath: "type" },
-					{ name: "userSettings", keyPath: "category" }
-				];
-				
-				stores.forEach(({ name, keyPath }) => {
-					if (!db.objectStoreNames.contains(name)) {
-						db.createObjectStore(name, { keyPath });
-					}
-				});
-			};
-		});
+	    return new Promise((resolve, reject) => {
+	        const request = indexedDB.open("MusicPlayerDB", 2);
+	
+	        request.onerror = (event) => {
+	            console.error("IndexedDB error:", event.target.error);
+	            reject("Could not open IndexedDB");
+	        };
+	
+	        request.onblocked = () => {
+	            console.warn("IndexedDB upgrade blocked — another tab has the database open.");
+	            this.showNotification?.('Please close other tabs running this app, then refresh.', 'error');
+	        };
+	
+	        request.onsuccess = (event) => {
+	            this.db = event.target.result;
+	            this.db.onversionchange = () => {
+	                this.db.close();
+	                this.showNotification?.('App updated in another tab — please refresh this page.', 'info');
+	            };
+	            resolve();
+	        };
+	
+	        request.onupgradeneeded = (event) => {
+	            const db = event.target.result;
+	            const stores = [
+	                { name: "songLibrary", keyPath: "id" },
+	                { name: "playlists", keyPath: "id" },
+	                { name: "settings", keyPath: "name" },
+	                { name: "recentlyPlayed", keyPath: "type" },
+	                { name: "userSettings", keyPath: "category" },
+	                { name: "listeningStats", keyPath: "id" }
+	            ];
+	
+	            stores.forEach(({ name, keyPath }) => {
+	                if (!db.objectStoreNames.contains(name)) {
+	                    db.createObjectStore(name, { keyPath });
+	                }
+	            });
+	        };
+	    });
 	}
 
 	initializeElements() {
@@ -447,7 +462,9 @@ class AdvancedMusicPlayer {
 			togglePlaylistEditModeBtn: document.getElementById("togglePlaylistEditModeBtn"),
 			libraryOptionsDropdown: document.getElementById("libraryOptionsDropdown"),
 			switchLangBtn: document.getElementById('switchLangBtn'),
-			transcriptLangSelect: document.getElementById('transcriptLangSelect')
+			transcriptLangSelect: document.getElementById('transcriptLangSelect'),
+			statsButton: document.getElementById("statsButton"),
+			listeningStatsToggle: document.getElementById("listeningStatsToggle")
 		};
 		
 		// Setup specialized UI handlers
@@ -664,6 +681,9 @@ class AdvancedMusicPlayer {
 			[this.elements.closeFindSongs, 'click', handlers.findSongsClose],
 			[this.elements.findSongsSearch, 'input', handlers.findSongsSearch],
 			[this.elements.searchSongsToAdd, 'input', handlers.searchSongsToAdd],
+			[this.elements.statsButton, 'click', this.openStatsModal.bind(this)],
+			[document.getElementById('lsCloseBtn'), 'click', this.closeStatsModal.bind(this)],
+			[this.elements.listeningStatsToggle, 'change', this.handleListeningStatsToggle.bind(this)],
 		];
 		
 		// Efficiently attach all simple listeners with null checks
@@ -978,6 +998,11 @@ class AdvancedMusicPlayer {
 					    default: false,
 					    target: "isLooping"
 					},
+					{
+					    key: "listeningStatsEnabled",
+					    default: false,
+					    target: "listeningStatsEnabled"
+					},
 				];
 				settingsToLoad.forEach((setting) => {
 					const request = store.get(setting.key);
@@ -1064,6 +1089,14 @@ class AdvancedMusicPlayer {
 	                        `${this.formatTime(currentTime)}/${this.formatTime(duration)}`;
 	                }
 	                this.updateHighlightedLyric(currentTime, this.currentLyrics ?? [], this.currentTimings ?? []);
+					if (this.listeningStatsEnabled && !this._statCountedForCurrentPlay) {
+				        const threshold = Math.min(10, duration / 3);
+				        if (currentTime >= threshold) {
+				            this._statCountedForCurrentPlay = true;
+				            this.recordSongPlayStat(this.currentSong?.id);
+				        }
+				    }
+			
 	            }
 	        } catch (error) {
 	            console.error("Error updating progress bar:", error);
@@ -2802,6 +2835,7 @@ class AdvancedMusicPlayer {
 	}
 	async playSongById(videoId) {
 	    if (!videoId) { console.error('No video ID provided'); return; }
+	    this._statCountedForCurrentPlay = false;
 	    const currentId = this.currentSong?.id;
 	    const masterSong = (currentId && this.songLibrary.find(s => s.id === currentId))
 	                     || this.songLibrary.find(s => s.videoId === videoId);
@@ -3258,6 +3292,7 @@ hideSidebar() {
 				    if (this.ytPlayer) {
 				        this.ytPlayer.seekTo(0, true);
 				    }
+				    this._statCountedForCurrentPlay = false;
 				} else if (this.isAutoplayEnabled) {
 				    this.playNextSong();
 				} else {
@@ -14206,6 +14241,14 @@ playLocalAudio(url) {
                 if (this.elements.timeDisplay)
                     this.elements.timeDisplay.textContent = `${this.formatTime(current)}/${this.formatTime(duration)}`;
                 this.updateHighlightedLyric(current, this.currentLyrics ?? [], this.currentTimings ?? []);
+				if (this.listeningStatsEnabled && !this._statCountedForCurrentPlay) {
+			        const threshold = Math.min(10, duration / 3);
+			        if (current >= threshold) {
+			            this._statCountedForCurrentPlay = true;
+			            this.recordSongPlayStat(this.currentSong?.id);
+			        }
+			    }
+			
             }
         });
  
@@ -14215,10 +14258,11 @@ playLocalAudio(url) {
             if (this.elements.progressBar) this.elements.progressBar.value = 0;
             if (this.elements.timeDisplay) this.elements.timeDisplay.textContent = '0:00/0:00';
             if (this.isLooping) {
-                this.localAudio.currentTime = 0;
-                this.localAudio.play().catch(e => console.warn('Loop replay failed:', e));
-                this.isPlaying = true;
-            } else if (this.isAutoplayEnabled) {
+			    this.localAudio.currentTime = 0;
+			    this.localAudio.play().catch(e => console.warn('Loop replay failed:', e));
+			    this.isPlaying = true;
+			    this._statCountedForCurrentPlay = false;
+			} else if (this.isAutoplayEnabled) {
                 this.isLocalPlayback = false;
                 this.playNextSong();
             }
@@ -14831,7 +14875,114 @@ _applyLibraryFiltersAndRender() {
 		  ];
 		  bindings.forEach(([el, evt, fn]) => el?.addEventListener(evt, fn));
 		}
-
+		handleListeningStatsToggle(event) {
+		    this.listeningStatsEnabled = event.target.checked;
+		    this.saveListeningStatsSetting();
+		    if (!this.listeningStatsEnabled) {
+		        this.clearListeningStats();
+		    }
+		}
+		
+		async saveListeningStatsSetting() {
+		    if (!this.db || !this.db.objectStoreNames.contains("settings")) return;
+		    const transaction = this.db.transaction(["settings"], "readwrite");
+		    transaction.objectStore("settings").put({
+		        name: "listeningStatsEnabled",
+		        value: this.listeningStatsEnabled,
+		        lastUpdated: new Date().toISOString()
+		    });
+		}
+		
+		clearListeningStats() {
+		    if (!this.db || !this.db.objectStoreNames.contains("listeningStats")) return;
+		    const transaction = this.db.transaction(["listeningStats"], "readwrite");
+		    transaction.objectStore("listeningStats").clear();
+		    console.log("Listening stats cleared");
+		}
+		
+		_statsDayKey(date = new Date()) {
+		    return date.toISOString().slice(0, 10);
+		}
+		
+		_pruneOldDays(days) {
+		    const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
+		    Object.keys(days).forEach(key => {
+		        if (new Date(key + "T00:00:00Z").getTime() < cutoff) delete days[key];
+		    });
+		}
+		
+		recordSongPlayStat(songId) {
+		    if (!this.listeningStatsEnabled || !this.db || !songId) return;
+		    if (!this.db.objectStoreNames.contains("listeningStats")) return;
+		
+		    const transaction = this.db.transaction(["listeningStats"], "readwrite");
+		    const store = transaction.objectStore("listeningStats");
+		    const getReq = store.get(songId);
+		
+		    getReq.onsuccess = () => {
+		        const record = getReq.result || { id: songId, lifetime: 0, days: {} };
+		        record.lifetime += 1;
+		        const todayKey = this._statsDayKey();
+		        record.days[todayKey] = (record.days[todayKey] || 0) + 1;
+		        this._pruneOldDays(record.days);
+		        store.put(record);
+		    };
+		    getReq.onerror = (e) => console.error("Failed to read listening stat:", e);
+		}
+		
+		get30DayCount(record) {
+		    if (!record || !record.days) return 0;
+		    return Object.values(record.days).reduce((sum, n) => sum + n, 0);
+		}
+		
+		openStatsModal() {
+		    document.getElementById('statsModal').style.display = 'flex';
+		    this.renderListeningStats();
+		}
+		
+		closeStatsModal() {
+		    document.getElementById('statsModal').style.display = 'none';
+		}
+		
+		renderListeningStats() {
+		    const panel = document.getElementById('lsPanel');
+		    if (!this.listeningStatsEnabled) {
+		        panel.innerHTML = `<p class="ls-disabled-msg">Listening statistics are off. Enable them in Settings → Additional.</p>`;
+		        return;
+		    }
+		    if (!this.db || !this.db.objectStoreNames.contains("listeningStats")) {
+		        panel.innerHTML = `<p class="ls-disabled-msg">No data yet.</p>`;
+		        return;
+		    }
+		
+		    const transaction = this.db.transaction(["listeningStats"], "readonly");
+		    const request = transaction.objectStore("listeningStats").getAll();
+		
+		    request.onsuccess = () => {
+		        const records = request.result || [];
+		        const withNames = records
+		            .map(r => ({ ...r, song: this.songLibrary.find(s => s.id === r.id) }))
+		            .filter(r => r.song);
+		
+		        const byLifetime = [...withNames].sort((a, b) => b.lifetime - a.lifetime).slice(0, 10);
+		        const by30Day = [...withNames]
+		            .map(r => ({ ...r, count30: this.get30DayCount(r) }))
+		            .filter(r => r.count30 > 0)
+		            .sort((a, b) => b.count30 - a.count30)
+		            .slice(0, 10);
+		
+		        const renderList = (items, countKey) => items.length
+		            ? items.map(r => `<li><span>${this.escapeHtml(r.song.name)}</span><span class="ls-count">${r[countKey]}</span></li>`).join('')
+		            : '<li class="ls-empty">No plays recorded yet</li>';
+		
+		        panel.innerHTML = `
+		            <h3>Last 30 Days</h3>
+		            <ul class="ls-list">${renderList(by30Day, 'count30')}</ul>
+		            <h3>Lifetime</h3>
+		            <ul class="ls-list">${renderList(byLifetime, 'lifetime')}</ul>
+		        `;
+		    };
+		}
 
 
 
