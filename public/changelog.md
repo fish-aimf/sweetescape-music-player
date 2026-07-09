@@ -688,3 +688,4 @@
 -  added song card as response and links to open in shazam, youtube music, youtube or spotify. v68.10.0
 -  added a + button to directly add it to the song library will open search and search up song name in search bar v68.11.0
 -  Optimized resources such that adding and deleting song will only save specific song instead of whole song library v68.12.0
+-  added listening time tracking monthly and song statistics v69.0.0
