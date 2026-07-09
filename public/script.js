@@ -3604,6 +3604,7 @@ hideSidebar() {
 		}
 		this.listeningTimeInterval = setInterval(() => {
 			this.listeningTime++;
+			if (this.listeningStatsEnabled) this._accumulate30DaySecond();
 			if (this.listeningTime % 60 === 0) {
 				this.updateListeningTimeDisplay();
 				this.saveListeningTime();
@@ -14283,6 +14284,7 @@ playLocalAudio(url) {
         this.localAudio.addEventListener('play', () => {
             if (!this.isLocalPlayback) return;
             this.isPlaying = true;
+			this.startListeningTimeTracking(); 
         });
     }
  
@@ -14960,6 +14962,16 @@ _applyLibraryFiltersAndRender() {
 		
 		    request.onsuccess = () => {
 		        const records = request.result || [];
+		
+		        const timeRecord = records.find(r => r.id === '_global_time');
+		        const time30dSeconds = timeRecord ? Object.values(timeRecord.days || {}).reduce((a, b) => a + b, 0) : 0;
+		        const timeSummaryHtml = `
+		            <div class="ls-time-summary">
+		                <div><span class="ls-time-label">Last 30 Days</span><span class="ls-time-value">${this.formatSecondsAsHM(time30dSeconds)}</span></div>
+		                <div><span class="ls-time-label">Lifetime</span><span class="ls-time-value">${this.formatSecondsAsHM(this.listeningTime)}</span></div>
+		            </div>
+		        `;
+		
 		        const withNames = records
 		            .map(r => ({ ...r, song: this.songLibrary.find(s => s.id === r.id) }))
 		            .filter(r => r.song);
@@ -14976,6 +14988,7 @@ _applyLibraryFiltersAndRender() {
 		            : '<li class="ls-empty">No plays recorded yet</li>';
 		
 		        panel.innerHTML = `
+		            ${timeSummaryHtml}
 		            <h3>Last 30 Days</h3>
 		            <ul class="ls-list">${renderList(by30Day, 'count30')}</ul>
 		            <h3>Lifetime</h3>
@@ -14983,6 +14996,39 @@ _applyLibraryFiltersAndRender() {
 		        `;
 		    };
 		}
+	_accumulate30DaySecond() {
+	    this._pending30DaySeconds = (this._pending30DaySeconds || 0) + 1;
+	    if (this._pending30DaySeconds >= 60) {
+	        this._flush30DayTime();
+	    }
+	}
+	
+	_flush30DayTime() {
+	    if (!this.db || !this._pending30DaySeconds) return;
+	    if (!this.db.objectStoreNames.contains("listeningStats")) return;
+	
+	    const seconds = this._pending30DaySeconds;
+	    this._pending30DaySeconds = 0;
+	
+	    const transaction = this.db.transaction(["listeningStats"], "readwrite");
+	    const store = transaction.objectStore("listeningStats");
+	    const getReq = store.get("_global_time");
+	
+	    getReq.onsuccess = () => {
+	        const record = getReq.result || { id: "_global_time", days: {} };
+	        const todayKey = this._statsDayKey();
+	        record.days[todayKey] = (record.days[todayKey] || 0) + seconds;
+	        this._pruneOldDays(record.days);
+	        store.put(record);
+	    };
+	    getReq.onerror = (e) => console.error("Failed to flush 30-day time:", e);
+	}
+
+	formatSecondsAsHM(totalSeconds) {
+	    const hours = Math.floor(totalSeconds / 3600);
+	    const minutes = Math.floor((totalSeconds % 3600) / 60);
+	    return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+	}
 
 
 
