@@ -83,6 +83,9 @@
             <button id="themeToggle" title="[P]click to cycle through light, dark, custom themes.">
             <i class="fas fa-moon"></i>
             </button>
+            <button id="statsButton" class="timer-button" title="Listening Statistics">
+                <i class="fas fa-chart-bar"></i>
+            </button>
             <button id="timerButton" class="timer-button" title="[T]Set timer to close app">
             <i class="fas fa-clock"></i>
             <span id="timerDisplay" class="timer-display"></span>
@@ -1069,6 +1072,16 @@ Another Playlist{
                         </div>
                         <p class="setting-description">Reverses the current sort order (favorites always stay on top)</p>
                      </div>
+                     <div class="setting-group">
+                        <label for="listeningStatsToggle">Track Listening Statistics:</label>
+                        <div class="toggle-switch">
+                           <input type="checkbox" id="listeningStatsToggle" class="toggle-input">
+                           <label for="listeningStatsToggle" class="toggle-label">
+                           <span class="toggle-slider"></span>
+                           </label>
+                        </div>
+                        <p class="setting-description">Tracks how often you play each song (lifetime and last 30 days). Turning this off permanently deletes all stored listening data.</p>
+                     </div>
                   </div>
                </div>
             </div>
@@ -1405,6 +1418,15 @@ Another Playlist{
             </div>
       
           </div>
+        </div>
+      </div>
+      <div id="statsModal" class="ls-overlay" style="display:none;" role="dialog" aria-modal="true" aria-label="Listening statistics">
+        <div class="ls-modal">
+          <div class="ls-header">
+            <span class="ls-title"><i class="fas fa-chart-bar"></i> Listening Statistics</span>
+            <button class="ls-close" id="lsCloseBtn"><i class="fas fa-times"></i></button>
+          </div>
+          <div class="ls-panel" id="lsPanel"></div>
         </div>
       </div>
 
