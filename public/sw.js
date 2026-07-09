@@ -150,9 +150,12 @@ async function handleVersionRequest() {
   }
 
   if (liveVersion !== storedVersion) {
-    refreshAllAssets(liveVersion).catch((err) =>
-      console.warn("[sw] background refresh failed", err)
-    );
+    refreshAllAssets(liveVersion)
+      .then(async () => {
+        const clientsList = await self.clients.matchAll({ type: "window" });
+        clientsList.forEach((c) => c.postMessage({ type: "SW_UPDATED", version: liveVersion }));
+      })
+      .catch((err) => console.warn("[sw] background refresh failed", err));
   }
 
   return new Response(liveVersion, { status: 200 });
