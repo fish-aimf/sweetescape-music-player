@@ -310,27 +310,32 @@ class AdvancedMusicPlayer {
 	}
 
 	initDatabase() {
-	    return new Promise((resolve, reject) => {
-	        const request = indexedDB.open("MusicPlayerDB", 2);
-	
-	        request.onerror = (event) => {
-	            console.error("IndexedDB error:", event.target.error);
-	            reject("Could not open IndexedDB");
-	        };
-	
-	        request.onblocked = () => {
-	            console.warn("IndexedDB upgrade blocked — another tab has the database open.");
-	            this.showNotification?.('Please close other tabs running this app, then refresh.', 'error');
-	        };
-	
-	        request.onsuccess = (event) => {
-	            this.db = event.target.result;
-	            this.db.onversionchange = () => {
-	                this.db.close();
-	                this.showNotification?.('App updated in another tab — please refresh this page.', 'info');
-	            };
-	            resolve();
-	        };
+		return new Promise((resolve, reject) => {
+			const request = indexedDB.open("MusicPlayerDB", 2);
+
+			request.onerror = (event) => {
+				console.error("IndexedDB error:", event.target.error);
+				if (event.target.error?.name === "VersionError") {
+					this._recoverFromStaleCache();
+					return;
+				}
+				reject("Could not open IndexedDB");
+			};
+
+			request.onblocked = () => {
+				console.warn("IndexedDB upgrade blocked — another tab has the database open.");
+				this.showNotification?.('Please close other tabs running this app, then refresh.', 'error');
+			};
+
+			request.onsuccess = (event) => {
+				this.db = event.target.result;
+				this.db.onversionchange = () => {
+					this.db.close();
+					this.showNotification?.('App updated in another tab — please refresh this page.', 'info');
+				};
+				sessionStorage.removeItem('se_stale_recovery_attempted');
+				resolve();
+			};
 	
 	        request.onupgradeneeded = (event) => {
 	            const db = event.target.result;
@@ -350,6 +355,23 @@ class AdvancedMusicPlayer {
 	            });
 	        };
 	    });
+	}
+	async _recoverFromStaleCache() {
+		if (sessionStorage.getItem('se_stale_recovery_attempted')) {
+			console.error("Stale cache recovery already attempted this session; not looping again.");
+			this._handleInitializationError(new Error("VersionError persisted after recovery"));
+			return;
+		}
+		sessionStorage.setItem('se_stale_recovery_attempted', '1');
+		try {
+			if ('caches' in window) {
+				const names = await caches.keys();
+				await Promise.all(names.filter(n => n.startsWith('se-cache-')).map(n => caches.delete(n)));
+			}
+		} catch (e) {
+			console.warn("Cache cleanup during recovery failed:", e);
+		}
+		location.reload();
 	}
 
 	initializeElements() {
