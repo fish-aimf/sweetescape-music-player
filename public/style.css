@@ -2102,7 +2102,7 @@ body:has(#ytPlayer.fullscreen-video) {
 }
 
 .themeMode {
-    background: var(--bg-primary);
+    background: var(--bg-secondary);
 }
 .color-picker-item {
     margin-bottom: 1rem;
