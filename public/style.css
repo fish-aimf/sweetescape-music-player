@@ -2101,9 +2101,7 @@ body:has(#ytPlayer.fullscreen-video) {
     color: var(--text-secondary, #94a3b8);
 }
 
-.themeMode {
-    background: var(--bg-secondary);
-}
+#themeMode { background: var(--bg-secondary); }
 .color-picker-item {
     margin-bottom: 1rem;
 }
