@@ -7651,82 +7651,163 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 }
 .sz-result-add:hover { background: var(--hover-color); }
 .sz-result-add:disabled { background: var(--border-color); cursor: not-allowed; }
-
-
 .ls-overlay {
-  position: fixed; inset: 0; z-index: 9999;
-  background: rgba(0,0,0,0.55);
+  position: fixed; inset: 0; z-index: 10000;
+  background: rgba(0,0,0,.6);
+  backdrop-filter: blur(5px);
   display: flex; align-items: center; justify-content: center;
-  padding: 1rem;
+  padding: 2rem 1rem;
 }
-.ls-modal {
+.ls-modal-content {
   background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
   border-radius: 12px;
-  width: 100%; max-width: 480px;
-  max-height: 640px;
+  width: 90%;
+  max-width: 1000px;
+  max-height: 85vh;
   display: flex; flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 4px 20px var(--shadow-color);
+  box-shadow: rgba(0,0,0,.3) 0 20px 60px;
+  animation: lsModalSlideIn .3s ease-out;
+}
+@keyframes lsModalSlideIn {
+  0% { opacity: 0; transform: translateY(-30px) scale(.97); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 .ls-header {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 1rem 1.25rem 0.75rem;
+  padding: 1.1rem 1.5rem 1rem;
   border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
 }
 .ls-title {
-  font-size: 1rem; font-weight: 600;
+  font-size: 1.05rem; font-weight: 600;
   color: var(--text-primary);
   display: flex; align-items: center; gap: 0.5rem;
 }
 .ls-title i { color: var(--accent-color); }
 .ls-close {
   background: none; border: none; cursor: pointer;
-  color: var(--text-secondary); font-size: 1rem; padding: 0.25rem;
+  color: var(--text-secondary); font-size: 1.05rem; padding: 0.25rem;
   border-radius: 6px; transition: color 0.15s;
 }
 .ls-close:hover { color: var(--text-primary); }
-.ls-panel { padding: 1rem 1.25rem 1.25rem; overflow-y: auto; }
-.ls-panel h3 {
-  font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.03em;
-  color: var(--text-secondary); margin: 1rem 0 0.5rem;
-}
-.ls-panel h3:first-child { margin-top: 0; }
-.ls-list { list-style: none; margin: 0; padding: 0; }
-.ls-list li {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0.5rem 0.6rem;
-  border-radius: 6px;
-  font-size: 0.82rem; color: var(--text-primary);
-}
-.ls-list li:nth-child(odd) { background: var(--bg-primary); }
-.ls-list li span:first-child {
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 0.75rem;
-}
-.ls-count {
-  font-weight: 600; color: var(--accent-color); flex-shrink: 0;
-}
-.ls-empty, .ls-disabled-msg {
-  font-size: 0.8rem; color: var(--text-secondary); text-align: center; padding: 1rem 0;
+.ls-body {
+  padding: 24px 30px 30px;
+  overflow-y: auto;
 }
 
 .ls-time-summary {
-  display: flex; gap: 0.6rem;
-  margin-bottom: 0.5rem;
+  display: flex; gap: 0.75rem;
+  margin-bottom: 8px;
 }
 .ls-time-summary > div {
   flex: 1;
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 0.6rem 0.75rem;
-  display: flex; flex-direction: column; gap: 2px;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  display: flex; flex-direction: column; gap: 3px;
 }
 .ls-time-label {
-  font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.03em;
+  font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.03em;
   color: var(--text-secondary);
 }
 .ls-time-value {
-  font-size: 1.05rem; font-weight: 700;
+  font-size: 1.2rem; font-weight: 700;
   color: var(--accent-color);
+}
+
+.ls-section { margin-top: 28px; }
+.ls-section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px;
+}
+.ls-section-header h3 {
+  font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.03em;
+  color: var(--text-secondary); margin: 0;
+}
+.ls-showall-btn {
+  background: none; border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 0.72rem; font-weight: 600;
+  padding: 5px 12px; border-radius: 20px;
+  cursor: pointer; transition: all 0.15s;
+}
+.ls-showall-btn:hover { border-color: var(--accent-color); color: var(--accent-color); }
+
+.ls-compact-view {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) minmax(260px, 1.3fr);
+  gap: 20px;
+  align-items: start;
+}
+@media (max-width: 700px) {
+  .ls-compact-view { grid-template-columns: 1fr; }
+}
+
+.ls-top-large { display: flex; flex-direction: column; gap: 10px; }
+.ls-top-small {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+}
+@media (max-width: 500px) {
+  .ls-top-small { grid-template-columns: 1fr; }
+}
+
+.ls-card-large {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+.ls-card-small {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 7px 10px;
+}
+.ls-full-item { list-style: none; }
+.ls-full-list { max-height: 50vh; overflow-y: auto; padding-right: 4px; }
+.ls-full-ranked-list {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: 6px;
+}
+
+.ls-rank {
+  font-size: 0.72rem; font-weight: 700; color: var(--text-secondary);
+  min-width: 28px; flex-shrink: 0;
+}
+
+.ls-thumb-square {
+  border-radius: 8px;
+  background-color: var(--border-color);
+  background-size: cover; background-position: center;
+  flex-shrink: 0;
+  aspect-ratio: 1 / 1;
+}
+.ls-thumb-lg { width: 56px; height: 56px; }
+.ls-thumb-sm { width: 36px; height: 36px; border-radius: 6px; }
+.ls-thumb-fallback {
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-secondary); font-size: 1rem;
+}
+
+.ls-card-info { flex: 1; min-width: 0; }
+.ls-card-name {
+  font-size: 0.85rem; font-weight: 600; color: var(--text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ls-card-large .ls-card-name { font-size: 0.92rem; }
+.ls-card-artist {
+  font-size: 0.72rem; color: var(--text-secondary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ls-card-count {
+  font-weight: 700; color: var(--accent-color); font-size: 0.8rem; flex-shrink: 0;
+}
+.ls-card-large .ls-card-count { font-size: 0.95rem; }
+
+.ls-empty, .ls-disabled-msg {
+  font-size: 0.85rem; color: var(--text-secondary); text-align: center; padding: 2rem 0;
 }
