@@ -690,3 +690,4 @@
 -  Optimized resources such that adding and deleting song will only save specific song instead of whole song library v68.12.0
 -  added listening time tracking monthly and song statistics v69.0.0
 -  fixed service worker bug v69.1.0
+-  added some missing styles in settings v69.2.0
