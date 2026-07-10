@@ -691,3 +691,4 @@
 -  added listening time tracking monthly and song statistics v69.0.0
 -  fixed service worker bug v69.1.0
 -  added some missing styles in settings v69.2.0
+-  changed display structure of song history v69.3.0
