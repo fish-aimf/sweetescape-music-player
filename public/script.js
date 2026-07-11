@@ -15081,8 +15081,10 @@ _applyLibraryFiltersAndRender() {
 	                ${list.length > 5 ? `<button class="ls-showall-btn" data-action="expand">Show All (${list.length})</button>` : ''}
 	            </div>
 	            <div class="ls-compact-view">
-	                ${heroCard}
-	                ${midCards ? `<div class="ls-top-large">${midCards}</div>` : ''}
+	                <div class="ls-left-col">
+	                    ${heroCard}
+	                    ${midCards ? `<div class="ls-top-large">${midCards}</div>` : ''}
+	                </div>
 	                ${smallCards ? `<div class="ls-top-small">${smallCards}</div>` : ''}
 	            </div>
 	        </div>`;
