@@ -487,6 +487,7 @@ class AdvancedMusicPlayer {
 			transcriptLangSelect: document.getElementById('transcriptLangSelect'),
 			statsButton: document.getElementById("statsButton"),
 			lsPanel: document.getElementById("lsPanel"),
+			lsRangeToggle: document.getElementById("lsRangeToggle"),
 			listeningStatsToggle: document.getElementById("listeningStatsToggle"),
 			
 		};
@@ -707,7 +708,9 @@ class AdvancedMusicPlayer {
 			[this.elements.searchSongsToAdd, 'input', handlers.searchSongsToAdd],
 			[this.elements.statsButton, 'click', this.openStatsModal.bind(this)],
 			[this.elements.lsPanel, 'click', this._handleStatsShowAllClick.bind(this)],
+			[this.elements.lsPanel, 'input', this._handleStatsSearchInput.bind(this)],
 			[document.getElementById('lsCloseBtn'), 'click', this.closeStatsModal.bind(this)],
+			[this.elements.lsRangeToggle, 'change', this._handleStatsRangeToggle.bind(this)],
 			[this.elements.listeningStatsToggle, 'change', this.handleListeningStatsToggle.bind(this)],
 		];
 		
@@ -14972,157 +14975,201 @@ _applyLibraryFiltersAndRender() {
 		}
 		
 		renderListeningStats() {
-		const panel = document.getElementById('lsPanel');
-		if (!this.listeningStatsEnabled) {
-			panel.innerHTML = `<p class="ls-disabled-msg">Listening statistics are off. Enable them in Settings → Additional.</p>`;
-			return;
+		    const panel = document.getElementById('lsPanel');
+		    if (!this.listeningStatsEnabled) {
+		        panel.innerHTML = `<p class="ls-disabled-msg">Listening statistics are off. Enable them in Settings → Additional.</p>`;
+		        return;
+		    }
+		    if (!this.db || !this.db.objectStoreNames.contains("listeningStats")) {
+		        panel.innerHTML = `<p class="ls-disabled-msg">No data yet.</p>`;
+		        return;
+		    }
+		
+		    const transaction = this.db.transaction(["listeningStats"], "readonly");
+		    const request = transaction.objectStore("listeningStats").getAll();
+		
+		    request.onsuccess = () => {
+		        const records = request.result || [];
+		
+		        const timeRecord = records.find(r => r.id === '_global_time');
+		        const time30dSeconds = timeRecord ? Object.values(timeRecord.days || {}).reduce((a, b) => a + b, 0) : 0;
+		
+		        const withNames = records
+		            .map(r => ({ ...r, song: this.songLibrary.find(s => s.id === r.id) }))
+		            .filter(r => r.song);
+		
+		        const byLifetime = withNames.filter(r => r.lifetime > 0).sort((a, b) => b.lifetime - a.lifetime);
+		        const by30Day = withNames
+		            .map(r => ({ ...r, count30: this.get30DayCount(r) }))
+		            .filter(r => r.count30 > 0)
+		            .sort((a, b) => b.count30 - a.count30);
+		
+		        // Cached once per modal open — every later toggle/search/expand
+		        // interaction re-renders purely from this in-memory data, zero further DB reads.
+		        this._statsCache = { by30Day, byLifetime, time30dSeconds };
+		        if (this._statsRange === undefined) this._statsRange = '30';
+		        if (this._statsShowAll === undefined) this._statsShowAll = false;
+		        this._statsSearchTerm = '';
+		
+		        this._renderStatsPanel();
+		    };
 		}
-		if (!this.db || !this.db.objectStoreNames.contains("listeningStats")) {
-			panel.innerHTML = `<p class="ls-disabled-msg">No data yet.</p>`;
-			return;
+
+	
+		_renderStatsPanel() {
+		    const panel = document.getElementById('lsPanel');
+		    const c = this._statsCache;
+		    if (!c) return;
+		
+		    const isLifetime = this._statsRange === 'lifetime';
+		    const list = isLifetime ? c.byLifetime : c.by30Day;
+		    const countKey = isLifetime ? 'lifetime' : 'count30';
+		    const title = isLifetime ? 'Lifetime' : 'Last 30 Days';
+		
+		    if (this.elements.lsRangeToggle) this.elements.lsRangeToggle.checked = isLifetime;
+		
+		    const timeSummaryHtml = `
+		        <div class="ls-time-summary">
+		            <div><span class="ls-time-label">Last 30 Days</span><span class="ls-time-value">${this.formatSecondsAsHM(c.time30dSeconds)}</span></div>
+		            <div><span class="ls-time-label">Lifetime</span><span class="ls-time-value">${this.formatSecondsAsHM(this.listeningTime)}</span></div>
+		        </div>
+		    `;
+		
+		    panel.innerHTML = `
+		        ${timeSummaryHtml}
+		        ${this._buildStatsSectionHtml(title, list, countKey, this._statsShowAll)}
+		    `;
 		}
+	_buildStatsSectionHtml(title, list, countKey, showAll) {
+	    if (!list.length) {
+	        return `
+	            <div class="ls-section">
+	                <div class="ls-section-header"><h3>${title}</h3></div>
+	                <p class="ls-empty">No plays recorded yet</p>
+	            </div>`;
+	    }
 	
-		const transaction = this.db.transaction(["listeningStats"], "readonly");
-		const request = transaction.objectStore("listeningStats").getAll();
+	    if (showAll) {
+	        return `
+	            <div class="ls-section">
+	                <div class="ls-section-header">
+	                    <h3>${title}</h3>
+	                    <button class="ls-showall-btn" data-action="collapse">Show Top</button>
+	                </div>
+	                <div class="ls-search-wrap">
+	                    <i class="fas fa-search ls-search-icon"></i>
+	                    <input type="text" id="lsSearchInput" class="ls-search-input" placeholder="Search a song to see how many times you've listened…" autocomplete="off">
+	                </div>
+	                <div class="ls-full-list" id="lsFullListContainer">
+	                    ${this._buildFullListHtml(list, countKey, '')}
+	                </div>
+	            </div>`;
+	    }
 	
-		request.onsuccess = () => {
-			const records = request.result || [];
+	    const top5 = list.slice(0, 5);
+	    const next10 = list.slice(5, 15);
+	    const largeCards = top5.map((r, i) => this._largeCardHtml(r, i + 1, countKey)).join('');
+	    const smallCards = next10.map((r, i) => this._smallCardHtml(r, i + 6, countKey)).join('');
 	
-			const timeRecord = records.find(r => r.id === '_global_time');
-			const time30dSeconds = timeRecord ? Object.values(timeRecord.days || {}).reduce((a, b) => a + b, 0) : 0;
-	
-			const withNames = records
-				.map(r => ({ ...r, song: this.songLibrary.find(s => s.id === r.id) }))
-				.filter(r => r.song);
-	
-			const byLifetime = withNames.filter(r => r.lifetime > 0).sort((a, b) => b.lifetime - a.lifetime);
-			const by30Day = withNames
-				.map(r => ({ ...r, count30: this.get30DayCount(r) }))
-				.filter(r => r.count30 > 0)
-				.sort((a, b) => b.count30 - a.count30);
-	
-			// Cache once per open — toggling "Show All" afterwards re-renders from
-			// this in-memory data with zero further DB reads.
-			this._statsCache = { by30Day, byLifetime, time30dSeconds };
-			if (this._showAll30 === undefined) this._showAll30 = false;
-			if (this._showAllLifetime === undefined) this._showAllLifetime = false;
-	
-			this._renderStatsPanel();
-		};
+	    return `
+	        <div class="ls-section">
+	            <div class="ls-section-header">
+	                <h3>${title}</h3>
+	                ${list.length > 5 ? `<button class="ls-showall-btn" data-action="expand">Show All (${list.length})</button>` : ''}
+	            </div>
+	            <div class="ls-compact-view">
+	                <div class="ls-top-large">${largeCards}</div>
+	                ${smallCards ? `<div class="ls-top-small">${smallCards}</div>` : ''}
+	            </div>
+	        </div>`;
 	}
-	
-	_renderStatsPanel() {
-		const panel = document.getElementById('lsPanel');
-		const c = this._statsCache;
-		if (!c) return;
-	
-		const timeSummaryHtml = `
-			<div class="ls-time-summary">
-				<div><span class="ls-time-label">Last 30 Days</span><span class="ls-time-value">${this.formatSecondsAsHM(c.time30dSeconds)}</span></div>
-				<div><span class="ls-time-label">Lifetime</span><span class="ls-time-value">${this.formatSecondsAsHM(this.listeningTime)}</span></div>
-			</div>
-		`;
-	
-		panel.innerHTML = `
-			${timeSummaryHtml}
-			${this._buildStatsSectionHtml('Last 30 Days', '30', c.by30Day, 'count30', this._showAll30)}
-			${this._buildStatsSectionHtml('Lifetime', 'lifetime', c.byLifetime, 'lifetime', this._showAllLifetime)}
-		`;
+	filterListeningStatisticsSongResults(list, searchTerm) {
+	    const ranked = list.map((r, i) => ({ ...r, _rank: i + 1 }));
+	    const term = (searchTerm || '').toLowerCase().trim();
+	    if (!term) return ranked;
+	    return ranked.filter(r =>
+	        r.song.name.toLowerCase().includes(term) ||
+	        (r.song.author && r.song.author.toLowerCase().includes(term))
+	    );
 	}
-	
-	_buildStatsSectionHtml(title, range, list, countKey, showAll) {
-		if (!list.length) {
-			return `
-				<div class="ls-section">
-					<div class="ls-section-header"><h3>${title}</h3></div>
-					<p class="ls-empty">No plays recorded yet</p>
-				</div>`;
-		}
-	
-		if (showAll) {
-			const items = list.map((r, i) => this._fullListItemHtml(r, i + 1, countKey)).join('');
-			return `
-				<div class="ls-section">
-					<div class="ls-section-header">
-						<h3>${title}</h3>
-						<button class="ls-showall-btn" data-range="${range}">Show Top</button>
-					</div>
-					<div class="ls-full-list">
-						<ul class="ls-full-ranked-list">${items}</ul>
-					</div>
-				</div>`;
-		}
-	
-		const top5 = list.slice(0, 5);
-		const next10 = list.slice(5, 15);
-		const largeCards = top5.map((r, i) => this._largeCardHtml(r, i + 1, countKey)).join('');
-		const smallCards = next10.map((r, i) => this._smallCardHtml(r, i + 6, countKey)).join('');
-	
-		return `
-			<div class="ls-section">
-				<div class="ls-section-header">
-					<h3>${title}</h3>
-					${list.length > 5 ? `<button class="ls-showall-btn" data-range="${range}">Show All (${list.length})</button>` : ''}
-				</div>
-				<div class="ls-compact-view">
-					<div class="ls-top-large">${largeCards}</div>
-					${smallCards ? `<div class="ls-top-small">${smallCards}</div>` : ''}
-				</div>
-			</div>`;
-	}
+
 	
 	_songThumbHtml(song, sizeClass) {
-		if (song.videoId) {
-			return `<div class="ls-thumb-square ${sizeClass}" style="background-image:url(https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg)"></div>`;
-		}
-		return `<div class="ls-thumb-square ${sizeClass} ls-thumb-fallback"><i class="fas fa-music"></i></div>`;
+	    if (song.videoId) {
+	        return `<div class="ls-thumb-square ${sizeClass}" style="background-image:url(https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg)"></div>`;
+	    }
+	    return `<div class="ls-thumb-square ${sizeClass} ls-thumb-fallback"><i class="fas fa-music"></i></div>`;
+	}
+	_buildFullListHtml(list, countKey, searchTerm) {
+	    const filtered = this.filterListeningStatisticsSongResults(list, searchTerm);
+	    if (!filtered.length) {
+	        return `<p class="ls-empty">No songs match "${this.escapeHtml(searchTerm)}"</p>`;
+	    }
+	    const items = filtered.map(r => this._fullListItemHtml(r, r._rank, countKey)).join('');
+	    return `<ul class="ls-full-ranked-list">${items}</ul>`;
 	}
 	
 	_largeCardHtml(r, rank, countKey) {
-		return `
-			<div class="ls-card-large">
-				${this._songThumbHtml(r.song, 'ls-thumb-lg')}
-				<div class="ls-card-info">
-					<div class="ls-card-name">${this.escapeHtml(r.song.name)}</div>
-					${r.song.author ? `<div class="ls-card-artist">${this.escapeHtml(r.song.author)}</div>` : ''}
-				</div>
-				<span class="ls-card-count">${r[countKey]}</span>
-			</div>`;
+	    return `
+	        <div class="ls-card-large">
+	            <span class="ls-rank-badge">#${rank}</span>
+	            ${this._songThumbHtml(r.song, 'ls-thumb-lg')}
+	            <div class="ls-card-info">
+	                <div class="ls-card-name">${this.escapeHtml(r.song.name)}</div>
+	                ${r.song.author ? `<div class="ls-card-artist">${this.escapeHtml(r.song.author)}</div>` : ''}
+	            </div>
+	            <span class="ls-card-count" title="Times listened"><i class="fas fa-play"></i> ${r[countKey]}</span>
+	        </div>`;
 	}
-	
 	_smallCardHtml(r, rank, countKey) {
-		return `
-			<div class="ls-card-small">
-				<span class="ls-rank">#${rank}</span>
-				${this._songThumbHtml(r.song, 'ls-thumb-sm')}
-				<div class="ls-card-info">
-					<div class="ls-card-name">${this.escapeHtml(r.song.name)}</div>
-					${r.song.author ? `<div class="ls-card-artist">${this.escapeHtml(r.song.author)}</div>` : ''}
-				</div>
-				<span class="ls-card-count">${r[countKey]}</span>
-			</div>`;
+	    return `
+	        <div class="ls-card-small">
+	            <span class="ls-rank">#${rank}</span>
+	            ${this._songThumbHtml(r.song, 'ls-thumb-sm')}
+	            <div class="ls-card-info">
+	                <div class="ls-card-name">${this.escapeHtml(r.song.name)}</div>
+	                ${r.song.author ? `<div class="ls-card-artist">${this.escapeHtml(r.song.author)}</div>` : ''}
+	            </div>
+	            <span class="ls-card-count" title="Times listened"><i class="fas fa-play"></i> ${r[countKey]}</span>
+	        </div>`;
 	}
-	
+
 	_fullListItemHtml(r, rank, countKey) {
-		return `
-			<li class="ls-card-small ls-full-item">
-				<span class="ls-rank">#${rank}</span>
-				${this._songThumbHtml(r.song, 'ls-thumb-sm')}
-				<div class="ls-card-info">
-					<div class="ls-card-name">${this.escapeHtml(r.song.name)}</div>
-					${r.song.author ? `<div class="ls-card-artist">${this.escapeHtml(r.song.author)}</div>` : ''}
-				</div>
-				<span class="ls-card-count">${r[countKey]}</span>
-			</li>`;
+	    return `
+	        <li class="ls-card-small ls-full-item">
+	            <span class="ls-rank">#${rank}</span>
+	            ${this._songThumbHtml(r.song, 'ls-thumb-sm')}
+	            <div class="ls-card-info">
+	                <div class="ls-card-name">${this.escapeHtml(r.song.name)}</div>
+	                ${r.song.author ? `<div class="ls-card-artist">${this.escapeHtml(r.song.author)}</div>` : ''}
+	            </div>
+	            <span class="ls-card-count" title="Times listened"><i class="fas fa-play"></i> ${r[countKey]}</span>
+	        </li>`;
 	}
 	
 	_handleStatsShowAllClick(e) {
-		const btn = e.target.closest('.ls-showall-btn');
-		if (!btn) return;
-		const range = btn.dataset.range;
-		if (range === '30') this._showAll30 = !this._showAll30;
-		else this._showAllLifetime = !this._showAllLifetime;
-		this._renderStatsPanel();
+	    const btn = e.target.closest('.ls-showall-btn');
+	    if (!btn) return;
+	    this._statsShowAll = btn.dataset.action === 'expand';
+	    this._statsSearchTerm = '';
+	    this._renderStatsPanel();
+	}
+	_handleStatsRangeToggle(e) {
+	    this._statsRange = e.target.checked ? 'lifetime' : '30';
+	    this._statsShowAll = false;
+	    this._statsSearchTerm = '';
+	    this._renderStatsPanel();
+	}
+	_handleStatsSearchInput(e) {
+	    if (e.target.id !== 'lsSearchInput') return;
+	    this._statsSearchTerm = e.target.value;
+	    const c = this._statsCache;
+	    if (!c) return;
+	    const isLifetime = this._statsRange === 'lifetime';
+	    const list = isLifetime ? c.byLifetime : c.by30Day;
+	    const countKey = isLifetime ? 'lifetime' : 'count30';
+	    const container = document.getElementById('lsFullListContainer');
+	    if (container) container.innerHTML = this._buildFullListHtml(list, countKey, this._statsSearchTerm);
 	}
 	_accumulate30DaySecond() {
 	    this._pending30DaySeconds = (this._pending30DaySeconds || 0) + 1;
