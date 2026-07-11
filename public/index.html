@@ -1424,6 +1424,16 @@ Another Playlist{
         <div class="ls-modal-content">
           <div class="ls-header">
             <span class="ls-title"><i class="fas fa-chart-bar"></i> Listening Statistics</span>
+            <div class="ls-range-switch">
+              <span class="ls-range-label" id="lsRangeLabelLeft">30 Days</span>
+              <div class="toggle-switch">
+                <input type="checkbox" id="lsRangeToggle" class="toggle-input">
+                <label for="lsRangeToggle" class="toggle-label">
+                <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <span class="ls-range-label" id="lsRangeLabelRight">Lifetime</span>
+            </div>
             <button class="ls-close" id="lsCloseBtn"><i class="fas fa-times"></i></button>
           </div>
           <div class="ls-body" id="lsPanel"></div>
