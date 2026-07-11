@@ -15066,10 +15066,13 @@ _applyLibraryFiltersAndRender() {
 	            </div>`;
 	    }
 	
-	    const top5 = list.slice(0, 5);
-	    const next10 = list.slice(5, 15);
-	    const largeCards = top5.map((r, i) => this._largeCardHtml(r, i + 1, countKey)).join('');
-	    const smallCards = next10.map((r, i) => this._smallCardHtml(r, i + 6, countKey)).join('');
+	    const hero = list[0];
+	    const mid4 = list.slice(1, 5);
+	    const rest10 = list.slice(5, 15);
+	
+	    const heroCard = hero ? this._heroCardHtml(hero, countKey) : '';
+	    const midCards = mid4.map((r, i) => this._largeCardHtml(r, i + 2, countKey)).join('');
+	    const smallCards = rest10.map((r, i) => this._smallCardHtml(r, i + 6, countKey)).join('');
 	
 	    return `
 	        <div class="ls-section">
@@ -15078,7 +15081,8 @@ _applyLibraryFiltersAndRender() {
 	                ${list.length > 5 ? `<button class="ls-showall-btn" data-action="expand">Show All (${list.length})</button>` : ''}
 	            </div>
 	            <div class="ls-compact-view">
-	                <div class="ls-top-large">${largeCards}</div>
+	                ${heroCard}
+	                ${midCards ? `<div class="ls-top-large">${midCards}</div>` : ''}
 	                ${smallCards ? `<div class="ls-top-small">${smallCards}</div>` : ''}
 	            </div>
 	        </div>`;
@@ -15119,6 +15123,18 @@ _applyLibraryFiltersAndRender() {
 	                ${r.song.author ? `<div class="ls-card-artist">${this.escapeHtml(r.song.author)}</div>` : ''}
 	            </div>
 	            <span class="ls-card-count" title="Times listened"><i class="fas fa-play"></i> ${r[countKey]}</span>
+	        </div>`;
+	}
+	_heroCardHtml(r, countKey) {
+	    return `
+	        <div class="ls-card-hero">
+	            ${this._songThumbHtml(r.song, 'ls-thumb-hero')}
+	            <div class="ls-hero-info">
+	                <span class="ls-rank-badge ls-rank-badge-hero">#1</span>
+	                <div class="ls-card-name ls-hero-name">${this.escapeHtml(r.song.name)}</div>
+	                ${r.song.author ? `<div class="ls-card-artist ls-hero-artist">${this.escapeHtml(r.song.author)}</div>` : ''}
+	                <div class="ls-hero-count"><i class="fas fa-play"></i> ${r[countKey]} times listened</div>
+	            </div>
 	        </div>`;
 	}
 	_smallCardHtml(r, rank, countKey) {
