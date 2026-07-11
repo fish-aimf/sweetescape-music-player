@@ -7759,7 +7759,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 .ls-top-large { display: flex; flex-direction: column; gap: 8px; }
 .ls-top-small {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   gap: 8px;
 }
 @media (max-width: 700px) {
@@ -7809,7 +7809,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 .ls-thumb-sm { width: 32px; height: 32px; border-radius: 6px; }
 .ls-thumb-fallback { display: flex; align-items: center; justify-content: center; color: var(--text-secondary); font-size: 1rem; }
 
-.ls-card-info { flex: 1; min-width: 0; }
+.ls-card-info { flex: 1 1 auto; min-width: 0; }
 .ls-card-name {
   font-size: 0.85rem; font-weight: 600; color: var(--text-primary);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
