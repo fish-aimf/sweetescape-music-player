@@ -692,3 +692,4 @@
 -  fixed service worker bug v69.1.0
 -  added some missing styles in settings v69.2.0
 -  changed display structure of song history v69.3.0
+-  edited styles for the top songs once more v69.4.0
