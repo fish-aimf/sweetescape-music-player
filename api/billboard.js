@@ -13,11 +13,14 @@ export default async function handler(req, res) {
     
     const YOUTUBE_API_KEYS = process.env.YOUTUBE_API_KEYS.split(',');
     
-    const { query, keyIndex } = req.query;
+    const { query, keyIndex, maxResults } = req.query;
     const apiKey = YOUTUBE_API_KEYS[parseInt(keyIndex) % YOUTUBE_API_KEYS.length];
     
+    // Clamp to a sane range (1-50, per YouTube API limits) and default to 1
+    const parsedMaxResults = Math.min(Math.max(parseInt(maxResults) || 1, 1), 50);
+    
     try {
-        const youtubeUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=8&q=${encodeURIComponent(query)}&type=video&key=${apiKey}`;
+        const youtubeUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=${parsedMaxResults}&q=${encodeURIComponent(query)}&type=video&key=${apiKey}`;
         
         const response = await fetch(youtubeUrl);
         const data = await response.json();
