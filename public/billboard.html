@@ -35,12 +35,12 @@
         }
         
         async function searchYouTube(songTitle, artist) {
-            const query = `${songTitle} ${artist} official`;
+            const query = `${artist} - ${songTitle} "topic"`;
             
             for (let attempt = 0; attempt < YOUTUBE_API_KEYS_COUNT; attempt++) {
                 try {
                     const response = await fetch(
-                        `/api/billboard?query=${encodeURIComponent(query)}&keyIndex=${activeKeyIndex}`
+                        `/api/billboard?query=${encodeURIComponent(query)}&keyIndex=${activeKeyIndex}&maxResults=1`
                     );
                     
                     const result = await response.json();
@@ -63,8 +63,7 @@
                     }
                     
                     if (data.items && data.items.length > 0) {
-                        const bestMatch = findBestMatch(data.items, songTitle, artist);
-                        return bestMatch ? `https://www.youtube.com/watch?v=${bestMatch.id.videoId}` : null;
+                        return `https://www.youtube.com/watch?v=${data.items[0].id.videoId}`;
                     }
                     return null;
                 } catch (error) {
@@ -75,25 +74,8 @@
             
             return null;
         }
-        
-        function findBestMatch(items, songTitle, artist) {
-            const scored = items.map(item => {
-                const title = item.snippet.title.toLowerCase();
-                const channel = item.snippet.channelTitle.toLowerCase();
-                let score = 0;
                 
-                if (title.includes(songTitle.toLowerCase())) score += 30;
-                if (title.includes(artist.toLowerCase())) score += 20;
-                if (channel.includes(artist.toLowerCase()) || channel.includes('vevo') || channel.includes('official')) score += 25;
-                if (title.includes('official')) score += 15;
-                
-                return { ...item, score };
-            });
-            
-            scored.sort((a, b) => b.score - a.score);
-            return scored[0]?.score > 20 ? scored[0] : null;
-        }
-        
+
         async function updateBillboard() {
             log('=== Starting Billboard Hot 100 Update ===', 'info');
             
