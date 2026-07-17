@@ -693,3 +693,4 @@
 -  added some missing styles in settings v69.2.0
 -  changed display structure of song history v69.3.0
 -  edited styles for the top songs once more v69.4.0
+-  added topic toggle button to make searching for topic videos easier. v69.5.0
