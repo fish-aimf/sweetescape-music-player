@@ -7867,3 +7867,18 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   display: flex; align-items: center; gap: 6px;
 }
 .ls-hero-count i { color: var(--text-secondary); font-size: 0.75em; }
+.lib-topic-btn {
+    width: auto;
+    padding: 0 10px;
+    font-size: 0.78em;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    border-radius: 0;
+    border-left: 1px solid var(--border-color);
+    white-space: nowrap;
+}
+
+.lib-topic-btn.is-off {
+    text-decoration: line-through;
+    opacity: 0.6;
+}
