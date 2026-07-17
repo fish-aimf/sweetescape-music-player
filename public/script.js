@@ -123,6 +123,7 @@ class AdvancedMusicPlayer {
 		this.activeYoutubeKeyIndex = 0;
 		this.youtubeLibrarySearchResults = [];
 		this.YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3/search';
+		this.topicKeywordEnabled = true;
 		
 		// Supabase / Global library
 		this.supabase = null;
@@ -393,6 +394,7 @@ class AdvancedMusicPlayer {
 			currentPlaylistName: document.getElementById("currentPlaylistName"),
 			searchSongsToAdd: document.getElementById("searchSongsToAdd"),
 			librarySearchResults: document.getElementById("librarySearchResults"),
+			libTopicBtn: document.getElementById('libTopicBtn'),
 			currentPlaylistSongs: document.getElementById("currentPlaylistSongs"),
 			playlistTotalDuration: document.getElementById("playlistTotalDuration"),
 			loopPlaylistBtn: document.getElementById("loopPlaylistBtn"),
@@ -603,6 +605,8 @@ class AdvancedMusicPlayer {
 			themeModeChange: this.handleThemeModeChange.bind(this),
 			saveCustomTheme: this.handleSaveCustomTheme.bind(this),
 			adsToggle: this.handleAdsToggle.bind(this),
+			toggleTopicKeyword: this.toggleTopicKeyword.bind(this),
+
 			
 		
 			librarySearchKeydown: async (e) => {
@@ -712,6 +716,8 @@ class AdvancedMusicPlayer {
 			[document.getElementById('lsCloseBtn'), 'click', this.closeStatsModal.bind(this)],
 			[this.elements.lsRangeToggle, 'change', this._handleStatsRangeToggle.bind(this)],
 			[this.elements.listeningStatsToggle, 'change', this.handleListeningStatsToggle.bind(this)],
+			[this.elements.libTopicBtn, 'click', handlers.toggleTopicKeyword]
+
 		];
 		
 		// Efficiently attach all simple listeners with null checks
@@ -13662,12 +13668,13 @@ rotateYouTubeApiKey() {
 }
 async searchYouTubeForLibraryMatches(searchTerm, pageToken = null) {
     const maxResults = 5;
-    
+    const effectiveSearchTerm = this.topicKeywordEnabled ? `${searchTerm} "topic"` : searchTerm;
+
     for (let attempt = 0; attempt < this.YOUTUBE_API_KEYS_COUNT; attempt++) {
         const keyIndex = this.getRandomYouTubeApiKey();
         
         try {
-            let url = `/api/youtube?query=${encodeURIComponent(searchTerm)}&maxResults=${maxResults}&type=combined&keyIndex=${keyIndex}`;
+            let url = `/api/youtube?query=${encodeURIComponent(effectiveSearchTerm)}&maxResults=${maxResults}&type=combined&keyIndex=${keyIndex}`;
             if (pageToken) url += `&pageToken=${encodeURIComponent(pageToken)}`;
 
             const response = await fetch(url);
@@ -15221,6 +15228,10 @@ _applyLibraryFiltersAndRender() {
 	    const hours = Math.floor(totalSeconds / 3600);
 	    const minutes = Math.floor((totalSeconds % 3600) / 60);
 	    return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+	}
+	toggleTopicKeyword() {
+	    this.topicKeywordEnabled = !this.topicKeywordEnabled;
+	    this.elements.libTopicBtn.classList.toggle('is-off', !this.topicKeywordEnabled);
 	}
 
 
