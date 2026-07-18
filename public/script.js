@@ -11148,106 +11148,10 @@ async savePlaylistChanges(playlistId) {
         this.showGlobalLibraryMessage('Error saving playlist: ' + error.message, 'error');
     }
 }
-async autofillYouTubeUrls(artistId) {
-    const editModeContainer = document.getElementById(`edit-mode-${artistId}`);
-    const songCards = editModeContainer.querySelectorAll('.global-library-song-edit-item');
-    
-    const outputContainer = this.elements.aiOutput;
-    let processedCount = 0;
-    
-    for (let card of songCards) {
-        const nameInput = card.querySelector('.song-name-input');
-        const authorInput = card.querySelector('.song-author-input');
-        const urlInput = card.querySelector('.song-url-input');
-        
-        const songName = nameInput.value.trim();
-        const songAuthor = authorInput.value.trim();
-        const currentUrl = urlInput.value.trim();
-        
-        // Skip if URL already exists or name is empty
-        if (currentUrl || !songName) continue;
-        
-        try {
-            processedCount++;
-            outputContainer.innerHTML = `<div class="ai-loading">Searching YouTube for "${songName}" ${songAuthor ? `by ${songAuthor}` : ''} (${processedCount})...</div>`;
-            
-            const searchQuery = songAuthor 
-                ? `"${songName}" "${songAuthor}"`
-                : `"${songName}"`;
-            
-            const data = await this.searchYouTubeWithRotation(searchQuery);
-            
-            if (data.items && data.items.length > 0) {
-                const bestMatch = this.findBestYouTubeMatch(
-                    data.items, 
-                    songName, 
-                    songAuthor || songName
-                );
-                
-                if (bestMatch) {
-                    urlInput.value = `https://www.youtube.com/watch?v=${bestMatch.id.videoId}`;
-                }
-            }
-            
-            await new Promise(resolve => setTimeout(resolve, 300));
-            
-        } catch (error) {
-            console.error(`Error autofilling URL for "${songName}":`, error);
-            if (error.message.includes('All API keys failed')) {
-                this.showGlobalLibraryMessage('API keys exhausted. Partial autofill completed.', 'error');
-                break;
-            }
-        }
-    }
-    
-    outputContainer.innerHTML = '';
-    this.showGlobalLibraryMessage(`Autofilled ${processedCount} YouTube URLs!`, 'success');
-}
 
 
 
-async autofillAuthors(artistId) {
-    const editModeContainer = document.getElementById(`edit-mode-${artistId}`);
-    const songCards = editModeContainer.querySelectorAll('.global-library-song-edit-item');
-    
-    let processedCount = 0;
-    
-    for (let card of songCards) {
-        const authorInput = card.querySelector('.song-author-input');
-        const urlInput = card.querySelector('.song-url-input');
-        
-        const currentAuthor = authorInput.value.trim();
-        const youtubeUrl = urlInput.value.trim();
-        
-        // Skip if author already exists or URL is empty
-        if (currentAuthor || !youtubeUrl) continue;
-        
-        try {
-            const videoId = this.extractYouTubeId(youtubeUrl);
-            if (!videoId) continue;
-            
-            const [title, channelName] = await Promise.all([
-                this.fetchYouTubeTitle(videoId),
-                this.fetchYouTubeChannel(videoId)
-            ]);
-            
-            if (title) {
-                const { author, songName } = this.parseVideoTitle(title);
-                authorInput.value = author || channelName || '';
-                processedCount++;
-            }
-            
-            await new Promise(resolve => setTimeout(resolve, 200));
-            
-        } catch (error) {
-            console.error(`Error autofilling author for URL ${youtubeUrl}:`, error);
-            continue;
-        }
-    }
-    
-    this.showGlobalLibraryMessage(`Autofilled ${processedCount} authors!`, 'success');
-}
-	
+
 	updateGlobalLibraryPlaylistSelects() {
 	    const select = document.getElementById('globalLibrarySongPlaylistSelect');
 	    const massImportSelect = document.getElementById('globalLibraryMassImportSelect');
