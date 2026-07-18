@@ -694,3 +694,5 @@
 -  changed display structure of song history v69.3.0
 -  edited styles for the top songs once more v69.4.0
 -  added topic toggle button to make searching for topic videos easier. v69.5.0
+-  revoked and regenerated all 20 api keys after investigation. v69.6.0
+-  edited the youtube api key rotation logic for better reliability. v69.7.0
