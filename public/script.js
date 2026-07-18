@@ -116,11 +116,9 @@ class AdvancedMusicPlayer {
 			isActive: false
 		};
 		//api
-		this.activeYoutubeKeyIndex = 0;
-		this.YOUTUBE_API_KEYS_COUNT = 29; 
+		this.YOUTUBE_API_KEYS_COUNT = 20; 
 		
 		
-		this.activeYoutubeKeyIndex = 0;
 		this.youtubeLibrarySearchResults = [];
 		this.YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3/search';
 		this.topicKeywordEnabled = true;
@@ -13563,55 +13561,51 @@ cleanupBillboardAndGlobalLibrary() {
     console.log("Billboard and Global Library cleanup complete");
 }
 getRandomYouTubeApiKey() {
-    return this.activeYoutubeKeyIndex;
+    return Math.floor(Math.random() * this.YOUTUBE_API_KEYS_COUNT);
 }
 
-rotateYouTubeApiKey() {
-    this.activeYoutubeKeyIndex = (this.activeYoutubeKeyIndex + 1) % this.YOUTUBE_API_KEYS_COUNT;
-    console.log(`Rotated to YouTube API key ${this.activeYoutubeKeyIndex + 1}`);
-}
+
 async searchYouTubeForLibraryMatches(searchTerm, pageToken = null) {
     const maxResults = 5;
     const effectiveSearchTerm = this.topicKeywordEnabled ? `${searchTerm} "topic"` : searchTerm;
-
-    for (let attempt = 0; attempt < this.YOUTUBE_API_KEYS_COUNT; attempt++) {
-        const keyIndex = this.getRandomYouTubeApiKey();
-        
-        try {
-            let url = `/api/youtube?query=${encodeURIComponent(effectiveSearchTerm)}&maxResults=${maxResults}&type=combined&keyIndex=${keyIndex}`;
-            if (pageToken) url += `&pageToken=${encodeURIComponent(pageToken)}`;
-
-            const response = await fetch(url);
-            const result = await response.json();
-            
-            if (result.status !== 200) {
-                if (result.status === 403) {
-                    console.warn(`API key ${this.activeYoutubeKeyIndex + 1} quota exceeded`);
-                    this.rotateYouTubeApiKey();
-                    continue;
-                }
-                throw new Error(`YouTube API error: ${result.status}`);
-            }
-            
-            const data = result.data;
-            
-            if (data.error && data.error.code === 403) {
-                this.rotateYouTubeApiKey();
-                continue;
-            }
-            
-            return {
-                items: data.items || [],
-                nextPageToken: data.nextPageToken || null
-            };
-            
-        } catch (error) {
-            console.error(`YouTube API attempt ${attempt + 1} failed:`, error);
-            this.rotateYouTubeApiKey();
-        }
-    }
-    
-    throw new Error('All YouTube API keys exhausted');
+	const MAX_RETRIES = 5;
+	
+	for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+	    const keyIndex = this.getRandomYouTubeApiKey();
+	    
+	    try {
+	        let url = `/api/youtube?query=${encodeURIComponent(effectiveSearchTerm)}&maxResults=${maxResults}&type=combined&keyIndex=${keyIndex}`;
+	        if (pageToken) url += `&pageToken=${encodeURIComponent(pageToken)}`;
+	        const response = await fetch(url);
+	        const result = await response.json();
+	        
+	        if (result.status !== 200) {
+	            if (result.status === 403) {
+	                console.warn(`API key index ${keyIndex} quota exceeded, retrying with a different key`);
+	                continue;
+	            }
+	            throw new Error(`YouTube API error: ${result.status}`);
+	        }
+	        
+	        const data = result.data;
+	        
+	        if (data.error && data.error.code === 403) {
+	            console.warn(`API key index ${keyIndex} quota exceeded, retrying with a different key`);
+	            continue;
+	        }
+	        
+	        return {
+	            items: data.items || [],
+	            nextPageToken: data.nextPageToken || null
+	        };
+	        
+	    } catch (error) {
+	        console.error(`YouTube API attempt ${attempt + 1} failed:`, error);
+	    }
+	}
+	
+	throw new Error('Unable to complete search after multiple attempts — please try again shortly');
+	    
 }
 renderYouTubeLibrarySearchResults(results, searchTerm, nextPageToken = null) {
     this.currentLibrarySearchTerm = searchTerm;
