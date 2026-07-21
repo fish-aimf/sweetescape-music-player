@@ -697,3 +697,5 @@
 -  revoked and regenerated all 20 api keys after investigation. v69.6.0
 -  edited the youtube api key rotation logic for better reliability. v69.7.0
 -  cracked down heavily on api security and abuse v69.8.0
+-  fixed some song statistics bugs v69.9.0
+-  added github workflow to autoupdate billboard v69.10.0
