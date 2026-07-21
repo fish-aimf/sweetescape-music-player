@@ -3323,6 +3323,7 @@ hideSidebar() {
 				if (this.isLooping) {
 				    if (this.ytPlayer) {
 				        this.ytPlayer.seekTo(0, true);
+						this.ytPlayer.playVideo();
 				    }
 				    this._statCountedForCurrentPlay = false;
 				} else if (this.isAutoplayEnabled) {
@@ -14160,7 +14161,7 @@ playLocalAudio(url) {
         this.localAudio.addEventListener('timeupdate', () => {
             if (!this.isLocalPlayback) return;
             const now = Date.now();
-            if (now - _lastUpdate < 500) return; // throttle — ~2 updates/sec
+            if (now - _lastUpdate < 500) return; 
             _lastUpdate = now;
  
             const current  = this.localAudio.currentTime;
