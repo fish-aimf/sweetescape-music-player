@@ -699,3 +699,4 @@
 -  cracked down heavily on api security and abuse v69.8.0
 -  fixed some song statistics bugs v69.9.0
 -  added github workflow to autoupdate billboard v69.10.0
+-  global library reworked v70.0.0
