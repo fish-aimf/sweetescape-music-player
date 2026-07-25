@@ -7728,3 +7728,312 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     text-decoration: line-through;
     opacity: 0.6;
 }
+
+
+.global-library-search-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.global-library-debounced-search-bar {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 16px;
+    font-size: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color 0.15s ease;
+}
+
+.global-library-debounced-search-bar:focus {
+    border-color: var(--accent-color);
+}
+
+.global-library-search-suggestions-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    max-height: 420px;
+    overflow-y: auto;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px var(--shadow-color);
+    z-index: 40;
+    display: none;
+    padding: 6px 0;
+}
+
+.global-library-search-suggestions-dropdown.visible {
+    display: block;
+}
+
+.global-library-suggestions-section-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    padding: 8px 14px 4px;
+}
+
+.global-library-suggestions-loading {
+    padding: 16px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.global-library-suggestion-artist-card,
+.global-library-suggestion-track-card,
+.global-library-suggestion-playlist-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: background 0.1s ease;
+}
+
+.global-library-suggestion-artist-card:hover,
+.global-library-suggestion-track-card:hover,
+.global-library-suggestion-playlist-card:hover {
+    background: var(--bg-primary);
+}
+
+.global-library-suggestion-artist-thumb {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.global-library-suggestion-track-thumb {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--bg-primary);
+}
+
+.global-library-suggestion-artist-name,
+.global-library-suggestion-track-title {
+    font-size: 14px;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.global-library-suggestion-track-artist {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+.global-library-suggestion-playlist-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    border-radius: 6px;
+    background: var(--bg-primary);
+    flex-shrink: 0;
+}
+
+/* ---------- Song detail card ---------- */
+
+.global-library-song-detail-card {
+    display: none;
+    position: relative;
+    margin-top: 16px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 16px var(--shadow-color);
+}
+
+.global-library-song-detail-card.visible {
+    display: block;
+}
+
+.global-library-song-detail-close-btn {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    line-height: 1;
+}
+
+.global-library-song-detail-close-btn:hover {
+    color: var(--text-primary);
+}
+
+.global-library-song-detail-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 24px 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.global-library-song-detail-thumb-placeholder {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    object-fit: cover;
+    opacity: 0.5;
+    background: var(--bg-primary);
+}
+
+.global-library-song-detail-thumb {
+    width: 100%;
+    max-width: 320px;
+    border-radius: 10px;
+    display: block;
+    margin: 0 auto;
+    object-fit: cover;
+    aspect-ratio: 16 / 9;
+    background: var(--bg-primary);
+}
+
+.global-library-song-detail-info {
+    text-align: center;
+    margin-top: 14px;
+}
+
+.global-library-song-detail-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.global-library-song-detail-artist {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+.global-library-song-detail-meta {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 8px;
+}
+
+.global-library-song-detail-add-btn {
+    display: block;
+    margin: 18px 0 0 auto;
+    padding: 10px 18px;
+    background: var(--accent-color);
+    color: var(--button-text-color);
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.global-library-song-detail-add-btn:hover {
+    background: var(--hover-color);
+}
+
+/* ---------- Artist songs grid ---------- */
+
+.global-library-artist-songs-grid {
+    display: none;
+    margin-top: 16px;
+}
+
+.global-library-artist-songs-grid.visible {
+    display: block;
+}
+
+.global-library-artist-grid-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.global-library-artist-grid-header h3 {
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.global-library-artist-grid-back-btn {
+    background: none;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 5px 10px;
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.global-library-artist-grid-back-btn:hover {
+    background: var(--bg-primary);
+}
+
+.global-library-artist-grid-songs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.global-library-artist-grid-song-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.global-library-artist-grid-song-row:hover {
+    background: var(--bg-secondary);
+}
+
+.global-library-artist-grid-song-thumb {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--bg-primary);
+}
+
+.global-library-artist-grid-song-title {
+    font-size: 14px;
+    color: var(--text-primary);
+}
+
+.global-library-artist-grid-load-more-btn {
+    display: block;
+    margin: 12px auto 0;
+    padding: 8px 16px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.global-library-artist-grid-load-more-btn:hover {
+    background: var(--hover-color);
+    color: var(--button-text-color);
+}
