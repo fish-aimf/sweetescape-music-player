@@ -289,7 +289,7 @@ class AdvancedMusicPlayer {
 		this.initializeFullscreenLyrics();
 		this.initializeAdvertisementSettings();
 		this.initializeVisualizer();
-		this.initializeGlobalLibrary();
+		this.initGlobalLibraryDebouncedSearch();
 		this.setupChangelogModal();
 		this.loadVersion();
 		this.setupYouTubeLibraryResultsDelegation();
@@ -469,8 +469,6 @@ class AdvancedMusicPlayer {
 			findSongsBtn: document.getElementById("findSongsBtn"),
 			closeFindSongs: document.getElementById("closeFindSongs"),
 			findSongsDiv: document.getElementById("findSongsDiv"),
-			findSongsSearch: document.getElementById("findSongsSearch"),
-			findSongsResults: document.getElementById("findSongsResults"),
 			librarySortToggle: document.getElementById("librarySortToggle"),
 			libraryReverseToggle: document.getElementById("libraryReverseToggle"),
 			aiImportGlobalBtn: document.getElementById("aiImportGlobalBtn"),
@@ -651,10 +649,7 @@ class AdvancedMusicPlayer {
 			autofillMouseleave: this.removeGhostPreview.bind(this),
 			findSongsOpen: this.openFindSongs.bind(this),
 			findSongsClose: this.closeFindSongs.bind(this),
-			findSongsSearch: () => {
-				clearTimeout(this.searchTimeout);
-				this.searchTimeout = setTimeout(() => this.filterResults(), 300);
-			},
+			
 			librarySearchInput: this.handleLibrarySearchInput.bind(this),
 			saveDiscoverMoreSettings: this.handleSaveDiscoverMoreSettings.bind(this),
 			refreshRandomRecommendations: () => this.refreshRandomRecommendations(),
@@ -706,7 +701,6 @@ class AdvancedMusicPlayer {
 			[this.elements.visualizerToggle, 'change', handlers.visualizerToggle],
 			[this.elements.findSongsBtn, 'click', handlers.findSongsOpen],
 			[this.elements.closeFindSongs, 'click', handlers.findSongsClose],
-			[this.elements.findSongsSearch, 'input', handlers.findSongsSearch],
 			[this.elements.searchSongsToAdd, 'input', handlers.searchSongsToAdd],
 			[this.elements.statsButton, 'click', this.openStatsModal.bind(this)],
 			[this.elements.lsPanel, 'click', this._handleStatsShowAllClick.bind(this)],
@@ -5393,10 +5387,7 @@ hideSidebar() {
 	openLibraryModal() {
 		this.elements.libraryModificationModal.style.display = "flex";
 	}
-	closeLibraryModal() {
-		this.elements.libraryModificationModal.style.display = "none";
-		this.removeGhostPreview();
-	}
+
 
 	adjustVolume(change) {
 		if (!this.elements.volumeSlider) return;
@@ -10731,984 +10722,547 @@ hideSidebar() {
 			this.supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 		}
 	}
-	initializeGlobalLibrary() {
-		this.initSupabaseForFindSongs();
-		this.globalLibrarySupabase = this.supabase;
-	}
-	setupGlobalLibraryEventListeners() {
-		document.getElementById('globalLibraryEditBtn').addEventListener('click', () => this.openGlobalLibraryModal());
-		document.getElementById('globalLibraryCloseBtn').addEventListener('click', () => this.closeGlobalLibraryModal());
-		document.getElementById('globalLibraryLoginBtn').addEventListener('click', () => this.globalLibraryLogin());
-		document.getElementById('globalLibraryLogoutBtn').addEventListener('click', () => this.globalLibraryLogout());
-		document.getElementById('globalLibraryCreateBtn').addEventListener('click', () => this.globalLibraryCreatePlaylist());
-		document.getElementById('globalLibraryAddSongBtn').addEventListener('click', () => this.globalLibraryAddSong());
-		document.getElementById('globalLibraryMassImportBtn').addEventListener('click', () => this.globalLibraryMassImport());
-		document.getElementById('globalLibrarySearchBar').addEventListener('input', (e) => this.globalLibrarySearch(e.target.value));
-		document.getElementById('globalLibraryPlaylistSearch').addEventListener('input', (e) => this.filterPlaylistSelect(e.target.value));
-	}
-	openGlobalLibraryModal() {
-		document.getElementById('globalLibraryModal').style.display = 'block';
-		if (this.globalLibraryCurrentUser) {
-			this.showGlobalLibraryMainSection();
-		} else {
-			this.showGlobalLibraryLoginSection();
-		}
-		if (this.globalLibraryCurrentUser && this.pendingGlobalImport) {
-			setTimeout(() => this.autofillGlobalLibraryImport(), 100);
-		}
-	}
-	closeGlobalLibraryModal() {
-		document.getElementById('globalLibraryModal').style.display = 'none';
-	}
-	showGlobalLibraryLoginSection() {
-		document.getElementById('globalLibraryLoginSection').style.display = 'block';
-		document.getElementById('globalLibraryMainSection').style.display = 'none';
-	}
-	showGlobalLibraryMainSection() {
-		document.getElementById('globalLibraryLoginSection').style.display = 'none';
-		document.getElementById('globalLibraryMainSection').style.display = 'block';
-		document.getElementById('globalLibraryUserInfo').textContent = `Welcome, ${this.globalLibraryCurrentUser.email}`;
-		this.loadGlobalLibraryData();
+
 	
-		this.autofillGlobalLibraryImport();
-	}
+	initGlobalLibraryDebouncedSearch() {
+	    this.initSupabaseForFindSongs();
+	    this.globalLibrarySearchDebounceTimer = null;
+	    this.globalLibrarySearchAbortController = null;
+	    this.globalLibraryCurrentArtistContext = null;  
+	    this.globalLibraryCurrentDetailContext = null;  
 	
-	autofillGlobalLibraryImport() {
-		if (!this.pendingGlobalImport) return;
-		console.log('Pending import data:', this.pendingGlobalImport);
-		document.getElementById('globalLibraryNewPlaylistName').value = this.pendingGlobalImport.playlistName;
-		const textArea = document.getElementById('globalLibraryMassImportText');
-		textArea.value = this.pendingGlobalImport.importText;
-		console.log('TextArea value set to:', textArea.value);
-		this.pendingGlobalImport = null;
-	}
-	filterPlaylistSelect(searchQuery) {
-	    const select = document.getElementById('globalLibrarySongPlaylistSelect');
-	    const massImportSelect = document.getElementById('globalLibraryMassImportSelect');
-	    const filtered = this.globalLibraryArtists.filter(p =>
-	        p.name.toLowerCase().includes(searchQuery.toLowerCase())
-	    );
-	    const opts = '<option value="">Select Playlist</option>' +
-	        filtered.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-	    select.innerHTML = opts;
-	    massImportSelect.innerHTML = '<option value="">Select Playlist for Import</option>' +
-	        filtered.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-	}
-	async globalLibraryLogin() {
-		const email = document.getElementById('globalLibraryEmail').value;
-		const password = document.getElementById('globalLibraryPassword').value;
-		if (!email || !password) {
-			this.showGlobalLibraryMessage('Please enter email and password', 'error');
-			return;
-		}
-		const {
-			data,
-			error
-		} = await this.globalLibrarySupabase.auth.signInWithPassword({
-			email,
-			password
-		});
-		if (error) {
-			this.showGlobalLibraryMessage(error.message, 'error');
-		} else {
-			this.globalLibraryCurrentUser = data.user;
-			this.showGlobalLibraryMainSection();
-			this.showGlobalLibraryMessage('Login successful!', 'success');
-		}
-	}
-	async globalLibraryLogout() {
-		await this.globalLibrarySupabase.auth.signOut();
-		this.globalLibraryCurrentUser = null;
-		this.showGlobalLibraryLoginSection();
-	}
-	async loadGlobalLibraryData() {
-	    try {
-	        const { data: playlists, error } = await this.globalLibrarySupabase
-	            .from('playlists')
-	            .select(`id, name, playlist_songs(position, songs(id, name, artist, yt_id))`)
-	            .order('name');
-	        if (error) throw error;
+	    const bar = document.getElementById('globalLibraryDebouncedSearchBar');
+	    if (!bar) return;
 	
-	        this.globalLibraryArtists = (playlists || []).map(p => ({
-	            ...p,
-	            songs: (p.playlist_songs || [])
-	                .sort((a, b) => a.position - b.position)
-	                .map(ps => ({ ...ps.songs }))
-	        }));
-	
-	        this.displayGlobalLibraryArtists();
-	        this.updateGlobalLibraryPlaylistSelects();
-	    } catch (error) {
-	        this.showGlobalLibraryMessage('Error loading data: ' + error.message, 'error');
-	    }
-	}
-	displayGlobalLibraryArtists() {
-	    const container = document.getElementById('globalLibraryArtistsContainer');
-	    const searchFilter = (this.globalLibrarySearchFilter || '').toLowerCase();
-	
-	    const filtered = this.globalLibraryArtists.filter(p => {
-	        const name = (p.name || '').toLowerCase();
-	        if (name.includes(searchFilter)) return true;
-	        return p.songs.some(s =>
-	            (s.name || '').toLowerCase().includes(searchFilter) ||
-	            (s.artist || '').toLowerCase().includes(searchFilter)
-	        );
+	    bar.addEventListener('input', (e) => this.handleGlobalLibraryDebouncedSearchInput(e));
+	    bar.addEventListener('focus', () => {
+	        if (bar.value.trim().length >= 2) {
+	            document.getElementById('globalLibrarySearchSuggestionsDropdown')?.classList.add('visible');
+	        }
 	    });
 	
-	    container.innerHTML = filtered.map(playlist => {
-	        const songs = playlist.songs || [];
-	        return `
-	            <div class="global-library-artist-card" data-artist-id="${playlist.id}">
-	                <div class="global-library-artist-header" onclick="musicPlayer.toggleGlobalLibraryPlaylist(${playlist.id})">
-	                    <div>
-	                        <span class="global-library-collapse-icon" id="collapse-icon-${playlist.id}">▶</span>
-	                        <span class="global-library-artist-name">${playlist.name}</span>
-	                    </div>
-	                    <div class="global-library-header-actions">
-	                        <button onclick="event.stopPropagation(); musicPlayer.editGlobalLibraryPlaylist(${playlist.id}, '${(playlist.name || '').replace(/'/g, "\\'")}');" class="global-library-btn-small">Edit</button>
-	                        <button onclick="event.stopPropagation(); musicPlayer.deleteGlobalLibraryPlaylist(${playlist.id});" class="global-library-btn-small global-library-btn-danger">Delete</button>
-	                    </div>
-	                </div>
-	                <div class="global-library-songs-container" id="songs-container-${playlist.id}">
-	                    <div class="global-library-edit-mode" id="edit-mode-${playlist.id}">
-	                        ${songs.map((song, index) => `
-	                            <div class="global-library-song-edit-item" data-song-index="${index}" data-song-id="${song.id || ''}">
-	                                <input type="text" class="song-name-input" placeholder="Song Name *" value="${song.name || ''}"
-	                                    data-playlist-id="${playlist.id}" data-song-index="${index}"
-	                                    onkeydown="musicPlayer.handleSongInputKeydown(event, ${playlist.id}, ${index}, ${songs.length})" />
-	                                <input type="text" class="song-author-input" placeholder="Artist *" value="${song.artist || ''}" />
-	                                <input type="text" class="song-ytid-input" placeholder="YouTube ID (11 chars) *" value="${song.yt_id || ''}" />
-	                                <button class="global-library-song-edit-delete"
-	                                    onclick="musicPlayer.removeSongEditCard(${playlist.id}, ${index})" title="Delete song">🗑️</button>
-	                            </div>
-	                        `).join('')}
-	                    </div>
-	                    <div class="global-library-playlist-actions">
-	                        <button class="global-library-autofill-btn" onclick="musicPlayer.autofillYouTubeIds(${playlist.id})">
-	                            Autofill from URLs
-	                        </button>
-	                        <button class="global-library-save-btn" onclick="musicPlayer.savePlaylistChanges(${playlist.id})">
-	                            Save Changes
-	                        </button>
-	                    </div>
-	                    <div id="validation-error-${playlist.id}" class="global-library-validation-error"></div>
-	                    <div style="text-align:right;margin-top:10px;color:var(--text-secondary);font-size:12px;">
-	                        ${songs.length} songs
-	                    </div>
-	                </div>
-	            </div>`;
-	    }).join('');
-	}
-async autofillYouTubeIds(playlistId) {
-    const editModeContainer = document.getElementById(`edit-mode-${playlistId}`);
-    const songCards = editModeContainer.querySelectorAll('.global-library-song-edit-item');
-    let filled = 0;
-
-    for (const card of songCards) {
-        const ytInput = card.querySelector('.song-ytid-input');
-        const nameInput = card.querySelector('.song-name-input');
-        const artistInput = card.querySelector('.song-author-input');
-
-        const raw = ytInput.value.trim();
-        if (raw.length === 11 && /^[a-zA-Z0-9_-]{11}$/.test(raw)) continue;
-
-        const name = nameInput.value.trim();
-        const artist = artistInput.value.trim();
-        if (!name) continue;
-
-        try {
-            this.showGlobalLibraryMessage(`Searching for "${name}"...`, 'success');
-            const searchQuery = artist ? `${name} ${artist}` : name;
-            const { items } = await this.searchYouTubeForLibraryMatches(searchQuery);
-
-            if (items && items.length > 0) {
-                const best = this.findBestYouTubeMatch(items, name, artist);
-                if (best) {
-                    ytInput.value = best.id.videoId;
-                    filled++;
-                }
-            }
-            await new Promise(r => setTimeout(r, 300));
-        } catch (error) {
-            console.error(`Error searching for "${name}":`, error);
-        }
-    }
-
-    this.showGlobalLibraryMessage(`Autofilled ${filled} YouTube IDs.`, 'success');
-}
-	findBestYouTubeMatch(items, songTitle, artist) {
-    const scored = items.map(item => {
-        const title = (item.snippet.title || '').toLowerCase();
-        const channel = (item.snippet.channelTitle || '').toLowerCase();
-        const songLower = songTitle.toLowerCase();
-        const artistLower = (artist || '').toLowerCase();
-        let score = 0;
-
-        if (title.includes(songLower)) score += 25;
-        if (title.includes(artistLower)) score += 20;
-        if (channel.includes(artistLower)) score += 30;
-        if (title.includes('official')) score += 15;
-        if (title.includes('music video') || title.includes('mv')) score += 10;
-        if (title.includes('cover') || title.includes('remix') || title.includes('live')) score -= 20;
-
-        const words = songLower.split(/\s+/).filter(w => w.length > 2);
-        const matched = words.filter(w => title.includes(w));
-        score += (matched.length / Math.max(words.length, 1)) * 15;
-
-        return { ...item, score };
-    });
-
-    scored.sort((a, b) => b.score - a.score);
-    return scored[0]?.score > 10 ? scored[0] : null;
-}
-
-toggleGlobalLibraryPlaylist(artistId) {
-    const songsContainer = document.getElementById(`songs-container-${artistId}`);
-    const icon = document.getElementById(`collapse-icon-${artistId}`);
-    
-    if (songsContainer.classList.contains('expanded')) {
-        songsContainer.classList.remove('expanded');
-        icon.classList.remove('expanded');
-    } else {
-        songsContainer.classList.add('expanded');
-        icon.classList.add('expanded');
-    }
-}
-
-async editGlobalLibraryPlaylist(artistId, currentName) {
-    const newName = prompt('Enter new playlist name:', currentName);
-    if (!newName || newName === currentName) return;
-    
-    const { error } = await this.globalLibrarySupabase
-        .from('artists')
-        .update({ name: newName })
-        .eq('id', artistId);
-    
-    if (error) {
-        this.showGlobalLibraryMessage('Error updating playlist: ' + error.message, 'error');
-    } else {
-        this.showGlobalLibraryMessage('Playlist updated successfully!', 'success');
-        this.loadGlobalLibraryData();
-    }
-}
-
-handleSongInputKeydown(event, artistId, songIndex, totalSongs) {
-    if (event.key === 'Enter') {
-        event.preventDefault();
-        
-        // Check if this is the last song
-        if (songIndex === totalSongs - 1) {
-            this.addNewSongCard(artistId);
-        }
-    }
-}
-
-addNewSongCard(playlistId) {
-    const editModeContainer = document.getElementById(`edit-mode-${playlistId}`);
-    const currentSongs = editModeContainer.querySelectorAll('.global-library-song-edit-item');
-    const newIndex = currentSongs.length;
-
-    const newCard = document.createElement('div');
-    newCard.className = 'global-library-song-edit-item';
-    newCard.setAttribute('data-song-index', newIndex);
-    newCard.setAttribute('data-song-id', '');
-    newCard.innerHTML = `
-        <input type="text" class="song-name-input" placeholder="Song Name *" value=""
-            data-playlist-id="${playlistId}" data-song-index="${newIndex}"
-            onkeydown="musicPlayer.handleSongInputKeydown(event, ${playlistId}, ${newIndex}, ${newIndex + 1})" />
-        <input type="text" class="song-author-input" placeholder="Artist *" value="" />
-        <input type="text" class="song-ytid-input" placeholder="YouTube URL or ID *" value="" />
-        <button class="global-library-song-edit-delete"
-            onclick="musicPlayer.removeSongEditCard(${playlistId}, ${newIndex})" title="Delete song">🗑️</button>`;
-
-    editModeContainer.appendChild(newCard);
-    newCard.querySelector('.song-name-input').focus();
-
-    const countDisplay = document.querySelector(`#songs-container-${playlistId} [style*="text-align: right"]`);
-    if (countDisplay) countDisplay.textContent = `${newIndex + 1} songs`;
-}
-
-removeSongEditCard(artistId, songIndex) {
-    const editModeContainer = document.getElementById(`edit-mode-${artistId}`);
-    const songCards = editModeContainer.querySelectorAll('.global-library-song-edit-item');
-    
-    if (songCards.length <= 1) {
-        this.showGlobalLibraryMessage('Cannot delete the last song. Delete the playlist instead.', 'error');
-        return;
-    }
-    
-    songCards[songIndex].remove();
-    
-    // Re-index remaining cards
-    const remainingCards = editModeContainer.querySelectorAll('.global-library-song-edit-item');
-    remainingCards.forEach((card, index) => {
-        card.setAttribute('data-song-index', index);
-        const nameInput = card.querySelector('.song-name-input');
-        nameInput.setAttribute('data-song-index', index);
-        nameInput.setAttribute('onkeydown', `musicPlayer.handleSongInputKeydown(event, ${artistId}, ${index}, ${remainingCards.length})`);
-        
-        const deleteBtn = card.querySelector('.global-library-song-edit-delete');
-        deleteBtn.setAttribute('onclick', `musicPlayer.removeSongEditCard(${artistId}, ${index})`);
-    });
-    
-    // Update count
-    const countDisplay = document.querySelector(`#songs-container-${artistId} [style*="text-align: right"]`);
-    if (countDisplay) {
-        countDisplay.textContent = `${remainingCards.length} songs`;
-    }
-}
-
-async savePlaylistChanges(playlistId) {
-    const editModeContainer = document.getElementById(`edit-mode-${playlistId}`);
-    const songCards = editModeContainer.querySelectorAll('.global-library-song-edit-item');
-    const errorDiv = document.getElementById(`validation-error-${playlistId}`);
-    errorDiv.textContent = '';
-    const songsData = [];
-    let hasError = false;
-
-    songCards.forEach((card, index) => {
-        const name = card.querySelector('.song-name-input').value.trim();
-        const artist = card.querySelector('.song-author-input').value.trim();
-        const rawYt = card.querySelector('.song-ytid-input').value.trim();
-        const yt_id = this.extractYouTubeId(rawYt) || rawYt;
-
-        if (!name || !artist || !yt_id) {
-            hasError = true;
-            errorDiv.textContent = `Song ${index + 1}: All fields (Name, Artist, YouTube ID) are required!`;
-            return;
-        }
-        if (yt_id.length !== 11) {
-            hasError = true;
-            errorDiv.textContent = `Song ${index + 1}: Invalid YouTube ID — must be 11 characters.`;
-            return;
-        }
-
-        const rawId = card.getAttribute('data-song-id');
-        songsData.push({
-            id: rawId ? parseInt(rawId) : null,
-            name, artist, yt_id, position: index
-        });
-    });
-
-    if (hasError) return;
-
-    try {
-        // 1. Update existing songs
-        const existingSongs = songsData.filter(s => s.id);
-        for (const s of existingSongs) {
-            const { error } = await this.globalLibrarySupabase
-                .from('songs')
-                .update({ name: s.name, artist: s.artist, yt_id: s.yt_id })
-                .eq('id', s.id);
-            if (error) throw error;
-        }
-
-        // 2. Insert new songs
-        const newSongs = songsData.filter(s => !s.id);
-        let insertedSongs = [];
-        if (newSongs.length > 0) {
-            const { data, error } = await this.globalLibrarySupabase
-                .from('songs')
-                .insert(newSongs.map(s => ({ name: s.name, artist: s.artist, yt_id: s.yt_id })))
-                .select('id, name');
-            if (error) throw error;
-            insertedSongs = data;
-        }
-
-        // 3. Map back to original order, matching new songs by position
-        let newSongPointer = 0;
-        const allSongIds = songsData.map(s => {
-            if (s.id) return s.id;
-            return insertedSongs[newSongPointer++]?.id;
-        });
-
-        // 4. Rebuild playlist_songs
-        const { error: deleteError } = await this.globalLibrarySupabase
-            .from('playlist_songs')
-            .delete()
-            .eq('playlist_id', playlistId);
-        if (deleteError) throw deleteError;
-
-        const playlistSongsRows = allSongIds.map((song_id, index) => ({
-            playlist_id: playlistId,
-            song_id,
-            position: index
-        }));
-
-        const { error: insertError } = await this.globalLibrarySupabase
-            .from('playlist_songs')
-            .insert(playlistSongsRows);
-        if (insertError) throw insertError;
-
-        this.showGlobalLibraryMessage('Playlist saved successfully!', 'success');
-        this.allPlaylists = [];
-        this.loadGlobalLibraryData();
-    } catch (error) {
-        this.showGlobalLibraryMessage('Error saving playlist: ' + error.message, 'error');
-    }
-}
-
-
-
-
-	updateGlobalLibraryPlaylistSelects() {
-	    const select = document.getElementById('globalLibrarySongPlaylistSelect');
-	    const massImportSelect = document.getElementById('globalLibraryMassImportSelect');
-	    const options = '<option value="">Select Playlist</option>' +
-	        this.globalLibraryArtists.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-	    select.innerHTML = options;
-	    massImportSelect.innerHTML = '<option value="">Select Playlist for Import</option>' +
-	        this.globalLibraryArtists.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-	}
-	async globalLibraryMassImport() {
-	    const playlistId = document.getElementById('globalLibraryMassImportSelect').value;
-	    const importText = document.getElementById('globalLibraryMassImportText').value.trim();
-	
-	    if (!playlistId) {
-	        this.showGlobalLibraryMessage('Please select a playlist', 'error');
-	        return;
-	    }
-	    if (!importText) {
-	        this.showGlobalLibraryMessage('Please enter songs to import', 'error');
-	        return;
-	    }
-	
-	    const lines = importText.split('\n').filter(l => l.trim());
-	    const songsToInsert = [];
-	    const errors = [];
-	
-	    lines.forEach((line, index) => {
-	        const urlPattern = /(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)[^\s,]+)/;
-	        const urlMatch = line.match(urlPattern);
-	
-	        let yt_id = null;
-	
-	        if (urlMatch) {
-	            yt_id = this.extractYouTubeId(urlMatch[0]);
-	        } else {
-	            // Maybe they pasted a bare 11-char ID
-	            const bare = line.split(',').map(s => s.trim()).find(s => s.length === 11);
-	            if (bare) yt_id = bare;
+	    // Click-outside-to-close for the dropdown
+	    document.addEventListener('click', (e) => {
+	        const dropdown = document.getElementById('globalLibrarySearchSuggestionsDropdown');
+	        if (!dropdown) return;
+	        if (!dropdown.contains(e.target) && e.target !== bar) {
+	            this.closeGlobalLibrarySearchSuggestionsDropdown();
 	        }
-	
-	        if (!yt_id) {
-	            errors.push(`Line ${index + 1}: No valid YouTube URL or ID found`);
-	            return;
-	        }
-	
-	        const urlIndex = urlMatch ? line.indexOf(urlMatch[0]) : -1;
-	        let name, artist;
-	
-	        if (urlMatch) {
-	            const before = line.substring(0, urlIndex).trim().replace(/,$/, '').trim();
-	            const after = line.substring(urlIndex + urlMatch[0].length).trim().replace(/^,/, '').trim();
-	            name = before;
-	            artist = after || 'Unknown';
-	        } else {
-	            const parts = line.split(',').map(s => s.trim());
-	            name = parts[0] || '';
-	            artist = parts[2] || parts[1] || 'Unknown';
-	        }
-	
-	        if (!name) {
-	            errors.push(`Line ${index + 1}: Missing song name`);
-	            return;
-	        }
-	
-	        songsToInsert.push({ name, artist, yt_id });
 	    });
+	}
 	
-	    if (errors.length > 0) {
-	        this.showGlobalLibraryMessage('Errors: ' + errors.join(', '), 'error');
+	/* ---------- SEARCH INPUT / DEBOUNCE ---------- */
+	
+	handleGlobalLibraryDebouncedSearchInput(event) {
+	    const query = event.target.value.trim();
+	
+	    clearTimeout(this.globalLibrarySearchDebounceTimer);
+	
+	    if (query.length < 2) {
+	        this.closeGlobalLibrarySearchSuggestionsDropdown();
 	        return;
 	    }
+	
+	    // Show a lightweight loading state immediately so typing feels responsive,
+	    // but the actual network call still waits out the debounce window.
+	    this.renderGlobalLibrarySearchSuggestionsDropdownLoading();
+	
+	    this.globalLibrarySearchDebounceTimer = setTimeout(() => {
+	        this.executeGlobalLibraryCatalogSearch(query);
+	    }, 350);
+	}
+	
+	/* ---------- CATALOG SEARCH (Deezer via proxy + premade playlists) ---------- */
+	
+	async executeGlobalLibraryCatalogSearch(query) {
+	    // Cancel any in-flight request from a previous keystroke so slow
+	    // responses can't overwrite a newer, more relevant result set.
+	    if (this.globalLibrarySearchAbortController) {
+	        this.globalLibrarySearchAbortController.abort();
+	    }
+	    this.globalLibrarySearchAbortController = new AbortController();
+	    const signal = this.globalLibrarySearchAbortController.signal;
 	
 	    try {
-	        // Upsert songs
-	        const { data: insertedSongs, error: songError } = await this.globalLibrarySupabase
-	            .from('songs')
-	            .upsert(songsToInsert, { onConflict: 'yt_id', ignoreDuplicates: false })
-	            .select('id');
-	        if (songError) throw songError;
+	        const [deezerResult, playlistResults] = await Promise.all([
+	            fetch(`/api/deezer?type=search&query=${encodeURIComponent(query)}&limit=8`, { signal })
+	                .then(r => r.json())
+	                .catch(() => null),
+	            this.searchPremadePlaylistsSupabase(query).catch(() => [])
+	        ]);
 	
-	        // Get current max position
-	        const { count } = await this.globalLibrarySupabase
-	            .from('playlist_songs')
-	            .select('*', { count: 'exact', head: true })
-	            .eq('playlist_id', playlistId);
+	        if (signal.aborted) return;
 	
-	        const playlistSongsRows = insertedSongs.map((song, i) => ({
-	            playlist_id: parseInt(playlistId),
-	            song_id: song.id,
-	            position: (count || 0) + i
-	        }));
+	        const tracks = (deezerResult && deezerResult.data && deezerResult.data.data) || [];
 	
-	        const { error: linkError } = await this.globalLibrarySupabase
-	            .from('playlist_songs')
-	            .insert(playlistSongsRows);
-	        if (linkError) throw linkError;
+	        // De-duplicate artists that appear across multiple track results
+	        const seenArtistIds = new Set();
+	        const artists = [];
+	        tracks.forEach(t => {
+	            if (t.artist && !seenArtistIds.has(t.artist.id)) {
+	                seenArtistIds.add(t.artist.id);
+	                artists.push(t.artist);
+	            }
+	        });
 	
-	        this.showGlobalLibraryMessage(`Imported ${insertedSongs.length} songs!`, 'success');
-	        document.getElementById('globalLibraryMassImportText').value = '';
-	        this.allPlaylists = [];
-	        this.loadGlobalLibraryData();
-	    } catch (error) {
-	        this.showGlobalLibraryMessage('Error importing: ' + error.message, 'error');
-	    }
-	}
-
-	async globalLibraryCreatePlaylist() {
-	    const name = document.getElementById('globalLibraryNewPlaylistName').value.trim();
-	    if (!name) {
-	        this.showGlobalLibraryMessage('Please enter a playlist name', 'error');
-	        return;
-	    }
-	    const { error } = await this.globalLibrarySupabase
-	        .from('playlists')
-	        .insert([{ name }]);
-	    if (error) {
-	        this.showGlobalLibraryMessage('Error creating playlist: ' + error.message, 'error');
-	    } else {
-	        this.showGlobalLibraryMessage('Playlist created!', 'success');
-	        document.getElementById('globalLibraryNewPlaylistName').value = '';
-	        this.loadGlobalLibraryData();
-	    }
-	}
-	async globalLibraryAddSong() {
-	    const playlistId = document.getElementById('globalLibrarySongPlaylistSelect').value;
-	    const name = document.getElementById('globalLibraryNewSongName').value.trim();
-	    const artist = document.getElementById('globalLibraryNewSongAuthor').value.trim();
-	    const rawYt = document.getElementById('globalLibraryNewSongUrl').value.trim();
-	    const yt_id = this.extractYouTubeId(rawYt) || rawYt;
-	
-	    if (!playlistId || !name || !artist || !yt_id) {
-	        this.showGlobalLibraryMessage('Please fill in all fields', 'error');
-	        return;
-	    }
-	    if (yt_id.length !== 11) {
-	        this.showGlobalLibraryMessage('Invalid YouTube URL or ID', 'error');
-	        return;
-	    }
-	
-	    try {
-	        // Upsert song (avoid duplicates by yt_id)
-	        const { data: songData, error: songError } = await this.globalLibrarySupabase
-	            .from('songs')
-	            .upsert([{ name, artist, yt_id }], { onConflict: 'yt_id', ignoreDuplicates: false })
-	            .select('id')
-	            .single();
-	        if (songError) throw songError;
-	
-	        // Get next position
-	        const { count } = await this.globalLibrarySupabase
-	            .from('playlist_songs')
-	            .select('*', { count: 'exact', head: true })
-	            .eq('playlist_id', playlistId);
-	
-	        const { error: linkError } = await this.globalLibrarySupabase
-	            .from('playlist_songs')
-	            .insert([{ playlist_id: parseInt(playlistId), song_id: songData.id, position: count || 0 }]);
-	        if (linkError) throw linkError;
-	
-	        this.showGlobalLibraryMessage('Song added!', 'success');
-	        document.getElementById('globalLibraryNewSongName').value = '';
-	        document.getElementById('globalLibraryNewSongAuthor').value = '';
-	        document.getElementById('globalLibraryNewSongUrl').value = '';
-	        this.loadGlobalLibraryData();
-	    } catch (error) {
-	        this.showGlobalLibraryMessage('Error adding song: ' + error.message, 'error');
-	    }
-	}
-	async deleteGlobalLibraryPlaylist(playlistId) {
-	    if (!confirm('Delete this playlist and remove all its songs from it?')) return;
-	    // playlist_songs rows cascade-delete automatically
-	    const { error } = await this.globalLibrarySupabase
-	        .from('playlists')
-	        .delete()
-	        .eq('id', playlistId);
-	    if (error) {
-	        this.showGlobalLibraryMessage('Error deleting playlist: ' + error.message, 'error');
-	    } else {
-	        this.showGlobalLibraryMessage('Playlist deleted!', 'success');
-	        this.allPlaylists = [];
-	        this.loadGlobalLibraryData();
-	    }
-	}
-	async deleteGlobalLibrarySong(songId) {
-	    if (!confirm('Delete this song entirely from the global library?')) return;
-	    const { error } = await this.globalLibrarySupabase
-	        .from('songs')
-	        .delete()
-	        .eq('id', songId);
-	    if (error) {
-	        this.showGlobalLibraryMessage('Error deleting song: ' + error.message, 'error');
-	    } else {
-	        this.showGlobalLibraryMessage('Song deleted!', 'success');
-	        this.loadGlobalLibraryData();
-	    }
-	}
-	globalLibrarySearch(query) {
-		this.globalLibrarySearchFilter = query || '';
-		this.displayGlobalLibraryArtists();
-	}
-	showGlobalLibraryMessage(message, type) {
-		const messagesDiv = document.getElementById('globalLibraryMessages');
-		messagesDiv.innerHTML = `<div class="global-library-${type}">${message}</div>`;
-		setTimeout(() => messagesDiv.innerHTML = '', 3000);
-	}
-	async openFindSongs() {
-	    if (!this.supabase) this.initSupabaseForFindSongs();
-	    this.elements.findSongsDiv.style.display = 'flex';
-	    this.elements.findSongsSearch.focus();
-	    await this.loadAllPlaylists();
-	    this.displayBrowseView();
-	    await this.loadRecommendations();
-	}
-	closeFindSongs() {
-	    this.elements.findSongsDiv.style.display = 'none';
-	    this.elements.findSongsResults.innerHTML = '';
-	    this.elements.findSongsSearch.value = '';
-	    this.currentViewMode = 'playlists';
-	}
-	async loadAllPlaylists() {
-	    if (this.allPlaylists && this.allPlaylists.length > 0) return;
-	    this.elements.findSongsResults.innerHTML = '<div class="loading-spinner">Loading playlists...</div>';
-	    try {
-	        const { data: playlists, error } = await this.supabase
-	            .from('playlists')
-	            .select(`
-	                id,
-	                name,
-	                playlist_songs (
-	                    position,
-	                    songs (
-	                        id,
-	                        name,
-	                        artist,
-	                        yt_id
-	                    )
-	                )
-	            `)
-	            .order('id', { ascending: true })
-	            .limit(50);
-	        if (error) throw error;
-	
-	        // Normalize: sort by position, flatten songs
-	        this.allPlaylists = (playlists || []).map(p => ({
-	            ...p,
-	            songs: (p.playlist_songs || [])
-	                .sort((a, b) => a.position - b.position)
-	                .map(ps => ({
-	                    ...ps.songs,
-	                    youtube_url: `https://www.youtube.com/watch?v=${ps.songs.yt_id}`
-	                }))
-	        }));
-	
-	        this.allSongs = [];
-	        this.allPlaylists.forEach(playlist => {
-	            playlist.songs.slice(0, 20).forEach(song => {
-	                this.allSongs.push({
-	                    ...song,
-	                    playlist_name: playlist.name,
-	                    playlist_id: playlist.id
-	                });
-	            });
+	        this.renderGlobalLibrarySearchSuggestionsDropdown({
+	            tracks: tracks.slice(0, 6),
+	            artists: artists.slice(0, 4),
+	            playlists: playlistResults
 	        });
 	    } catch (error) {
-	        console.error('Error loading playlists:', error);
-	        this.elements.findSongsResults.innerHTML = '<div class="loading-spinner">Error loading playlists</div>';
+	        if (error.name !== 'AbortError') {
+	            console.error('Global library search failed:', error);
+	            this.renderGlobalLibrarySearchSuggestionsDropdownError();
+	        }
 	    }
 	}
+	
+	async searchPremadePlaylistsSupabase(query) {
+	    if (!this.supabase) this.initSupabaseForFindSongs();
+	    const { data, error } = await this.supabase
+	        .from('premade_playlists')
+	        .select('id, name')
+	        .ilike('name', `%${query}%`)
+	        .limit(3);
+	    if (error) throw error;
+	    return data || [];
+	}
+	
+	/* ---------- DROPDOWN RENDERING ---------- */
+	
+	renderGlobalLibrarySearchSuggestionsDropdownLoading() {
+	    const dropdown = document.getElementById('globalLibrarySearchSuggestionsDropdown');
+	    if (!dropdown) return;
+	    dropdown.classList.add('visible');
+	    dropdown.innerHTML = '<div class="global-library-suggestions-loading">Searching…</div>';
+	}
+	
+	renderGlobalLibrarySearchSuggestionsDropdownError() {
+	    const dropdown = document.getElementById('globalLibrarySearchSuggestionsDropdown');
+	    if (!dropdown) return;
+	    dropdown.innerHTML = '<div class="global-library-suggestions-loading">Search unavailable — try again</div>';
+	}
+	
+	renderGlobalLibrarySearchSuggestionsDropdown({ tracks, artists, playlists }) {
+	    const dropdown = document.getElementById('globalLibrarySearchSuggestionsDropdown');
+	    if (!dropdown) return;
+	
+	    if (tracks.length === 0 && artists.length === 0 && playlists.length === 0) {
+	        dropdown.innerHTML = '<div class="global-library-suggestions-loading">No results found</div>';
+	        dropdown.classList.add('visible');
+	        return;
+	    }
+	
+	    let html = '';
+	
+	    if (artists.length > 0) {
+	        html += `<div class="global-library-suggestions-section-label">Artists</div>`;
+	        html += artists.map(a => `
+	            <div class="global-library-suggestion-artist-card" data-artist-id="${a.id}" data-artist-name="${a.name.replace(/"/g, '&quot;')}">
+	                <img src="${a.picture_medium || a.picture}" alt="" class="global-library-suggestion-artist-thumb" loading="lazy">
+	                <div class="global-library-suggestion-artist-name">${a.name}</div>
+	            </div>
+	        `).join('');
+	    }
+	
+	    if (tracks.length > 0) {
+	        html += `<div class="global-library-suggestions-section-label">Songs</div>`;
+	        html += tracks.map(t => `
+	            <div class="global-library-suggestion-track-card"
+	                 data-song-name="${t.title.replace(/"/g, '&quot;')}"
+	                 data-artist-name="${t.artist.name.replace(/"/g, '&quot;')}"
+	                 data-album-cover="${t.album?.cover_medium || ''}"
+	                 data-deezer-track-id="${t.id}">
+	                <img src="${t.album?.cover_medium || ''}" alt="" class="global-library-suggestion-track-thumb" loading="lazy">
+	                <div class="global-library-suggestion-track-meta">
+	                    <div class="global-library-suggestion-track-title">${t.title}</div>
+	                    <div class="global-library-suggestion-track-artist">${t.artist.name}</div>
+	                </div>
+	            </div>
+	        `).join('');
+	    }
+	
+	    if (playlists.length > 0) {
+	        html += `<div class="global-library-suggestions-section-label">Playlists</div>`;
+	        html += playlists.map(p => `
+	            <div class="global-library-suggestion-playlist-card" data-playlist-id="${p.id}" data-playlist-name="${p.name.replace(/"/g, '&quot;')}">
+	                <div class="global-library-suggestion-playlist-icon">🎶</div>
+	                <div class="global-library-suggestion-track-title">${p.name}</div>
+	            </div>
+	        `).join('');
+	    }
+	
+	    dropdown.innerHTML = html;
+	    dropdown.classList.add('visible');
+	
+	    // Event delegation, attached fresh each render (dropdown content is fully replaced)
+	    dropdown.querySelectorAll('.global-library-suggestion-artist-card').forEach(el => {
+	        el.addEventListener('click', () => this.handleGlobalLibraryArtistCardClick({
+	            id: el.dataset.artistId,
+	            name: el.dataset.artistName
+	        }));
+	    });
+	    dropdown.querySelectorAll('.global-library-suggestion-track-card').forEach(el => {
+	        el.addEventListener('click', () => this.handleGlobalLibrarySongCardClick({
+	            name: el.dataset.songName,
+	            artist: el.dataset.artistName,
+	            albumCover: el.dataset.albumCover,
+	            deezerTrackId: el.dataset.deezerTrackId,
+	            sourceContext: 'root'
+	        }));
+	    });
+	    dropdown.querySelectorAll('.global-library-suggestion-playlist-card').forEach(el => {
+	        el.addEventListener('click', () => this.addPremadePlaylistToLocalLibrary(el.dataset.playlistId, el.dataset.playlistName));
+	    });
+	}
+	
+	closeGlobalLibrarySearchSuggestionsDropdown() {
+	    const dropdown = document.getElementById('globalLibrarySearchSuggestionsDropdown');
+	    if (dropdown) {
+	        dropdown.classList.remove('visible');
+	        dropdown.innerHTML = '';
+	    }
+	}
+	
+	/* ---------- ARTIST → SONG GRID ---------- */
+	
+	async handleGlobalLibraryArtistCardClick(artist) {
+	    this.closeGlobalLibrarySearchSuggestionsDropdown();
+	    this.globalLibraryCurrentArtistContext = { id: artist.id, name: artist.name, index: 0, songs: [] };
+	    await this.renderGlobalLibraryArtistSongsGrid();
+	}
+	
+	async renderGlobalLibraryArtistSongsGrid(appendMode = false) {
+	    const ctx = this.globalLibraryCurrentArtistContext;
+	    if (!ctx) return;
+	
+	    const container = document.getElementById('globalLibraryArtistSongsGrid');
+	    if (!container) return;
+	
+	    container.classList.add('visible');
+	
+	    if (!appendMode) {
+	        container.innerHTML = `
+	            <div class="global-library-artist-grid-header">
+	                <button id="globalLibraryArtistGridBackBtn" class="global-library-artist-grid-back-btn">← Back</button>
+	                <h3>${ctx.name}</h3>
+	            </div>
+	            <div id="globalLibraryArtistGridSongsList" class="global-library-artist-grid-songs-list"></div>
+	            <button id="globalLibraryArtistGridLoadMoreBtn" class="global-library-artist-grid-load-more-btn" style="display:none;">Load more</button>
+	        `;
+	        document.getElementById('globalLibraryArtistGridBackBtn').addEventListener('click', () => this.closeGlobalLibraryArtistSongsGrid());
+	        document.getElementById('globalLibraryArtistGridLoadMoreBtn').addEventListener('click', () => this.loadMoreGlobalLibraryArtistSongs());
+	    }
+	
+	    const listEl = document.getElementById('globalLibraryArtistGridSongsList');
+	    listEl.insertAdjacentHTML('beforeend', '<div class="global-library-suggestions-loading" id="globalLibraryArtistGridSpinner">Loading songs…</div>');
+	
+	    try {
+	        const res = await fetch(`/api/deezer?type=artist_top&artistId=${encodeURIComponent(ctx.id)}&index=${ctx.index}&limit=25`);
+	        const result = await res.json();
+	        document.getElementById('globalLibraryArtistGridSpinner')?.remove();
+	
+	        const tracks = (result.data && result.data.data) || [];
+	        ctx.songs.push(...tracks);
+	
+	        listEl.insertAdjacentHTML('beforeend', tracks.map(t => `
+	            <div class="global-library-artist-grid-song-row"
+	                 data-song-name="${t.title.replace(/"/g, '&quot;')}"
+	                 data-artist-name="${ctx.name.replace(/"/g, '&quot;')}"
+	                 data-album-cover="${t.album?.cover_medium || ''}">
+	                <img src="${t.album?.cover_medium || ''}" alt="" class="global-library-artist-grid-song-thumb" loading="lazy">
+	                <div class="global-library-artist-grid-song-title">${t.title}</div>
+	            </div>
+	        `).join(''));
+	
+	        listEl.querySelectorAll('.global-library-artist-grid-song-row:not([data-bound])').forEach(el => {
+	            el.setAttribute('data-bound', 'true');
+	            el.addEventListener('click', () => this.handleGlobalLibrarySongCardClick({
+	                name: el.dataset.songName,
+	                artist: el.dataset.artistName,
+	                albumCover: el.dataset.albumCover,
+	                sourceContext: 'artist'
+	            }));
+	        });
+	
+	        const loadMoreBtn = document.getElementById('globalLibraryArtistGridLoadMoreBtn');
+	        // Deezer's artist/top endpoint tops out around 50 reliable results
+	        loadMoreBtn.style.display = (tracks.length === 25 && ctx.index + 25 < 50) ? 'block' : 'none';
+	    } catch (error) {
+	        document.getElementById('globalLibraryArtistGridSpinner')?.remove();
+	        listEl.insertAdjacentHTML('beforeend', '<div class="global-library-suggestions-loading">Couldn\'t load songs — try again</div>');
+	        console.error('Artist songs fetch failed:', error);
+	    }
+	}
+	
+	loadMoreGlobalLibraryArtistSongs() {
+	    if (!this.globalLibraryCurrentArtistContext) return;
+	    this.globalLibraryCurrentArtistContext.index += 25;
+	    this.renderGlobalLibraryArtistSongsGrid(true);
+	}
+	
+	closeGlobalLibraryArtistSongsGrid() {
+	    this.globalLibraryCurrentArtistContext = null;
+	    const container = document.getElementById('globalLibraryArtistSongsGrid');
+	    if (container) {
+	        container.classList.remove('visible');
+	        container.innerHTML = '';
+	    }
+	}
+	
+	/* ---------- SONG DETAIL CARD ---------- */
+	
+	async handleGlobalLibrarySongCardClick(song) {
+	    this.closeGlobalLibrarySearchSuggestionsDropdown();
+	    this.globalLibraryCurrentDetailContext = song.sourceContext || 'root';
+	    this.renderGlobalLibrarySongDetailCardLoading(song);
+	
+	    try {
+	        const resolved = await this.resolveGlobalLibrarySongYouTubeId(song.name, song.artist);
+	        this.renderGlobalLibrarySongDetailCard(resolved, song.albumCover);
+	    } catch (error) {
+	        console.error('Song resolution failed:', error);
+	        this.renderGlobalLibrarySongDetailCardError();
+	    }
+	}
+	
+	renderGlobalLibrarySongDetailCardLoading(song) {
+	    const card = document.getElementById('globalLibrarySongDetailCard');
+	    if (!card) return;
+	    card.classList.add('visible');
+	    card.innerHTML = `
+	        <button id="globalLibrarySongDetailCloseBtn" class="global-library-song-detail-close-btn">×</button>
+	        <div class="global-library-song-detail-loading">
+	            <img src="${song.albumCover || ''}" alt="" class="global-library-song-detail-thumb-placeholder">
+	            <div>Finding "${song.name}"…</div>
+	        </div>
+	    `;
+	    document.getElementById('globalLibrarySongDetailCloseBtn').addEventListener('click', () => this.closeGlobalLibrarySongDetailCard());
+	}
+	
+	renderGlobalLibrarySongDetailCardError() {
+	    const card = document.getElementById('globalLibrarySongDetailCard');
+	    if (!card) return;
+	    card.innerHTML = `
+	        <button id="globalLibrarySongDetailCloseBtn" class="global-library-song-detail-close-btn">×</button>
+	        <div class="global-library-song-detail-loading">Couldn't find a match — try another search</div>
+	    `;
+	    document.getElementById('globalLibrarySongDetailCloseBtn').addEventListener('click', () => this.closeGlobalLibrarySongDetailCard());
+	}
+	
+	renderGlobalLibrarySongDetailCard(songRow) {
+	    const card = document.getElementById('globalLibrarySongDetailCard');
+	    if (!card) return;
+	
+	    const thumbUrl = `https://i.ytimg.com/vi/${songRow.yt_id}/hqdefault.jpg`;
+	    const viewsText = songRow.view_count ? `${Number(songRow.view_count).toLocaleString()} views` : 'View count unavailable';
+	    const dateText = songRow.published_at ? new Date(songRow.published_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'Date unavailable';
+	
+	    card.innerHTML = `
+	        <button id="globalLibrarySongDetailCloseBtn" class="global-library-song-detail-close-btn">×</button>
+	        <img src="${thumbUrl}" alt="" class="global-library-song-detail-thumb">
+	        <div class="global-library-song-detail-info">
+	            <div class="global-library-song-detail-title">${songRow.name}</div>
+	            <div class="global-library-song-detail-artist">${songRow.artist}</div>
+	            <div class="global-library-song-detail-meta">${viewsText} · ${dateText}</div>
+	        </div>
+	        <button id="globalLibrarySongDetailAddBtn" class="global-library-song-detail-add-btn">+ Add to local library</button>
+	    `;
+	
+	    document.getElementById('globalLibrarySongDetailCloseBtn').addEventListener('click', () => this.closeGlobalLibrarySongDetailCard());
+	    document.getElementById('globalLibrarySongDetailAddBtn').addEventListener('click', () => this.populateAddSongToLibraryModalFromGlobalLibrary(songRow));
+	}
+	
+	closeGlobalLibrarySongDetailCard() {
+	    const card = document.getElementById('globalLibrarySongDetailCard');
+	    if (card) {
+	        card.classList.remove('visible');
+	        card.innerHTML = '';
+	    }
+	    this.globalLibraryCurrentDetailContext = null;
+	}
+	
+	/* ---------- YOUTUBE RESOLUTION + PERMANENT CACHE ---------- */
+	
+	normalizeGlobalLibrarySearchKey(name, artist) {
+	    return `${name.trim().toLowerCase()}::${(artist || '').trim().toLowerCase()}`;
+	}
+	
+	async resolveGlobalLibrarySongYouTubeId(songName, artistName) {
+	    if (!this.supabase) this.initSupabaseForFindSongs();
+	    const searchKey = this.normalizeGlobalLibrarySearchKey(songName, artistName);
+	
+	    const cached = await this.checkGlobalSongCacheSupabase(searchKey);
+	    if (cached) return cached;
+	
+	    const resolvedFromYouTube = await this.fetchGlobalLibrarySongFromYouTube(songName, artistName);
+	    const saved = await this.insertGlobalSongCacheSupabase({
+	        search_key: searchKey,
+	        name: songName,
+	        artist: artistName,
+	        yt_id: resolvedFromYouTube.yt_id,
+	        view_count: resolvedFromYouTube.view_count,
+	        published_at: resolvedFromYouTube.published_at
+	    });
+	
+	    return saved;
+	}
+	
+	async checkGlobalSongCacheSupabase(searchKey) {
+	    const { data, error } = await this.supabase
+	        .from('global_song_cache')
+	        .select('*')
+	        .eq('search_key', searchKey)
+	        .maybeSingle();
+	    if (error) throw error;
+	    return data || null;
+	}
+	
+	async insertGlobalSongCacheSupabase(payload) {
+	    const { data, error } = await this.supabase
+	        .from('global_song_cache')
+	        .upsert([payload], { onConflict: 'search_key', ignoreDuplicates: false })
+	        .select('*')
+	        .single();
+	    if (error) throw error;
+	    return data;
+	}
+	
+	async fetchGlobalLibrarySongFromYouTube(songName, artistName) {
+	    const topicQuery = `${songName} ${artistName} "topic"`;
+	    let items = await this.runGlobalLibraryYouTubeSearch(topicQuery);
+	
+	    if (items.length === 0) {
+	        const plainQuery = `${songName} ${artistName}`;
+	        items = await this.runGlobalLibraryYouTubeSearch(plainQuery);
+	    }
+	
+	    if (items.length === 0) {
+	        throw new Error('No YouTube match found for this song');
+	    }
+	
+	    const item = items[0];
+	    return {
+	        yt_id: item.id.videoId,
+	        view_count: item.statistics ? parseInt(item.statistics.viewCount, 10) : null,
+	        published_at: item.snippet?.publishedAt ? item.snippet.publishedAt.slice(0, 10) : null
+	    };
+	}
+	
+	async runGlobalLibraryYouTubeSearch(query) {
+	    const MAX_RETRIES = 5;
+	    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+	        const keyIndex = this.getRandomYouTubeApiKey();
+	        try {
+	            const url = `/api/youtube?query=${encodeURIComponent(query)}&maxResults=1&type=combined&keyIndex=${keyIndex}`;
+	            const response = await fetch(url);
+	            const result = await response.json();
+	
+	            if (result.status !== 200) {
+	                if (result.status === 403) {
+	                    console.warn(`API key index ${keyIndex} quota exceeded, retrying with a different key`);
+	                    continue;
+	                }
+	                throw new Error(`YouTube API error: ${result.status}`);
+	            }
+	
+	            return result.data.items || [];
+	        } catch (error) {
+	            console.error(`Global library YouTube search attempt ${attempt + 1} failed:`, error);
+	        }
+	    }
+	    throw new Error('Unable to resolve song after multiple attempts');
+	}
+	
+	
+	populateAddSongToLibraryModalFromGlobalLibrary(songRow) {
+	    this.elements.songNameInput.value = songRow.name;
+	    this.elements.songAuthorInput.value = songRow.artist;
+	    this.elements.songUrlInput.value = `https://www.youtube.com/watch?v=${songRow.yt_id}`;
 
-	displaySearchResults(playlists, individualSongs = []) {
-	    let resultsHTML = '';
+	    this.onLibraryModalCloseCallback = () => this.returnToGlobalLibraryPreviousView();
 	
-	    const limitedSongs = individualSongs.slice(0, 10);
-	    if (limitedSongs.length > 0) {
-	        resultsHTML += `
-	            <div class="search-section">
-	                <div class="individual-songs-results">
-	                    ${limitedSongs.map(song => `
-	                        <div class="individual-song-result">
-	                            <div class="song-info">
-	                                <div class="song-name">${song.name}</div>
-	                                <div class="song-author">by ${song.artist || 'Unknown Artist'}</div>
-	                                <div class="song-playlist">from playlist: ${song.playlist_name}</div>
-	                            </div>
-	                            <div class="song-actions">
-	                                <button class="preview-btn" onclick="musicPlayer.samplePlayTemporarySong('${song.youtube_url}')" title="Play">▶</button>
-	                                <button class="add-single-song-btn" onclick="musicPlayer.addSingleSongToLocalLibrary('${song.name.replace(/'/g, "\\'")}', '${(song.artist || '').replace(/'/g, "\\'")}', '${song.youtube_url}')">
-	                                    Add Song
-	                                </button>
-	                            </div>
-	                        </div>
-	                    `).join('')}
-	                </div>
-	            </div>`;
-	    }
+	    this.closeGlobalLibrarySongDetailCard();
+	    this.openLibraryModal();
+	}
 	
-	    const limitedPlaylists = playlists.slice(0, 10);
-	    if (limitedPlaylists.length > 0) {
-	        resultsHTML += `
-	            <div class="search-section">
-	                <div class="playlist-results">
-	                    ${limitedPlaylists.map(playlist => {
-	                        const preview = playlist.songs.slice(0, 3);
-	                        const remaining = playlist.songs.length - 3;
-	                        return `
-	                            <div class="playlist-result">
-	                                <div class="playlist-header">
-	                                    <div class="playlist-name">${playlist.name}</div>
-	                                    <div class="song-count">${playlist.songs.length} songs</div>
-	                                </div>
-	                                <div class="playlist-songs">
-	                                    ${preview.map(s => `
-	                                        <div class="song-preview">${s.name}${s.artist ? ` - ${s.artist}` : ''}</div>
-	                                    `).join('')}
-	                                    ${remaining > 0 ? `<div class="song-preview">... and ${remaining} more</div>` : ''}
-	                                </div>
-	                                <div class="playlist-actions">
-	                                    <button class="view-all-btn" onclick="musicPlayer.openDetailedPlaylistView(${playlist.id}, '${playlist.name.replace(/'/g, "\\'")}')">
-	                                        View All
-	                                    </button>
-	                                    <button class="add-to-library-btn" onclick="musicPlayer.addPlaylistToLibrary(${playlist.id}, '${playlist.name.replace(/'/g, "\\'")}')">
-	                                        Add to Library
-	                                    </button>
-	                                </div>
-	                            </div>`;
-	                    }).join('')}
-	                </div>
-	            </div>`;
-	    }
-	
-	    if (!resultsHTML) {
-	        this.elements.findSongsResults.innerHTML = '<div class="loading-spinner">No results found</div>';
-	    } else {
-	        this.elements.findSongsResults.innerHTML = resultsHTML;
+	returnToGlobalLibraryPreviousView() {
+	    if (this.globalLibraryCurrentArtistContext) {
+	        document.getElementById('globalLibraryArtistSongsGrid')?.classList.add('visible');
 	    }
 	}
-	async viewAllSongs(artistId, artistName) {
-		try {
-			const {
-				data: songs,
-				error
-			} = await this.supabase
-				.from('songs')
-				.select('*')
-				.eq('artist_id', artistId);
-			if (error) throw error;
-			alert(`${artistName} - All Songs:\n\n${songs.map(song => `${song.name} ${song.author ? `- ${song.author}` : ''}`).join('\n')}`);
-		} catch (error) {
-			console.error('Error fetching all songs:', error);
-			alert('Error loading all songs');
-		}
-	}
-	async addPlaylistToLibrary(playlistId, playlistName) {
+	
+	
+	async addPremadePlaylistToLocalLibrary(playlistId, playlistName) {
 	    try {
 	        const { data, error } = await this.supabase
-	            .from('playlist_songs')
-	            .select(`position, songs(name, artist, yt_id)`)
+	            .from('premade_playlist_songs')
+	            .select(`position, global_song_cache(name, artist, yt_id)`)
 	            .eq('playlist_id', playlistId)
 	            .order('position', { ascending: true });
 	        if (error) throw error;
 	
 	        const importText = data
-	            .map(row => `${row.songs.name},https://www.youtube.com/watch?v=${row.songs.yt_id},${row.songs.artist || ''}`)
+	            .map(row => `${row.global_song_cache.name},https://www.youtube.com/watch?v=${row.global_song_cache.yt_id},${row.global_song_cache.artist || ''}`)
 	            .join('\n');
 	        const playlistImportText = `${playlistName}{\n${importText}\n}`;
+	
 	        this.importLibrary(playlistImportText);
-	        this.closeFindSongs();
+	        this.closeGlobalLibrarySearchSuggestionsDropdown();
 	    } catch (error) {
-	        console.error('Error adding playlist to library:', error);
+	        console.error('Error adding premade playlist to library:', error);
 	        alert('Error adding playlist to library');
 	    }
 	}
-	async loadAllArtists() {
-		if (this.allArtists.length > 0) return;
-		this.elements.findSongsResults.innerHTML = '<div class="loading-spinner">Loading playlists...</div>';
-		try {
-			const {
-				data: artists,
-				error
-			} = await this.supabase
-				.from('artists')
-				.select(`
-                id,
-                name,
-                songs (
-                    id,
-                    name,
-                    author,
-                    youtube_url
-                )
-            `)
-				.order('id', {
-					ascending: true
-				})
-				.limit(50);
-			if (error) throw error;
-			this.allArtists = artists || [];
-			this.allSongs = [];
-			artists.forEach(artist => {
-				const limitedSongs = artist.songs.slice(0, 20);
-				limitedSongs.forEach(song => {
-					this.allSongs.push({
-						...song,
-						playlist_name: artist.name,
-						playlist_id: artist.id
-					});
-				});
-			});
-		} catch (error) {
-			console.error('Error loading artists:', error);
-			this.elements.findSongsResults.innerHTML = '<div class="loading-spinner">Error loading playlists</div>';
-		}
-	}
 	
-	filterResults() {
-	    const searchTerm = this.elements.findSongsSearch.value.trim().toLowerCase();
-	    if (!searchTerm) {
-	        this.displayBrowseView();
-	        return;
+	
+	closeLibraryModal() {
+	    this.elements.libraryModificationModal.style.display = "none";
+	    this.removeGhostPreview();
+	    if (typeof this.onLibraryModalCloseCallback === 'function') {
+	        const callback = this.onLibraryModalCloseCallback;
+	        this.onLibraryModalCloseCallback = null;
+	        callback();
 	    }
-	    const filteredPlaylists = (this.allPlaylists || []).filter(p =>
-	        p.name.toLowerCase().includes(searchTerm) ||
-	        p.songs.some(s =>
-	            s.name.toLowerCase().includes(searchTerm) ||
-	            (s.artist && s.artist.toLowerCase().includes(searchTerm))
-	        )
-	    ).slice(0, 10);
-	
-	    const filteredSongs = (this.allSongs || []).filter(s =>
-	        s.name.toLowerCase().includes(searchTerm) ||
-	        (s.artist && s.artist.toLowerCase().includes(searchTerm)) ||
-	        s.playlist_name.toLowerCase().includes(searchTerm)
-	    ).slice(0, 10);
-	
-	    this.displaySearchResults(filteredPlaylists, filteredSongs);
 	}
 
-	displayBrowseView() {
-	    const playlists = this.allPlaylists || [];
-	    // Pick 6 random playlists
-	    const shuffled = [...playlists].sort(() => 0.5 - Math.random()).slice(0, 6);
-	
-	    if (shuffled.length === 0) {
-	        this.elements.findSongsResults.innerHTML = '<div class="loading-spinner">No playlists yet</div>';
-	        return;
-	    }
-	
-	    this.elements.findSongsResults.innerHTML = `
-	        <div style="padding: 8px 0;">
-	            <div style="font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px;">
-	                Browse playlists
-	            </div>
-	            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-	                ${shuffled.map(p => `
-	                    <button
-	                        onclick="musicPlayer.openDetailedPlaylistView(${p.id}, '${p.name.replace(/'/g, "\\'")}')"
-	                        style="padding: 6px 14px; border-radius: 999px; border: 1px solid var(--border-color);
-	                               background: var(--bg-secondary); color: var(--text-primary); cursor: pointer;
-	                               font-size: 13px; white-space: nowrap;">
-	                        ${p.name}
-	                        <span style="color: var(--text-secondary); font-size: 11px; margin-left: 4px;">${p.songs.length}</span>
-	                    </button>
-	                `).join('')}
-	            </div>
-	            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 14px;">
-	                ${playlists.length} playlists total — type to search
-	            </div>
-	        </div>`;
-	}
 
-	async openDetailedPlaylistView(playlistId, playlistName) {
-	    try {
-	        const { data, error } = await this.supabase
-	            .from('playlist_songs')
-	            .select(`position, songs(id, name, artist, yt_id)`)
-	            .eq('playlist_id', playlistId)
-	            .order('position', { ascending: true });
-	        if (error) throw error;
+
+
 	
-	        const songs = data.map(row => ({
-	            ...row.songs,
-	            youtube_url: `https://www.youtube.com/watch?v=${row.songs.yt_id}`
-	        }));
+
+
 	
-	        const detailModal = document.createElement('div');
-	        detailModal.className = 'detailed-playlist-modal';
-	        detailModal.innerHTML = `
-	            <div class="detailed-playlist-content">
-	                <div class="detailed-playlist-header">
-	                    <h2>${playlistName}</h2>
-	                    <div class="detailed-playlist-stats">${songs.length} songs total</div>
-	                    <button class="close-detailed-view" onclick="this.closest('.detailed-playlist-modal').remove()">×</button>
-	                </div>
-	                <div class="detailed-playlist-actions">
-	                    <button class="add-all-songs-btn" onclick="musicPlayer.addPlaylistToLibrary(${playlistId}, '${playlistName.replace(/'/g, "\\'")}'); this.closest('.detailed-playlist-modal').remove();">
-	                        Add All to Library
-	                    </button>
-	                </div>
-	                <div class="detailed-songs-list">
-	                    ${songs.map((song, index) => `
-	                        <div class="detailed-song-item">
-	                            <div class="song-index">${index + 1}</div>
-	                            <div class="detailed-song-info">
-	                                <div class="detailed-song-name">${song.name}</div>
-	                                <div class="detailed-song-author">by ${song.artist || 'Unknown Artist'}</div>
-	                            </div>
-	                            <div class="detailed-song-actions">
-	                                <button class="preview-btn" onclick="musicPlayer.samplePlayTemporarySong('${song.youtube_url}')" title="Play">▶</button>
-	                                <button class="add-single-song-btn" onclick="musicPlayer.addSingleSongToLocalLibrary('${song.name.replace(/'/g, "\\'")}', '${(song.artist || '').replace(/'/g, "\\'")}', '${song.youtube_url}')">
-	                                    Add Song
-	                                </button>
-	                            </div>
-	                        </div>
-	                    `).join('')}
-	                </div>
-	            </div>`;
+
+
 	
-	        document.body.appendChild(detailModal);
-	        detailModal.addEventListener('click', e => {
-	            if (e.target === detailModal) detailModal.remove();
-	        });
-	    } catch (error) {
-	        console.error('Error fetching detailed playlist:', error);
-	        alert('Error loading playlist details');
-	    }
+
+
+
+
+	async openFindSongs() {
+	    if (!this.supabase) this.initSupabaseForFindSongs();
+	    this.elements.findSongsDiv.style.display = 'flex';
+	    document.getElementById('globalLibraryDebouncedSearchBar')?.focus();
+	    await this.loadRecommendations();
 	}
-	async addSingleSongToLocalLibrary(songName, songAuthor, youtubeUrl) {
-		const videoId = this.extractYouTubeId(youtubeUrl);
-		if (!videoId) {
-			alert("Invalid YouTube URL");
-			return;
-		}
-		if (this.songLibrary.some((song) => song.videoId === videoId)) {
-			alert("This song is already in your library");
-			return;
-		}
-		const newSong = {
-			id: Date.now(),
-			name: songName,
-			author: songAuthor,
-			videoId: videoId,
-			favorite: false,
-		};
-		this.songLibrary.push(newSong);
-		try {
-			await this.saveSongLibrary();
-			this.renderSongLibrary();
-			this.updatePlaylistSelection();
-			const successMsg = document.createElement('div');
-			successMsg.className = 'success-toast';
-			successMsg.textContent = `Added "${songName}" to library!`;
-			document.body.appendChild(successMsg);
-			setTimeout(() => successMsg.remove(), 3000);
-		} catch (error) {
-			console.error("Error adding song to library:", error);
-			alert("Failed to save song. Please try again.");
-		}
+	closeFindSongs() {
+	    this.elements.findSongsDiv.style.display = 'none';
+	    document.getElementById('globalLibraryDebouncedSearchBar').value = '';
+	    this.closeGlobalLibrarySearchSuggestionsDropdown();
+	    this.closeGlobalLibrarySongDetailCard();
+	    this.closeGlobalLibraryArtistSongsGrid();
 	}
+	
+		
+
+	
+	
+	
+	
+	
+	
 	handleLibrarySortToggle(event) {
 		this.librarySortAlphabetically = event.target.checked;
 		this.renderSongLibrary();
