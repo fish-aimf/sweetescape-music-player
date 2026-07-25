@@ -483,10 +483,10 @@ class AdvancedMusicPlayer {
 			lsPanel: document.getElementById("lsPanel"),
 			lsRangeToggle: document.getElementById("lsRangeToggle"),
 			listeningStatsToggle: document.getElementById("listeningStatsToggle"),
+			addSongModalListenPreviewBtn: document.getElementById("addSongModalListenPreviewBtn"),
 			
 		};
 		
-		// Setup specialized UI handlers
 		this._setupSpeedButton();
 		this._setupLibraryModificationModalTabs();
 		this._checkControlBarVisibility();
@@ -598,6 +598,7 @@ class AdvancedMusicPlayer {
 			saveCustomTheme: this.handleSaveCustomTheme.bind(this),
 			adsToggle: this.handleAdsToggle.bind(this),
 			toggleTopicKeyword: this.toggleTopicKeyword.bind(this),
+			addSongModalListenPreview: this.handleAddSongModalListenPreviewClick.bind(this),
 
 			
 		
@@ -704,7 +705,8 @@ class AdvancedMusicPlayer {
 			[document.getElementById('lsCloseBtn'), 'click', this.closeStatsModal.bind(this)],
 			[this.elements.lsRangeToggle, 'change', this._handleStatsRangeToggle.bind(this)],
 			[this.elements.listeningStatsToggle, 'change', this.handleListeningStatsToggle.bind(this)],
-			[this.elements.libTopicBtn, 'click', handlers.toggleTopicKeyword]
+			[this.elements.libTopicBtn, 'click', handlers.toggleTopicKeyword],
+			[this.elements.addSongModalListenPreviewBtn, 'click', handlers.addSongModalListenPreview],
 
 		];
 		
@@ -11413,16 +11415,12 @@ displayBillboardHot100Top3(top3Songs) {
         `;
     }).join('');
 }
-// ADD THIS NEW METHOD:
 getTimeAgo(date) {
-    // Ensure we're comparing UTC timestamps
     const now = new Date();
     const updateTime = new Date(date);
     
-    // Calculate difference in seconds
     const seconds = Math.floor((now - updateTime) / 1000);
     
-    // Handle negative or very small values
     if (seconds < 10) {
         return 'just now';
     }
@@ -12809,7 +12807,9 @@ createTemporarySongModal() {
 		<div class="temp-song-modal-content">
 			<button class="temp-song-close-btn" id="closeTempSongBtn">&times;</button>
 			<h3 class="temp-song-title">Song Preview</h3>
-			<div id="tempYtPlayer"></div>
+			<div id="tempYtPlayerContainer" class="temp-song-player-container">
+				<div id="tempYtPlayer"></div>
+			</div>
 			<div class="temp-song-url-container">
 				<input type="text" id="tempSongUrlDisplay" class="temp-song-url-input" readonly>
 				<button id="copyTempUrlBtn" class="temp-song-action-btn" title="Copy URL">
@@ -12829,192 +12829,48 @@ createTemporarySongModal() {
 		</div>
 	`;
 	document.body.appendChild(modal);
-	
-	// Add styles
-	if (!document.getElementById("tempSongStyles")) {
-		const style = document.createElement("style");
-		style.id = "tempSongStyles";
-		style.textContent = `
-			.temp-song-modal {
-				display: none;
-				position: fixed;
-				top: 0;
-				left: 0;
-				width: 100%;
-				height: 100%;
-				background: rgba(0, 0, 0, 0.85);
-				z-index: 10000;
-				justify-content: center;
-				align-items: center;
-				padding: 20px;
-				box-sizing: border-box;
-			}
-			.temp-song-modal-content {
-				position: relative;
-				background: var(--bg-secondary);
-				border-radius: 12px;
-				padding: 35px 30px 30px 30px;
-				max-width: 750px;
-				width: 100%;
-				box-shadow: 0 8px 32px var(--shadow-color);
-				border: 1px solid var(--border-color);
-			}
-			.temp-song-title {
-				margin: 0 0 20px 0;
-				color: var(--text-primary);
-				font-size: 22px;
-				font-weight: 600;
-				text-align: center;
-			}
-			.temp-song-close-btn {
-				position: absolute;
-				top: 12px;
-				right: 12px;
-				background: var(--error-color);
-				color: var(--button-text-color);
-				border: none;
-				border-radius: 50%;
-				width: 36px;
-				height: 36px;
-				font-size: 24px;
-				cursor: pointer;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				z-index: 10001;
-				transition: all 0.2s;
-				line-height: 1;
-			}
-			.temp-song-close-btn:hover {
-				background: var(--error-hover);
-				transform: scale(1.1);
-			}
-			#tempYtPlayer {
-				width: 100%;
-				height: 400px;
-				border-radius: 8px;
-				overflow: hidden;
-				margin-bottom: 20px;
-				box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-			}
-			.temp-song-url-container {
-				display: flex;
-				gap: 10px;
-				align-items: center;
-			}
-			.temp-song-url-input {
-				flex: 1;
-				padding: 12px 15px;
-				border: 2px solid var(--border-color);
-				border-radius: 8px;
-				background: var(--bg-primary);
-				color: var(--text-primary);
-				font-size: 14px;
-				font-family: monospace;
-				cursor: text;
-				transition: border-color 0.2s;
-			}
-			.temp-song-url-input:focus {
-				outline: none;
-				border-color: var(--accent-color);
-			}
-			.temp-song-action-btn {
-				padding: 12px 16px;
-				background: var(--accent-color);
-				color: var(--button-text-color);
-				border: none;
-				border-radius: 8px;
-				cursor: pointer;
-				transition: all 0.2s;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-			}
-			.temp-song-action-btn:hover {
-				background: var(--hover-color);
-				transform: translateY(-1px);
-			}
-			.temp-song-action-btn:active {
-				transform: translateY(0);
-			}
-			@media (max-width: 768px) {
-				.temp-song-modal {
-					padding: 10px;
-				}
-				.temp-song-modal-content {
-					padding: 30px 20px 20px 20px;
-				}
-				#tempYtPlayer {
-					height: 56.25vw;
-					max-height: 300px;
-				}
-				.temp-song-url-container {
-					flex-direction: column;
-				}
-				.temp-song-url-input {
-					width: 100%;
-				}
-				.temp-song-action-btn {
-					width: 100%;
-				}
-			}
-		`;
-		document.head.appendChild(style);
-	}
-	
-	// Setup close button listener
+
 	document.getElementById("closeTempSongBtn").addEventListener("click", () => {
 		this.closeTemporarySongSampleModal();
 	});
-	
-	// Setup copy URL button
 	document.getElementById("copyTempUrlBtn").addEventListener("click", () => {
 		const urlInput = document.getElementById("tempSongUrlDisplay");
 		urlInput.select();
 		document.execCommand("copy");
 		this.showNotification("URL copied to clipboard!", "success");
 	});
-	
-	// Setup open URL button
 	document.getElementById("openTempUrlBtn").addEventListener("click", () => {
 		const url = document.getElementById("tempSongUrlDisplay").value;
-		if (url) {
-			window.open(url, "_blank");
-		}
+		if (url) window.open(url, "_blank");
 	});
-	
-	// Close on outside click
 	modal.addEventListener("click", (e) => {
-		if (e.target === modal) {
-			this.closeTemporarySongSampleModal();
-		}
+		if (e.target === modal) this.closeTemporarySongSampleModal();
 	});
 }
 
 // Initialize temporary player
-initializeTemporarySongPlayer() {
+initializeTemporarySongPlayer(videoIdToLoadWhenReady) {
 	if (this.tempYtPlayer) return;
-	
+
+	this.temporarySongPendingVideoId = videoIdToLoadWhenReady;
+
 	this.tempYtPlayer = new YT.Player("tempYtPlayer", {
 		height: "100%",
 		width: "100%",
 		playerVars: {
-			'rel': 0,
-			'showinfo': 1,
-			'controls': 1,
-			'disablekb': 0,
-			'fs': 1,
-			'modestbranding': 1,
-			'playsinline': 1,
-			'autoplay': 1,
-			'iv_load_policy': 3,
-			'enablejsapi': 1,
+			'rel': 0, 'showinfo': 1, 'controls': 1, 'disablekb': 0, 'fs': 1,
+			'modestbranding': 1, 'playsinline': 1, 'autoplay': 1,
+			'iv_load_policy': 3, 'enablejsapi': 1,
 			'origin': window.location.origin
 		},
 		events: {
-			onReady: (event) => {
-				console.log("Temporary YouTube player ready");
+			onReady: () => {
 				this.tempYtPlayerReady = true;
+				// Load whatever video was requested while the player was still mounting
+				if (this.temporarySongPendingVideoId) {
+					this.tempYtPlayer.loadVideoById(this.temporarySongPendingVideoId);
+					this.temporarySongPendingVideoId = null;
+				}
 			},
 			onError: (event) => {
 				console.error("Temporary player error:", event.data);
@@ -13024,21 +12880,16 @@ initializeTemporarySongPlayer() {
 	});
 }
 
-// Play the temporary song
 playTemporarySong(videoId) {
-	if (!this.tempYtPlayer) {
-		this.initializeTemporarySongPlayer();
-		setTimeout(() => {
-			if (this.tempYtPlayerReady) {
-				this.tempYtPlayer.loadVideoById(videoId);
-			}
-		}, 1000);
-	} else {
+	if (this.tempYtPlayer && this.tempYtPlayerReady) {
 		this.tempYtPlayer.loadVideoById(videoId);
+	} else if (this.tempYtPlayer && !this.tempYtPlayerReady) {
+		this.temporarySongPendingVideoId = videoId;
+	} else {
+		this.initializeTemporarySongPlayer(videoId);
 	}
 }
 
-// Cleanup temporary player
 cleanupTemporarySongPlayer() {
 	if (this.tempYtPlayer) {
 		try {
@@ -13050,7 +12901,13 @@ cleanupTemporarySongPlayer() {
 		this.tempYtPlayer = null;
 		this.tempYtPlayerReady = false;
 	}
+	this.temporarySongPendingVideoId = null;
 	this.isTemporarySongPlaying = false;
+
+	const container = document.getElementById("tempYtPlayerContainer");
+	if (container) {
+		container.innerHTML = '<div id="tempYtPlayer"></div>';
+	}
 }
 cleanupBillboardAndGlobalLibrary() {
     console.log("Cleaning up Billboard and Global Library resources");
@@ -13065,6 +12922,15 @@ cleanupBillboardAndGlobalLibrary() {
     this.closeGlobalLibraryArtistSongsGrid();
 
     console.log("Billboard and Global Library cleanup complete");
+}
+handleAddSongModalListenPreviewClick() {
+	const url = this.elements.songUrlInput.value.trim();
+	const videoId = this.extractYouTubeId(url);
+	if (!videoId) {
+		this.showNotification("Enter a valid YouTube URL first", "error");
+		return;
+	}
+	this.samplePlayTemporarySong(url);
 }
 getRandomYouTubeApiKey() {
     return Math.floor(Math.random() * this.YOUTUBE_API_KEYS_COUNT);
