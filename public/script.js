@@ -126,7 +126,8 @@ class AdvancedMusicPlayer {
 		// Supabase / Global library
 		this.supabase = null;
 		this.supadataApiKey = 'sd_b3095aebbee9e4a7e6333bca9027b4cc';
-		this.currentSongForImport = null;
+		this.currentSongForSubtitlesImport = null;
+		
 		
 		// Search and filtering
 		this.searchTimeout = null;
@@ -10245,7 +10246,7 @@ hideSidebar() {
 	openImportSubtitlesModal(songId) {
 		const song = this.songLibrary.find((s) => s.id === songId);
 		if (!song) return;
-		this.currentSongForImport = song;
+		this.currentSongForSubtitlesImport = song;
 		const modalTitle = document.getElementById('subtitlesImportModalTitle');
 		modalTitle.textContent = `Import Subtitles for: ${song.name}`;
 		this.resetSubtitlesImportForm();
@@ -10275,8 +10276,8 @@ hideSidebar() {
 		});
 		autoFetchBtn.addEventListener('click', () => this.autoFetchTranscript());
 		openYouTubeBtn.addEventListener('click', () => {
-			if (this.currentSongForImport) {
-				window.open(`https://www.youtube.com/watch?v=${this.currentSongForImport.videoId}`, '_blank');
+			if (this.currentSongForSubtitlesImport) {
+				window.open(`https://www.youtube.com/watch?v=${this.currentSongForSubtitlesImport.videoId}`, '_blank');
 			}
 		});
 		convertBtn.addEventListener('click', () => this.convertTranscriptToLyricsHandler());
@@ -10287,7 +10288,7 @@ hideSidebar() {
 		modal.classList.remove('subtitles-import-modal-show');
 		setTimeout(() => {
 			modal.style.display = 'none';
-			this.currentSongForImport = null;
+			this.currentSongForSubtitlesImport = null;
 		}, 300);
 	}
 	resetSubtitlesImportForm() {
@@ -10328,16 +10329,16 @@ hideSidebar() {
 			this.showNotification('No lyrics to save', 'error');
 			return;
 		}
-		if (!this.currentSongForImport) {
+		if (!this.currentSongForSubtitlesImport) {
 			this.showNotification('No song selected', 'error');
 			return;
 		}
 		try {
 			await this.updateSongDetails(
-				this.currentSongForImport.id,
-				this.currentSongForImport.name,
-				this.currentSongForImport.author,
-				this.currentSongForImport.videoId,
+				this.currentSongForSubtitlesImport.id,
+				this.currentSongForSubtitlesImport.name,
+				this.currentSongForSubtitlesImport.author,
+				this.currentSongForSubtitlesImport.videoId,
 				lyricsText
 			);
 			this.showNotification('Lyrics saved successfully!', 'success');
@@ -10410,7 +10411,7 @@ hideSidebar() {
 		}
 	}
 	async autoFetchTranscript() {
-	    if (!this.currentSongForImport) return;
+	    if (!this.currentSongForSubtitlesImport) return;
 	    const loadingIndicator = document.getElementById('loadingIndicator');
 	    const autoFetchBtn = document.getElementById('autoFetchTranscriptBtn');
 	    const transcriptInput = document.getElementById('transcriptInput');
@@ -10425,7 +10426,7 @@ hideSidebar() {
 	        autoFetchBtn.disabled = true;
 	        autoFetchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Fetching...';
 	
-	        const videoUrl = `https://www.youtube.com/watch?v=${this.currentSongForImport.videoId}`;
+	        const videoUrl = `https://www.youtube.com/watch?v=${this.currentSongForSubtitlesImport.videoId}`;
 	
 	        const apiUrl = selectedLang === 'auto'
 	            ? `https://api.supadata.ai/v1/youtube/transcript?url=${encodeURIComponent(videoUrl)}&text=false`
