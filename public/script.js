@@ -126,11 +126,6 @@ class AdvancedMusicPlayer {
 		// Supabase / Global library
 		this.supabase = null;
 		this.supadataApiKey = 'sd_b3095aebbee9e4a7e6333bca9027b4cc';
-		this.globalLibrarySupabase = null;
-		this.globalLibraryCurrentUser = null;
-		this.globalLibraryArtists = [];
-		this.globalLibrarySearchFilter = '';
-		this.allArtists = [];
 		this.currentSongForImport = null;
 		
 		// Search and filtering
@@ -819,7 +814,6 @@ class AdvancedMusicPlayer {
 		this.addQueueStyles();
 		this.setupTimerEventListeners();
 		this.setupLayoutEventListeners();
-		this.setupGlobalLibraryEventListeners();
 		this.setupExportButtonListeners();
 		this.setupSongLibraryDelegation();
 	}
@@ -13059,60 +13053,16 @@ cleanupTemporarySongPlayer() {
 }
 cleanupBillboardAndGlobalLibrary() {
     console.log("Cleaning up Billboard and Global Library resources");
-    
-    // Remove Billboard Hot 100 modal if exists
+
     const billboardModal = document.getElementById('billboardHot100Modal');
     if (billboardModal) {
         billboardModal.remove();
         console.log("Billboard Hot 100 modal removed");
     }
-    
-    // Remove detailed playlist modals if any exist
-    const detailedModals = document.querySelectorAll('.detailed-playlist-modal');
-    detailedModals.forEach(modal => {
-        modal.remove();
-    });
-    if (detailedModals.length > 0) {
-        console.log(`Removed ${detailedModals.length} detailed playlist modal(s)`);
-    }
-    
-    // Clear cached data arrays
-    if (this.allArtists && this.allArtists.length > 0) {
-        this.allArtists = [];
-        console.log("Cleared allArtists cache");
-    }
-    
-    if (this.allSongs && this.allSongs.length > 0) {
-        this.allSongs = [];
-        console.log("Cleared allSongs cache");
-    }
-    
-    if (this.globalLibraryArtists && this.globalLibraryArtists.length > 0) {
-        this.globalLibraryArtists = [];
-        console.log("Cleared globalLibraryArtists cache");
-    }
-    
-    // Clear search filters
-    this.globalLibrarySearchFilter = '';
-    this.currentViewMode = 'playlists';
-    
-    // Clear pending imports
-    this.pendingGlobalImport = null;
-    
-    // Logout global library user if logged in
-    if (this.globalLibraryCurrentUser) {
-        console.log("Logging out global library user");
-        this.globalLibraryCurrentUser = null;
-    }
-    
-    // Close Supabase connection if exists
-    if (this.supabase) {
-        // Supabase clients don't need explicit cleanup, but clear the reference
-        this.supabase = null;
-        this.globalLibrarySupabase = null;
-        console.log("Cleared Supabase client references");
-    }
-    
+    this.closeGlobalLibrarySearchSuggestionsDropdown();
+    this.closeGlobalLibrarySongDetailCard();
+    this.closeGlobalLibraryArtistSongsGrid();
+
     console.log("Billboard and Global Library cleanup complete");
 }
 getRandomYouTubeApiKey() {
