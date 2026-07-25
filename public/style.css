@@ -3015,36 +3015,10 @@ body:has(#ytPlayer.fullscreen-video) {
     .left-advertisement-banner, .right-advertisement-banner {
     display: none!important;
 }
-}.global-library-edit-btn {
-    background: 0 0;
-    border: currentcolor;
-    border-image: initial;
-    color: var(--text-secondary);
-    cursor: pointer;
-    padding: 5px;
-    margin-left: 10px;
-    border-radius: 4px;
-    transition: .2s;
-    font-size: 16px;
 }
-.global-library-artist-header, .global-library-header {
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-}
-.global-library-edit-btn:hover {
-    color: var(--accent-color);
-    background: var(--bg-secondary);
-}
-.global-library-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, .8);
-    z-index: 10000;
-    overflow: auto;
-}
+
+
+
 .global-library-content {
     background: var(--bg-primary);
     width: 95%;
@@ -3103,13 +3077,7 @@ body:has(#ytPlayer.fullscreen-video) {
     background: var(--bg-secondary);
     color: var(--text-primary);
 }
-.global-library-artist-card {
-    background: var(--bg-secondary);
-    border-radius: 8px;
-    padding: 15px;
-    border: 1px solid var(--border-color);
-    margin-bottom: 3px;
-    width: 100%}
+
 .global-library-artist-header {
     justify-content: space-between;
     align-items: center;
@@ -3183,68 +3151,16 @@ body:has(#ytPlayer.fullscreen-video) {
     color: var(--text-secondary);
     font-size: 11px;
 }
-.global-library-btn-small {
-    padding: 4px 8px;
-    font-size: 10px;
-    border: currentcolor;
-    border-image: initial;
-    border-radius: 3px;
-    cursor: pointer;
-    background: var(--accent-color);
-    color: var(--button-text-color);
-}
-.global-library-input, .global-library-select {
-    border: 1px solid var(--border-color);
-    margin: 5px;
-}
-.global-library-btn-danger {
-    background: var(--error-color);
-}
-.global-library-input, .global-library-select, .global-library-textarea {
-    padding: 10px;
-    background: var(--bg-primary);
-    color: var(--text-primary);
-}
-.global-library-input {
-    border-radius: 4px;
-    flex: 1 1 0%;
-    min-width: 150px;
-}
-.global-library-select {
-    border-radius: 4px;
-    flex: 1 1 0%;
-    min-width: 200px;
-    max-height: 120px;
-    overflow-y: auto;
-}
-.global-library-textarea {
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    width: 100%;
-    min-height: 100px;
-    resize: vertical;
-    font-family: monospace;
-    margin: 5px 0;
-}
-.global-library-btn {
-    background: var(--accent-color);
-    color: var(--button-text-color);
-    border: currentcolor;
-    border-image: initial;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: .2s;
-    margin: 5px;
-}
-.global-library-btn-secondary, .selected-playlist-info.no-selection {
+
+
+
+
+
+
+.selected-playlist-info.no-selection {
     background: var(--text-secondary);
 }
-.global-library-btn-secondary:hover {
-    background: var(--text-primary);
-    color: var(--bg-primary);
-}
+
 .playlist-select-container {
     display: flex;
     flex-direction: column;
@@ -5640,77 +5556,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     gap: 8px;
     transition: background-color .3s;
 }
-.global-library-edit-mode {
-    padding: 10px 0;
-}
-.global-library-song-edit-item {
-    background: var(--bg-primary);
-    padding: 10px;
-    margin: 5px 0;
-    border-radius: 4px;
-    border-left: 3px solid var(--accent-color);
-    display: grid;
-    grid-template-columns: 1fr 1fr 40px;
-    grid-template-rows: auto auto;
-    gap: 8px;
-    align-items: center;
-}
-.global-library-song-edit-item .song-name-input {
-    grid-area: 1/1;
-}
-.global-library-song-edit-item .song-url-input {
-    grid-area: 1/2;
-}
-.global-library-song-edit-item .song-author-input {
-    grid-area: 2/1/auto/3;
-}
-.global-library-song-edit-item .global-library-song-edit-delete {
-    grid-area: 1/3/3;
-}
-.global-library-song-edit-item input {
-    padding: 6px 8px;
-    border: 1px solid var(--border-color);
-    border-radius: 3px;
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-    font-size: 12px;
-}
-.global-library-song-edit-delete {
-    background: var(--error-color);
-    color: #fff;
-    border: currentcolor;
-    border-image: initial;
-    border-radius: 3px;
-    cursor: pointer;
-    padding: 6px;
-    font-size: 14px;
-}
-.global-library-playlist-actions {
-    display: flex;
-    gap: 8px;
-    margin-top: 15px;
-    padding-top: 10px;
-    border-top: 1px solid var(--border-color);
-}
-.global-library-playlist-actions button {
-    padding: 8px 12px;
-    border: currentcolor;
-    border-image: initial;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 700;
-}
-.global-library-save-btn {
-    background: #4caf50;
-    color: #fff;
-    margin-left: auto;
-}
-.global-library-validation-error {
-    color: var(--error-color);
-    font-size: 11px;
-    margin-top: 5px;
-}
+
 .library-modification-tab-navigation {
     display: flex;
     gap: 0;
