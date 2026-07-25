@@ -483,7 +483,6 @@ class AdvancedMusicPlayer {
 			lsPanel: document.getElementById("lsPanel"),
 			lsRangeToggle: document.getElementById("lsRangeToggle"),
 			listeningStatsToggle: document.getElementById("listeningStatsToggle"),
-			addSongModalListenPreviewBtn: document.getElementById("addSongModalListenPreviewBtn"),
 			
 		};
 		
@@ -598,7 +597,6 @@ class AdvancedMusicPlayer {
 			saveCustomTheme: this.handleSaveCustomTheme.bind(this),
 			adsToggle: this.handleAdsToggle.bind(this),
 			toggleTopicKeyword: this.toggleTopicKeyword.bind(this),
-			addSongModalListenPreview: this.handleAddSongModalListenPreviewClick.bind(this),
 
 			
 		
@@ -706,7 +704,6 @@ class AdvancedMusicPlayer {
 			[this.elements.lsRangeToggle, 'change', this._handleStatsRangeToggle.bind(this)],
 			[this.elements.listeningStatsToggle, 'change', this.handleListeningStatsToggle.bind(this)],
 			[this.elements.libTopicBtn, 'click', handlers.toggleTopicKeyword],
-			[this.elements.addSongModalListenPreviewBtn, 'click', handlers.addSongModalListenPreview],
 
 		];
 		
@@ -11064,11 +11061,15 @@ hideSidebar() {
 	            <div class="global-library-song-detail-artist">${songRow.artist}</div>
 	            <div class="global-library-song-detail-meta">${viewsText} · ${dateText}</div>
 	        </div>
-	        <button id="globalLibrarySongDetailAddBtn" class="global-library-song-detail-add-btn">+ Add to local library</button>
+	        <div class="global-library-song-detail-actions">
+			    <button id="globalLibrarySongDetailListenBtn" class="listen-temp-song-btn" title="Preview this song">▶ Listen</button>
+			    <button id="globalLibrarySongDetailAddBtn" class="global-library-song-detail-add-btn">+ Add to local library</button>
+			</div>
 	    `;
 	
 	    document.getElementById('globalLibrarySongDetailCloseBtn').addEventListener('click', () => this.closeGlobalLibrarySongDetailCard());
 	    document.getElementById('globalLibrarySongDetailAddBtn').addEventListener('click', () => this.populateAddSongToLibraryModalFromGlobalLibrary(songRow));
+		document.getElementById('globalLibrarySongDetailListenBtn').addEventListener('click', () => this.samplePlayTemporarySong(`https://www.youtube.com/watch?v=${songRow.yt_id}`));
 	}
 	
 	closeGlobalLibrarySongDetailCard() {
@@ -12922,15 +12923,6 @@ cleanupBillboardAndGlobalLibrary() {
     this.closeGlobalLibraryArtistSongsGrid();
 
     console.log("Billboard and Global Library cleanup complete");
-}
-handleAddSongModalListenPreviewClick() {
-	const url = this.elements.songUrlInput.value.trim();
-	const videoId = this.extractYouTubeId(url);
-	if (!videoId) {
-		this.showNotification("Enter a valid YouTube URL first", "error");
-		return;
-	}
-	this.samplePlayTemporarySong(url);
 }
 getRandomYouTubeApiKey() {
     return Math.floor(Math.random() * this.YOUTUBE_API_KEYS_COUNT);
