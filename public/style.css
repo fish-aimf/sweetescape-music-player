@@ -7934,7 +7934,6 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 
 .global-library-song-detail-add-btn {
     display: block;
-    margin: 18px 0 0 auto;
     padding: 10px 18px;
     background: var(--accent-color);
     color: var(--button-text-color);
@@ -7948,8 +7947,6 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 .global-library-song-detail-add-btn:hover {
     background: var(--hover-color);
 }
-
-/* ---------- Artist songs grid ---------- */
 
 .global-library-artist-songs-grid {
     display: none;
@@ -8166,4 +8163,11 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     .temp-song-player-container { height: 56.25vw; max-height: 300px; }
     .temp-song-url-container { flex-direction: column; }
     .temp-song-url-input, .temp-song-action-btn { width: 100%; }
+}
+
+.global-library-song-detail-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
 }
