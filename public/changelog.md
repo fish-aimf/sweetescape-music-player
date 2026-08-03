@@ -700,3 +700,4 @@
 -  fixed some song statistics bugs v69.9.0
 -  added github workflow to autoupdate billboard v69.10.0
 -  global library reworked v70.0.0
+-  fixed share url for lyrics v70.1.0
