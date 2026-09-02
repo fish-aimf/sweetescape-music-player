@@ -701,3 +701,10 @@
 -  added github workflow to autoupdate billboard v69.10.0
 -  global library reworked v70.0.0
 -  fixed share url for lyrics v70.1.0
+-  allows for ctl + r without getting captured by keybinds v70.2.0
+-  fixed now playing tab ui desync. v70.3.0
+-  added genius api to automatically fetch lyrics. v70.4.0
+-  new preview popup for the next.previous 3 songs when hovering over the next and previous buttons v70.5.0
+-  fixed rebinding toggle web embed breaking it v70.6.0
+-  fixed is playlist looping saved to localstorage bug. v70.7.0
+-  removed duplicate css and optimized css v70.8.0
