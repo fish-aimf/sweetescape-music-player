@@ -290,6 +290,7 @@ class AdvancedMusicPlayer {
     this.initShazamModal();
     this.addQueueStyles();
     this.initLibraryFilter();
+    this.setupTransportHoverPreviews();
   }
   _handleInitializationError(error) {
     const errorDiv = document.createElement('div');
@@ -899,6 +900,9 @@ class AdvancedMusicPlayer {
   }
   setupKeyboardControls() {
     document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) {
+        return;
+      }
       if (document.activeElement.tagName === 'INPUT') {
         const inputType = document.activeElement.type;
         if (inputType !== 'range' && inputType !== 'checkbox' && inputType !== 'radio') {
@@ -4740,6 +4744,191 @@ class AdvancedMusicPlayer {
     this.updateCurrentSongDisplay();
     this._discordScheduleSend();
   }
+  _syncTransportDisplays(currentTime, duration) {
+    const pct = duration > 0 ? (currentTime / duration) * 100 : 0;
+    const timeText = `${this.formatTime(currentTime)}/${this.formatTime(duration)}`;
+    if (this.elements.progressBar) {
+      this.elements.progressBar.value = pct;
+    }
+    if (this.elements.timeDisplay) {
+      this.elements.timeDisplay.textContent = timeText;
+    }
+    const npBar = document.getElementById('npProgressBar');
+    const npTime = document.getElementById('npTimeDisplay');
+    if (npBar) {
+      npBar.value = pct;
+    }
+    if (npTime) {
+      npTime.textContent = timeText;
+    }
+  }
+  _getPreviewSource() {
+    return this.currentPlaylist ? this.currentPlaylist.songs : this.songLibrary;
+  }
+  _songToPreviewItem(song) {
+    if (!song) {
+      return null;
+    }
+    return {
+      name: song.name || 'Unknown',
+      author: song.author || '',
+      videoId: song.videoId,
+      thumbnailUrl: song.thumbnailUrl || `https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg`,
+    };
+  }
+  getUpcomingSongsPreview(count = 3) {
+    const items = [];
+
+    for (const block of this.songQueue) {
+      if (items.length >= count) break;
+      if (block.type === 'stop') {
+        items.push({ isMarker: true, name: 'Stop Autoplay' });
+        break;
+      }
+      if (block.type === 'loop') {
+        items.push({ isMarker: true, name: 'Loop Previous Song Forever' });
+        break;
+      }
+      if (block.type === 'song') {
+        items.push(this._songToPreviewItem(block));
+      }
+    }
+
+    if (items.length < count && !items.some((i) => i.isMarker)) {
+      const source = this._getPreviewSource();
+      if (source.length && this.isLooping) {
+        const current = source[this.currentSongIndex];
+        if (current) {
+          items.push(this._songToPreviewItem(current));
+        }
+      } else if (source.length) {
+        const total = source.length;
+        let idx = this.currentSongIndex;
+        let steps = 0;
+        while (items.length < count && steps < total) {
+          idx = (idx + 1) % total;
+          steps++;
+          const candidate = source[idx];
+          if (!candidate) continue;
+          if (this.currentPlaylist && this.isSongTemporarilySkipped(candidate)) continue;
+          if (idx === this.currentSongIndex && !this.isPlaylistLooping) break;
+          items.push(this._songToPreviewItem(candidate));
+          if (idx === this.currentSongIndex) break;
+        }
+      }
+    }
+
+    return items.slice(0, count);
+  }
+  getPreviousSongsPreview(count = 3) {
+    const source = this._getPreviewSource();
+    const items = [];
+    if (!source.length) {
+      return items;
+    }
+    const total = source.length;
+    let idx = this.currentSongIndex;
+    let steps = 0;
+    while (items.length < count && steps < total) {
+      idx = (idx - 1 + total) % total;
+      steps++;
+      const candidate = source[idx];
+      if (!candidate) continue;
+      if (this.currentPlaylist && this.isSongTemporarilySkipped(candidate)) continue;
+      items.push(this._songToPreviewItem(candidate));
+      if (idx === this.currentSongIndex) break;
+    }
+    return items.slice(0, count);
+  }
+  _buildTransportPreviewPopup(items, label) {
+    const popup = document.createElement('div');
+    popup.className = 'transport-preview-popup';
+
+    const title = document.createElement('div');
+    title.className = 'transport-preview-title';
+    title.textContent = label;
+    popup.appendChild(title);
+
+    if (!items.length) {
+      const empty = document.createElement('div');
+      empty.className = 'transport-preview-empty';
+      empty.textContent = 'Nothing queued.';
+      popup.appendChild(empty);
+      return popup;
+    }
+
+    items.forEach((item) => {
+      const row = document.createElement('div');
+      row.className = 'transport-preview-item';
+      if (item.isMarker) {
+        row.classList.add('transport-preview-marker');
+        row.innerHTML = `<i class="fa fa-info-circle"></i><span>${this.escapeHtml(item.name)}</span>`;
+      } else {
+        row.innerHTML = `
+          <img class="transport-preview-thumb" src="${item.thumbnailUrl}" alt="" loading="lazy">
+          <div class="transport-preview-info">
+            <div class="transport-preview-name">${this.escapeHtml(item.name)}</div>
+            ${item.author ? `<div class="transport-preview-author">${this.escapeHtml(item.author)}</div>` : ''}
+          </div>
+        `;
+      }
+      popup.appendChild(row);
+    });
+
+    return popup;
+  }
+  showTransportPreview(anchorEl, direction) {
+    this.hideTransportPreview();
+    const items =
+      direction === 'next' ? this.getUpcomingSongsPreview(3) : this.getPreviousSongsPreview(3);
+    const label = direction === 'next' ? 'Next Up' : 'Previously Played';
+    const popup = this._buildTransportPreviewPopup(items, label);
+    document.body.appendChild(popup);
+
+    const rect = anchorEl.getBoundingClientRect();
+    const popupRect = popup.getBoundingClientRect();
+    let top = rect.top - popupRect.height - 10;
+    if (top < 8) {
+      top = rect.bottom + 10;
+    }
+    let left = rect.left + rect.width / 2 - popupRect.width / 2;
+    left = Math.max(8, Math.min(left, window.innerWidth - popupRect.width - 8));
+
+    popup.style.top = `${top + window.scrollY}px`;
+    popup.style.left = `${left + window.scrollX}px`;
+
+    requestAnimationFrame(() => popup.classList.add('visible'));
+    this._transportPreviewEl = popup;
+  }
+  hideTransportPreview() {
+    if (this._transportPreviewEl) {
+      this._transportPreviewEl.remove();
+      this._transportPreviewEl = null;
+    }
+  }
+  setupTransportHoverPreviews() {
+    const bind = (id, direction) => {
+      const btn = document.getElementById(id);
+      if (!btn) return;
+      let hoverTimer = null;
+      btn.addEventListener('mouseenter', () => {
+        clearTimeout(hoverTimer);
+        hoverTimer = setTimeout(() => this.showTransportPreview(btn, direction), 500);
+      });
+      btn.addEventListener('mouseleave', () => {
+        clearTimeout(hoverTimer);
+        this.hideTransportPreview();
+      });
+      btn.addEventListener('click', () => {
+        clearTimeout(hoverTimer);
+        this.hideTransportPreview();
+      });
+    };
+    bind('prevBtn', 'prev');
+    bind('nextBtn', 'next');
+    bind('npPrevBtn', 'prev');
+    bind('npNextBtn', 'next');
+  }
   seekMusic(e) {
     const isLocal = this.isLocalPlayback && this.localAudio;
     const duration = isLocal
@@ -4770,9 +4959,7 @@ class AdvancedMusicPlayer {
       this.pendingSeekTime = seekTime;
       this.pendingSeekTimestamp = Date.now();
     }
-    if (this.elements.timeDisplay) {
-      this.elements.timeDisplay.textContent = `${this.formatTime(seekTime)}/${this.formatTime(duration)}`;
-    }
+    this._syncTransportDisplays(seekTime, duration);
     this.updateHighlightedLyric(seekTime, this.currentLyrics ?? [], this.currentTimings ?? []);
   }
   seekBy(seconds) {
@@ -4786,21 +4973,7 @@ class AdvancedMusicPlayer {
         Math.min(duration, this.localAudio.currentTime + seconds)
       );
       const current = this.localAudio.currentTime;
-      const pct = (current / duration) * 100;
-      if (this.elements.progressBar) {
-        this.elements.progressBar.value = pct;
-      }
-      if (this.elements.timeDisplay) {
-        this.elements.timeDisplay.textContent = `${this.formatTime(current)}/${this.formatTime(duration)}`;
-      }
-      const npBar = document.getElementById('npProgressBar');
-      const npTime = document.getElementById('npTimeDisplay');
-      if (npBar) {
-        npBar.value = pct;
-      }
-      if (npTime) {
-        npTime.textContent = `${this.formatTime(current)}/${this.formatTime(duration)}`;
-      }
+      this._syncTransportDisplays(current, duration);
       this.updateHighlightedLyric(current, this.currentLyrics ?? [], this.currentTimings ?? []);
       return;
     }
@@ -4815,13 +4988,7 @@ class AdvancedMusicPlayer {
       const current = this.ytPlayer.getCurrentTime();
       const target = Math.max(0, Math.min(duration, current + seconds));
       this.ytPlayer.seekTo(target, true);
-      const pct = (target / duration) * 100;
-      if (this.elements.progressBar) {
-        this.elements.progressBar.value = pct;
-      }
-      if (this.elements.timeDisplay) {
-        this.elements.timeDisplay.textContent = `${this.formatTime(target)}/${this.formatTime(duration)}`;
-      }
+      this._syncTransportDisplays(target, duration);
       this.updateHighlightedLyric(target, this.currentLyrics ?? [], this.currentTimings ?? []);
     } catch (error) {
       console.warn('seekBy failed:', error);
@@ -4836,6 +5003,13 @@ class AdvancedMusicPlayer {
     }
     this.savedVolume = volume;
     this.saveSetting('volume', volume);
+    if (this.elements.volumeSlider && this.elements.volumeSlider.value != volume) {
+      this.elements.volumeSlider.value = volume;
+    }
+    const npVolumeSlider = document.getElementById('npVolumeSlider');
+    if (npVolumeSlider && npVolumeSlider.value != volume) {
+      npVolumeSlider.value = volume;
+    }
   }
   adjustVolume(change) {
     if (!this.elements.volumeSlider) {
@@ -4881,7 +5055,7 @@ class AdvancedMusicPlayer {
   togglePlaylistLoop() {
     this.isPlaylistLooping = !this.isPlaylistLooping;
     this.updatePlaylistLoopButton();
-    localStorage.setItem('isPlaylistLooping', this.isPlaylistLooping);
+    this.saveSetting('isPlaylistLooping', this.isPlaylistLooping);
   }
   updatePlaylistLoopButton() {
     if (this.elements.loopPlaylistBtn) {
@@ -4966,25 +5140,13 @@ class AdvancedMusicPlayer {
   restartCurrentSong() {
     if (this.isLocalPlayback && this.localAudio) {
       this.localAudio.currentTime = 0;
-      if (this.elements.progressBar) {
-        this.elements.progressBar.value = 0;
-      }
-      if (this.elements.timeDisplay) {
-        const duration = this.localAudio.duration || 0;
-        this.elements.timeDisplay.textContent = `0:00/${this.formatTime(duration)}`;
-      }
+      this._syncTransportDisplays(0, this.localAudio.duration || 0);
       this.updateHighlightedLyric(0, this.currentLyrics ?? [], this.currentTimings ?? []);
       return;
     }
     if (this.ytPlayer) {
       this.ytPlayer.seekTo(0, true);
-      if (this.elements.progressBar) {
-        this.elements.progressBar.value = 0;
-      }
-      if (this.elements.timeDisplay) {
-        const duration = this.ytPlayer.getDuration();
-        this.elements.timeDisplay.textContent = `0:00/${this.formatTime(duration)}`;
-      }
+      this._syncTransportDisplays(0, this.ytPlayer.getDuration());
       this.updateHighlightedLyric(0, this.currentLyrics ?? [], this.currentTimings ?? []);
     }
   }
@@ -5127,6 +5289,7 @@ class AdvancedMusicPlayer {
           return;
         }
         this.isPlaying = true;
+        this.updatePlayerUI();
         this.startListeningTimeTracking();
       });
     }
@@ -5762,6 +5925,7 @@ class AdvancedMusicPlayer {
         }
         const seekTime = (e.target.value / 100) * duration;
         this.localAudio.currentTime = seekTime;
+        this._syncTransportDisplays(seekTime, duration);
         this.updateHighlightedLyric(seekTime, this.currentLyrics ?? [], this.currentTimings ?? []);
         return;
       }
@@ -5771,6 +5935,7 @@ class AdvancedMusicPlayer {
       const duration = this.ytPlayer.getDuration();
       const seekTime = (e.target.value / 100) * duration;
       this.ytPlayer.seekTo(seekTime, true);
+      this._syncTransportDisplays(seekTime, duration);
       this.updateHighlightedLyric(seekTime, this.currentLyrics ?? [], this.currentTimings ?? []);
     });
     document.getElementById('npVolumeSlider')?.addEventListener('input', (e) => {
@@ -7143,6 +7308,49 @@ class AdvancedMusicPlayer {
       const url = `https://www.google.com/search?q=${songName}${author}%20lyrics`;
       window.open(url, '_blank');
     };
+    const autoFetchGeniusLyrics = async () => {
+      const btn = document.getElementById('autoFetchGeniusLyricsBtn');
+      const loadingIndicator = document.getElementById('geniusFetchLoading');
+      const lyricsInput = document.getElementById('lyricsInput');
+      if (!song.name) {
+        this.showNotification('This song has no title to search with.', 'error');
+        return;
+      }
+      if (btn) {
+        btn.disabled = true;
+      }
+      if (loadingIndicator) {
+        loadingIndicator.style.display = 'flex';
+      }
+      try {
+        const params = new URLSearchParams({ song: song.name });
+        if (song.author) {
+          params.set('artist', song.author);
+        }
+        const response = await fetch(`/api/genius?${params.toString()}`);
+        const data = await response.json();
+        if (!response.ok || !data.lyrics) {
+          throw new Error(data.error || 'No lyrics found');
+        }
+        if (lyricsInput) {
+          lyricsInput.value = data.lyrics;
+        }
+        this.showNotification('Lyrics fetched from Genius!', 'success');
+      } catch (error) {
+        console.error('Genius auto-fetch failed:', error);
+        this.showNotification(
+          'Could not auto-fetch lyrics. Try one of the manual search options below.',
+          'error'
+        );
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+        }
+        if (loadingIndicator) {
+          loadingIndicator.style.display = 'none';
+        }
+      }
+    };
     const prepareLyrics = () => {
       const lyricsText = document.getElementById('lyricsInput').value.trim();
       if (!lyricsText) {
@@ -7500,6 +7708,9 @@ class AdvancedMusicPlayer {
     document.getElementById('letrasBtn').addEventListener('click', searchLetras);
     document.getElementById('geniusBtn').addEventListener('click', searchGenius);
     document.getElementById('googleBtn').addEventListener('click', searchGoogle);
+    document
+      .getElementById('autoFetchGeniusLyricsBtn')
+      ?.addEventListener('click', autoFetchGeniusLyrics);
     document.addEventListener('keydown', handleKeyDown);
     this.lyricMakerCleanup = () => {
       document.getElementById('prepareLyricsBtn').removeEventListener('click', prepareLyrics);
@@ -7517,6 +7728,9 @@ class AdvancedMusicPlayer {
       document.getElementById('letrasBtn').removeEventListener('click', searchLetras);
       document.getElementById('geniusBtn').removeEventListener('click', searchGenius);
       document.getElementById('googleBtn').removeEventListener('click', searchGoogle);
+      document
+        .getElementById('autoFetchGeniusLyricsBtn')
+        ?.removeEventListener('click', autoFetchGeniusLyrics);
       document.addEventListener('keydown', handleKeyDown);
       tabHandlers.forEach(({ element: element, handler: handler }) => {
         element.removeEventListener('click', handler);
@@ -8355,7 +8569,7 @@ class AdvancedMusicPlayer {
       this.songQueue.shift();
       this._debouncedSaveQueue();
       this.isAutoplayEnabled = false;
-      this.saveSetting('isAutoplay', false);
+      this.saveSetting('autoplay', false);
       if (this.elements.autoplayBtn) {
         this.elements.autoplayBtn.classList.remove('active');
       }
@@ -9157,6 +9371,7 @@ class AdvancedMusicPlayer {
         nowPlayingSection.classList.add('controls-center');
         layoutToggleBtn.title = 'Controls aligned center';
       }
+      localStorage.setItem('controlsLayout', this.currentLayout);
     });
     const savedLayout = localStorage.getItem('controlsLayout');
     if (savedLayout) {
@@ -11836,6 +12051,7 @@ class AdvancedMusicPlayer {
     if (code === k.cycleFavicon && k.cycleFavicon !== '') {
       this.cycleFaviconAndTitle();
     } else if (code === k.toggleWebEmbed && k.toggleWebEmbed !== '') {
+      this.toggleWebEmbedOverlay();
     } else if (
       (code === k.togglePlayPause && k.togglePlayPause !== '') ||
       (code === k.togglePlayPause2 && k.togglePlayPause2 !== '')
