@@ -54,7 +54,7 @@
   --error-hover: #c82333;
   --youtube-red: #ff0000;
 }
-[data-theme='dark'] {
+[data-theme="dark"] {
   --bg-primary: #121212;
   --bg-secondary: #1e1e1e;
   --text-primary: #e0e0e0;
@@ -63,7 +63,7 @@
   --hover-color: #4d7c46;
   --border-color: #444;
 }
-[data-theme='custom'] {
+[data-theme="custom"] {
   --bg-primary: var(--custom-background, #1a2a32);
   --bg-secondary: var(--custom-secondary, #323d49);
   --text-primary: var(--custom-text-primary, #dde9f9);
@@ -167,7 +167,7 @@ body {
 .lyrics-maker-modal.hidden,
 .playlist-sidebar.expanded-mode .sidebar-song-item,
 .tab-pane,
-.tab[data-tab='nowplaying'],
+.tab[data-tab="nowplaying"],
 .toggle-input {
   display: none;
 }
@@ -370,11 +370,11 @@ body {
 }
 .billboard-song-details,
 .current-playlist-songs,
-.playlist-search-bar input[type='text'],
+.playlist-search-bar input[type="text"],
 .recently-played-info,
 .search-library-section,
-.shadow-controls input[type='color'],
-.shadow-controls input[type='range'] {
+.shadow-controls input[type="color"],
+.shadow-controls input[type="range"] {
   flex: 1 1 0%;
 }
 .search-results {
@@ -870,7 +870,7 @@ body {
 #cancelTimer::after,
 .custom-timer button::after,
 .timer-options button::after {
-  content: '';
+  content: "";
   background: rgba(255, 255, 255, 0.2);
   display: block;
   position: absolute;
@@ -939,7 +939,7 @@ body {
   background: var(--error-hover);
 }
 .timer-button.active::after {
-  content: '';
+  content: "";
   position: absolute;
   top: -3px;
   right: -3px;
@@ -1452,14 +1452,14 @@ body.dark-mode .thumbnail-preview {
 .welcome-skip-btn:hover {
   background-color: var(--border-color);
 }
-[data-theme='dark'] .welcome-modal .modal-content {
+[data-theme="dark"] .welcome-modal .modal-content {
   border-color: var(--hover-color);
   box-shadow: rgba(0, 0, 0, 0.3) 0 4px 16px;
 }
-[data-theme='dark'] .welcome-modal .select-container {
+[data-theme="dark"] .welcome-modal .select-container {
   background-color: rgba(255, 255, 255, 0.05);
 }
-[data-theme='dark'] .welcome-modal textarea {
+[data-theme="dark"] .welcome-modal textarea {
   box-shadow: rgba(0, 0, 0, 0.3) 0 1px 3px inset;
 }
 .main-container {
@@ -1839,10 +1839,10 @@ body.dark-mode .thumbnail-preview {
   opacity: 0.8;
   color: inherit;
 }
-[data-theme='dark'] .playlist-selection-btn {
+[data-theme="dark"] .playlist-selection-btn {
   box-shadow: rgba(0, 0, 0, 0.3) 0 2px 4px;
 }
-[data-theme='dark'] .playlist-selection-btn:hover {
+[data-theme="dark"] .playlist-selection-btn:hover {
   box-shadow: rgba(0, 0, 0, 0.4) 0 4px 8px;
 }
 #ytPlayer.fullscreen-video {
@@ -1886,7 +1886,7 @@ body:has(#ytPlayer.fullscreen-video) .now-playing {
 .video-hint i {
   color: var(--accent-color);
 }
-[data-theme='dark'] .video-hint {
+[data-theme="dark"] .video-hint {
   background: rgba(30, 30, 30, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
@@ -2047,7 +2047,7 @@ body:has(#ytPlayer.fullscreen-video) {
   border-radius: 12px;
 }
 .fullscreen-video-container::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0px;
   background: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0, rgba(255, 255, 255, 0.05) 100%);
@@ -2055,7 +2055,7 @@ body:has(#ytPlayer.fullscreen-video) {
   z-index: 1;
 }
 .fullscreen-video-container:empty::after {
-  content: 'Video will appear here';
+  content: "Video will appear here";
   color: rgba(255, 255, 255, 0.5);
   font-size: 14px;
   text-align: center;
@@ -2324,7 +2324,7 @@ body:has(#ytPlayer.fullscreen-video) {
 .color-picker-item {
   margin-bottom: 1rem;
 }
-.color-picker-item input[type='color'] {
+.color-picker-item input[type="color"] {
   width: 100%;
   height: 50px;
   border: currentcolor;
@@ -2393,7 +2393,7 @@ body:has(#ytPlayer.fullscreen-video) {
   font-weight: 500;
   color: var(--text-primary);
 }
-.color-picker-group input[type='color'] {
+.color-picker-group input[type="color"] {
   width: 100%;
   height: 40px;
   border: 2px solid var(--border-color);
@@ -2401,7 +2401,7 @@ body:has(#ytPlayer.fullscreen-video) {
   cursor: pointer;
   background: 0 0;
 }
-.color-picker-group input[type='range'] {
+.color-picker-group input[type="range"] {
   width: 60px;
   flex: 1 1 0%;
 }
@@ -2457,7 +2457,7 @@ body:has(#ytPlayer.fullscreen-video) {
   gap: 8px;
 }
 .number-input-group input,
-.number-input-group input[type='number'] {
+.number-input-group input[type="number"] {
   width: 80px;
   padding: 8px 12px;
   border: 1px solid var(--border-color);
@@ -2466,7 +2466,7 @@ body:has(#ytPlayer.fullscreen-video) {
   color: var(--text-primary);
   font-size: 14px;
 }
-.number-input-group input[type='number']:focus {
+.number-input-group input[type="number"]:focus {
   outline: 0;
   border-color: var(--accent-color);
   box-shadow: 0 0 0 2px var(--shadow-color);
@@ -4410,7 +4410,7 @@ body:has(#ytPlayer.fullscreen-video) {
 #importSongsTextarea,
 .import-instructions pre {
   padding: 10px;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   color: var(--text-primary);
 }
 .import-instructions li {
@@ -4605,7 +4605,7 @@ body:has(#ytPlayer.fullscreen-video) {
 .keybind-input.recording,
 .keybind-input.unbound:hover,
 .keybind-input:hover,
-.save-theme-row input[type='text']:focus,
+.save-theme-row input[type="text"]:focus,
 .saved-theme-item:hover,
 .sidebar-search-input:focus {
   border-color: var(--accent-color);
@@ -4663,9 +4663,9 @@ body:has(#ytPlayer.fullscreen-video) {
   background: var(--accent-color);
   color: var(--button-text-color);
 }
-.keybind-item label[for*='2']::after,
-.keybind-item:has(input[data-action*='2']) label::after {
-  content: ' (Alt)';
+.keybind-item label[for*="2"]::after,
+.keybind-item:has(input[data-action*="2"]) label::after {
+  content: " (Alt)";
   color: var(--text-secondary);
   font-size: 0.8em;
   font-style: italic;
@@ -4871,10 +4871,10 @@ body:has(#ytPlayer.fullscreen-video) {
   border-bottom: 1px solid var(--border-color);
   transition: color 0.2s;
 }
-.library-option-item:hover input[type='checkbox'] {
+.library-option-item:hover input[type="checkbox"] {
   accent-color: var(--accent-color);
 }
-.library-option-item input[type='checkbox'] {
+.library-option-item input[type="checkbox"] {
   margin: 0;
   padding: 0;
   cursor: pointer;
@@ -5058,7 +5058,7 @@ body:has(#ytPlayer.fullscreen-video) {
   transition: 0.2s;
 }
 .discord-slider::before {
-  content: '';
+  content: "";
   position: absolute;
   width: 15px;
   height: 15px;
@@ -5311,7 +5311,7 @@ body:has(#ytPlayer.fullscreen-video) {
   gap: 8px;
 }
 .discord-section-label::after {
-  content: '';
+  content: "";
   flex: 1 1 0%;
   height: 1px;
   background: var(--border-color);
@@ -6026,7 +6026,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   gap: 7px;
   margin-bottom: 10px;
 }
-.save-theme-row input[type='text'] {
+.save-theme-row input[type="text"] {
   flex: 1 1 0%;
   background: var(--bg-secondary);
   color: var(--text-primary);
@@ -6038,7 +6038,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   outline: 0;
   transition: border-color 0.2s;
 }
-.save-theme-row input[type='text']::placeholder {
+.save-theme-row input[type="text"]::placeholder {
   color: var(--text-secondary);
   opacity: 0.55;
 }
@@ -6064,7 +6064,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   overflow-y: auto;
 }
 .saved-themes-list:empty::after {
-  content: 'No saved themes yet.';
+  content: "No saved themes yet.";
   display: block;
   font-size: 0.78rem;
   color: var(--text-secondary);
@@ -6324,7 +6324,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   color: var(--border-color);
 }
 .fav-thumb.is-playing::after {
-  content: '';
+  content: "";
   inset: 0px;
   border: 2px solid var(--accent-color);
 }
@@ -6433,7 +6433,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   font-size: 0.85em;
 }
 .fav-thumb.is-playing::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0px;
   border: 2px solid var(--accent-color);
@@ -6531,7 +6531,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   gap: 6px;
 }
 .load-more-youtube-btn::before {
-  content: '↓';
+  content: "↓";
   font-size: 13px;
   transition: transform 0.2s;
 }
@@ -6662,7 +6662,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   font-size: 0.9rem;
   text-align: center;
 }
-.tab[data-tab='nowplaying'].visible {
+.tab[data-tab="nowplaying"].visible {
   display: inline-block;
 }
 .np-view {
@@ -6719,7 +6719,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   font-size: clamp(0.85rem, 1.4vw, 1rem);
   margin-top: 3px;
 }
-.np-progress-wrap input[type='range'] {
+.np-progress-wrap input[type="range"] {
   width: 100%;
   cursor: pointer;
 }
@@ -6787,7 +6787,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   gap: 10px;
   font-size: clamp(0.82rem, 1.3vw, 0.95rem);
 }
-.np-volume input[type='range'] {
+.np-volume input[type="range"] {
   flex: 1 1 0%;
   cursor: pointer;
 }
@@ -7822,7 +7822,6 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 .song-edit-save-btn:hover {
   background-color: var(--hover-color);
 }
-/* Drag-to-link visual states */
 .song-item.drag-audio-over {
   outline: 2px dashed var(--accent-color);
   outline-offset: -2px;
@@ -7854,8 +7853,6 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   color: var(--error-color);
   border-color: var(--error-color);
 }
-
-/* Wrap input + filter btn as one unified input */
 .library-search-wrap {
   position: relative;
   display: flex;
@@ -7870,8 +7867,6 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 .library-search-wrap:focus-within {
   border-color: var(--accent-color);
 }
-
-/* Strip the input's own border — the wrapper owns it now */
 #librarySearch {
   flex: 1 1 0%;
   margin-right: 0;
@@ -7884,8 +7879,6 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   outline: none;
   min-width: 0;
 }
-
-/* Filter button flush inside wrapper */
 .lib-filter-btn {
   flex-shrink: 0;
   display: flex;
@@ -7909,8 +7902,6 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 .lib-filter-btn.is-active {
   color: var(--accent-color);
 }
-
-/* Popover panel */
 .lib-filter-panel {
   display: none;
   position: absolute;
@@ -7944,8 +7935,6 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   align-items: center;
   gap: 5px;
 }
-
-/* 3-way toggle */
 .lib-filter-toggle {
   display: flex;
   border: 1px solid var(--border-color);
@@ -7975,8 +7964,6 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 .lib-filter-toggle button:hover:not(.active) {
   background: var(--bg-primary);
 }
-
-/* ===== Shazam Identify Modal ===== */
 .sz-overlay {
   position: fixed;
   inset: 0;
@@ -8093,7 +8080,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   gap: 0.35rem;
   white-space: nowrap;
 }
-.sz-gain-row input[type='range'] {
+.sz-gain-row input[type="range"] {
   flex: 1;
 }
 
@@ -8776,8 +8763,6 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   background: var(--bg-primary);
   flex-shrink: 0;
 }
-
-/* ---------- Song detail card ---------- */
 
 .global-library-song-detail-card {
   display: none;

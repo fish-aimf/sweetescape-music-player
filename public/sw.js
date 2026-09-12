@@ -1,15 +1,8 @@
 const CACHE_PREFIX = "se-cache-";
+
 const VERSION_TIMEOUT_MS = 2500;
 
-const STATIC_ASSETS = [
-  "/",
-  "/index.html",
-  "/style.css",
-  "/all.min.css",
-  "/script.js",
-  "/karaoke-encoder.js",
-  "/favicon.svg"
-];
+const STATIC_ASSETS = [ "/", "/index.html", "/style.css", "/all.min.css", "/script.js", "/karaoke-encoder.js", "/favicon.svg" ];
 
 function timeout(ms) {
   return new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), ms));
@@ -28,10 +21,9 @@ async function setStoredVersion(cacheName, version) {
 }
 
 async function fetchLiveVersion() {
-  const res = await Promise.race([
-    fetch("/current-version.txt", { cache: "no-store" }),
-    timeout(VERSION_TIMEOUT_MS)
-  ]);
+  const res = await Promise.race([ fetch("/current-version.txt", {
+    cache: "no-store"
+  }), timeout(VERSION_TIMEOUT_MS) ]);
   if (!res.ok) throw new Error("bad response");
   return (await res.text()).trim();
 }
@@ -43,76 +35,64 @@ async function precache(cacheName) {
 
 async function deleteOldCaches(currentCacheName) {
   const names = await caches.keys();
-  await Promise.all(
-    names
-      .filter((n) => n.startsWith(CACHE_PREFIX) && n !== currentCacheName)
-      .map((n) => caches.delete(n))
-  );
+  await Promise.all(names.filter(n => n.startsWith(CACHE_PREFIX) && n !== currentCacheName).map(n => caches.delete(n)));
 }
 
 function cacheNameFor(version) {
   return `${CACHE_PREFIX}${version || "initial"}`;
 }
+
 async function refreshAllAssets(newVersion) {
   const newCacheName = cacheNameFor(newVersion);
   const cache = await caches.open(newCacheName);
-  await Promise.all(
-    STATIC_ASSETS.map(async (url) => {
-      try {
-        const res = await fetch(url, { cache: "no-store" });
-        if (res.ok) await cache.put(url, res.clone());
-      } catch (err) {
-        console.warn("[sw] failed to refresh", url, err);
-      }
-    })
-  );
+  await Promise.all(STATIC_ASSETS.map(async url => {
+    try {
+      const res = await fetch(url, {
+        cache: "no-store"
+      });
+      if (res.ok) await cache.put(url, res.clone());
+    } catch (err) {
+      console.warn("[sw] failed to refresh", url, err);
+    }
+  }));
   await setStoredVersion(newCacheName, newVersion);
   await deleteOldCaches(newCacheName);
 }
 
-self.addEventListener("install", (event) => {
-  event.waitUntil(
-    (async () => {
-      let version = "initial";
-      try {
-        version = await fetchLiveVersion();
-      } catch {
-      }
-      const cacheName = cacheNameFor(version);
-      await precache(cacheName);
-      await setStoredVersion(cacheName, version);
-      self.skipWaiting();
-    })()
-  );
+self.addEventListener("install", event => {
+  event.waitUntil((async () => {
+    let version = "initial";
+    try {
+      version = await fetchLiveVersion();
+    } catch {}
+    const cacheName = cacheNameFor(version);
+    await precache(cacheName);
+    await setStoredVersion(cacheName, version);
+    self.skipWaiting();
+  })());
 });
 
-self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    (async () => {
-      const names = await caches.keys();
-      const current = names.find((n) => n.startsWith(CACHE_PREFIX));
-      if (current) await deleteOldCaches(current);
-      await self.clients.claim();
-    })()
-  );
+self.addEventListener("activate", event => {
+  event.waitUntil((async () => {
+    const names = await caches.keys();
+    const current = names.find(n => n.startsWith(CACHE_PREFIX));
+    if (current) await deleteOldCaches(current);
+    await self.clients.claim();
+  })());
 });
 
-self.addEventListener("fetch", (event) => {
+self.addEventListener("fetch", event => {
   const url = new URL(event.request.url);
-
   if (url.origin !== self.location.origin) {
-    return; 
+    return;
   }
-
   if (url.pathname.startsWith("/api/")) {
     return;
   }
-
   if (url.pathname === "/current-version.txt") {
     event.respondWith(handleVersionRequest());
     return;
   }
-
   if (event.request.method === "GET") {
     event.respondWith(handleStaticRequest(event.request));
   }
@@ -120,9 +100,11 @@ self.addEventListener("fetch", (event) => {
 
 async function handleStaticRequest(request) {
   const names = await caches.keys();
-  const cacheName = names.find((n) => n.startsWith(CACHE_PREFIX));
+  const cacheName = names.find(n => n.startsWith(CACHE_PREFIX));
   if (cacheName) {
-    const cached = await caches.match(request, { cacheName });
+    const cached = await caches.match(request, {
+      cacheName: cacheName
+    });
     if (cached) return cached;
   }
   try {
@@ -133,30 +115,36 @@ async function handleStaticRequest(request) {
     }
     return res;
   } catch (err) {
-    return new Response("Offline and not cached.", { status: 503 });
+    return new Response("Offline and not cached.", {
+      status: 503
+    });
   }
 }
 
 async function handleVersionRequest() {
   const names = await caches.keys();
-  const cacheName = names.find((n) => n.startsWith(CACHE_PREFIX));
+  const cacheName = names.find(n => n.startsWith(CACHE_PREFIX));
   const storedVersion = cacheName ? await getStoredVersion(cacheName) : null;
-
   let liveVersion;
   try {
     liveVersion = await fetchLiveVersion();
   } catch {
-    return new Response(storedVersion || "unknown", { status: 200 });
+    return new Response(storedVersion || "unknown", {
+      status: 200
+    });
   }
-
   if (liveVersion !== storedVersion) {
-    refreshAllAssets(liveVersion)
-      .then(async () => {
-        const clientsList = await self.clients.matchAll({ type: "window" });
-        clientsList.forEach((c) => c.postMessage({ type: "SW_UPDATED", version: liveVersion }));
-      })
-      .catch((err) => console.warn("[sw] background refresh failed", err));
+    refreshAllAssets(liveVersion).then(async () => {
+      const clientsList = await self.clients.matchAll({
+        type: "window"
+      });
+      clientsList.forEach(c => c.postMessage({
+        type: "SW_UPDATED",
+        version: liveVersion
+      }));
+    }).catch(err => console.warn("[sw] background refresh failed", err));
   }
-
-  return new Response(liveVersion, { status: 200 });
+  return new Response(liveVersion, {
+    status: 200
+  });
 }

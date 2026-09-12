@@ -1,28 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
    <head>
-      
+
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-         
+
         <meta name="theme-color" content="#1a1a1a">
         <meta name="description" content="SweetEscape: Seamless ad-free music streaming and lyrics player. Create, play, and explore songs online — adless, best, free, quality experience SE.">
         <link rel="canonical" href="https://sweetescape.vercel.app/">
         <title>SweetEscape – Music Player</title>
         <link rel="icon" type="image/svg+xml" href="favicon.svg">
 
-      
+
         <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="preconnect" href="https://img.youtube.com" crossorigin>  
+        <link rel="preconnect" href="https://img.youtube.com" crossorigin>
 
         <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
-        <link rel="dns-prefetch" href="https://fonts.googleapis.com">
-        <link rel="dns-prefetch" href="https://i.ytimg.com"> 
+        <link rel="dns-prefetch" href="https://i.ytimg.com">
 
 
-      
+
         <style>
           :root {
             --bg-primary:#f4f4f4;--bg-secondary:#fff;--text-primary:#333;
@@ -47,11 +44,11 @@
           }
         </style>
 
-      
+
          <link rel="stylesheet" href="all.min.css">
          <link rel="stylesheet" href="style.css">
          <noscript><link rel="stylesheet" href="all.min.css"><link rel="stylesheet" href="style.css"></noscript>
-      
+
         <meta property="og:title" content="SweetEscape – Music Player">
         <meta property="og:description" content="Seamless ad-free music streaming packed with features.">
         <meta property="og:image" content="https://sweetescape.vercel.app/websitecover.png">
@@ -62,9 +59,7 @@
         <meta name="twitter:title" content="SweetEscape – Music Player">
         <meta name="twitter:description" content="Seamless ad-free music streaming packed with features.">
         <meta name="twitter:image" content="https://sweetescape.vercel.app/websitecover.png">
-      
-      
-      
+
         <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 
       </head>
@@ -112,12 +107,9 @@
            </span>
          </div>
 
-         
-         <!-- Main container for side-by-side layout -->
+
          <div class="main-container">
-            <!-- Additional Details Panel (Left Side) -->
             <div id="additionalDetails" class="additional-details">
-               <!-- Content will be rendered dynamically via JavaScript -->
                <h3 class="additional-details-header">Music Explorer</h3>
                <div class="additional-details-section">
                   <h4 class="section-title">Recommended</h4>
@@ -141,7 +133,6 @@
                   </div>
                </div>
             </div>
-            <!-- Player Area (Right Side) -->
             <div class="player-area">
                <div class="tabs">
                   <button class="tab" data-tab="nowplaying">Now Playing</button>
@@ -150,7 +141,6 @@
                   <button class="tab" data-tab="lyrics">Lyrics</button>
                </div>
                <div class="tab-content">
-                  <!-- Library Tab -->
                   <div class="tab-pane active" id="library">
                      <div class="library-manager">
                         <div class="search-section" title="find some premade playlists from famous artists">
@@ -192,7 +182,7 @@
                            <i class="fas fa-search"></i> Global library
                            </button>
                            <div class="modify-library-container">
-                              <button id="modifyLibraryBtn" class="action-button" 
+                              <button id="modifyLibraryBtn" class="action-button"
                                  title="Click here to add songs via YouTube URL or import/export">
                               <i class="fas fa-edit"></i> Modify Library
                               </button>
@@ -209,7 +199,6 @@
                         </div>
                      </div>
                   </div>
-                  <!-- Playlists Tab -->
                   <div class="tab-pane" id="playlists">
                      <div class="playlist-manager">
                         <div class="playlist-search-bar">
@@ -281,7 +270,6 @@
          <div id="discordRpcModal" class="modal discord-rpc-modal-overlay">
   <div class="modal-content discord-rpc-modal">
 
-    <!-- Header -->
     <div class="discord-modal-header">
       <div class="discord-modal-logo"><i class="fab fa-discord"></i></div>
       <div class="discord-modal-header-text">
@@ -293,7 +281,6 @@
 
     <div class="discord-modal-body">
 
-      <!-- Enable toggle -->
       <div class="discord-enable-row">
         <div class="discord-enable-label">
           <strong>Enable Rich Presence</strong>
@@ -305,7 +292,6 @@
         </label>
       </div>
 
-      <!-- Banners -->
       <div class="discord-error-banner" id="discordErrorBanner">
         <i class="fas fa-exclamation-circle"></i>
         <span id="discordErrorText"></span>
@@ -323,10 +309,8 @@
         </div>
       </div>
 
-      <!-- 2-column grid -->
       <div class="discord-modal-grid">
 
-        <!-- LEFT: connection status -->
         <div class="discord-modal-col-left">
           <div class="discord-status-card">
             <div class="discord-status-card-header">
@@ -368,7 +352,6 @@
           </div>
         </div>
 
-        <!-- RIGHT: preview + customize -->
         <div class="discord-modal-col-right">
 
           <div class="discord-section-label">What's Being Sent</div>
@@ -405,9 +388,9 @@
           </div>
 
         </div>
-      </div><!-- /grid -->
+      </div>
 
-    </div><!-- /body -->
+    </div>
 
     <div class="discord-modal-footer">
       <button class="discord-btn discord-btn-danger discord-btn-sm" id="discordDisableBtn"><i class="fas fa-power-off"></i> Disable</button>
@@ -421,13 +404,12 @@
             <div class="modal-content">
                <span id="closeLibraryModal" class="close-btn">&times;</span>
                <h2>Modify Your Local Library</h2>
-               
-               <!-- Tab Navigation Bar -->
+
                <div class="library-modification-tab-navigation">
                   <button id="libraryModificationTabAddSong" class="library-modification-tab-btn active">Add Song</button>
                   <button id="libraryModificationTabImportExport" class="library-modification-tab-btn">Import/Export</button>
                </div>
-               
+
                <div class="add-song-section">
                   <div class="input-group">
                      <input type="text" id="songName" placeholder="Song Name">
@@ -476,8 +458,8 @@ Another Playlist{
                      <li>Songs with commas in the title are supported</li>
                   </ul>
                </div>
-               <textarea 
-                  id="importSongsTextarea" 
+               <textarea
+                  id="importSongsTextarea"
                   placeholder="Example formats:
                   Song Name, https://youtube.com/...
                   Another Song, https://youtube.com/...
@@ -518,7 +500,6 @@ Another Playlist{
                      <button id="closeAppAction" class="action-btn">Close App</button>
                   </div>
                </div>
-               <!-- Set Timer section -->
                <div class="timer-section">
                   <h3>Set Timer</h3>
                   <div class="timer-options">
@@ -534,7 +515,6 @@ Another Playlist{
                      <button id="setCustomTimer">Set</button>
                   </div>
                </div>
-               <!-- Set Specific Stop Time section -->
                <div class="specific-time-section" id="specificTimeSection">
                   <h3>Set Specific Stop Time</h3>
                   <div class="specific-time-input">
@@ -548,8 +528,6 @@ Another Playlist{
                </div>
             </div>
          </div>
-         <!-- Current Playlist Sidebar -->
-         <!-- Updated Current Playlist Sidebar -->
          <div id="currentPlaylistSidebar" class="playlist-sidebar">
              <div class="sidebar-header">
                  <div class="sidebar-title-section">
@@ -566,30 +544,27 @@ Another Playlist{
                      <button id="closeSidebarBtn"><i class="fas fa-times"></i></button>
                  </div>
              </div>
-             
-             <!-- Search bar (only visible in expanded mode) -->
+
              <div class="sidebar-search-container">
-                 <input 
-                     type="text" 
-                     id="sidebarSearchInput" 
-                     class="sidebar-search-input" 
+                 <input
+                     type="text"
+                     id="sidebarSearchInput"
+                     class="sidebar-search-input"
                      placeholder="Search songs in playlist..."
                  >
              </div>
-             
+
              <div id="sidebarPlaylistSongs" class="sidebar-songs-list">
              </div>
          </div>
-         <!-- Now Playing Section -->
          <div class="now-playing">
-            <!-- Progress Bar Added -->
             <div class="music-progress">
-               <input 
-                  type="range" 
-                  id="musicProgressBar" 
-                  min="0" 
-                  max="100" 
-                  value="0" 
+               <input
+                  type="range"
+                  id="musicProgressBar"
+                  min="0"
+                  max="100"
+                  value="0"
                   step="0.1"
                   >
                <div id="timeDisplay" class="time-display">0:00/0:00</div>
@@ -608,9 +583,8 @@ Another Playlist{
                <button id="playPauseBtn"><i class="fas fa-play"></i></button>
                <button id="nextBtn"><i class="fas fa-step-forward"></i></button>
                <button id="loopBtn"><i class="fas fa-redo"></i></button>
-               <button id="autoplayBtn"><i class="fas fa-forward"></i></button> 
+               <button id="autoplayBtn"><i class="fas fa-forward"></i></button>
                <button id="showPlaylistBtn"><i class="fas fa-list"></i></button>
-               <!-- playback speed control -->
                <div class="speed-control">
                   <button id="speedBtn">1x</button>
                   <div class="speed-options" id="speedOptions">
@@ -627,11 +601,11 @@ Another Playlist{
             </div>
             <div class="volume-control">
                <i class="fas fa-volume-down"></i>
-               <input 
-                  type="range" 
-                  id="volumeSlider" 
-                  min="0" 
-                  max="100" 
+               <input
+                  type="range"
+                  id="volumeSlider"
+                  min="0"
+                  max="100"
                   value="50"
                   >
                <i class="fas fa-volume-up"></i>
@@ -642,7 +616,6 @@ Another Playlist{
             <i class="fas fa-eye-slash"></i>
             </button>
          </div>
-         <!-- Layout Toggle Button -->
          <div class="layout-toggle">
             <button id="layoutToggleBtn" title="Change controls layout">
             <i class="fas fa-arrows-alt-h"></i>
@@ -650,7 +623,6 @@ Another Playlist{
          </div>
       </div>
       <a href="https://github.com/fish-aimf" class="watermark" target="_blank">Made by fish-aimf</a>
-      <!-- Fullscreen Lyrics Modal -->
       <div id="lyricsFullscreenModal" class="lyrics-fullscreen-modal">
          <div class="lyrics-fullscreen-container">
             <div class="lyrics-fullscreen-header">
@@ -666,7 +638,6 @@ Another Playlist{
             </div>
             <div class="lyrics-fullscreen-content">
                <div id="fullscreenLyricsDisplay" class="fullscreen-lyrics-display">
-                  <!-- Lyrics will be populated here -->
                </div>
             </div>
          </div>
@@ -720,8 +691,8 @@ Another Playlist{
                <label for="transcriptInput" class="subtitles-import-input-label">
                Paste YouTube transcript here:
                </label>
-               <textarea 
-                  id="transcriptInput" 
+               <textarea
+                  id="transcriptInput"
                   class="subtitles-import-transcript-textarea"
                   placeholder="Transcript will appear here automatically, or paste manually..."
                   ></textarea>
@@ -734,7 +705,7 @@ Another Playlist{
                Converted Lyrics (Edit if needed):
                </label>
                <textarea
-                  id="lyricsPreview" 
+                  id="lyricsPreview"
                   class="subtitles-import-lyrics-textarea"
                   ></textarea>
                <div class="subtitles-import-action-buttons">
@@ -751,8 +722,6 @@ Another Playlist{
             </div>
          </div>
       </div>
-      <!-- Settings Modal -->
-      <!-- Settings Modal -->
       <div id="settingsModal" class="settings-modal">
          <div class="settings-modal-content">
             <div class="settings-modal-header">
@@ -762,7 +731,6 @@ Another Playlist{
                </button>
             </div>
             <div class="settings-modal-body">
-               <!-- Settings Tabs -->
                <div class="settings-tabs">
                   <button class="settings-tab-btn active" data-tab="theme">
                   <i class="fas fa-palette"></i>
@@ -785,9 +753,7 @@ Another Playlist{
                   Additional
                   </button>
                </div>
-               <!-- Tab Contents -->
                <div class="settings-tab-content">
-                  <!-- Theme Tab -->
                   <div class="tab-panel active" id="themePanel">
                      <div class="setting-group">
                         <label>Theme Mode:</label>
@@ -878,7 +844,6 @@ Another Playlist{
                         </div>
                      </div>
                   </div>
-                  <!-- Recommendation Tab -->
                   <div class="tab-panel" id="recommendationPanel">
                     <div class="setting-group">
                       <label for="recentlyPlayedStorageLimit">Store Last Songs:</label>
@@ -888,13 +853,13 @@ Another Playlist{
                       </div>
                       <p class="setting-description">Maximum number of recently played songs to store</p>
                     </div>
-                  
+
                     <div class="setting-group">
                       <label>Section Order &amp; Display Limits:</label>
                       <p class="setting-description">Use ↑↓ to reorder. Set to 0 to hide a section.</p>
                       <div id="sectionOrderList" class="section-order-list"></div>
                     </div>
-                  
+
                     <div class="setting-group">
                       <button id="saveDiscoverMoreSettings" class="save-settings-btn">Save Recommendation Settings</button>
                     </div>
@@ -1029,11 +994,9 @@ Another Playlist{
                         </div>
                      </div>
                   </div>
-                  <!-- Feedback Tab -->
                   <div class="tab-panel" id="feedbackPanel">
                      <iframe data-src="https://docs.google.com/forms/d/e/1FAIpQLSd_TCuV0fb6j0Psu2-QowYAlK440IOd4f1XxhzswTfWOkLHyw/viewform?embedded=true" width="100%" height="600" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
                   </div>
-                  <!-- Additional Tab -->
                   <div class="tab-panel" id="additionalPanel">
                      <div class="setting-group">
                         <label for="adsToggle">Enable Advertisements:</label>
@@ -1109,11 +1072,9 @@ Another Playlist{
                <button class="recently-played-close" id="closeRecentlyPlayedModal">×</button>
             </div>
             <div class="recently-played-content" id="recentlyPlayedContent">
-               <!-- Songs will be populated here by JavaScript -->
             </div>
          </div>
       </div>
-      <!-- Lyrics Maker Modal -->
       <div id="lyricsModal" class="lyrics-maker-modal hidden">
          <div class="lyrics-maker-content">
             <div class="lyrics-header">
@@ -1126,7 +1087,7 @@ Another Playlist{
                <button class="lyrics-nav-item" data-tab="exportTab">3. Export</button>
             </div>
             <div id="setupTab" class="lyrics-tab active">
-               
+
                <div class="lyrics-section">
                   <h2>Enter Lyrics</h2>
                   <div class="lyrics-search-buttons">
@@ -1147,12 +1108,9 @@ Another Playlist{
                <button id="nextToRecordBtn">Next: Record Timing</button>
             </div>
             <div id="recordTab" class="lyrics-tab">
-            <!-- Top Section: Video + Visual Progress Timeline -->
             <div class="lyricmaker-top-container">
-               <!-- Video Container (Left Side) -->
                <div id="videoContainer" class="lyricmaker-video-box"></div>
-               
-               <!-- Visual Timeline (Right Side) -->
+
                <div class="lyricmaker-timeline-container">
                   <div class="lyricmaker-progress-bar-wrapper">
                      <div class="lyricmaker-progress-bar" id="lyricmakerProgressBarClick">
@@ -1161,22 +1119,18 @@ Another Playlist{
                      </div>
                   </div>
 
-                  <!-- Single line for all triangle markers -->
                   <div class="lyricmaker-marker-lanes" id="lyricmakerSingleLane"></div>
-                  
-                  <!-- Lyrics preview area under markers -->
+
                   <div id="lyricmakerPreviewArea" class="lyricmaker-preview-area"></div>
                </div>
             </div>
-            
-            <!-- Lyrics Display Boxes (Compact) -->
+
             <div class="lyricmaker-lyrics-display">
                <div id="prevLine" class="lyricmaker-line-box lyricmaker-prev"></div>
                <div id="currentLine" class="lyricmaker-line-box lyricmaker-current">Press "Start Recording" when ready</div>
                <div id="nextLine" class="lyricmaker-line-box lyricmaker-next"></div>
             </div>
-            
-            <!-- Controls Row (Flush, Full Width) -->
+
             <div class="lyricmaker-controls-row">
                <button id="startRecording" class="lyricmaker-control-btn">Start Recording</button>
                <button id="redoLineBtn" class="lyricmaker-control-btn" disabled>↺ Redo</button>
@@ -1185,8 +1139,7 @@ Another Playlist{
                <button id="finishRecording" class="lyricmaker-control-btn" disabled>Finish</button>
                <div id="currentTime" class="lyricmaker-time-display">0:00</div>
             </div>
-            
-            <!-- Progress List (Scrollable) -->
+
             <div id="progressContainer" class="lyricmaker-progress-list">
                <h3>Progress</h3>
             </div>
@@ -1206,7 +1159,6 @@ Another Playlist{
             </div>
          </div>
       </div>
-      <!-- Find Songs Feature - Outside app-container -->
       <div id="findSongsDiv" class="find-songs-container" style="display: none;">
       <div class="find-songs-content">
          <div class="find-songs-header">
@@ -1214,28 +1166,22 @@ Another Playlist{
             <button id="closeFindSongs" class="close-btn">&times;</button>
          </div>
          <div class="find-songs-body">
-            <!-- Recommendations Panel on Left -->
             <div class="recommendations-panel" id="recommendationsPanel">
-               <!-- Top Songs of the Week Section -->
                <div class="recommendation-section">
                   <h3 class="recommendation-title" style="cursor: pointer;" onclick="musicPlayer.openBillboardHot100Modal()">
                       Billboard Hot 100
                       <div style="font-size: 10px; font-weight: normal; color: var(--text-secondary); margin-top: 2px;" id="billboardLastUpdated">Loading...</div>
                   </h3>
                   <div id="topSongsContainer" class="top-songs-container">
-                     <!-- Will be populated by JavaScript -->
                   </div>
                </div>
-               <!-- Random Recommendations Section -->
                <div class="recommendation-section">
                   <h3 class="recommendation-title">Discover Something New</h3>
                   <div id="randomSongsContainer" class="random-songs-container">
-                     <!-- Will be populated by JavaScript -->
                   </div>
                   <button id="refreshRandomBtn" class="refresh-random-btn">Refresh</button>
                </div>
             </div>
-            <!-- Main Content on Right -->
             <div class="find-songs-main-content">
                <div class="global-library-search-wrapper">
                   <input type="text" id="globalLibraryDebouncedSearchBar" class="global-library-debounced-search-bar" placeholder="Search for an artist or song...">
@@ -1249,13 +1195,12 @@ Another Playlist{
       </div>
       <div id="downloadModal" class="dl-overlay" style="display:none;" role="dialog" aria-modal="true" aria-label="Download songs">
         <div class="dl-modal">
-      
+
           <div class="dl-header">
             <span class="dl-title"><i class="fas fa-download"></i> Download</span>
             <button class="dl-close" id="dlCloseBtn" title="Close"><i class="fas fa-times"></i></button>
           </div>
-      
-          <!-- Mode selector -->
+
           <div class="dl-modes">
             <button class="dl-mode-btn active" data-mode="current" id="dlModeCurrent">
               <i class="fas fa-music"></i>
@@ -1270,8 +1215,7 @@ Another Playlist{
               <span>YouTube URL</span>
             </button>
           </div>
-      
-          <!-- Panel: Current song -->
+
           <div class="dl-panel" id="dlPanelCurrent">
             <div class="dl-current-card" id="dlCurrentCard">
               <div class="dl-current-thumb" id="dlCurrentThumb"></div>
@@ -1284,8 +1228,7 @@ Another Playlist{
               </button>
             </div>
           </div>
-      
-          <!-- Panel: Search library -->
+
           <div class="dl-panel" id="dlPanelSearch" style="display:none;">
             <div class="dl-search-wrap">
               <i class="fas fa-search dl-search-icon"></i>
@@ -1293,8 +1236,7 @@ Another Playlist{
             </div>
             <div id="dlSearchResults" class="dl-search-results" hidden></div>
           </div>
-      
-          <!-- Panel: YouTube URL -->
+
           <div class="dl-panel" id="dlPanelUrl" style="display:none;">
             <div class="dl-search-wrap">
               <i class="fab fa-youtube dl-search-icon"></i>
@@ -1302,8 +1244,7 @@ Another Playlist{
             </div>
             <button class="dl-add-url-btn" id="dlAddUrlBtn"><i class="fas fa-plus"></i> Add to queue</button>
           </div>
-      
-          <!-- Queue -->
+
           <div class="dl-queue-section" id="dlQueueSection" style="display:none;">
             <div class="dl-queue-header">
               <span class="dl-queue-label">Queue</span>
@@ -1313,46 +1254,46 @@ Another Playlist{
             </div>
             <div id="dlQueueList" class="dl-queue-list"></div>
           </div>
-      
+
         </div>
       </div>
       <div id="shazamModal" class="sz-overlay" style="display:none;" role="dialog" aria-modal="true" aria-label="Identify song">
         <div class="sz-modal">
-      
+
           <div class="sz-header">
             <span class="sz-title"><i class="fas fa-search"></i> Identify Song</span>
             <button class="sz-close" id="szCloseBtn" title="Close"><i class="fas fa-times"></i></button>
           </div>
-      
+
           <div class="sz-panel">
-      
+
             <div class="sz-source-row">
               <button class="sz-source-btn" id="szCaptureTabBtn"><i class="fas fa-desktop"></i><span>Tab / System audio</span></button>
               <button class="sz-source-btn" id="szMicBtn"><i class="fas fa-microphone"></i><span>Microphone</span></button>
               <button class="sz-source-btn" id="szUploadBtn"><i class="fas fa-file-audio"></i><span>Upload clip</span></button>
               <input type="file" id="szFileInput" accept="audio/*,video/*" hidden>
             </div>
-      
+
             <div class="sz-gain-row">
               <label for="szGainSlider"><i class="fas fa-sliders-h"></i> Input gain</label>
               <input type="range" id="szGainSlider" min="0.5" max="4" step="0.1" value="1.5">
             </div>
-      
+
             <div class="sz-meter"><div class="sz-meter-fill" id="szMeterFill"></div></div>
-      
+
             <div class="sz-wave-wrap" id="szWaveWrap">
               <canvas id="szWaveCanvas" width="300" height="70"></canvas>
             </div>
             <div class="sz-sel-info" id="szSelInfo">Drag across the waveform to select part of the clip</div>
-      
+
             <div class="sz-identify-row" id="szIdentifyRow">
               <button class="sz-btn" id="szIdentifySelBtn" disabled><i class="fas fa-crop-alt"></i> Identify selection</button>
               <button class="sz-btn sz-btn-primary" id="szIdentifyAllBtn" disabled><i class="fas fa-magic"></i> Identify clip</button>
             </div>
-      
+
             <audio id="szPlayback" class="sz-playback" controls></audio>
             <p class="sz-status" id="szStatus">Capture audio or upload a clip to identify it</p>
-      
+
             <div class="sz-result" id="szResultCard">
               <div class="sz-result-art" id="szArt"></div>
               <div class="sz-result-info">
@@ -1363,7 +1304,7 @@ Another Playlist{
               </div>
               <button class="sz-result-add" id="szAddToLibraryBtn" title="Add to Library"><i class="fas fa-plus"></i></button>
             </div>
-      
+
           </div>
         </div>
       </div>
@@ -1386,11 +1327,8 @@ Another Playlist{
           <div class="ls-body" id="lsPanel"></div>
         </div>
       </div>
-      <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
-
-      <script src="/karaoke-encoder.js"></script>
-      <script src="script.js"></script>
-      <script src="/register-sw.js"></script>
+      <script src="script.js" defer fetchpriority="high"></script>
+      <script src="/register-sw.js" defer></script>
 
       <script src="https://www.youtube.com/iframe_api" defer></script>
       <script>
@@ -1403,7 +1341,7 @@ Another Playlist{
         });
       </script>
 
-      
+
       <div id="ytPlayer"></div>
    </body>
 </html>

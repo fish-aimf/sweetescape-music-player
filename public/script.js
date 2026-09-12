@@ -7,7 +7,6 @@ class AdvancedMusicPlayer {
     this.currentPlaylist = null;
     this.currentSong = null;
     this.currentSongIndex = 0;
-
     this.isPlaying = false;
     this.isLooping = false;
     this.autoCenterLyrics = true;
@@ -20,13 +19,11 @@ class AdvancedMusicPlayer {
     this._libFilters = {
       favorite: null,
       lyrics: null,
-      downloaded: null,
+      downloaded: null
     };
-
     this.ytPlayer = null;
     this.ytPlayerReady = false;
     this.fullscreenYtPlayer = null;
-
     this.isSidebarVisible = false;
     this.isVideoFullscreen = false;
     this.isWebEmbedVisible = false;
@@ -36,13 +33,11 @@ class AdvancedMusicPlayer {
     this.playlistSidebarMode = 'overlay';
     this.playlistEditModeActive = false;
     this.currentTabIndex = 0;
-
     this.progressBar = null;
     this.progressInterval = null;
     this.listeningTime = 0;
     this.listeningTimeInterval = null;
     this.listeningTimeDisplay = document.getElementById('listeningTime');
-
     this.temporarilySkippedSongs = new Set();
     this.recentlyPlayedSongs = [];
     this.recentlyPlayedPlaylists = [];
@@ -51,7 +46,6 @@ class AdvancedMusicPlayer {
     this.suggestedSongsDisplayLimit = 2;
     this.yourPicksDisplayLimit = 2;
     this.recentlyPlayedPlaylistsDisplayLimit = 1;
-
     this.longPressTimer = null;
     this.titleScrollInterval = null;
     this.isLongPressing = false;
@@ -59,104 +53,79 @@ class AdvancedMusicPlayer {
     this.timerEndTime = null;
     this.timerAction = 'stopMusic';
     this.fullscreenLyricsInterval = null;
-
     this.originalFavicon = document.querySelector('link[rel="icon"]')?.href || '/favicon.ico';
     this.originalTitle = document.title;
     this.currentDisguiseIndex = -1;
     this.priorityModeActive = false;
     this.titleObserver = null;
-    this.pageDisguises = [
-      {
-        favicon: 'https://i.ibb.co/W4MfKV9X/image.png',
-        title: 'WhatsApp',
-        isPriority: true,
-      },
-      {
-        favicon: 'https://i.ibb.co/Y77XtqRh/image.png',
-        title: 'Inbox (78) - Gmail',
-        isPriority: true,
-      },
-      {
-        favicon: 'https://i.ibb.co/fV4bT2Fp/image.png',
-        title: 'DeepSeek - Into the Unknown',
-        isPriority: true,
-      },
-      {
-        favicon: 'https://i.ibb.co/35hmFHPL/image.png',
-        title: 'Home',
-        isPriority: true,
-      },
-      {
-        favicon: 'https://i.ibb.co/JFKpsWK3/image.png',
-        title: 'Desmos | Graphing Calculator',
-        isPriority: true,
-      },
-      {
-        favicon: 'https://i.ibb.co/35MNf3BZ/image.png',
-        title: 'New Tab',
-        isPriority: true,
-      },
-      {
-        favicon: 'https://i.ibb.co/vCKb51GK/image.png',
-        title: 'ChatGPT',
-        isPriority: true,
-      },
-      {
-        favicon: 'https://i.ibb.co/xtwTzMvz/image.png',
-        title: 'Home | Microsoft 365 Copilot',
-        isPriority: true,
-      },
-    ];
-
+    this.pageDisguises = [ {
+      favicon: 'https://i.ibb.co/W4MfKV9X/image.png',
+      title: 'WhatsApp',
+      isPriority: true
+    }, {
+      favicon: 'https://i.ibb.co/Y77XtqRh/image.png',
+      title: 'Inbox (78) - Gmail',
+      isPriority: true
+    }, {
+      favicon: 'https://i.ibb.co/fV4bT2Fp/image.png',
+      title: 'DeepSeek - Into the Unknown',
+      isPriority: true
+    }, {
+      favicon: 'https://i.ibb.co/35hmFHPL/image.png',
+      title: 'Home',
+      isPriority: true
+    }, {
+      favicon: 'https://i.ibb.co/JFKpsWK3/image.png',
+      title: 'Desmos | Graphing Calculator',
+      isPriority: true
+    }, {
+      favicon: 'https://i.ibb.co/35MNf3BZ/image.png',
+      title: 'New Tab',
+      isPriority: true
+    }, {
+      favicon: 'https://i.ibb.co/vCKb51GK/image.png',
+      title: 'ChatGPT',
+      isPriority: true
+    }, {
+      favicon: 'https://i.ibb.co/xtwTzMvz/image.png',
+      title: 'Home | Microsoft 365 Copilot',
+      isPriority: true
+    } ];
     this.webEmbedOverlay = null;
     this.currentWebEmbedIndex = 0;
-    this.webEmbedSites = [
-      'https://www.desmos.com/calculator',
-      'https://i2.res.24o.it/pdf2010/Editrice/ILSOLE24ORE/ILSOLE24ORE/Online/_Oggetti_Embedded/Documenti/2025/07/12/Preliminary%20Report%20VT.pdf',
-      'https://www.wikipedia.org',
-      'https://www.desmos.com/scientific',
-      'https://www.desmos.com/3d',
-    ];
-
+    this.webEmbedSites = [ 'https://www.desmos.com/calculator', 'https://i2.res.24o.it/pdf2010/Editrice/ILSOLE24ORE/ILSOLE24ORE/Online/_Oggetti_Embedded/Documenti/2025/07/12/Preliminary%20Report%20VT.pdf', 'https://www.wikipedia.org', 'https://www.desmos.com/scientific', 'https://www.desmos.com/3d' ];
     this.adsEnabled = false;
     this.visualizerEnabled = true;
-
     this.isAutofillButtonHovered = false;
     this.ghostPreviewAbortController = null;
     this.currentGhostRequestId = null;
     this.ghostScrollHandler = null;
     this.ghostResizeHandler = null;
     this.ghostInteractionHandler = null;
-
     this.visualizer = {
       canvas: null,
       ctx: null,
       bars: [],
       particles: [],
       animationId: null,
-      isActive: false,
+      isActive: false
     };
-
     this.YOUTUBE_API_KEYS_COUNT = 20;
     this.youtubeLibrarySearchResults = [];
     this.YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3/search';
     this.topicKeywordEnabled = true;
-
     this.supabase = null;
     this.supadataApiKey = 'sd_b3095aebbee9e4a7e6333bca9027b4cc';
     this.currentSongForSubtitlesImport = null;
-
     this.searchTimeout = null;
     this.librarySearchTimeout = null;
     this.currentSearchTerm = '';
     this.filteredPlaylists = [];
     this.sidebarSearchDebounceTimer = null;
-
     this.importModal = null;
     this.closeImportModalBtn = null;
     this.importSongsBtn = null;
     this.importSongsTextarea = null;
-
     this.defaultKeybinds = {
       togglePlayPause: 'Space',
       togglePlayPause2: 'KeyK',
@@ -182,14 +151,13 @@ class AdvancedMusicPlayer {
       toggleWebEmbed: 'KeyN',
       toggleMusicExplorer: 'KeyO',
       seekForward: 'KeyG',
-      seekBackward: 'KeyF',
+      seekBackward: 'KeyF'
     };
     this.currentKeybinds = {
-      ...this.defaultKeybinds,
+      ...this.defaultKeybinds
     };
     this.isRecordingKeybind = false;
     this.recordingAction = null;
-
     this.discordWs = null;
     this.discordConnected = false;
     this.discordEnabled = false;
@@ -205,38 +173,22 @@ class AdvancedMusicPlayer {
     this._discordLastUpdate = null;
     this._discordUpdateTickInterval = null;
     this._discordSendTimer = null;
-
     this.librarySortAlphabetically = true;
     this.libraryReverseOrder = false;
-
     this.isTabVisible = !document.hidden;
     this.handleVisibilityChange = null;
     this.dlQueue = [];
-
     this.debouncedUpdatePlayerUI = this.debounce(this.updatePlayerUI.bind(this), 50);
     this.debouncedFilterLibrary = this.debounce(this.filterLibrarySongs.bind(this), 96);
-
     this.currentLyricMakerSongId = null;
     this.lyricMakerCleanup = null;
-
     this.elements = {};
     this._initialize();
   }
   async _initialize() {
     try {
       await this.initDatabase();
-      await Promise.all([
-        this.loadSongLibrary(),
-        this.loadPlaylists(),
-        this.loadSettings(),
-        this.loadRecentlyPlayed(),
-        this.loadDiscoverMoreSettingsOnStartup(),
-        this.loadKeybinds(),
-        this.loadDiscordSettings(),
-        this.loadLibrarySortValue(),
-        this.loadLibraryReverseValue(),
-        this.loadVisualizerValue(),
-      ]);
+      await Promise.all([ this.loadSongLibrary(), this.loadPlaylists(), this.loadSettings(), this.loadRecentlyPlayed(), this.loadDiscoverMoreSettingsOnStartup(), this.loadKeybinds(), this.loadDiscordSettings(), this.loadLibrarySortValue(), this.loadLibraryReverseValue(), this.loadVisualizerValue() ]);
       const shouldShowWelcome = this.songLibrary.length === 0;
       this.initializeElements();
       this._syncInitialUI();
@@ -294,8 +246,7 @@ class AdvancedMusicPlayer {
   }
   _handleInitializationError(error) {
     const errorDiv = document.createElement('div');
-    errorDiv.style.cssText =
-      'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#f44;color:#fff;padding:15px 25px;border-radius:8px;z-index:10000;font-family:sans-serif;';
+    errorDiv.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#f44;color:#fff;padding:15px 25px;border-radius:8px;z-index:10000;font-family:sans-serif;';
     errorDiv.textContent = 'Failed to initialize music player. Please refresh the page.';
     document.body.appendChild(errorDiv);
     setTimeout(() => errorDiv.remove(), 5e3);
@@ -303,7 +254,7 @@ class AdvancedMusicPlayer {
   initDatabase() {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open('MusicPlayerDB', 2);
-      request.onerror = (event) => {
+      request.onerror = event => {
         console.error('IndexedDB error:', event.target.error);
         if (event.target.error?.name === 'VersionError') {
           this._recoverFromStaleCache();
@@ -315,7 +266,7 @@ class AdvancedMusicPlayer {
         console.warn('IndexedDB upgrade blocked — another tab has the database open.');
         this.showNotification?.('Please close other tabs running this app, then refresh.', 'error');
       };
-      request.onsuccess = (event) => {
+      request.onsuccess = event => {
         this.db = event.target.result;
         this.db.onversionchange = () => {
           this.db.close();
@@ -324,38 +275,31 @@ class AdvancedMusicPlayer {
         sessionStorage.removeItem('se_stale_recovery_attempted');
         resolve();
       };
-      request.onupgradeneeded = (event) => {
+      request.onupgradeneeded = event => {
         const db = event.target.result;
-        const stores = [
-          {
-            name: 'songLibrary',
-            keyPath: 'id',
-          },
-          {
-            name: 'playlists',
-            keyPath: 'id',
-          },
-          {
-            name: 'settings',
-            keyPath: 'name',
-          },
-          {
-            name: 'recentlyPlayed',
-            keyPath: 'type',
-          },
-          {
-            name: 'userSettings',
-            keyPath: 'category',
-          },
-          {
-            name: 'listeningStats',
-            keyPath: 'id',
-          },
-        ];
-        stores.forEach(({ name: name, keyPath: keyPath }) => {
+        const stores = [ {
+          name: 'songLibrary',
+          keyPath: 'id'
+        }, {
+          name: 'playlists',
+          keyPath: 'id'
+        }, {
+          name: 'settings',
+          keyPath: 'name'
+        }, {
+          name: 'recentlyPlayed',
+          keyPath: 'type'
+        }, {
+          name: 'userSettings',
+          keyPath: 'category'
+        }, {
+          name: 'listeningStats',
+          keyPath: 'id'
+        } ];
+        stores.forEach(({name: name, keyPath: keyPath}) => {
           if (!db.objectStoreNames.contains(name)) {
             db.createObjectStore(name, {
-              keyPath: keyPath,
+              keyPath: keyPath
             });
           }
         });
@@ -372,9 +316,7 @@ class AdvancedMusicPlayer {
     try {
       if ('caches' in window) {
         const names = await caches.keys();
-        await Promise.all(
-          names.filter((n) => n.startsWith('se-cache-')).map((n) => caches.delete(n))
-        );
+        await Promise.all(names.filter(n => n.startsWith('se-cache-')).map(n => caches.delete(n)));
       }
     } catch (error) {
       console.warn('Cache cleanup during recovery failed:', error);
@@ -415,9 +357,7 @@ class AdvancedMusicPlayer {
       libraryModificationModal: document.getElementById('libraryModificationModal'),
       closeLibraryModalBtn: document.getElementById('closeLibraryModal'),
       libraryModificationTabAddSong: document.getElementById('libraryModificationTabAddSong'),
-      libraryModificationTabImportExport: document.getElementById(
-        'libraryModificationTabImportExport'
-      ),
+      libraryModificationTabImportExport: document.getElementById('libraryModificationTabImportExport'),
       libraryModificationAddSongSection: document.querySelector('.add-song-section'),
       libraryModificationImportExportSection: document.querySelector('.import-export-section'),
       progressBar: document.getElementById('musicProgressBar'),
@@ -496,7 +436,7 @@ class AdvancedMusicPlayer {
       statsButton: document.getElementById('statsButton'),
       lsPanel: document.getElementById('lsPanel'),
       lsRangeToggle: document.getElementById('lsRangeToggle'),
-      listeningStatsToggle: document.getElementById('listeningStatsToggle'),
+      listeningStatsToggle: document.getElementById('listeningStatsToggle')
     };
     this._setupSpeedButton();
     this._setupLibraryModificationModalTabs();
@@ -508,10 +448,7 @@ class AdvancedMusicPlayer {
     }
   }
   _setupLibraryModificationModalTabs() {
-    if (
-      !this.elements.libraryModificationTabAddSong ||
-      !this.elements.libraryModificationTabImportExport
-    ) {
+    if (!this.elements.libraryModificationTabAddSong || !this.elements.libraryModificationTabImportExport) {
       return;
     }
     this.switchLibraryModificationTab('addSong');
@@ -540,11 +477,8 @@ class AdvancedMusicPlayer {
   _checkControlBarVisibility() {
     const controlBarVisible = localStorage.getItem('controlBarVisible');
     if (controlBarVisible === 'false') {
-      const controlBarContainer = document
-        .querySelector('.player-controls')
-        ?.closest('.player-container');
-      const targetElement =
-        controlBarContainer || document.querySelector('.player-controls')?.parentElement;
+      const controlBarContainer = document.querySelector('.player-controls')?.closest('.player-container');
+      const targetElement = controlBarContainer || document.querySelector('.player-controls')?.parentElement;
       const layoutToggleBtn = document.querySelector('.layout-toggle-button');
       if (targetElement) {
         targetElement.style.cssText = 'visibility:hidden;position:absolute;pointer-events:none;';
@@ -567,18 +501,17 @@ class AdvancedMusicPlayer {
       playPrevious: this.playPreviousSong.bind(this),
       playNext: this.playNextSong.bind(this),
       toggleLoop: this.toggleLoop.bind(this),
-      volumeChange: (e) => this.setVolume(e.target.value),
+      volumeChange: e => this.setVolume(e.target.value),
       toggleSidebar: this.togglePlaylistSidebar.bind(this),
       toggleAutoplay: this.toggleAutoplay.bind(this),
       openLibraryModal: this.openLibraryModal.bind(this),
       closeLibraryModal: this.closeLibraryModal.bind(this),
       libraryModificationTabAddSongClick: () => this.switchLibraryModificationTab('addSong'),
-      libraryModificationTabImportExportClick: () =>
-        this.switchLibraryModificationTab('importExport'),
+      libraryModificationTabImportExportClick: () => this.switchLibraryModificationTab('importExport'),
       toggleControlBar: this.toggleControlBar.bind(this),
       toggleTheme: this.toggleTheme.bind(this),
       toggleSpeedOptions: this.toggleSpeedOptions.bind(this),
-      speedOptionClick: (e) => this.setPlaybackSpeed(parseFloat(e.target.dataset.speed)),
+      speedOptionClick: e => this.setPlaybackSpeed(parseFloat(e.target.dataset.speed)),
       importLibrary: this.showImportModal.bind(this),
       exportLibrary: this.exportLibrary.bind(this),
       togglePlaylistLoop: this.togglePlaylistLoop.bind(this),
@@ -594,7 +527,7 @@ class AdvancedMusicPlayer {
       librarySortToggle: this.handleLibrarySortToggle.bind(this),
       libraryReverseToggle: this.handleLibraryReverseToggle.bind(this),
       filterPlaylists: this.filterPlaylists.bind(this),
-      playlistSearchEnter: (e) => {
+      playlistSearchEnter: e => {
         if (e.key === 'Enter') {
           e.preventDefault();
           this.playTopPlaylistSearchResult();
@@ -608,7 +541,7 @@ class AdvancedMusicPlayer {
       saveCustomTheme: this.handleSaveCustomTheme.bind(this),
       adsToggle: this.handleAdsToggle.bind(this),
       toggleTopicKeyword: this.toggleTopicKeyword.bind(this),
-      librarySearchKeydown: async (e) => {
+      librarySearchKeydown: async e => {
         if (e.key === 'Enter') {
           const searchTerm = this.elements.librarySearch.value.trim();
           const videoId = this.extractYouTubeId(searchTerm);
@@ -621,8 +554,7 @@ class AdvancedMusicPlayer {
             this.playFirstVisibleSong();
           } else if (searchTerm) {
             try {
-              const { items: items, nextPageToken: nextPageToken } =
-                await this.searchYouTubeForLibraryMatches(searchTerm);
+              const {items: items, nextPageToken: nextPageToken} = await this.searchYouTubeForLibraryMatches(searchTerm);
               if (items.length > 0) {
                 this.renderYouTubeLibrarySearchResults(items, searchTerm, nextPageToken);
               } else {
@@ -635,12 +567,12 @@ class AdvancedMusicPlayer {
           }
         }
       },
-      songUrlKeydown: (e) => {
+      songUrlKeydown: e => {
         if (e.key === 'Enter') {
           this.addSongToLibrary();
         }
       },
-      newPlaylistNameKeydown: (e) => {
+      newPlaylistNameKeydown: e => {
         if (e.key === 'Enter') {
           this.createPlaylist();
         }
@@ -657,69 +589,9 @@ class AdvancedMusicPlayer {
       librarySearchInput: this.handleLibrarySearchInput.bind(this),
       saveDiscoverMoreSettings: this.handleSaveDiscoverMoreSettings.bind(this),
       refreshRandomRecommendations: () => this.refreshRandomRecommendations(),
-      visualizerToggle: (e) => this.handleVisualizerToggle(e),
+      visualizerToggle: e => this.handleVisualizerToggle(e)
     };
-    const simpleBindings = [
-      [this.elements.addSongBtn, 'click', handlers.addSong],
-      [this.elements.createPlaylistBtn, 'click', handlers.createPlaylist],
-      [this.elements.closePlaylistModalBtn, 'click', handlers.closePlaylistModal],
-      [this.elements.addSongToPlaylistBtn, 'click', handlers.addSongToPlaylist],
-      [this.elements.playPauseBtn, 'click', handlers.togglePlayPause],
-      [this.elements.prevBtn, 'click', handlers.playPrevious],
-      [this.elements.nextBtn, 'click', handlers.playNext],
-      [this.elements.loopBtn, 'click', handlers.toggleLoop],
-      [this.elements.showPlaylistBtn, 'click', handlers.toggleSidebar],
-      [this.elements.closeSidebarBtn, 'click', handlers.toggleSidebar],
-      [this.elements.themeToggle, 'click', handlers.toggleTheme],
-      [this.elements.autoplayBtn, 'click', handlers.toggleAutoplay],
-      [this.elements.speedBtn, 'click', handlers.toggleSpeedOptions],
-      [this.elements.volumeSlider, 'input', handlers.volumeChange],
-      [this.elements.progressBar, 'click', handlers.seekMusic],
-      [this.elements.currentSongName, 'contextmenu', handlers.songNameRightClick],
-      [this.elements.toggleControlBarBtn, 'click', handlers.toggleControlBar],
-      [this.elements.modifyLibraryBtn, 'click', handlers.openLibraryModal],
-      [this.elements.closeLibraryModalBtn, 'click', handlers.closeLibraryModal],
-      [this.elements.importLibraryBtn, 'click', handlers.importLibrary],
-      [this.elements.exportLibraryBtn, 'click', handlers.exportLibrary],
-      [
-        this.elements.libraryModificationTabAddSong,
-        'click',
-        handlers.libraryModificationTabAddSongClick,
-      ],
-      [
-        this.elements.libraryModificationTabImportExport,
-        'click',
-        handlers.libraryModificationTabImportExportClick,
-      ],
-      [this.elements.loopPlaylistBtn, 'click', handlers.togglePlaylistLoop],
-      [this.elements.discordButton, 'click', handlers.discordClick],
-      [this.elements.librarySortToggle, 'change', handlers.librarySortToggle],
-      [this.elements.libraryReverseToggle, 'change', handlers.libraryReverseToggle],
-      [this.elements.closeImportModalBtn, 'click', handlers.closeImportModal],
-      [this.elements.importSongsBtn, 'click', handlers.importSongs],
-      [this.elements.playlistSearch, 'input', handlers.filterPlaylists],
-      [this.elements.playlistSearch, 'keypress', handlers.playlistSearchEnter],
-      [this.elements.toggleCreatePlaylistBtn, 'click', handlers.toggleCreatePlaylistDiv],
-      [this.elements.togglePlaylistEditModeBtn, 'click', handlers.togglePlaylistEditMode],
-      [this.elements.settingsButton, 'click', handlers.openSettings],
-      [this.elements.settingsCloseBtn, 'click', handlers.closeSettings],
-      [this.elements.settingsModal, 'click', handlers.settingsModalClick],
-      [this.elements.themeMode, 'change', handlers.themeModeChange],
-      [this.elements.saveCustomTheme, 'click', handlers.saveCustomTheme],
-      [this.elements.adsToggle, 'change', handlers.adsToggle],
-      [this.elements.saveDiscoverMoreSettings, 'click', handlers.saveDiscoverMoreSettings],
-      [this.elements.visualizerToggle, 'change', handlers.visualizerToggle],
-      [this.elements.findSongsBtn, 'click', handlers.findSongsOpen],
-      [this.elements.closeFindSongs, 'click', handlers.findSongsClose],
-      [this.elements.searchSongsToAdd, 'input', handlers.searchSongsToAdd],
-      [this.elements.statsButton, 'click', this.openStatsModal.bind(this)],
-      [this.elements.lsPanel, 'click', this._handleStatsShowAllClick.bind(this)],
-      [this.elements.lsPanel, 'input', this._handleStatsSearchInput.bind(this)],
-      [document.getElementById('lsCloseBtn'), 'click', this.closeStatsModal.bind(this)],
-      [this.elements.lsRangeToggle, 'change', this._handleStatsRangeToggle.bind(this)],
-      [this.elements.listeningStatsToggle, 'change', this.handleListeningStatsToggle.bind(this)],
-      [this.elements.libTopicBtn, 'click', handlers.toggleTopicKeyword],
-    ];
+    const simpleBindings = [ [ this.elements.addSongBtn, 'click', handlers.addSong ], [ this.elements.createPlaylistBtn, 'click', handlers.createPlaylist ], [ this.elements.closePlaylistModalBtn, 'click', handlers.closePlaylistModal ], [ this.elements.addSongToPlaylistBtn, 'click', handlers.addSongToPlaylist ], [ this.elements.playPauseBtn, 'click', handlers.togglePlayPause ], [ this.elements.prevBtn, 'click', handlers.playPrevious ], [ this.elements.nextBtn, 'click', handlers.playNext ], [ this.elements.loopBtn, 'click', handlers.toggleLoop ], [ this.elements.showPlaylistBtn, 'click', handlers.toggleSidebar ], [ this.elements.closeSidebarBtn, 'click', handlers.toggleSidebar ], [ this.elements.themeToggle, 'click', handlers.toggleTheme ], [ this.elements.autoplayBtn, 'click', handlers.toggleAutoplay ], [ this.elements.speedBtn, 'click', handlers.toggleSpeedOptions ], [ this.elements.volumeSlider, 'input', handlers.volumeChange ], [ this.elements.progressBar, 'click', handlers.seekMusic ], [ this.elements.currentSongName, 'contextmenu', handlers.songNameRightClick ], [ this.elements.toggleControlBarBtn, 'click', handlers.toggleControlBar ], [ this.elements.modifyLibraryBtn, 'click', handlers.openLibraryModal ], [ this.elements.closeLibraryModalBtn, 'click', handlers.closeLibraryModal ], [ this.elements.importLibraryBtn, 'click', handlers.importLibrary ], [ this.elements.exportLibraryBtn, 'click', handlers.exportLibrary ], [ this.elements.libraryModificationTabAddSong, 'click', handlers.libraryModificationTabAddSongClick ], [ this.elements.libraryModificationTabImportExport, 'click', handlers.libraryModificationTabImportExportClick ], [ this.elements.loopPlaylistBtn, 'click', handlers.togglePlaylistLoop ], [ this.elements.discordButton, 'click', handlers.discordClick ], [ this.elements.librarySortToggle, 'change', handlers.librarySortToggle ], [ this.elements.libraryReverseToggle, 'change', handlers.libraryReverseToggle ], [ this.elements.closeImportModalBtn, 'click', handlers.closeImportModal ], [ this.elements.importSongsBtn, 'click', handlers.importSongs ], [ this.elements.playlistSearch, 'input', handlers.filterPlaylists ], [ this.elements.playlistSearch, 'keypress', handlers.playlistSearchEnter ], [ this.elements.toggleCreatePlaylistBtn, 'click', handlers.toggleCreatePlaylistDiv ], [ this.elements.togglePlaylistEditModeBtn, 'click', handlers.togglePlaylistEditMode ], [ this.elements.settingsButton, 'click', handlers.openSettings ], [ this.elements.settingsCloseBtn, 'click', handlers.closeSettings ], [ this.elements.settingsModal, 'click', handlers.settingsModalClick ], [ this.elements.themeMode, 'change', handlers.themeModeChange ], [ this.elements.saveCustomTheme, 'click', handlers.saveCustomTheme ], [ this.elements.adsToggle, 'change', handlers.adsToggle ], [ this.elements.saveDiscoverMoreSettings, 'click', handlers.saveDiscoverMoreSettings ], [ this.elements.visualizerToggle, 'change', handlers.visualizerToggle ], [ this.elements.findSongsBtn, 'click', handlers.findSongsOpen ], [ this.elements.closeFindSongs, 'click', handlers.findSongsClose ], [ this.elements.searchSongsToAdd, 'input', handlers.searchSongsToAdd ], [ this.elements.statsButton, 'click', this.openStatsModal.bind(this) ], [ this.elements.lsPanel, 'click', this._handleStatsShowAllClick.bind(this) ], [ this.elements.lsPanel, 'input', this._handleStatsSearchInput.bind(this) ], [ document.getElementById('lsCloseBtn'), 'click', this.closeStatsModal.bind(this) ], [ this.elements.lsRangeToggle, 'change', this._handleStatsRangeToggle.bind(this) ], [ this.elements.listeningStatsToggle, 'change', this.handleListeningStatsToggle.bind(this) ], [ this.elements.libTopicBtn, 'click', handlers.toggleTopicKeyword ] ];
     simpleBindings.forEach(([element, event, handler]) => {
       if (element) {
         element.addEventListener(event, handler);
@@ -745,7 +617,7 @@ class AdvancedMusicPlayer {
     }
     if (this.elements.autofillBtn) {
       this.elements.autofillBtn.addEventListener('click', handlers.autofillClick);
-      this.elements.autofillBtn.addEventListener('mouseenter', (e) => {
+      this.elements.autofillBtn.addEventListener('mouseenter', e => {
         this.isAutofillButtonHovered = true;
         handlers.autofillMouseenter(e);
       });
@@ -754,7 +626,7 @@ class AdvancedMusicPlayer {
         handlers.autofillMouseleave();
       });
     }
-    this.elements.additionalDetails.addEventListener('click', (e) => {
+    this.elements.additionalDetails.addEventListener('click', e => {
       if (e.target.closest('#currentSongSection') && !window.getSelection().toString()) {
         this.switchTab('nowplaying');
       }
@@ -764,11 +636,11 @@ class AdvancedMusicPlayer {
       currentSongName.style.cursor = 'pointer';
       currentSongName.title = 'Right-click to copy song name';
     }
-    document.querySelectorAll('.speed-option').forEach((opt) => {
+    document.querySelectorAll('.speed-option').forEach(opt => {
       opt.addEventListener('click', handlers.speedOptionClick);
     });
     if (this.elements.tabs) {
-      this.elements.tabs.forEach((tab) => {
+      this.elements.tabs.forEach(tab => {
         tab.addEventListener('click', () => this.switchTab(tab.dataset.tab));
       });
     }
@@ -780,17 +652,13 @@ class AdvancedMusicPlayer {
       this.elements.transcriptLangSelect.focus();
       this.elements.transcriptLangSelect.click();
     });
-    this.elements.transcriptLangSelect?.addEventListener('change', (e) => {
+    this.elements.transcriptLangSelect?.addEventListener('change', e => {
       if (e.target.value !== 'auto') {
         this.autoFetchTranscript();
       }
     });
-    document
-      .getElementById('closeDiscordModal')
-      ?.addEventListener('click', () => this.closeDiscordModal());
-    document
-      .getElementById('discordCloseBtn2')
-      ?.addEventListener('click', () => this.closeDiscordModal());
+    document.getElementById('closeDiscordModal')?.addEventListener('click', () => this.closeDiscordModal());
+    document.getElementById('discordCloseBtn2')?.addEventListener('click', () => this.closeDiscordModal());
     document.getElementById('discordDisableBtn')?.addEventListener('click', () => {
       this.discordEnabled = false;
       this.saveDiscordSettings();
@@ -809,19 +677,15 @@ class AdvancedMusicPlayer {
       this.initDiscordConnection();
       this._discordRefreshModal();
     });
-    document.getElementById('discordEnabledToggle')?.addEventListener('change', (e) => {
+    document.getElementById('discordEnabledToggle')?.addEventListener('change', e => {
       this.discordEnabled = e.target.checked;
       this.saveDiscordSettings();
       this.discordEnabled ? this.initDiscordConnection() : this.closeDiscordConnection();
       this._discordRefreshModal();
     });
-    document
-      .getElementById('discordResetBtn')
-      ?.addEventListener('click', () => this._discordResetFields());
-    document
-      .getElementById('discordSendNowBtn')
-      ?.addEventListener('click', () => this._discordSendNow());
-    document.getElementById('discordRpcModal')?.addEventListener('click', (e) => {
+    document.getElementById('discordResetBtn')?.addEventListener('click', () => this._discordResetFields());
+    document.getElementById('discordSendNowBtn')?.addEventListener('click', () => this._discordSendNow());
+    document.getElementById('discordRpcModal')?.addEventListener('click', e => {
       if (e.target.id === 'discordRpcModal') {
         this.closeDiscordModal();
       }
@@ -832,7 +696,7 @@ class AdvancedMusicPlayer {
     document.getElementById('discordConnectBtn')?.addEventListener('click', () => {
       this._discordRetry();
     });
-    ['discordEditSong', 'discordEditArtist', 'discordEditThumb'].forEach((id) => {
+    [ 'discordEditSong', 'discordEditArtist', 'discordEditThumb' ].forEach(id => {
       document.getElementById(id)?.addEventListener('input', () => this._discordOnFieldEdit());
     });
     this._setupDelegatedListeners();
@@ -844,7 +708,7 @@ class AdvancedMusicPlayer {
     this.setupSongLibraryDelegation();
   }
   _setupDelegatedListeners() {
-    document.addEventListener('click', (e) => {
+    document.addEventListener('click', e => {
       if (e.target.classList.contains('keybind-input')) {
         const action = e.target.dataset.action;
         this.startKeybindRecording(action, e.target);
@@ -856,41 +720,34 @@ class AdvancedMusicPlayer {
         this.handleTabSwitch(e);
       }
     });
-    document.addEventListener('contextmenu', (e) => {
-      if (
-        e.target.classList.contains('play-btn') ||
-        e.target.closest('.play-btn') ||
-        e.target.onclick?.toString().includes('playSong') ||
-        e.target.onclick?.toString().includes('playPlaylist')
-      ) {
+    document.addEventListener('contextmenu', e => {
+      if (e.target.classList.contains('play-btn') || e.target.closest('.play-btn') || e.target.onclick?.toString().includes('playSong') || e.target.onclick?.toString().includes('playPlaylist')) {
         e.preventDefault();
-        const songElement =
-          e.target.closest('[data-song-id]') || e.target.closest('[data-playlist-id]');
+        const songElement = e.target.closest('[data-song-id]') || e.target.closest('[data-playlist-id]');
         if (songElement?.dataset.songId) {
-          const song = this.songLibrary.find((s) => s.id == songElement.dataset.songId);
+          const song = this.songLibrary.find(s => s.id == songElement.dataset.songId);
           if (song) {
             this.addToQueue(song);
           }
         } else if (songElement?.dataset.playlistId) {
-          const playlist = this.playlists.find((p) => p.id == songElement.dataset.playlistId);
+          const playlist = this.playlists.find(p => p.id == songElement.dataset.playlistId);
           if (playlist) {
-            playlist.songs.forEach((song) => this.addToQueue(song));
+            playlist.songs.forEach(song => this.addToQueue(song));
           }
         } else {
-          const onclickStr =
-            e.target.onclick?.toString() || e.target.closest('button')?.onclick?.toString();
+          const onclickStr = e.target.onclick?.toString() || e.target.closest('button')?.onclick?.toString();
           if (onclickStr) {
             const songIdMatch = onclickStr.match(/playSong\((\d+)\)/);
             const playlistIdMatch = onclickStr.match(/playPlaylist\((\d+)\)/);
             if (songIdMatch) {
-              const song = this.songLibrary.find((s) => s.id == parseInt(songIdMatch[1]));
+              const song = this.songLibrary.find(s => s.id == parseInt(songIdMatch[1]));
               if (song) {
                 this.addToQueue(song);
               }
             } else if (playlistIdMatch) {
-              const playlist = this.playlists.find((p) => p.id == parseInt(playlistIdMatch[1]));
+              const playlist = this.playlists.find(p => p.id == parseInt(playlistIdMatch[1]));
               if (playlist) {
-                playlist.songs.forEach((song) => this.addToQueue(song));
+                playlist.songs.forEach(song => this.addToQueue(song));
               }
             }
           }
@@ -899,7 +756,7 @@ class AdvancedMusicPlayer {
     });
   }
   setupKeyboardControls() {
-    document.addEventListener('keydown', (e) => {
+    document.addEventListener('keydown', e => {
       if (e.ctrlKey || e.metaKey || e.altKey) {
         return;
       }
@@ -909,10 +766,7 @@ class AdvancedMusicPlayer {
           return;
         }
       }
-      if (
-        document.activeElement.tagName === 'TEXTAREA' ||
-        document.activeElement.isContentEditable
-      ) {
+      if (document.activeElement.tagName === 'TEXTAREA' || document.activeElement.isContentEditable) {
         return;
       }
       if (e.key?.toLowerCase() === 'n' && this.currentKeybinds.toggleWebEmbed === 'KeyN') {
@@ -942,9 +796,7 @@ class AdvancedMusicPlayer {
     const spacerDiv = document.getElementById('controlBarSpacer');
     if (controlBarVisible === 'false') {
       requestAnimationFrame(() => {
-        const controlBar =
-          document.querySelector('.player-controls').closest('.player-container') ||
-          document.querySelector('.player-controls').parentElement;
+        const controlBar = document.querySelector('.player-controls').closest('.player-container') || document.querySelector('.player-controls').parentElement;
         if (controlBar) {
           controlBar.style.visibility = 'hidden';
           controlBar.style.position = 'absolute';
@@ -963,7 +815,7 @@ class AdvancedMusicPlayer {
     if (this.discordEnabled) {
       if ('requestIdleCallback' in window) {
         requestIdleCallback(() => this.initDiscordConnection(), {
-          timeout: 2e3,
+          timeout: 2e3
         });
       } else {
         setTimeout(() => this.initDiscordConnection(), 1500);
@@ -982,7 +834,6 @@ class AdvancedMusicPlayer {
       timeout = setTimeout(later, wait);
     };
   }
-
   loadSettings() {
     return new Promise((resolve, reject) => {
       if (!this.db) {
@@ -990,51 +841,42 @@ class AdvancedMusicPlayer {
         return;
       }
       try {
-        const transaction = this.db.transaction(['settings'], 'readonly');
+        const transaction = this.db.transaction([ 'settings' ], 'readonly');
         const store = transaction.objectStore('settings');
-        const settingsToLoad = [
-          {
-            key: 'listeningTime',
-            default: 0,
-            target: 'listeningTime',
-          },
-          {
-            key: 'playbackSpeed',
-            default: 1,
-            target: 'currentSpeed',
-          },
-          {
-            key: 'isPlaylistLooping',
-            default: true,
-            target: 'isPlaylistLooping',
-          },
-          {
-            key: 'recentlyPlayedLimit',
-            default: 20,
-            target: 'recentlyPlayedLimit',
-          },
-          {
-            key: 'allowDuplicates',
-            default: true,
-            target: 'allowDuplicates',
-          },
-          {
-            key: 'volume',
-            default: 100,
-            target: 'savedVolume',
-          },
-          {
-            key: 'isLooping',
-            default: false,
-            target: 'isLooping',
-          },
-          {
-            key: 'listeningStatsEnabled',
-            default: false,
-            target: 'listeningStatsEnabled',
-          },
-        ];
-        settingsToLoad.forEach((setting) => {
+        const settingsToLoad = [ {
+          key: 'listeningTime',
+          default: 0,
+          target: 'listeningTime'
+        }, {
+          key: 'playbackSpeed',
+          default: 1,
+          target: 'currentSpeed'
+        }, {
+          key: 'isPlaylistLooping',
+          default: true,
+          target: 'isPlaylistLooping'
+        }, {
+          key: 'recentlyPlayedLimit',
+          default: 20,
+          target: 'recentlyPlayedLimit'
+        }, {
+          key: 'allowDuplicates',
+          default: true,
+          target: 'allowDuplicates'
+        }, {
+          key: 'volume',
+          default: 100,
+          target: 'savedVolume'
+        }, {
+          key: 'isLooping',
+          default: false,
+          target: 'isLooping'
+        }, {
+          key: 'listeningStatsEnabled',
+          default: false,
+          target: 'listeningStatsEnabled'
+        } ];
+        settingsToLoad.forEach(setting => {
           const request = store.get(setting.key);
           request.onsuccess = () => {
             if (request.result) {
@@ -1049,7 +891,7 @@ class AdvancedMusicPlayer {
           };
         });
         transaction.oncomplete = () => resolve();
-        transaction.onerror = (event) => {
+        transaction.onerror = event => {
           console.error('Error loading settings:', event.target.error);
           reject('Could not load settings');
         };
@@ -1064,11 +906,11 @@ class AdvancedMusicPlayer {
       return;
     }
     return new Promise((resolve, reject) => {
-      const transaction = this.db.transaction(['settings'], 'readwrite');
+      const transaction = this.db.transaction([ 'settings' ], 'readwrite');
       const store = transaction.objectStore('settings');
       const request = store.put({
         name: key,
-        value: value,
+        value: value
       });
       request.onsuccess = () => resolve();
       request.onerror = () => reject(request.error);
@@ -1080,16 +922,13 @@ class AdvancedMusicPlayer {
         reject('Database not initialized');
         return;
       }
-      const transaction = this.db.transaction(['songLibrary'], 'readonly');
+      const transaction = this.db.transaction([ 'songLibrary' ], 'readonly');
       const store = transaction.objectStore('songLibrary');
       const request = store.getAll();
       request.onsuccess = () => {
         const raw = request.result || [];
-        const needsMigration = raw.some(
-          (song) =>
-            song.favorite === undefined || song.lyrics === undefined || song.author === undefined
-        );
-        this.songLibrary = raw.map((song) => {
+        const needsMigration = raw.some(song => song.favorite === undefined || song.lyrics === undefined || song.author === undefined);
+        this.songLibrary = raw.map(song => {
           if (song.favorite === undefined) {
             song.favorite = false;
           }
@@ -1107,7 +946,7 @@ class AdvancedMusicPlayer {
           resolve();
         }
       };
-      request.onerror = (event) => {
+      request.onerror = event => {
         console.error('Error loading song library:', event.target.error);
         reject('Could not load song library');
       };
@@ -1120,14 +959,14 @@ class AdvancedMusicPlayer {
         return;
       }
       try {
-        const transaction = this.db.transaction(['songLibrary'], 'readwrite');
+        const transaction = this.db.transaction([ 'songLibrary' ], 'readwrite');
         const store = transaction.objectStore('songLibrary');
         if (singleSong) {
           store.put(singleSong);
         } else {
           const clearRequest = store.clear();
           clearRequest.onsuccess = () => {
-            this.songLibrary.forEach((song) => store.put(song));
+            this.songLibrary.forEach(song => store.put(song));
           };
         }
         transaction.oncomplete = () => {
@@ -1136,7 +975,7 @@ class AdvancedMusicPlayer {
           }
           resolve();
         };
-        transaction.onerror = (event) => {
+        transaction.onerror = event => {
           console.error('Error saving song library:', event.target.error);
           reject(new Error('Failed to save song library: ' + event.target.error.message));
         };
@@ -1154,11 +993,10 @@ class AdvancedMusicPlayer {
         return;
       }
       try {
-        const transaction = this.db.transaction(['songLibrary'], 'readwrite');
+        const transaction = this.db.transaction([ 'songLibrary' ], 'readwrite');
         transaction.objectStore('songLibrary').put(song);
         transaction.oncomplete = () => resolve();
-        transaction.onerror = (e) =>
-          reject(new Error('Failed to save song: ' + e.target.error.message));
+        transaction.onerror = e => reject(new Error('Failed to save song: ' + e.target.error.message));
       } catch (error) {
         reject(error);
       }
@@ -1172,11 +1010,10 @@ class AdvancedMusicPlayer {
         return;
       }
       try {
-        const transaction = this.db.transaction(['songLibrary'], 'readwrite');
+        const transaction = this.db.transaction([ 'songLibrary' ], 'readwrite');
         transaction.objectStore('songLibrary').delete(songId);
         transaction.oncomplete = () => resolve();
-        transaction.onerror = (e) =>
-          reject(new Error('Failed to delete song: ' + e.target.error.message));
+        transaction.onerror = e => reject(new Error('Failed to delete song: ' + e.target.error.message));
       } catch (error) {
         reject(error);
       }
@@ -1188,20 +1025,18 @@ class AdvancedMusicPlayer {
         reject('Database not initialized');
         return;
       }
-      const transaction = this.db.transaction(['playlists'], 'readonly');
+      const transaction = this.db.transaction([ 'playlists' ], 'readonly');
       const store = transaction.objectStore('playlists');
       const request = store.getAll();
       request.onsuccess = () => {
         this.playlists = request.result || [];
-        this.filteredPlaylists = [...this.playlists];
-        this.syncFavoritesOnLoad()
-          .then(() => resolve())
-          .catch((error) => {
-            console.error('Error syncing favorites playlist:', error);
-            resolve();
-          });
+        this.filteredPlaylists = [ ...this.playlists ];
+        this.syncFavoritesOnLoad().then(() => resolve()).catch(error => {
+          console.error('Error syncing favorites playlist:', error);
+          resolve();
+        });
       };
-      request.onerror = (event) => {
+      request.onerror = event => {
         console.error('Error loading playlists:', event.target.error);
         reject('Could not load playlists');
       };
@@ -1213,21 +1048,21 @@ class AdvancedMusicPlayer {
         reject(new Error('Database not initialized'));
         return;
       }
-      const transaction = this.db.transaction(['playlists'], 'readwrite');
+      const transaction = this.db.transaction([ 'playlists' ], 'readwrite');
       const store = transaction.objectStore('playlists');
       store.clear();
-      this.playlists.forEach((playlist) => {
+      this.playlists.forEach(playlist => {
         store.put(playlist);
       });
       transaction.oncomplete = () => resolve();
-      transaction.onerror = (event) => {
+      transaction.onerror = event => {
         console.error('Error saving playlists:', event.target.error);
         reject(new Error('Could not save playlists: ' + event.target.error.message));
       };
     });
   }
   loadRecentlyPlayed() {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       if (!this.db) {
         console.warn('Database not initialized for recently played');
         this.recentlyPlayedSongs = [];
@@ -1236,7 +1071,7 @@ class AdvancedMusicPlayer {
         return;
       }
       try {
-        const transaction = this.db.transaction(['recentlyPlayed'], 'readonly');
+        const transaction = this.db.transaction([ 'recentlyPlayed' ], 'readonly');
         const store = transaction.objectStore('recentlyPlayed');
         const songsRequest = store.get('songs');
         songsRequest.onsuccess = () => {
@@ -1257,11 +1092,11 @@ class AdvancedMusicPlayer {
         transaction.oncomplete = () => {
           console.log('Successfully loaded recently played items:', {
             songs: this.recentlyPlayedSongs.length,
-            playlists: this.recentlyPlayedPlaylists.length,
+            playlists: this.recentlyPlayedPlaylists.length
           });
           resolve();
         };
-        transaction.onerror = (event) => {
+        transaction.onerror = event => {
           console.warn('Error loading recently played items:', event.target.error);
           this.recentlyPlayedSongs = [];
           this.recentlyPlayedPlaylists = [];
@@ -1281,58 +1116,49 @@ class AdvancedMusicPlayer {
         this.setDefaultDiscoverMoreValuesOnStartup();
         return;
       }
-      const transaction = this.db.transaction(['settings'], 'readonly');
+      const transaction = this.db.transaction([ 'settings' ], 'readonly');
       const store = transaction.objectStore('settings');
-      const settingKeys = [
-        'recentlyPlayedLimit',
-        'recentlyPlayedDisplayLimit',
-        'suggestedSongsDisplayLimit',
-        'yourPicksDisplayLimit',
-        'recentlyPlayedPlaylistsDisplayLimit',
-        'sectionOrder',
-      ];
-      const requests = settingKeys.map((key) => {
+      const settingKeys = [ 'recentlyPlayedLimit', 'recentlyPlayedDisplayLimit', 'suggestedSongsDisplayLimit', 'yourPicksDisplayLimit', 'recentlyPlayedPlaylistsDisplayLimit', 'sectionOrder' ];
+      const requests = settingKeys.map(key => {
         const request = store.get(key);
-        return new Promise((resolve) => {
-          request.onsuccess = () =>
-            resolve({
-              key: key,
-              value: request.result?.value,
-            });
-          request.onerror = () =>
-            resolve({
-              key: key,
-              value: null,
-            });
+        return new Promise(resolve => {
+          request.onsuccess = () => resolve({
+            key: key,
+            value: request.result?.value
+          });
+          request.onerror = () => resolve({
+            key: key,
+            value: null
+          });
         });
       });
       const results = await Promise.all(requests);
-      const defaultOrder = this._getDefaultSectionOrder().map((s) => s.key);
-      results.forEach((result) => {
+      const defaultOrder = this._getDefaultSectionOrder().map(s => s.key);
+      results.forEach(result => {
         switch (result.key) {
-          case 'recentlyPlayedLimit':
-            this.recentlyPlayedLimit = result.value || 20;
-            break;
+         case 'recentlyPlayedLimit':
+          this.recentlyPlayedLimit = result.value || 20;
+          break;
 
-          case 'recentlyPlayedDisplayLimit':
-            this.recentlyPlayedDisplayLimit = result.value ?? 3;
-            break;
+         case 'recentlyPlayedDisplayLimit':
+          this.recentlyPlayedDisplayLimit = result.value ?? 3;
+          break;
 
-          case 'suggestedSongsDisplayLimit':
-            this.suggestedSongsDisplayLimit = result.value ?? 2;
-            break;
+         case 'suggestedSongsDisplayLimit':
+          this.suggestedSongsDisplayLimit = result.value ?? 2;
+          break;
 
-          case 'yourPicksDisplayLimit':
-            this.yourPicksDisplayLimit = result.value ?? 2;
-            break;
+         case 'yourPicksDisplayLimit':
+          this.yourPicksDisplayLimit = result.value ?? 2;
+          break;
 
-          case 'recentlyPlayedPlaylistsDisplayLimit':
-            this.recentlyPlayedPlaylistsDisplayLimit = result.value ?? 1;
-            break;
+         case 'recentlyPlayedPlaylistsDisplayLimit':
+          this.recentlyPlayedPlaylistsDisplayLimit = result.value ?? 1;
+          break;
 
-          case 'sectionOrder':
-            this.sectionOrder = result.value || defaultOrder;
-            break;
+         case 'sectionOrder':
+          this.sectionOrder = result.value || defaultOrder;
+          break;
         }
       });
     } catch (error) {
@@ -1346,7 +1172,7 @@ class AdvancedMusicPlayer {
     this.suggestedSongsDisplayLimit = 0;
     this.yourPicksDisplayLimit = 0;
     this.recentlyPlayedPlaylistsDisplayLimit = 4;
-    this.sectionOrder = this._getDefaultSectionOrder().map((s) => s.key);
+    this.sectionOrder = this._getDefaultSectionOrder().map(s => s.key);
   }
   setDefaultDiscoverMoreValues() {
     this.recentlyPlayedLimit = this.recentlyPlayedLimit || 20;
@@ -1354,7 +1180,7 @@ class AdvancedMusicPlayer {
     this.suggestedSongsDisplayLimit = 0;
     this.yourPicksDisplayLimit = 0;
     this.recentlyPlayedPlaylistsDisplayLimit = 4;
-    this.sectionOrder = this._getDefaultSectionOrder().map((s) => s.key);
+    this.sectionOrder = this._getDefaultSectionOrder().map(s => s.key);
   }
   async loadDiscoverMoreSettings() {
     try {
@@ -1369,8 +1195,7 @@ class AdvancedMusicPlayer {
   }
   async handleSaveDiscoverMoreSettings() {
     try {
-      const recentlyPlayedStorageLimit =
-        parseInt(this.elements.recentlyPlayedStorageLimit?.value) || 20;
+      const recentlyPlayedStorageLimit = parseInt(this.elements.recentlyPlayedStorageLimit?.value) || 20;
       if (recentlyPlayedStorageLimit < 1 || recentlyPlayedStorageLimit > 100) {
         this.showNotification('Recently played storage limit must be between 1 and 100', 'error');
         return;
@@ -1392,28 +1217,15 @@ class AdvancedMusicPlayer {
       this.suggestedSongsDisplayLimit = newLimits['suggestedSongsDisplayLimit'];
       this.yourPicksDisplayLimit = newLimits['yourPicksDisplayLimit'];
       this.recentlyPlayedPlaylistsDisplayLimit = newLimits['recentlyPlayedPlaylistsDisplayLimit'];
-      await Promise.all([
-        this.saveSetting('recentlyPlayedLimit', recentlyPlayedStorageLimit),
-        this.saveSetting('recentlyPlayedDisplayLimit', this.recentlyPlayedDisplayLimit),
-        this.saveSetting('suggestedSongsDisplayLimit', this.suggestedSongsDisplayLimit),
-        this.saveSetting('yourPicksDisplayLimit', this.yourPicksDisplayLimit),
-        this.saveSetting(
-          'recentlyPlayedPlaylistsDisplayLimit',
-          this.recentlyPlayedPlaylistsDisplayLimit
-        ),
-        this.saveSetting('sectionOrder', this.sectionOrder),
-      ]);
-      if (
-        oldRecentlyPlayedLimit !== recentlyPlayedStorageLimit &&
-        this.recentlyPlayedSongs.length > recentlyPlayedStorageLimit
-      ) {
+      await Promise.all([ this.saveSetting('recentlyPlayedLimit', recentlyPlayedStorageLimit), this.saveSetting('recentlyPlayedDisplayLimit', this.recentlyPlayedDisplayLimit), this.saveSetting('suggestedSongsDisplayLimit', this.suggestedSongsDisplayLimit), this.saveSetting('yourPicksDisplayLimit', this.yourPicksDisplayLimit), this.saveSetting('recentlyPlayedPlaylistsDisplayLimit', this.recentlyPlayedPlaylistsDisplayLimit), this.saveSetting('sectionOrder', this.sectionOrder) ]);
+      if (oldRecentlyPlayedLimit !== recentlyPlayedStorageLimit && this.recentlyPlayedSongs.length > recentlyPlayedStorageLimit) {
         this.recentlyPlayedSongs = this.recentlyPlayedSongs.slice(0, recentlyPlayedStorageLimit);
         if (this.db) {
-          const transaction = this.db.transaction(['recentlyPlayed'], 'readwrite');
+          const transaction = this.db.transaction([ 'recentlyPlayed' ], 'readwrite');
           const store = transaction.objectStore('recentlyPlayed');
           store.put({
             type: 'songs',
-            items: this.recentlyPlayedSongs,
+            items: this.recentlyPlayedSongs
           });
         }
       }
@@ -1425,36 +1237,31 @@ class AdvancedMusicPlayer {
     }
   }
   _getDefaultSectionOrder() {
-    return [
-      {
-        key: 'recentlyListened',
-        label: 'Recently Listened To',
-        limitKey: 'recentlyPlayedDisplayLimit',
-        max: 10,
-        suffix: 'items',
-      },
-      {
-        key: 'suggested',
-        label: 'Suggested',
-        limitKey: 'suggestedSongsDisplayLimit',
-        max: 10,
-        suffix: 'songs',
-      },
-      {
-        key: 'yourPicks',
-        label: 'Your Picks',
-        limitKey: 'yourPicksDisplayLimit',
-        max: 10,
-        suffix: 'songs',
-      },
-      {
-        key: 'recentPlaylists',
-        label: 'Recently Played Playlists',
-        limitKey: 'recentlyPlayedPlaylistsDisplayLimit',
-        max: 5,
-        suffix: 'playlists',
-      },
-    ];
+    return [ {
+      key: 'recentlyListened',
+      label: 'Recently Listened To',
+      limitKey: 'recentlyPlayedDisplayLimit',
+      max: 10,
+      suffix: 'items'
+    }, {
+      key: 'suggested',
+      label: 'Suggested',
+      limitKey: 'suggestedSongsDisplayLimit',
+      max: 10,
+      suffix: 'songs'
+    }, {
+      key: 'yourPicks',
+      label: 'Your Picks',
+      limitKey: 'yourPicksDisplayLimit',
+      max: 10,
+      suffix: 'songs'
+    }, {
+      key: 'recentPlaylists',
+      label: 'Recently Played Playlists',
+      limitKey: 'recentlyPlayedPlaylistsDisplayLimit',
+      max: 5,
+      suffix: 'playlists'
+    } ];
   }
   _renderSectionOrderUI() {
     const container = document.getElementById('sectionOrderList');
@@ -1463,9 +1270,9 @@ class AdvancedMusicPlayer {
     }
     container.innerHTML = '';
     const defs = this._getDefaultSectionOrder();
-    const order = this.sectionOrder || defs.map((s) => s.key);
+    const order = this.sectionOrder || defs.map(s => s.key);
     order.forEach((key, index) => {
-      const def = defs.find((d) => d.key === key);
+      const def = defs.find(d => d.key === key);
       if (!def) {
         return;
       }
@@ -1509,7 +1316,7 @@ class AdvancedMusicPlayer {
     });
   }
   _moveSectionOrderRow(key, direction) {
-    const order = [...(this.sectionOrder || this._getDefaultSectionOrder().map((s) => s.key))];
+    const order = [ ...this.sectionOrder || this._getDefaultSectionOrder().map(s => s.key) ];
     const index = order.indexOf(key);
     if (index === -1) {
       return;
@@ -1518,17 +1325,17 @@ class AdvancedMusicPlayer {
     if (newIndex < 0 || newIndex >= order.length) {
       return;
     }
-    [order[index], order[newIndex]] = [order[newIndex], order[index]];
+    [order[index], order[newIndex]] = [ order[newIndex], order[index] ];
     this.sectionOrder = order;
     this._renderSectionOrderUI();
   }
   loadLibrarySortValue() {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       if (!this.db) {
         resolve();
         return;
       }
-      const transaction = this.db.transaction(['settings'], 'readonly');
+      const transaction = this.db.transaction([ 'settings' ], 'readonly');
       const store = transaction.objectStore('settings');
       const request = store.get('librarySortAlphabetically');
       request.onsuccess = () => {
@@ -1542,12 +1349,12 @@ class AdvancedMusicPlayer {
     });
   }
   loadLibraryReverseValue() {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       if (!this.db) {
         resolve();
         return;
       }
-      const transaction = this.db.transaction(['settings'], 'readonly');
+      const transaction = this.db.transaction([ 'settings' ], 'readonly');
       const store = transaction.objectStore('settings');
       const request = store.get('libraryReverseOrder');
       request.onsuccess = () => {
@@ -1561,12 +1368,12 @@ class AdvancedMusicPlayer {
     });
   }
   loadVisualizerValue() {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       if (!this.db) {
         resolve();
         return;
       }
-      const transaction = this.db.transaction(['settings'], 'readonly');
+      const transaction = this.db.transaction([ 'settings' ], 'readonly');
       const store = transaction.objectStore('settings');
       const request = store.get('visualizerEnabled');
       request.onsuccess = () => {
@@ -1583,7 +1390,7 @@ class AdvancedMusicPlayer {
     if (!this.db) {
       return;
     }
-    const transaction = this.db.transaction(['settings'], 'readonly');
+    const transaction = this.db.transaction([ 'settings' ], 'readonly');
     const store = transaction.objectStore('settings');
     const request = store.get('librarySortAlphabetically');
     request.onsuccess = () => {
@@ -1606,7 +1413,7 @@ class AdvancedMusicPlayer {
     if (!this.db) {
       return;
     }
-    const transaction = this.db.transaction(['settings'], 'readonly');
+    const transaction = this.db.transaction([ 'settings' ], 'readonly');
     const store = transaction.objectStore('settings');
     const request = store.get('libraryReverseOrder');
     request.onsuccess = () => {
@@ -1635,7 +1442,6 @@ class AdvancedMusicPlayer {
     this.renderSongLibrary();
     this.saveSetting('libraryReverseOrder', this.libraryReverseOrder);
   }
-
   addSongToLibrary() {
     const songName = this.elements.songNameInput.value.trim();
     const songAuthor = this.elements.songAuthorInput.value.trim();
@@ -1649,7 +1455,7 @@ class AdvancedMusicPlayer {
       alert('Invalid YouTube URL');
       return;
     }
-    if (this.songLibrary.some((song) => song.videoId === videoId)) {
+    if (this.songLibrary.some(song => song.videoId === videoId)) {
       alert('This song is already in your library');
       return;
     }
@@ -1658,26 +1464,24 @@ class AdvancedMusicPlayer {
       name: songName,
       author: songAuthor,
       videoId: videoId,
-      favorite: false,
+      favorite: false
     };
     this.songLibrary.push(newSong);
-    this.saveSingleSong(newSong)
-      .then(() => {
-        this.renderSongLibrary();
-        this.updatePlaylistSelection();
-        this.elements.songNameInput.value = '';
-        this.elements.songAuthorInput.value = '';
-        this.elements.songUrlInput.value = '';
-        this.removeYouTubeThumbnailPreview();
-        this.closeLibraryModal();
-      })
-      .catch((error) => {
-        console.error('Error adding song to library:', error);
-        alert('Failed to save song. Please try again.');
-      });
+    this.saveSingleSong(newSong).then(() => {
+      this.renderSongLibrary();
+      this.updatePlaylistSelection();
+      this.elements.songNameInput.value = '';
+      this.elements.songAuthorInput.value = '';
+      this.elements.songUrlInput.value = '';
+      this.removeYouTubeThumbnailPreview();
+      this.closeLibraryModal();
+    }).catch(error => {
+      console.error('Error adding song to library:', error);
+      alert('Failed to save song. Please try again.');
+    });
   }
   removeSong(songId) {
-    const song = this.songLibrary.find((song) => song.id === songId);
+    const song = this.songLibrary.find(song => song.id === songId);
     if (!song) {
       return Promise.resolve();
     }
@@ -1693,44 +1497,35 @@ class AdvancedMusicPlayer {
       this.currentSong = null;
       this.updatePlayerUI();
     }
-    this.recentlyPlayedSongs = this.recentlyPlayedSongs.filter((s) => s.id !== songId);
+    this.recentlyPlayedSongs = this.recentlyPlayedSongs.filter(s => s.id !== songId);
     if (this.db) {
-      const tx = this.db.transaction(['recentlyPlayed'], 'readwrite');
+      const tx = this.db.transaction([ 'recentlyPlayed' ], 'readwrite');
       tx.objectStore('recentlyPlayed').put({
         type: 'songs',
-        items: this.recentlyPlayedSongs,
+        items: this.recentlyPlayedSongs
       });
     }
-    this.songLibrary = this.songLibrary.filter((song) => song.id !== songId);
-    return this.deleteSingleSong(songId)
-      .then(() => {
-        let favoritesPlaylist = this.playlists.find(
-          (p) =>
-            p.name.toLowerCase() === 'favorites' ||
-            p.name.toLowerCase() === 'favourite' ||
-            p.name.toLowerCase() === 'favourite songs' ||
-            p.name.toLowerCase() === 'favorite songs'
-        );
-        if (favoritesPlaylist) {
-          const originalLength = favoritesPlaylist.songs.length;
-          favoritesPlaylist.songs = favoritesPlaylist.songs.filter((s) => s.videoId !== videoId);
-          if (originalLength !== favoritesPlaylist.songs.length) {
-            return this.savePlaylists();
-          }
+    this.songLibrary = this.songLibrary.filter(song => song.id !== songId);
+    return this.deleteSingleSong(songId).then(() => {
+      let favoritesPlaylist = this.playlists.find(p => p.name.toLowerCase() === 'favorites' || p.name.toLowerCase() === 'favourite' || p.name.toLowerCase() === 'favourite songs' || p.name.toLowerCase() === 'favorite songs');
+      if (favoritesPlaylist) {
+        const originalLength = favoritesPlaylist.songs.length;
+        favoritesPlaylist.songs = favoritesPlaylist.songs.filter(s => s.videoId !== videoId);
+        if (originalLength !== favoritesPlaylist.songs.length) {
+          return this.savePlaylists();
         }
-        return Promise.resolve();
-      })
-      .then(() => {
-        const st = this.elements.librarySearch ? this.elements.librarySearch.value.trim() : '';
-        st === '' ? this.renderLibraryView() : this.renderSongLibrary(st);
-        this.renderPlaylists();
-        this.updatePlaylistSelection();
-        this.renderAdditionalDetails();
-      })
-      .catch((error) => {
-        console.error('Error removing song:', error);
-        alert('Failed to remove song. Please try again.');
-      });
+      }
+      return Promise.resolve();
+    }).then(() => {
+      const st = this.elements.librarySearch ? this.elements.librarySearch.value.trim() : '';
+      st === '' ? this.renderLibraryView() : this.renderSongLibrary(st);
+      this.renderPlaylists();
+      this.updatePlaylistSelection();
+      this.renderAdditionalDetails();
+    }).catch(error => {
+      console.error('Error removing song:', error);
+      alert('Failed to remove song. Please try again.');
+    });
   }
   renderSongLibrary(searchTerm = null) {
     try {
@@ -1763,29 +1558,21 @@ class AdvancedMusicPlayer {
           t: 'т',
           u: 'у',
           f: 'ф',
-          y: 'ы',
+          y: 'ы'
         };
-        const latinized = searchTerm
-          .split('')
-          .map((c) => LAT_TO_CYR[c] || c)
-          .join('');
-        filteredLibrary = this.songLibrary.filter((song) => {
+        const latinized = searchTerm.split('').map(c => LAT_TO_CYR[c] || c).join('');
+        filteredLibrary = this.songLibrary.filter(song => {
           const name = song.name.toLowerCase();
           const author = (song.author || '').toLowerCase();
-          return (
-            name.includes(searchTerm) ||
-            author.includes(searchTerm) ||
-            name.includes(latinized) ||
-            author.includes(latinized)
-          );
+          return name.includes(searchTerm) || author.includes(searchTerm) || name.includes(latinized) || author.includes(latinized);
         });
       }
-      if (this._libFilters && Object.values(this._libFilters).some((v) => v !== null)) {
+      if (this._libFilters && Object.values(this._libFilters).some(v => v !== null)) {
         filteredLibrary = this._applyFilters(filteredLibrary);
       }
       let sortedLibrary;
       if (this.librarySortAlphabetically !== false) {
-        sortedLibrary = [...filteredLibrary].sort((a, b) => {
+        sortedLibrary = [ ...filteredLibrary ].sort((a, b) => {
           if (a.favorite !== b.favorite) {
             return a.favorite ? -1 : 1;
           }
@@ -1793,7 +1580,7 @@ class AdvancedMusicPlayer {
           return this.libraryReverseOrder ? -result : result;
         });
       } else {
-        sortedLibrary = [...filteredLibrary].sort((a, b) => {
+        sortedLibrary = [ ...filteredLibrary ].sort((a, b) => {
           if (a.favorite !== b.favorite) {
             return a.favorite ? -1 : 1;
           }
@@ -1828,17 +1615,14 @@ class AdvancedMusicPlayer {
       this._mountVirtualScroll(container, sortedLibrary);
     } catch (error) {
       console.error('Error rendering song library:', error);
-      this.elements.songLibrary.innerHTML =
-        '<div class="error-message">Failed to display song library</div>';
+      this.elements.songLibrary.innerHTML = '<div class="error-message">Failed to display song library</div>';
     }
   }
   renderLibraryView() {
     if (!this.elements.songLibrary) {
       return;
     }
-    const searchTerm = this.elements.librarySearch
-      ? this.elements.librarySearch.value.toLowerCase().trim()
-      : '';
+    const searchTerm = this.elements.librarySearch ? this.elements.librarySearch.value.toLowerCase().trim() : '';
     if (searchTerm !== '') {
       this.renderSongLibrary(searchTerm);
       return;
@@ -1896,7 +1680,7 @@ class AdvancedMusicPlayer {
     };
     const onScroll = () => render();
     container.addEventListener('scroll', onScroll, {
-      passive: true,
+      passive: true
     });
     const resizeObserver = new ResizeObserver(() => {
       lastStart = -1;
@@ -1929,22 +1713,16 @@ class AdvancedMusicPlayer {
     const hasLyrics = !!(song.lyrics && song.lyrics.trim());
     let indicatorsHtml = '';
     if (isFav || isDl || hasLyrics) {
-      const lyricsHtml = hasLyrics
-        ? `<span class="song-lyrics-indicator" title="Has lyrics"><i class="fa fa-closed-captioning"></i></span>`
-        : '';
-      const dlHtml = isDl
-        ? `<span class="song-dl-indicator"     title="Downloaded"><i class="fa fa-download"></i></span>`
-        : '';
-      const favHtml = isFav
-        ? `<span class="song-fav-indicator"    title="Favourited"><i class="fa fa-star"></i></span>`
-        : '';
+      const lyricsHtml = hasLyrics ? `<span class="song-lyrics-indicator" title="Has lyrics"><i class="fa fa-closed-captioning"></i></span>` : '';
+      const dlHtml = isDl ? `<span class="song-dl-indicator"     title="Downloaded"><i class="fa fa-download"></i></span>` : '';
+      const favHtml = isFav ? `<span class="song-fav-indicator"    title="Favourited"><i class="fa fa-star"></i></span>` : '';
       indicatorsHtml = `<div class="song-status-indicators">${lyricsHtml}${dlHtml}${favHtml}</div>`;
     }
     songElement.innerHTML = `\n\t        <span class="song-name" data-song-id="${song.id}">\n\t            ${this.escapeHtml(song.name)}\n\t            ${song.author ? `<small class="song-author">by ${this.escapeHtml(song.author)}</small>` : ''}\n\t        </span>\n\t        <div class="song-item-right">\n\t            ${indicatorsHtml}\n\t            <div class="song-actions">\n\t                <button class="song-card-btn favorite-btn" data-song-id="${song.id}" title="${isFav ? 'Unfavourite' : 'Favourite'}">\n\t                    <i class="fa ${isFav ? 'fa-star' : 'fa-star-o'}"></i>\n\t                </button>\n\t                <button class="song-card-btn play-btn" data-song-id="${song.id}" title="Play">\n\t                    <i class="fa fa-play"></i>\n\t                </button>\n\t                <button class="song-card-btn delete-btn" data-song-id="${song.id}" title="Delete">\n\t                    <i class="fa fa-trash"></i>\n\t                </button>\n\t                <button class="song-card-btn edit-btn" data-song-id="${song.id}" title="Edit">\n\t                    <i class="fa fa-pencil"></i>\n\t                </button>\n\t            </div>\n\t        </div>\n\t    `;
     return songElement;
   }
   setupSongLibraryDelegation() {
-    this.elements.songLibrary.addEventListener('click', (e) => {
+    this.elements.songLibrary.addEventListener('click', e => {
       const target = e.target.closest('button, .song-name');
       if (!target) {
         return;
@@ -1969,12 +1747,7 @@ class AdvancedMusicPlayer {
     this._setupSongItemDragDrop();
   }
   escapeHtml(text) {
-    return text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
+    return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
   }
   decodeHtmlEntities(text) {
     const textarea = document.createElement('textarea');
@@ -2014,8 +1787,7 @@ class AdvancedMusicPlayer {
     const videoId = this.extractYouTubeId(searchTerm);
     if (videoId) {
       this.showAddToLibrarySuggestion(searchTerm);
-      this.elements.songLibrary.innerHTML =
-        '<div class="empty-library-message">YouTube URL detected - press Enter to add</div>';
+      this.elements.songLibrary.innerHTML = '<div class="empty-library-message">YouTube URL detected - press Enter to add</div>';
       return;
     }
     this.debouncedFilterLibrary();
@@ -2055,9 +1827,7 @@ class AdvancedMusicPlayer {
     this.openLibraryModal();
   }
   playFirstVisibleSong() {
-    const visibleSongItems = Array.from(
-      this.elements.songLibrary.querySelectorAll('.song-item')
-    ).filter((item) => item.style.display !== 'none');
+    const visibleSongItems = Array.from(this.elements.songLibrary.querySelectorAll('.song-item')).filter(item => item.style.display !== 'none');
     if (visibleSongItems.length > 0) {
       const firstSongElement = visibleSongItems[0].querySelector('.song-name');
       const songId = firstSongElement.dataset.songId;
@@ -2072,11 +1842,7 @@ class AdvancedMusicPlayer {
     card.id = 'favoritesCard';
     const f = this._libFilters;
     const favoritesExcluded = f?.favorite === false;
-    const favorites = favoritesExcluded
-      ? []
-      : this._applyFilters
-        ? this._applyFilters(this.songLibrary.filter((s) => s.favorite))
-        : this.songLibrary.filter((s) => s.favorite);
+    const favorites = favoritesExcluded ? [] : this._applyFilters ? this._applyFilters(this.songLibrary.filter(s => s.favorite)) : this.songLibrary.filter(s => s.favorite);
     const inner = document.createElement('div');
     inner.className = 'favorites-card-inner';
     const grid = document.createElement('div');
@@ -2087,25 +1853,25 @@ class AdvancedMusicPlayer {
       empty.innerHTML = `<i class="fa fa-star-o"></i><span>No favourites yet</span>`;
       grid.appendChild(empty);
     } else {
-      const shuffled = this._shuffleArray([...favorites]);
+      const shuffled = this._shuffleArray([ ...favorites ]);
       const toShow = shuffled.slice(0, 20);
       const frag = document.createDocumentFragment();
-      toShow.forEach((song) => frag.appendChild(this._buildFavThumb(song)));
+      toShow.forEach(song => frag.appendChild(this._buildFavThumb(song)));
       grid.appendChild(frag);
-      grid.addEventListener('click', (e) => {
+      grid.addEventListener('click', e => {
         const thumb = e.target.closest('.fav-thumb');
         if (!thumb) {
           return;
         }
         this.playSong(parseInt(thumb.dataset.songId));
       });
-      grid.addEventListener('contextmenu', (e) => {
+      grid.addEventListener('contextmenu', e => {
         e.preventDefault();
         const thumb = e.target.closest('.fav-thumb');
         if (!thumb) {
           return;
         }
-        const song = this.songLibrary.find((s) => s.id === parseInt(thumb.dataset.songId));
+        const song = this.songLibrary.find(s => s.id === parseInt(thumb.dataset.songId));
         if (song) {
           this.addToQueue(song);
         }
@@ -2131,9 +1897,7 @@ class AdvancedMusicPlayer {
     expandBtn.addEventListener('click', () => {
       const isExpanded = card.classList.toggle('expanded');
       expandBtn.classList.toggle('is-expanded', isExpanded);
-      expandBtn.innerHTML = isExpanded
-        ? `<i class="fa fa-chevron-up"></i> Less`
-        : `<i class="fa fa-chevron-down"></i> All`;
+      expandBtn.innerHTML = isExpanded ? `<i class="fa fa-chevron-up"></i> Less` : `<i class="fa fa-chevron-down"></i> All`;
       let expList = card.querySelector('.favorites-expanded-list');
       if (isExpanded) {
         if (!expList) {
@@ -2142,19 +1906,14 @@ class AdvancedMusicPlayer {
           card.appendChild(expList);
         }
         expList.innerHTML = '';
-        const favSongs = favoritesExcluded
-          ? []
-          : this._applyFilters
-            ? this._applyFilters(this.songLibrary.filter((s) => s.favorite))
-            : this.songLibrary.filter((s) => s.favorite);
+        const favSongs = favoritesExcluded ? [] : this._applyFilters ? this._applyFilters(this.songLibrary.filter(s => s.favorite)) : this.songLibrary.filter(s => s.favorite);
         if (favoritesExcluded) {
-          expList.innerHTML =
-            '<div class="empty-library-message">Filter excludes favourites.</div>';
+          expList.innerHTML = '<div class="empty-library-message">Filter excludes favourites.</div>';
         } else if (favSongs.length === 0) {
           expList.innerHTML = '<div class="empty-library-message">No favourites yet.</div>';
         } else {
           const frag = document.createDocumentFragment();
-          favSongs.forEach((song) => frag.appendChild(this.createSongElement(song)));
+          favSongs.forEach(song => frag.appendChild(this.createSongElement(song)));
           expList.appendChild(frag);
         }
       } else if (expList) {
@@ -2202,9 +1961,7 @@ class AdvancedMusicPlayer {
     const card = document.createElement('div');
     card.className = 'discovery-card';
     card.id = 'discoveryCard';
-    let pool = this._applyFilters
-      ? this._applyFilters([...this.songLibrary])
-      : [...this.songLibrary];
+    let pool = this._applyFilters ? this._applyFilters([ ...this.songLibrary ]) : [ ...this.songLibrary ];
     if (this.librarySortAlphabetically !== false) {
       pool.sort((a, b) => {
         if (a.favorite !== b.favorite) {
@@ -2218,7 +1975,7 @@ class AdvancedMusicPlayer {
         pool.reverse();
       }
     }
-    const shuffled = this._shuffleArray([...pool]);
+    const shuffled = this._shuffleArray([ ...pool ]);
     const header = document.createElement('div');
     header.className = 'discovery-header';
     const left = document.createElement('div');
@@ -2245,20 +2002,20 @@ class AdvancedMusicPlayer {
     header.appendChild(right);
     const grid = document.createElement('div');
     grid.className = 'discovery-grid';
-    grid.addEventListener('click', (e) => {
+    grid.addEventListener('click', e => {
       const item = e.target.closest('.discovery-song-item');
       if (!item) {
         return;
       }
       this.playSong(parseInt(item.dataset.songId));
     });
-    grid.addEventListener('contextmenu', (e) => {
+    grid.addEventListener('contextmenu', e => {
       e.preventDefault();
       const item = e.target.closest('.discovery-song-item');
       if (!item) {
         return;
       }
-      const song = this.songLibrary.find((s) => s.id === parseInt(item.dataset.songId));
+      const song = this.songLibrary.find(s => s.id === parseInt(item.dataset.songId));
       if (song) {
         this.addToQueue(song);
       }
@@ -2295,9 +2052,7 @@ class AdvancedMusicPlayer {
         return;
       }
       const frag = document.createDocumentFragment();
-      shuffled
-        .slice(0, maxSongs)
-        .forEach((song) => frag.appendChild(this._buildDiscoverySongItem(song)));
+      shuffled.slice(0, maxSongs).forEach(song => frag.appendChild(this._buildDiscoverySongItem(song)));
       grid.appendChild(frag);
     };
     shuffleBtn.addEventListener('click', () => {
@@ -2307,9 +2062,7 @@ class AdvancedMusicPlayer {
     });
     expandBtn.addEventListener('click', () => {
       const isExpanded = card.classList.toggle('expanded');
-      expandBtn.innerHTML = isExpanded
-        ? `<i class="fa fa-chevron-up"></i> Less`
-        : `<i class="fa fa-chevron-down"></i> All`;
+      expandBtn.innerHTML = isExpanded ? `<i class="fa fa-chevron-up"></i> Less` : `<i class="fa fa-chevron-down"></i> All`;
       let expList = card.querySelector('.discovery-expanded-list');
       if (isExpanded) {
         if (!expList) {
@@ -2318,9 +2071,7 @@ class AdvancedMusicPlayer {
           card.appendChild(expList);
         }
         expList.innerHTML = '';
-        let allSongs = this._applyFilters
-          ? this._applyFilters([...this.songLibrary])
-          : [...this.songLibrary];
+        let allSongs = this._applyFilters ? this._applyFilters([ ...this.songLibrary ]) : [ ...this.songLibrary ];
         if (this.librarySortAlphabetically !== false) {
           allSongs.sort((a, b) => {
             if (a.favorite !== b.favorite) {
@@ -2335,7 +2086,7 @@ class AdvancedMusicPlayer {
           }
         }
         const frag = document.createDocumentFragment();
-        allSongs.forEach((song) => frag.appendChild(this.createSongElement(song)));
+        allSongs.forEach(song => frag.appendChild(this.createSongElement(song)));
         expList.appendChild(frag);
       } else if (expList) {
         expList.innerHTML = '';
@@ -2366,7 +2117,7 @@ class AdvancedMusicPlayer {
       }
     };
     card.addEventListener('remove', cleanup, {
-      once: true,
+      once: true
     });
     return card;
   }
@@ -2403,7 +2154,7 @@ class AdvancedMusicPlayer {
   _shuffleArray(arr) {
     let i = arr.length;
     while (i--) {
-      const j = (Math.random() * (i + 1)) | 0;
+      const j = Math.random() * (i + 1) | 0;
       const tmp = arr[i];
       arr[i] = arr[j];
       arr[j] = tmp;
@@ -2411,7 +2162,7 @@ class AdvancedMusicPlayer {
     return arr;
   }
   toggleFavorite(songId) {
-    const songIndex = this.songLibrary.findIndex((song) => song.id === songId);
+    const songIndex = this.songLibrary.findIndex(song => song.id === songId);
     if (songIndex === -1) {
       return;
     }
@@ -2428,7 +2179,7 @@ class AdvancedMusicPlayer {
     if (songItem) {
       const right = songItem.querySelector('.song-item-right');
       let indicators = right?.querySelector('.song-status-indicators');
-      const isDl = !!this.songLibrary.find((s) => s.id === songId)?.localFileHandle;
+      const isDl = !!this.songLibrary.find(s => s.id === songId)?.localFileHandle;
       if (newFavoriteStatus || isDl) {
         if (!indicators && right) {
           indicators = document.createElement('div');
@@ -2436,12 +2187,8 @@ class AdvancedMusicPlayer {
           right.insertBefore(indicators, right.querySelector('.song-actions'));
         }
         if (indicators) {
-          const dlHtml = isDl
-            ? `<span class="song-dl-indicator" title="Downloaded"><i class="fa fa-download"></i></span>`
-            : '';
-          const favHtml = newFavoriteStatus
-            ? `<span class="song-fav-indicator" title="Favourited"><i class="fa fa-star"></i></span>`
-            : '';
+          const dlHtml = isDl ? `<span class="song-dl-indicator" title="Downloaded"><i class="fa fa-download"></i></span>` : '';
+          const favHtml = newFavoriteStatus ? `<span class="song-fav-indicator" title="Favourited"><i class="fa fa-star"></i></span>` : '';
           indicators.innerHTML = dlHtml + favHtml;
         }
       } else {
@@ -2451,9 +2198,9 @@ class AdvancedMusicPlayer {
     this.batchFavoriteUpdate(song, newFavoriteStatus);
   }
   syncFavoritesOnLoad() {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       try {
-        const favoriteSongs = this.songLibrary.filter((song) => song.favorite);
+        const favoriteSongs = this.songLibrary.filter(song => song.favorite);
         if (favoriteSongs.length === 0) {
           resolve();
           return;
@@ -2462,16 +2209,12 @@ class AdvancedMusicPlayer {
         if (!favoritesPlaylist) {
           favoritesPlaylist = this.createFavoritesPlaylist();
         }
-        const currentFavorites = favoriteSongs.map((song) => ({
+        const currentFavorites = favoriteSongs.map(song => ({
           name: song.name,
           videoId: song.videoId,
-          entryId: Date.now() + Math.random(),
+          entryId: Date.now() + Math.random()
         }));
-        const needsUpdate =
-          favoritesPlaylist.songs.length !== currentFavorites.length ||
-          !currentFavorites.every((fav) =>
-            favoritesPlaylist.songs.some((existing) => existing.videoId === fav.videoId)
-          );
+        const needsUpdate = favoritesPlaylist.songs.length !== currentFavorites.length || !currentFavorites.every(fav => favoritesPlaylist.songs.some(existing => existing.videoId === fav.videoId));
         if (needsUpdate) {
           favoritesPlaylist.songs = currentFavorites;
           this.savePlaylists().then(resolve).catch(resolve);
@@ -2487,16 +2230,12 @@ class AdvancedMusicPlayer {
   batchFavoriteUpdate(song, isFavorited) {
     clearTimeout(this.favoriteUpdateTimeout);
     this.favoriteUpdateTimeout = setTimeout(() => {
-      Promise.all([
-        this.saveSingleSong(song),
-        this.updateFavoritesPlaylist(song, isFavorited),
-      ]).catch((error) => {
+      Promise.all([ this.saveSingleSong(song), this.updateFavoritesPlaylist(song, isFavorited) ]).catch(error => {
         console.error('Error updating favorite:', error);
         song.favorite = !isFavorited;
         const favoriteBtn = document.querySelector(`.favorite-btn[data-song-id="${song.id}"]`);
         if (favoriteBtn) {
-          favoriteBtn.querySelector('i').className =
-            `fa ${song.favorite ? 'fa-star' : 'fa-star-o'}`;
+          favoriteBtn.querySelector('i').className = `fa ${song.favorite ? 'fa-star' : 'fa-star-o'}`;
           favoriteBtn.title = song.favorite ? 'Unfavourite' : 'Favourite';
         }
         const songItem = favoriteBtn?.closest('.song-item');
@@ -2507,12 +2246,8 @@ class AdvancedMusicPlayer {
           if (!song.favorite && !isDl) {
             indicators?.remove();
           } else if (indicators) {
-            const dlHtml = isDl
-              ? `<span class="song-dl-indicator" title="Downloaded"><i class="fa fa-download"></i></span>`
-              : '';
-            const favHtml = song.favorite
-              ? `<span class="song-fav-indicator" title="Favourited"><i class="fa fa-star"></i></span>`
-              : '';
+            const dlHtml = isDl ? `<span class="song-dl-indicator" title="Downloaded"><i class="fa fa-download"></i></span>` : '';
+            const favHtml = song.favorite ? `<span class="song-fav-indicator" title="Favourited"><i class="fa fa-star"></i></span>` : '';
             indicators.innerHTML = dlHtml + favHtml;
           }
         }
@@ -2520,7 +2255,7 @@ class AdvancedMusicPlayer {
     }, 300);
   }
   updateFavoritesPlaylist(song, isFavorited) {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       let favoritesPlaylist = this.getFavoritesPlaylist();
       if (!favoritesPlaylist && isFavorited) {
         favoritesPlaylist = this.createFavoritesPlaylist();
@@ -2529,44 +2264,40 @@ class AdvancedMusicPlayer {
         resolve();
         return;
       }
-      const songExists = favoritesPlaylist.songs.some((s) => s.videoId === song.videoId);
+      const songExists = favoritesPlaylist.songs.some(s => s.videoId === song.videoId);
       let playlistChanged = false;
       if (isFavorited && !songExists) {
         favoritesPlaylist.songs.push({
           name: song.name,
           videoId: song.videoId,
-          entryId: Date.now() + Math.random(),
+          entryId: Date.now() + Math.random()
         });
         playlistChanged = true;
       } else if (!isFavorited && songExists) {
         const originalLength = favoritesPlaylist.songs.length;
-        favoritesPlaylist.songs = favoritesPlaylist.songs.filter((s) => s.videoId !== song.videoId);
+        favoritesPlaylist.songs = favoritesPlaylist.songs.filter(s => s.videoId !== song.videoId);
         playlistChanged = originalLength !== favoritesPlaylist.songs.length;
       }
       if (playlistChanged) {
-        this.savePlaylists()
-          .then(() => {
-            if (this.currentPlaylist && this.currentPlaylist.id === favoritesPlaylist.id) {
-              this.renderPlaylistSidebar();
-            }
-            resolve();
-          })
-          .catch(resolve);
+        this.savePlaylists().then(() => {
+          if (this.currentPlaylist && this.currentPlaylist.id === favoritesPlaylist.id) {
+            this.renderPlaylistSidebar();
+          }
+          resolve();
+        }).catch(resolve);
       } else {
         resolve();
       }
     });
   }
   getFavoritesPlaylist() {
-    return this.playlists.find((p) =>
-      ['favorites', 'favourite', 'favourite songs', 'favorite songs'].includes(p.name.toLowerCase())
-    );
+    return this.playlists.find(p => [ 'favorites', 'favourite', 'favourite songs', 'favorite songs' ].includes(p.name.toLowerCase()));
   }
   createFavoritesPlaylist() {
     const favoritesPlaylist = {
       id: Date.now(),
       name: 'Favorites',
-      songs: [],
+      songs: []
     };
     this.playlists.push(favoritesPlaylist);
     return favoritesPlaylist;
@@ -2603,16 +2334,14 @@ class AdvancedMusicPlayer {
     previewContainer.appendChild(videoTitle);
     previewContainer.appendChild(closeButton);
     document.querySelector('.add-song-section').appendChild(previewContainer);
-    this.fetchYouTubeTitle(videoId)
-      .then((title) => {
-        if (title) {
-          videoTitle.textContent = title;
-        }
-      })
-      .catch((error) => {
-        console.warn('Could not fetch YouTube title:', error);
-        videoTitle.textContent = 'Could not load video title';
-      });
+    this.fetchYouTubeTitle(videoId).then(title => {
+      if (title) {
+        videoTitle.textContent = title;
+      }
+    }).catch(error => {
+      console.warn('Could not fetch YouTube title:', error);
+      videoTitle.textContent = 'Could not load video title';
+    });
   }
   removeYouTubeThumbnailPreview() {
     const existingPreview = document.getElementById('thumbnailPreview');
@@ -2628,11 +2357,9 @@ class AdvancedMusicPlayer {
     const player = new YT.Player('tempYTPlayer', {
       videoId: videoId,
       events: {
-        onError: (event) => {
+        onError: event => {
           if (event.data === 101 || event.data === 150) {
-            alert(
-              'This video cannot be played outside YouTube due to restrictions set by the content owner.'
-            );
+            alert('This video cannot be played outside YouTube due to restrictions set by the content owner.');
           }
           player.destroy();
           document.getElementById('tempYTPlayer')?.remove();
@@ -2642,15 +2369,15 @@ class AdvancedMusicPlayer {
             player.destroy();
             document.getElementById('tempYTPlayer')?.remove();
           }, 1e3);
-        },
-      },
+        }
+      }
     });
   }
   parseVideoTitle(title) {
     if (!title) {
       return {
         author: '',
-        songName: '',
+        songName: ''
       };
     }
     let cleanTitle = title.trim();
@@ -2661,7 +2388,7 @@ class AdvancedMusicPlayer {
       const songName = quotedMatch[2].trim();
       return {
         author: author,
-        songName: songName,
+        songName: songName
       };
     }
     const colonPattern = /^(.+?):\s*(.+)$/;
@@ -2671,7 +2398,7 @@ class AdvancedMusicPlayer {
       const songName = this.removeNoisePatterns(colonMatch[2].trim());
       return {
         author: author,
-        songName: songName,
+        songName: songName
       };
     }
     cleanTitle = this.removeNoisePatterns(cleanTitle);
@@ -2686,7 +2413,7 @@ class AdvancedMusicPlayer {
       }
       return {
         author: author,
-        songName: songName,
+        songName: songName
       };
     }
     const byMatch = cleanTitle.match(/^(.+?)\s+by\s+(.+)$/i);
@@ -2699,7 +2426,7 @@ class AdvancedMusicPlayer {
       }
       return {
         author: author,
-        songName: songName,
+        songName: songName
       };
     }
     const allCapsMatch = cleanTitle.match(/^([A-Z][A-Z\s&]+[A-Z])\s+(.+)$/);
@@ -2713,109 +2440,34 @@ class AdvancedMusicPlayer {
       }
       return {
         author: author,
-        songName: songName,
+        songName: songName
       };
     }
     return {
       author: '',
-      songName: cleanTitle,
+      songName: cleanTitle
     };
   }
   removeNoisePatterns(text) {
-    const patterns = [
-      /\(official\s+music\s+video\)/gi,
-      /\[official\s+music\s+video\]/gi,
-      /\(official\s+video\)/gi,
-      /\[official\s+video\]/gi,
-      /\(official\s+audio\)/gi,
-      /\[official\s+audio\]/gi,
-      /\(official\s+lyric\s+video\)/gi,
-      /\[official\s+lyric\s+video\]/gi,
-      /\(official\s+lyrics\s+video\)/gi,
-      /\[official\s+lyrics\s+video\]/gi,
-      /\(official\s+visualizer\)/gi,
-      /\[official\s+visualizer\]/gi,
-      /\(official\s+mv\)/gi,
-      /\[official\s+mv\]/gi,
-      /\(music\s+video\)/gi,
-      /\[music\s+video\]/gi,
-      /\(lyric\s+video\)/gi,
-      /\[lyric\s+video\]/gi,
-      /\(lyrics\s+video\)/gi,
-      /\[lyrics\s+video\]/gi,
-      /\(official\)/gi,
-      /\[official\]/gi,
-      /\(lyrics\)/gi,
-      /\[lyrics\]/gi,
-      /\(video\)/gi,
-      /\[video\]/gi,
-      /\(audio\)/gi,
-      /\[audio\]/gi,
-      /\(mv\)/gi,
-      /\[mv\]/gi,
-      /\s+official\s+music\s+video$/gi,
-      /\s+official\s+video$/gi,
-      /\s+official\s+audio$/gi,
-      /\s+music\s+video$/gi,
-      /\s+lyric\s+video$/gi,
-      /\s+lyrics\s+video$/gi,
-      /\s+official\s+visualizer$/gi,
-      /\s+visualizer$/gi,
-      /\s+official\s+mv$/gi,
-      /\s+official$/gi,
-      /\s+video$/gi,
-      /\s+audio$/gi,
-      /\s+lyrics$/gi,
-      /\(4k\)/gi,
-      /\[4k\]/gi,
-      /\(8k\)/gi,
-      /\[8k\]/gi,
-      /\(hd\)/gi,
-      /\[hd\]/gi,
-      /\(uhd\)/gi,
-      /\[uhd\]/gi,
-      /\s+4k$/gi,
-      /\s+8k$/gi,
-      /\s+hd$/gi,
-      /\(remastered\)/gi,
-      /\[remastered\]/gi,
-      /\(remaster\)/gi,
-      /\[remaster\]/gi,
-      /\(remix\)/gi,
-      /\[remix\]/gi,
-      /\s+remastered$/gi,
-      /\(live\s+performance\)/gi,
-      /\[live\s+performance\]/gi,
-      /\(live\)/gi,
-      /\[live\]/gi,
-      /\s+live$/gi,
-      /\(explicit\)/gi,
-      /\[explicit\]/gi,
-      /\(\s*\)/g,
-      /\[\s*\]/g,
-    ];
+    const patterns = [ /\(official\s+music\s+video\)/gi, /\[official\s+music\s+video\]/gi, /\(official\s+video\)/gi, /\[official\s+video\]/gi, /\(official\s+audio\)/gi, /\[official\s+audio\]/gi, /\(official\s+lyric\s+video\)/gi, /\[official\s+lyric\s+video\]/gi, /\(official\s+lyrics\s+video\)/gi, /\[official\s+lyrics\s+video\]/gi, /\(official\s+visualizer\)/gi, /\[official\s+visualizer\]/gi, /\(official\s+mv\)/gi, /\[official\s+mv\]/gi, /\(music\s+video\)/gi, /\[music\s+video\]/gi, /\(lyric\s+video\)/gi, /\[lyric\s+video\]/gi, /\(lyrics\s+video\)/gi, /\[lyrics\s+video\]/gi, /\(official\)/gi, /\[official\]/gi, /\(lyrics\)/gi, /\[lyrics\]/gi, /\(video\)/gi, /\[video\]/gi, /\(audio\)/gi, /\[audio\]/gi, /\(mv\)/gi, /\[mv\]/gi, /\s+official\s+music\s+video$/gi, /\s+official\s+video$/gi, /\s+official\s+audio$/gi, /\s+music\s+video$/gi, /\s+lyric\s+video$/gi, /\s+lyrics\s+video$/gi, /\s+official\s+visualizer$/gi, /\s+visualizer$/gi, /\s+official\s+mv$/gi, /\s+official$/gi, /\s+video$/gi, /\s+audio$/gi, /\s+lyrics$/gi, /\(4k\)/gi, /\[4k\]/gi, /\(8k\)/gi, /\[8k\]/gi, /\(hd\)/gi, /\[hd\]/gi, /\(uhd\)/gi, /\[uhd\]/gi, /\s+4k$/gi, /\s+8k$/gi, /\s+hd$/gi, /\(remastered\)/gi, /\[remastered\]/gi, /\(remaster\)/gi, /\[remaster\]/gi, /\(remix\)/gi, /\[remix\]/gi, /\s+remastered$/gi, /\(live\s+performance\)/gi, /\[live\s+performance\]/gi, /\(live\)/gi, /\[live\]/gi, /\s+live$/gi, /\(explicit\)/gi, /\[explicit\]/gi, /\(\s*\)/g, /\[\s*\]/g ];
     let cleaned = text;
-    patterns.forEach((pattern) => {
+    patterns.forEach(pattern => {
       cleaned = cleaned.replace(pattern, '');
     });
     cleaned = cleaned.replace(/\s+/g, ' ').trim();
     return cleaned;
   }
   extractFeaturedArtists(text) {
-    const patterns = [
-      {
-        regex: /\s+(ft\.?|feat\.?|featuring)\s+(.+)$/i,
-        captureGroup: 2,
-      },
-      {
-        regex: /\s+with\s+(.+)$/i,
-        captureGroup: 1,
-      },
-      {
-        regex: /\s+(&|x)\s+([A-Z].+)$/i,
-        captureGroup: 2,
-      },
-    ];
+    const patterns = [ {
+      regex: /\s+(ft\.?|feat\.?|featuring)\s+(.+)$/i,
+      captureGroup: 2
+    }, {
+      regex: /\s+with\s+(.+)$/i,
+      captureGroup: 1
+    }, {
+      regex: /\s+(&|x)\s+([A-Z].+)$/i,
+      captureGroup: 2
+    } ];
     for (const pattern of patterns) {
       const match = text.match(pattern.regex);
       if (match) {
@@ -2823,13 +2475,13 @@ class AdvancedMusicPlayer {
         const featuredArtists = match[pattern.captureGroup].trim();
         return {
           cleanName: cleanName,
-          featured: `ft. ${featuredArtists}`,
+          featured: `ft. ${featuredArtists}`
         };
       }
     }
     return {
       cleanName: text,
-      featured: null,
+      featured: null
     };
   }
   handleAutofill() {
@@ -2841,18 +2493,16 @@ class AdvancedMusicPlayer {
     if (!videoId) {
       return;
     }
-    Promise.all([this.fetchYouTubeTitle(videoId), this.fetchYouTubeChannel(videoId)])
-      .then(([title, channelName]) => {
-        if (title) {
-          const { author: author, songName: songName } = this.parseVideoTitle(title);
-          this.elements.songNameInput.value = songName;
-          this.elements.songAuthorInput.value = author || channelName;
-        }
-      })
-      .catch((error) => {
-        console.error('Error fetching video title for autofill:', error);
-        alert('Could not fetch video information for autofill');
-      });
+    Promise.all([ this.fetchYouTubeTitle(videoId), this.fetchYouTubeChannel(videoId) ]).then(([title, channelName]) => {
+      if (title) {
+        const {author: author, songName: songName} = this.parseVideoTitle(title);
+        this.elements.songNameInput.value = songName;
+        this.elements.songAuthorInput.value = author || channelName;
+      }
+    }).catch(error => {
+      console.error('Error fetching video title for autofill:', error);
+      alert('Could not fetch video information for autofill');
+    });
   }
   showGhostPreview(event) {
     const songUrl = this.elements.songUrlInput.value.trim();
@@ -2871,26 +2521,24 @@ class AdvancedMusicPlayer {
     this.ghostPreviewAbortController = new AbortController();
     const requestId = Date.now();
     this.currentGhostRequestId = requestId;
-    Promise.all([this.fetchYouTubeTitle(videoId), this.fetchYouTubeChannel(videoId)])
-      .then(([title, channelName]) => {
-        if (this.currentGhostRequestId !== requestId) {
-          return;
-        }
-        if (!this.isAutofillButtonHovered) {
-          return;
-        }
-        if (title) {
-          const { author: author, songName: songName } = this.parseVideoTitle(title);
-          const finalAuthor = author || channelName;
-          this.createGhostPreview(songName, finalAuthor);
-        }
-      })
-      .catch((error) => {
-        if (error.name === 'AbortError') {
-          return;
-        }
-        console.warn('Could not fetch title for ghost preview:', error);
-      });
+    Promise.all([ this.fetchYouTubeTitle(videoId), this.fetchYouTubeChannel(videoId) ]).then(([title, channelName]) => {
+      if (this.currentGhostRequestId !== requestId) {
+        return;
+      }
+      if (!this.isAutofillButtonHovered) {
+        return;
+      }
+      if (title) {
+        const {author: author, songName: songName} = this.parseVideoTitle(title);
+        const finalAuthor = author || channelName;
+        this.createGhostPreview(songName, finalAuthor);
+      }
+    }).catch(error => {
+      if (error.name === 'AbortError') {
+        return;
+      }
+      console.warn('Could not fetch title for ghost preview:', error);
+    });
   }
   createGhostPreview(songName, author) {
     this.removeGhostPreview();
@@ -2945,19 +2593,19 @@ class AdvancedMusicPlayer {
       this.updateGhostPositions();
     };
     window.addEventListener('scroll', this.ghostScrollHandler, {
-      passive: true,
+      passive: true
     });
     window.addEventListener('resize', this.ghostResizeHandler, {
-      passive: true,
+      passive: true
     });
     this.ghostInteractionHandler = () => {
       this.removeGhostPreview();
     };
     document.addEventListener('click', this.ghostInteractionHandler, {
-      once: true,
+      once: true
     });
     document.addEventListener('keydown', this.ghostInteractionHandler, {
-      once: true,
+      once: true
     });
   }
   cleanupGhostEventListeners() {
@@ -3004,7 +2652,7 @@ class AdvancedMusicPlayer {
     this.currentGhostRequestId = null;
   }
   openSongEditModal(songId) {
-    const song = this.songLibrary.find((s) => s.id === songId);
+    const song = this.songLibrary.find(s => s.id === songId);
     if (!song) {
       return;
     }
@@ -3033,7 +2681,7 @@ class AdvancedMusicPlayer {
       unlinkBtn.classList.add('active');
     }
     closeBtn.onclick = () => modal.remove();
-    modal.addEventListener('click', (e) => {
+    modal.addEventListener('click', e => {
       if (e.target === modal) {
         modal.remove();
       }
@@ -3052,14 +2700,12 @@ class AdvancedMusicPlayer {
       }
       try {
         const [handle] = await window.showOpenFilePicker({
-          types: [
-            {
-              description: 'Audio files',
-              accept: {
-                'audio/*': ['.mp3', '.flac', '.wav', '.m4a', '.ogg', '.aac'],
-              },
-            },
-          ],
+          types: [ {
+            description: 'Audio files',
+            accept: {
+              'audio/*': [ '.mp3', '.flac', '.wav', '.m4a', '.ogg', '.aac' ]
+            }
+          } ]
         });
         pendingLocalHandle = handle;
         pendingClearHandle = false;
@@ -3077,7 +2723,7 @@ class AdvancedMusicPlayer {
       localFileBtn.textContent = 'Link local file';
       unlinkBtn.classList.remove('active');
     });
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', e => {
       e.preventDefault();
       const newName = nameInput.value.trim();
       const newAuthor = authorInput.value.trim();
@@ -3092,8 +2738,7 @@ class AdvancedMusicPlayer {
         this.showNotification('Please enter a valid YouTube URL.', 'error');
         return;
       }
-      let handleArg = undefined,
-        handleNameArg = undefined;
+      let handleArg = undefined, handleNameArg = undefined;
       if (pendingClearHandle) {
         handleArg = null;
         handleNameArg = null;
@@ -3101,97 +2746,69 @@ class AdvancedMusicPlayer {
         handleArg = pendingLocalHandle;
         handleNameArg = pendingLocalHandle.name;
       }
-      this.updateSongDetails(
-        song.id,
-        newName,
-        newAuthor,
-        newVideoId,
-        newLyrics,
-        handleArg,
-        handleNameArg
-      )
-        .then(() => {
-          modal.remove();
-          const songItem = document
-            .querySelector(`.song-name[data-song-id="${song.id}"]`)
-            ?.closest('.song-item');
-          if (songItem) {
-            const nameSpan = songItem.querySelector('.song-name');
-            if (nameSpan) {
-              nameSpan.childNodes[0].textContent = newName;
-              let authorEl = nameSpan.querySelector('.song-author');
-              if (newAuthor) {
-                if (!authorEl) {
-                  authorEl = document.createElement('small');
-                  authorEl.className = 'song-author';
-                  nameSpan.appendChild(authorEl);
-                }
-                authorEl.textContent = `by ${newAuthor}`;
-              } else {
-                authorEl?.remove();
+      this.updateSongDetails(song.id, newName, newAuthor, newVideoId, newLyrics, handleArg, handleNameArg).then(() => {
+        modal.remove();
+        const songItem = document.querySelector(`.song-name[data-song-id="${song.id}"]`)?.closest('.song-item');
+        if (songItem) {
+          const nameSpan = songItem.querySelector('.song-name');
+          if (nameSpan) {
+            nameSpan.childNodes[0].textContent = newName;
+            let authorEl = nameSpan.querySelector('.song-author');
+            if (newAuthor) {
+              if (!authorEl) {
+                authorEl = document.createElement('small');
+                authorEl.className = 'song-author';
+                nameSpan.appendChild(authorEl);
               }
-            }
-            const updatedSong = this.songLibrary.find((s) => s.id === song.id);
-            const isDl = !!updatedSong?.localFileHandle;
-            const isFav = !!updatedSong?.favorite;
-            const hasLyrics = !!(updatedSong?.lyrics && updatedSong.lyrics.trim());
-            const right = songItem.querySelector('.song-item-right');
-            if (right) {
-              let indicators = right.querySelector('.song-status-indicators');
-              if (isFav || isDl || hasLyrics) {
-                if (!indicators) {
-                  indicators = document.createElement('div');
-                  indicators.className = 'song-status-indicators';
-                  right.insertBefore(indicators, right.querySelector('.song-actions'));
-                }
-                const lyricsHtml = hasLyrics
-                  ? `<span class="song-lyrics-indicator" title="Has lyrics"><i class="fa fa-closed-captioning"></i></span>`
-                  : '';
-                const dlHtml = isDl
-                  ? `<span class="song-dl-indicator"     title="Downloaded"><i class="fa fa-download"></i></span>`
-                  : '';
-                const favHtml = isFav
-                  ? `<span class="song-fav-indicator"    title="Favourited"><i class="fa fa-star"></i></span>`
-                  : '';
-                indicators.innerHTML = lyricsHtml + dlHtml + favHtml;
-              } else {
-                indicators?.remove();
-              }
-            }
-            if (newVideoId !== song.videoId) {
-              const favThumb = document.querySelector(`.fav-thumb[data-song-id="${song.id}"] img`);
-              if (favThumb) {
-                favThumb.src = `https://img.youtube.com/vi/${newVideoId}/mqdefault.jpg`;
-              }
-              const discThumb = document.querySelector(
-                `.discovery-song-item[data-song-id="${song.id}"] img`
-              );
-              if (discThumb) {
-                discThumb.src = `https://img.youtube.com/vi/${newVideoId}/mqdefault.jpg`;
-              }
+              authorEl.textContent = `by ${newAuthor}`;
+            } else {
+              authorEl?.remove();
             }
           }
-          this.showNotification('Song updated.', 'success');
-        })
-        .catch((err) => {
-          console.error('Error updating song details:', err);
-          this.showNotification('Failed to update song details.', 'error');
-        });
+          const updatedSong = this.songLibrary.find(s => s.id === song.id);
+          const isDl = !!updatedSong?.localFileHandle;
+          const isFav = !!updatedSong?.favorite;
+          const hasLyrics = !!(updatedSong?.lyrics && updatedSong.lyrics.trim());
+          const right = songItem.querySelector('.song-item-right');
+          if (right) {
+            let indicators = right.querySelector('.song-status-indicators');
+            if (isFav || isDl || hasLyrics) {
+              if (!indicators) {
+                indicators = document.createElement('div');
+                indicators.className = 'song-status-indicators';
+                right.insertBefore(indicators, right.querySelector('.song-actions'));
+              }
+              const lyricsHtml = hasLyrics ? `<span class="song-lyrics-indicator" title="Has lyrics"><i class="fa fa-closed-captioning"></i></span>` : '';
+              const dlHtml = isDl ? `<span class="song-dl-indicator"     title="Downloaded"><i class="fa fa-download"></i></span>` : '';
+              const favHtml = isFav ? `<span class="song-fav-indicator"    title="Favourited"><i class="fa fa-star"></i></span>` : '';
+              indicators.innerHTML = lyricsHtml + dlHtml + favHtml;
+            } else {
+              indicators?.remove();
+            }
+          }
+          if (newVideoId !== song.videoId) {
+            const favThumb = document.querySelector(`.fav-thumb[data-song-id="${song.id}"] img`);
+            if (favThumb) {
+              favThumb.src = `https://img.youtube.com/vi/${newVideoId}/mqdefault.jpg`;
+            }
+            const discThumb = document.querySelector(`.discovery-song-item[data-song-id="${song.id}"] img`);
+            if (discThumb) {
+              discThumb.src = `https://img.youtube.com/vi/${newVideoId}/mqdefault.jpg`;
+            }
+          }
+        }
+        this.showNotification('Song updated.', 'success');
+      }).catch(err => {
+        console.error('Error updating song details:', err);
+        this.showNotification('Failed to update song details.', 'error');
+      });
     });
     document.body.appendChild(modal);
   }
-  updateSongDetails(
-    songId,
-    newName,
-    newAuthor,
-    newVideoId,
-    newLyrics = '',
-    localFileHandle = undefined,
-    localFileName = undefined
-  ) {
+  updateSongDetails(songId, newName, newAuthor, newVideoId, newLyrics = '', localFileHandle = undefined, localFileName = undefined) {
     return new Promise((resolve, reject) => {
       try {
-        const songIndex = this.songLibrary.findIndex((song) => song.id === songId);
+        const songIndex = this.songLibrary.findIndex(song => song.id === songId);
         if (songIndex === -1) {
           reject(new Error('Song not found'));
           return;
@@ -3204,8 +2821,8 @@ class AdvancedMusicPlayer {
           this.songLibrary[songIndex].localFileHandle = localFileHandle;
           this.songLibrary[songIndex].localFileName = localFileName ?? null;
         }
-        this.playlists.forEach((playlist) => {
-          const idx = playlist.songs.findIndex((s) => s.id === songId);
+        this.playlists.forEach(playlist => {
+          const idx = playlist.songs.findIndex(s => s.id === songId);
           if (idx !== -1) {
             playlist.songs[idx].name = newName;
             playlist.songs[idx].author = newAuthor;
@@ -3213,29 +2830,23 @@ class AdvancedMusicPlayer {
             playlist.songs[idx].lyrics = newLyrics;
           }
         });
-        this.saveSingleSong(this.songLibrary[songIndex])
-          .then(() => this.savePlaylists())
-          .then(() => {
-            if (
-              this.currentPlaylist &&
-              this.currentPlaylist.songs[this.currentSongIndex]?.id === songId
-            ) {
-              if (this.elements.currentSongName) {
-                this.elements.currentSongName.textContent = newName;
-              }
-              if (document.getElementById('lyrics').classList.contains('active')) {
-                this.renderLyricsTab();
-              }
+        this.saveSingleSong(this.songLibrary[songIndex]).then(() => this.savePlaylists()).then(() => {
+          if (this.currentPlaylist && this.currentPlaylist.songs[this.currentSongIndex]?.id === songId) {
+            if (this.elements.currentSongName) {
+              this.elements.currentSongName.textContent = newName;
             }
-            if (this.isSidebarVisible && this.currentPlaylist) {
-              this.renderCurrentPlaylistInSidebar();
+            if (document.getElementById('lyrics').classList.contains('active')) {
+              this.renderLyricsTab();
             }
-            resolve();
-          })
-          .catch((error) => {
-            console.error('Error saving updated song details:', error);
-            reject(error);
-          });
+          }
+          if (this.isSidebarVisible && this.currentPlaylist) {
+            this.renderCurrentPlaylistInSidebar();
+          }
+          resolve();
+        }).catch(error => {
+          console.error('Error saving updated song details:', error);
+          reject(error);
+        });
       } catch (error) {
         console.error('Exception in updateSongDetails:', error);
         reject(error);
@@ -3246,8 +2857,7 @@ class AdvancedMusicPlayer {
     if (!url) {
       return null;
     }
-    const urlPattern =
-      /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+    const urlPattern = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
     const urlMatch = url.match(urlPattern);
     if (urlMatch) {
       return urlMatch[1];
@@ -3260,56 +2870,35 @@ class AdvancedMusicPlayer {
   fetchYouTubeTitle(videoId) {
     return new Promise((resolve, reject) => {
       const url = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`;
-      fetch(url)
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error('Failed to fetch video info');
-          }
-          return response.json();
-        })
-        .then((data) => {
-          resolve(data.title);
-        })
-        .catch((error) => {
-          console.error('Error fetching YouTube title:', error);
-          reject(error);
-        });
+      fetch(url).then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch video info');
+        }
+        return response.json();
+      }).then(data => {
+        resolve(data.title);
+      }).catch(error => {
+        console.error('Error fetching YouTube title:', error);
+        reject(error);
+      });
     });
   }
   fetchYouTubeChannel(videoId) {
     return new Promise((resolve, reject) => {
       const url = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`;
-      fetch(url)
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error('Failed to fetch video info');
-          }
-          return response.json();
-        })
-        .then((data) => {
-          let channelName = data.author_name;
-          channelName = channelName
-            .replace(/\s*-\s*Topic\s*$/i, '')
-            .replace(/^Topic\s*-\s*/i, '')
-            .replace(/^\[Topic\]\s*/i, '')
-            .replace(/\s*\[Topic\]$/i, '')
-            .replace(/^\(Topic\)\s*/i, '')
-            .replace(/\s*\(Topic\)$/i, '')
-            .replace(/^Topic\s+/i, '')
-            .replace(/\s+Topic$/i, '')
-            .replace(/\s*\|\s*Topic\s*$/i, '')
-            .replace(/^Topic\s*\|\s*/i, '')
-            .replace(/\s*\.\s*Topic\s*$/i, '')
-            .replace(/^Topic\s*\.\s*/i, '')
-            .replace(/\s*:\s*Topic\s*$/i, '')
-            .replace(/^Topic\s*:\s*/i, '')
-            .trim();
-          resolve(channelName);
-        })
-        .catch((error) => {
-          console.error('Error fetching YouTube channel:', error);
-          reject(error);
-        });
+      fetch(url).then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch video info');
+        }
+        return response.json();
+      }).then(data => {
+        let channelName = data.author_name;
+        channelName = channelName.replace(/\s*-\s*Topic\s*$/i, '').replace(/^Topic\s*-\s*/i, '').replace(/^\[Topic\]\s*/i, '').replace(/\s*\[Topic\]$/i, '').replace(/^\(Topic\)\s*/i, '').replace(/\s*\(Topic\)$/i, '').replace(/^Topic\s+/i, '').replace(/\s+Topic$/i, '').replace(/\s*\|\s*Topic\s*$/i, '').replace(/^Topic\s*\|\s*/i, '').replace(/\s*\.\s*Topic\s*$/i, '').replace(/^Topic\s*\.\s*/i, '').replace(/\s*:\s*Topic\s*$/i, '').replace(/^Topic\s*:\s*/i, '').trim();
+        resolve(channelName);
+      }).catch(error => {
+        console.error('Error fetching YouTube channel:', error);
+        reject(error);
+      });
     });
   }
   handleUrlPaste() {
@@ -3321,15 +2910,13 @@ class AdvancedMusicPlayer {
         this.showYouTubeThumbnailPreview(videoId);
         this.elements.autofillBtn.disabled = false;
         if (!songName) {
-          this.fetchYouTubeTitle(videoId)
-            .then((title) => {
-              if (title && !this.elements.songNameInput.value.trim()) {
-                this.elements.songNameInput.value = title;
-              }
-            })
-            .catch((error) => {
-              console.warn('Could not fetch YouTube title:', error);
-            });
+          this.fetchYouTubeTitle(videoId).then(title => {
+            if (title && !this.elements.songNameInput.value.trim()) {
+              this.elements.songNameInput.value = title;
+            }
+          }).catch(error => {
+            console.warn('Could not fetch YouTube title:', error);
+          });
         }
       } else {
         this.removeYouTubeThumbnailPreview();
@@ -3356,7 +2943,7 @@ class AdvancedMusicPlayer {
     this._libFilters = {
       favorite: null,
       lyrics: null,
-      downloaded: null,
+      downloaded: null
     };
     const btn = document.getElementById('libFilterBtn');
     const panel = document.getElementById('libFilterPanel');
@@ -3376,7 +2963,7 @@ class AdvancedMusicPlayer {
     btn.addEventListener('mouseleave', hidePanel);
     panel.addEventListener('mouseenter', showPanel);
     panel.addEventListener('mouseleave', hidePanel);
-    panel.addEventListener('click', (e) => {
+    panel.addEventListener('click', e => {
       const toggleBtn = e.target.closest('.lib-filter-toggle button');
       if (!toggleBtn) {
         return;
@@ -3385,17 +2972,17 @@ class AdvancedMusicPlayer {
       const filter = group.dataset.filter;
       const raw = toggleBtn.dataset.val;
       const val = raw === 'null' ? null : raw === 'true';
-      group.querySelectorAll('button').forEach((b) => b.classList.remove('active'));
+      group.querySelectorAll('button').forEach(b => b.classList.remove('active'));
       toggleBtn.classList.add('active');
       this._libFilters[filter] = val;
-      const anyActive = Object.values(this._libFilters).some((v) => v !== null);
+      const anyActive = Object.values(this._libFilters).some(v => v !== null);
       btn.classList.toggle('is-active', anyActive);
       this._applyLibraryFiltersAndRender();
     });
   }
   _applyFilters(songs) {
     const f = this._libFilters;
-    return songs.filter((song) => {
+    return songs.filter(song => {
       if (f.favorite !== null && !!song.favorite !== f.favorite) {
         return false;
       }
@@ -3425,162 +3012,137 @@ class AdvancedMusicPlayer {
     }, 6e4);
   }
   _setupSongItemDragDrop() {
-    const AUDIO_EXTS = new Set(['.mp3', '.flac', '.wav', '.m4a', '.ogg', '.aac', '.opus', '.weba']);
+    const AUDIO_EXTS = new Set([ '.mp3', '.flac', '.wav', '.m4a', '.ogg', '.aac', '.opus', '.weba' ]);
     const container = this.elements.songLibrary;
     let activeItem = null;
-    const getAudioFile = (dt) => {
-      const files = [...(dt.files || [])];
-      return (
-        files.find((f) => {
-          const ext = '.' + f.name.split('.').pop().toLowerCase();
-          return AUDIO_EXTS.has(ext);
-        }) || null
-      );
+    const getAudioFile = dt => {
+      const files = [ ...dt.files || [] ];
+      return files.find(f => {
+        const ext = '.' + f.name.split('.').pop().toLowerCase();
+        return AUDIO_EXTS.has(ext);
+      }) || null;
     };
-    const getSongItem = (el) => el?.closest?.('.song-item') || null;
+    const getSongItem = el => el?.closest?.('.song-item') || null;
     const highlight = (item, on) => {
       if (!item) {
         return;
       }
       item.classList.toggle('drag-audio-over', on);
     };
-    container.addEventListener(
-      'dragenter',
-      (e) => {
-        const file = [...(e.dataTransfer?.items || [])].find((i) => i.kind === 'file');
-        if (!file) {
-          return;
-        }
-        const item = getSongItem(e.target);
-        if (!item) {
-          return;
-        }
-        e.preventDefault();
-        if (activeItem && activeItem !== item) {
-          highlight(activeItem, false);
-        }
-        activeItem = item;
-        highlight(item, true);
-      },
-      false
-    );
-    container.addEventListener(
-      'dragover',
-      (e) => {
-        const item = getSongItem(e.target);
-        if (!item) {
-          return;
-        }
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'link';
-      },
-      false
-    );
-    container.addEventListener(
-      'dragleave',
-      (e) => {
-        const item = getSongItem(e.target);
-        if (!item || item.contains(e.relatedTarget)) {
-          return;
-        }
-        highlight(item, false);
-        if (activeItem === item) {
-          activeItem = null;
-        }
-      },
-      false
-    );
-    container.addEventListener(
-      'drop',
-      async (e) => {
-        const item = getSongItem(e.target);
-        if (!item) {
-          return;
-        }
-        e.preventDefault();
-        highlight(item, false);
+    container.addEventListener('dragenter', e => {
+      const file = [ ...e.dataTransfer?.items || [] ].find(i => i.kind === 'file');
+      if (!file) {
+        return;
+      }
+      const item = getSongItem(e.target);
+      if (!item) {
+        return;
+      }
+      e.preventDefault();
+      if (activeItem && activeItem !== item) {
+        highlight(activeItem, false);
+      }
+      activeItem = item;
+      highlight(item, true);
+    }, false);
+    container.addEventListener('dragover', e => {
+      const item = getSongItem(e.target);
+      if (!item) {
+        return;
+      }
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'link';
+    }, false);
+    container.addEventListener('dragleave', e => {
+      const item = getSongItem(e.target);
+      if (!item || item.contains(e.relatedTarget)) {
+        return;
+      }
+      highlight(item, false);
+      if (activeItem === item) {
         activeItem = null;
-        const audioFile = getAudioFile(e.dataTransfer);
-        if (!audioFile) {
-          this.showNotification('Drop an audio file (.mp3, .flac, .wav…)', 'error');
-          return;
+      }
+    }, false);
+    container.addEventListener('drop', async e => {
+      const item = getSongItem(e.target);
+      if (!item) {
+        return;
+      }
+      e.preventDefault();
+      highlight(item, false);
+      activeItem = null;
+      const audioFile = getAudioFile(e.dataTransfer);
+      if (!audioFile) {
+        this.showNotification('Drop an audio file (.mp3, .flac, .wav…)', 'error');
+        return;
+      }
+      if (!window.showOpenFilePicker) {
+        this.showNotification('File linked for this session only (Chrome/Edge needed for persistent link).', 'info');
+      }
+      const songId = parseInt(item.querySelector('[data-song-id]')?.dataset.songId);
+      const song = this.songLibrary.find(s => s.id === songId);
+      if (!song) {
+        return;
+      }
+      item.classList.add('drag-audio-linking');
+      const right = item.querySelector('.song-item-right');
+      let toast = right?.querySelector('.drag-link-toast');
+      if (!toast && right) {
+        toast = document.createElement('span');
+        toast.className = 'drag-link-toast';
+        toast.textContent = '⏳ Linking…';
+        right.prepend(toast);
+      }
+      try {
+        let handle = null;
+        const dtItem = [ ...e.dataTransfer.items ].find(i => i.kind === 'file');
+        if (dtItem?.getAsFileSystemHandle) {
+          handle = await dtItem.getAsFileSystemHandle();
         }
-        if (!window.showOpenFilePicker) {
-          this.showNotification(
-            'File linked for this session only (Chrome/Edge needed for persistent link).',
-            'info'
-          );
+        const songIndex = this.songLibrary.findIndex(s => s.id === songId);
+        if (songIndex !== -1) {
+          this.songLibrary[songIndex].localFileHandle = handle;
+          this.songLibrary[songIndex].localFileName = audioFile.name;
+          await this.saveSingleSong(this.songLibrary[songIndex]);
         }
-        const songId = parseInt(item.querySelector('[data-song-id]')?.dataset.songId);
-        const song = this.songLibrary.find((s) => s.id === songId);
-        if (!song) {
-          return;
+        if (toast) {
+          toast.textContent = `✓ ${audioFile.name}`;
+          toast.classList.add('drag-link-success');
         }
-        item.classList.add('drag-audio-linking');
-        const right = item.querySelector('.song-item-right');
-        let toast = right?.querySelector('.drag-link-toast');
-        if (!toast && right) {
-          toast = document.createElement('span');
-          toast.className = 'drag-link-toast';
-          toast.textContent = '⏳ Linking…';
-          right.prepend(toast);
+        item.classList.add('drag-audio-done');
+        let indicators = right?.querySelector('.song-status-indicators');
+        if (!indicators && right) {
+          indicators = document.createElement('div');
+          indicators.className = 'song-status-indicators';
+          right.insertBefore(indicators, right.querySelector('.song-actions'));
         }
-        try {
-          let handle = null;
-          const dtItem = [...e.dataTransfer.items].find((i) => i.kind === 'file');
-          if (dtItem?.getAsFileSystemHandle) {
-            handle = await dtItem.getAsFileSystemHandle();
-          }
-          const songIndex = this.songLibrary.findIndex((s) => s.id === songId);
-          if (songIndex !== -1) {
-            this.songLibrary[songIndex].localFileHandle = handle;
-            this.songLibrary[songIndex].localFileName = audioFile.name;
-            await this.saveSingleSong(this.songLibrary[songIndex]);
-          }
-          if (toast) {
-            toast.textContent = `✓ ${audioFile.name}`;
-            toast.classList.add('drag-link-success');
-          }
-          item.classList.add('drag-audio-done');
-          let indicators = right?.querySelector('.song-status-indicators');
-          if (!indicators && right) {
-            indicators = document.createElement('div');
-            indicators.className = 'song-status-indicators';
-            right.insertBefore(indicators, right.querySelector('.song-actions'));
-          }
-          if (indicators) {
-            const updatedSong = this.songLibrary.find((s) => s.id === songId);
-            const isFav = !!updatedSong?.favorite;
-            const hasLyrics = !!updatedSong?.lyrics?.trim();
-            const lyricsHtml = hasLyrics
-              ? `<span class="song-lyrics-indicator" title="Has lyrics"><i class="fa fa-closed-captioning"></i></span>`
-              : '';
-            const dlHtml = `<span class="song-dl-indicator" title="Downloaded"><i class="fa fa-download"></i></span>`;
-            const favHtml = isFav
-              ? `<span class="song-fav-indicator" title="Favourited"><i class="fa fa-star"></i></span>`
-              : '';
-            indicators.innerHTML = lyricsHtml + dlHtml + favHtml;
-          }
-          setTimeout(() => {
-            toast?.remove();
-            item.classList.remove('drag-audio-done', 'drag-audio-linking');
-          }, 2500);
-          this.showNotification(`Linked: ${audioFile.name}`, 'success');
-        } catch (error) {
-          console.error('Drag-link error:', error);
-          if (toast) {
-            toast.textContent = '✗ Failed';
-            toast.classList.add('drag-link-error');
-          }
-          setTimeout(() => {
-            toast?.remove();
-            item.classList.remove('drag-audio-linking');
-          }, 2e3);
-          this.showNotification('Failed to link file.', 'error');
+        if (indicators) {
+          const updatedSong = this.songLibrary.find(s => s.id === songId);
+          const isFav = !!updatedSong?.favorite;
+          const hasLyrics = !!updatedSong?.lyrics?.trim();
+          const lyricsHtml = hasLyrics ? `<span class="song-lyrics-indicator" title="Has lyrics"><i class="fa fa-closed-captioning"></i></span>` : '';
+          const dlHtml = `<span class="song-dl-indicator" title="Downloaded"><i class="fa fa-download"></i></span>`;
+          const favHtml = isFav ? `<span class="song-fav-indicator" title="Favourited"><i class="fa fa-star"></i></span>` : '';
+          indicators.innerHTML = lyricsHtml + dlHtml + favHtml;
         }
-      },
-      false
-    );
+        setTimeout(() => {
+          toast?.remove();
+          item.classList.remove('drag-audio-done', 'drag-audio-linking');
+        }, 2500);
+        this.showNotification(`Linked: ${audioFile.name}`, 'success');
+      } catch (error) {
+        console.error('Drag-link error:', error);
+        if (toast) {
+          toast.textContent = '✗ Failed';
+          toast.classList.add('drag-link-error');
+        }
+        setTimeout(() => {
+          toast?.remove();
+          item.classList.remove('drag-audio-linking');
+        }, 2e3);
+        this.showNotification('Failed to link file.', 'error');
+      }
+    }, false);
   }
   showWelcomeModal() {
     if (this.songLibrary.length > 0) {
@@ -3623,29 +3185,25 @@ class AdvancedMusicPlayer {
     document.body.appendChild(modal);
   }
   loadInstructions(instructionsElement) {
-    fetch('instructions.txt')
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Failed to load instructions');
-        }
-        return response.text();
-      })
-      .then((text) => {
-        instructionsElement.innerHTML = `<p>${text.replace(/\n\n/g, '</p><p>')}</p>`;
-      })
-      .catch((error) => {
-        console.error('Error loading instructions:', error);
-        instructionsElement.innerHTML = `\n                    <p>Welcome to your music player! Add songs from YouTube, create playlists, and enjoy your music.</p>\n                    <p>Get started by importing a playlist below or add songs manually.</p>\n                `;
-      });
+    fetch('instructions.txt').then(response => {
+      if (!response.ok) {
+        throw new Error('Failed to load instructions');
+      }
+      return response.text();
+    }).then(text => {
+      instructionsElement.innerHTML = `<p>${text.replace(/\n\n/g, '</p><p>')}</p>`;
+    }).catch(error => {
+      console.error('Error loading instructions:', error);
+      instructionsElement.innerHTML = `\n                    <p>Welcome to your music player! Add songs from YouTube, create playlists, and enjoy your music.</p>\n                    <p>Get started by importing a playlist below or add songs manually.</p>\n                `;
+    });
   }
-
   createPlaylist() {
     const playlistName = this.elements.newPlaylistName.value.trim();
     if (!playlistName) {
       alert('Please enter a playlist name');
       return;
     }
-    if (this.playlists.some((p) => p.name.toLowerCase() === playlistName.toLowerCase())) {
+    if (this.playlists.some(p => p.name.toLowerCase() === playlistName.toLowerCase())) {
       alert('A playlist with this name already exists');
       return;
     }
@@ -3653,21 +3211,19 @@ class AdvancedMusicPlayer {
       id: Date.now(),
       name: playlistName,
       songs: [],
-      position: this.playlists.length,
+      position: this.playlists.length
     };
     this.playlists.push(newPlaylist);
-    this.savePlaylists()
-      .then(() => {
-        this.renderPlaylists();
-        this.updatePlaylistSelection();
-        this.elements.newPlaylistName.value = '';
-        this.hideCreatePlaylistDiv();
-        this.filterPlaylists();
-      })
-      .catch((error) => {
-        console.error('Error creating playlist:', error);
-        alert('Failed to create playlist. Please try again.');
-      });
+    this.savePlaylists().then(() => {
+      this.renderPlaylists();
+      this.updatePlaylistSelection();
+      this.elements.newPlaylistName.value = '';
+      this.hideCreatePlaylistDiv();
+      this.filterPlaylists();
+    }).catch(error => {
+      console.error('Error creating playlist:', error);
+      alert('Failed to create playlist. Please try again.');
+    });
   }
   togglePlaylistEditMode() {
     this.playlistEditModeActive = !this.playlistEditModeActive;
@@ -3687,7 +3243,7 @@ class AdvancedMusicPlayer {
   renderPlaylists() {
     this.elements.playlistContainer.innerHTML = '';
     const playlistsToRender = this.currentSearchTerm ? this.filteredPlaylists : this.playlists;
-    const sortedPlaylists = [...playlistsToRender].sort((a, b) => {
+    const sortedPlaylists = [ ...playlistsToRender ].sort((a, b) => {
       if (a.position !== undefined && b.position !== undefined) {
         return a.position - b.position;
       }
@@ -3725,7 +3281,7 @@ class AdvancedMusicPlayer {
       let isDragging = false;
       let isMouseDown = false;
       let startTime = 0;
-      playlistElement.addEventListener('mousedown', (e) => {
+      playlistElement.addEventListener('mousedown', e => {
         if (e.target.tagName === 'BUTTON') {
           return;
         }
@@ -3737,7 +3293,7 @@ class AdvancedMusicPlayer {
           isDragging = true;
         }, 500);
       });
-      playlistElement.addEventListener('mouseup', (e) => {
+      playlistElement.addEventListener('mouseup', e => {
         if (e.target.tagName === 'BUTTON') {
           return;
         }
@@ -3759,12 +3315,12 @@ class AdvancedMusicPlayer {
         clearTimeout(holdTimer);
         isMouseDown = false;
       });
-      playlistElement.addEventListener('selectstart', (e) => {
+      playlistElement.addEventListener('selectstart', e => {
         if (isDragging) {
           e.preventDefault();
         }
       });
-      playlistElement.addEventListener('touchstart', (e) => {
+      playlistElement.addEventListener('touchstart', e => {
         if (e.target.tagName === 'BUTTON') {
           return;
         }
@@ -3776,7 +3332,7 @@ class AdvancedMusicPlayer {
           isDragging = true;
         }, 500);
       });
-      playlistElement.addEventListener('touchend', (e) => {
+      playlistElement.addEventListener('touchend', e => {
         if (e.target.tagName === 'BUTTON') {
           return;
         }
@@ -3798,7 +3354,7 @@ class AdvancedMusicPlayer {
       playlistElement.addEventListener('dragstart', this.handlePlaylistDragStart.bind(this));
       playlistElement.addEventListener('dragover', this.handlePlaylistDragOver.bind(this));
       playlistElement.addEventListener('drop', this.handlePlaylistDrop.bind(this));
-      playlistElement.addEventListener('dragend', (e) => {
+      playlistElement.addEventListener('dragend', e => {
         e.currentTarget.classList.remove('dragging');
         isDragging = false;
         setTimeout(() => {
@@ -3812,11 +3368,9 @@ class AdvancedMusicPlayer {
   filterPlaylists() {
     this.currentSearchTerm = this.elements.playlistSearch.value.toLowerCase().trim();
     if (this.currentSearchTerm === '') {
-      this.filteredPlaylists = [...this.playlists];
+      this.filteredPlaylists = [ ...this.playlists ];
     } else {
-      this.filteredPlaylists = this.playlists.filter((playlist) =>
-        playlist.name.toLowerCase().includes(this.currentSearchTerm)
-      );
+      this.filteredPlaylists = this.playlists.filter(playlist => playlist.name.toLowerCase().includes(this.currentSearchTerm));
     }
     this.renderPlaylists();
   }
@@ -3826,9 +3380,7 @@ class AdvancedMusicPlayer {
     if (searchTerm === '') {
       targetPlaylists = this.playlists;
     } else {
-      targetPlaylists = this.playlists.filter((playlist) =>
-        playlist.name.toLowerCase().includes(searchTerm)
-      );
+      targetPlaylists = this.playlists.filter(playlist => playlist.name.toLowerCase().includes(searchTerm));
     }
     if (targetPlaylists.length === 0) {
       alert('No playlists found');
@@ -3859,7 +3411,7 @@ class AdvancedMusicPlayer {
     this.elements.toggleCreatePlaylistBtn.style.transform = 'rotate(0deg)';
   }
   openPlaylistEditModal(playlistId) {
-    const playlist = this.playlists.find((p) => p.id === playlistId);
+    const playlist = this.playlists.find(p => p.id === playlistId);
     if (!playlist) {
       return;
     }
@@ -3885,7 +3437,7 @@ class AdvancedMusicPlayer {
         this.saveSetting('allowDuplicates', this.allowDuplicates);
         this.updateDuplicatesButtonText(duplicatesBtn);
         const playlistId = parseInt(this.elements.currentPlaylistName.dataset.playlistId);
-        const playlist = this.playlists.find((p) => p.id === playlistId);
+        const playlist = this.playlists.find(p => p.id === playlistId);
         if (playlist) {
           this.renderLibrarySearchResults(playlist);
         }
@@ -3960,7 +3512,7 @@ class AdvancedMusicPlayer {
   }
   searchSongsToAddToPlaylist() {
     const playlistId = parseInt(this.elements.currentPlaylistName.dataset.playlistId);
-    const playlist = this.playlists.find((p) => p.id === playlistId);
+    const playlist = this.playlists.find(p => p.id === playlistId);
     if (!playlist) {
       return;
     }
@@ -3968,13 +3520,13 @@ class AdvancedMusicPlayer {
   }
   clearPlaylistDuplicates() {
     const playlistId = parseInt(this.elements.currentPlaylistName.dataset.playlistId);
-    const playlist = this.playlists.find((p) => p.id === playlistId);
+    const playlist = this.playlists.find(p => p.id === playlistId);
     if (!playlist) {
       return;
     }
     const seenVideoIds = new Set();
     const uniqueSongs = [];
-    playlist.songs.forEach((song) => {
+    playlist.songs.forEach(song => {
       if (!seenVideoIds.has(song.videoId)) {
         seenVideoIds.add(song.videoId);
         uniqueSongs.push(song);
@@ -3982,66 +3534,60 @@ class AdvancedMusicPlayer {
     });
     if (uniqueSongs.length !== playlist.songs.length) {
       playlist.songs = uniqueSongs;
-      this.savePlaylists()
-        .then(() => {
-          this.renderCurrentPlaylistSongs(playlist);
-          this.renderLibrarySearchResults(playlist);
-          this.renderPlaylists();
-        })
-        .catch((error) => {
-          console.error('Error clearing duplicates:', error);
-          alert('Failed to clear duplicates. Please try again.');
-        });
+      this.savePlaylists().then(() => {
+        this.renderCurrentPlaylistSongs(playlist);
+        this.renderLibrarySearchResults(playlist);
+        this.renderPlaylists();
+      }).catch(error => {
+        console.error('Error clearing duplicates:', error);
+        alert('Failed to clear duplicates. Please try again.');
+      });
     } else {
       alert('No duplicates found in this playlist.');
     }
   }
   reversePlaylistOrder() {
     const playlistId = parseInt(this.elements.currentPlaylistName.dataset.playlistId);
-    const playlist = this.playlists.find((p) => p.id === playlistId);
+    const playlist = this.playlists.find(p => p.id === playlistId);
     if (!playlist) {
       return;
     }
     playlist.songs.reverse();
-    this.savePlaylists()
-      .then(() => {
-        this.renderCurrentPlaylistSongs(playlist);
-        this.renderPlaylists();
-      })
-      .catch((error) => {
-        console.error('Error reversing playlist:', error);
-        alert('Failed to reverse playlist. Please try again.');
-      });
+    this.savePlaylists().then(() => {
+      this.renderCurrentPlaylistSongs(playlist);
+      this.renderPlaylists();
+    }).catch(error => {
+      console.error('Error reversing playlist:', error);
+      alert('Failed to reverse playlist. Please try again.');
+    });
   }
   randomizePlaylist() {
     const playlistId = parseInt(this.elements.currentPlaylistName.dataset.playlistId);
-    const playlist = this.playlists.find((p) => p.id === playlistId);
+    const playlist = this.playlists.find(p => p.id === playlistId);
     if (!playlist) {
       return;
     }
     for (let i = playlist.songs.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [playlist.songs[i], playlist.songs[j]] = [playlist.songs[j], playlist.songs[i]];
+      [playlist.songs[i], playlist.songs[j]] = [ playlist.songs[j], playlist.songs[i] ];
     }
-    this.savePlaylists()
-      .then(() => {
-        this.renderCurrentPlaylistSongs(playlist);
-        this.renderPlaylists();
-      })
-      .catch((error) => {
-        console.error('Error randomizing playlist:', error);
-        alert('Failed to randomize playlist. Please try again.');
-      });
+    this.savePlaylists().then(() => {
+      this.renderCurrentPlaylistSongs(playlist);
+      this.renderPlaylists();
+    }).catch(error => {
+      console.error('Error randomizing playlist:', error);
+      alert('Failed to randomize playlist. Please try again.');
+    });
   }
   renderLibrarySearchResults(playlist) {
     const searchTerm = this.elements.searchSongsToAdd.value.toLowerCase();
     this.elements.librarySearchResults.innerHTML = '';
     let songsToShow = this.songLibrary;
     if (!this.allowDuplicates) {
-      const playlistVideoIds = new Set(playlist.songs.map((song) => song.videoId));
-      songsToShow = this.songLibrary.filter((song) => !playlistVideoIds.has(song.videoId));
+      const playlistVideoIds = new Set(playlist.songs.map(song => song.videoId));
+      songsToShow = this.songLibrary.filter(song => !playlistVideoIds.has(song.videoId));
     }
-    songsToShow.forEach((song) => {
+    songsToShow.forEach(song => {
       const songNameMatch = song.name.toLowerCase().includes(searchTerm);
       const authorMatch = song.author && song.author.toLowerCase().includes(searchTerm);
       if (songNameMatch || authorMatch) {
@@ -4062,27 +3608,25 @@ class AdvancedMusicPlayer {
   }
   addSongToCurrentPlaylist(songName, videoId) {
     const playlistId = parseInt(this.elements.currentPlaylistName.dataset.playlistId);
-    const playlist = this.playlists.find((p) => p.id === playlistId);
+    const playlist = this.playlists.find(p => p.id === playlistId);
     if (!playlist) {
       return;
     }
-    const librarySong = this.songLibrary.find((s) => s.videoId === videoId);
+    const librarySong = this.songLibrary.find(s => s.videoId === videoId);
     playlist.songs.push({
       name: songName,
       videoId: videoId,
       author: librarySong?.author || '',
-      entryId: Date.now(),
+      entryId: Date.now()
     });
-    this.savePlaylists()
-      .then(() => {
-        this.renderCurrentPlaylistSongs(playlist);
-        this.renderLibrarySearchResults(playlist);
-        this.renderPlaylists();
-      })
-      .catch((error) => {
-        console.error('Error adding song to playlist:', error);
-        alert('Failed to add song to playlist. Please try again.');
-      });
+    this.savePlaylists().then(() => {
+      this.renderCurrentPlaylistSongs(playlist);
+      this.renderLibrarySearchResults(playlist);
+      this.renderPlaylists();
+    }).catch(error => {
+      console.error('Error adding song to playlist:', error);
+      alert('Failed to add song to playlist. Please try again.');
+    });
   }
   addSongToSelectedPlaylist() {
     const selectedPlaylistId = parseInt(this.elements.playlistSelectionForSong.value);
@@ -4100,27 +3644,25 @@ class AdvancedMusicPlayer {
     const newSong = {
       name: selectedSongName,
       videoId: videoId,
-      entryId: Date.now(),
+      entryId: Date.now()
     };
-    const playlist = this.playlists.find((p) => p.id === selectedPlaylistId);
+    const playlist = this.playlists.find(p => p.id === selectedPlaylistId);
     if (playlist) {
       playlist.songs.push(newSong);
-      this.savePlaylists()
-        .then(() => {
-          this.renderPlaylists();
-          this.elements.songNameInput.value = '';
-          this.elements.songUrlInput.value = '';
-        })
-        .catch((error) => {
-          console.error('Error adding song to playlist:', error);
-          alert('Failed to add song to playlist. Please try again.');
-        });
+      this.savePlaylists().then(() => {
+        this.renderPlaylists();
+        this.elements.songNameInput.value = '';
+        this.elements.songUrlInput.value = '';
+      }).catch(error => {
+        console.error('Error adding song to playlist:', error);
+        alert('Failed to add song to playlist. Please try again.');
+      });
     }
   }
   updatePlaylistSelection() {
     if (this.elements.playlistSelectionForSong) {
       this.elements.playlistSelectionForSong.innerHTML = '';
-      this.playlists.forEach((playlist) => {
+      this.playlists.forEach(playlist => {
         const option = document.createElement('option');
         option.value = playlist.id;
         option.textContent = playlist.name;
@@ -4129,22 +3671,20 @@ class AdvancedMusicPlayer {
     }
   }
   removeSongFromPlaylist(playlistId, entryId) {
-    const playlist = this.playlists.find((p) => p.id === playlistId);
+    const playlist = this.playlists.find(p => p.id === playlistId);
     if (playlist) {
-      playlist.songs = playlist.songs.filter((song) => song.entryId != entryId);
-      this.savePlaylists()
-        .then(() => {
-          this.renderCurrentPlaylistSongs(playlist);
-          this.renderLibrarySearchResults(playlist);
-          this.renderPlaylists();
-          if (this.currentPlaylist && this.currentPlaylist.id === playlistId) {
-            this.renderPlaylistSidebar();
-          }
-        })
-        .catch((error) => {
-          console.error('Error removing song from playlist:', error);
-          alert('Failed to remove song from playlist. Please try again.');
-        });
+      playlist.songs = playlist.songs.filter(song => song.entryId != entryId);
+      this.savePlaylists().then(() => {
+        this.renderCurrentPlaylistSongs(playlist);
+        this.renderLibrarySearchResults(playlist);
+        this.renderPlaylists();
+        if (this.currentPlaylist && this.currentPlaylist.id === playlistId) {
+          this.renderPlaylistSidebar();
+        }
+      }).catch(error => {
+        console.error('Error removing song from playlist:', error);
+        alert('Failed to remove song from playlist. Please try again.');
+      });
     }
   }
   closePlaylistModal() {
@@ -4160,13 +3700,11 @@ class AdvancedMusicPlayer {
     }
   }
   deletePlaylist(playlistId) {
-    const playlist = this.playlists.find((p) => p.id === playlistId);
+    const playlist = this.playlists.find(p => p.id === playlistId);
     if (!playlist) {
       return;
     }
-    const confirmDelete = confirm(
-      `Are you sure you want to delete the playlist "${playlist.name}"?`
-    );
+    const confirmDelete = confirm(`Are you sure you want to delete the playlist "${playlist.name}"?`);
     if (!confirmDelete) {
       return;
     }
@@ -4182,19 +3720,17 @@ class AdvancedMusicPlayer {
       this.updatePlayerUI();
       this.hideSidebar();
     }
-    this.playlists = this.playlists.filter((p) => p.id !== playlistId);
-    this.savePlaylists()
-      .then(() => {
-        this.renderPlaylists();
-        this.updatePlaylistSelection();
-      })
-      .catch((error) => {
-        console.error('Error deleting playlist:', error);
-        alert('Failed to delete playlist. Please try again.');
-      });
+    this.playlists = this.playlists.filter(p => p.id !== playlistId);
+    this.savePlaylists().then(() => {
+      this.renderPlaylists();
+      this.updatePlaylistSelection();
+    }).catch(error => {
+      console.error('Error deleting playlist:', error);
+      alert('Failed to delete playlist. Please try again.');
+    });
   }
   playPlaylist(playlistId) {
-    const playlist = this.playlists.find((p) => p.id === playlistId);
+    const playlist = this.playlists.find(p => p.id === playlistId);
     if (!playlist || !playlist.songs.length) {
       alert('Playlist is empty');
       return;
@@ -4227,50 +3763,45 @@ class AdvancedMusicPlayer {
   }
   setupPlaylistNameEditing() {
     this.elements.currentPlaylistName.removeEventListener('click', this.handlePlaylistNameClick);
-    this.elements.currentPlaylistName.addEventListener(
-      'click',
-      (this.handlePlaylistNameClick = () => {
-        const playlistId = parseInt(this.elements.currentPlaylistName.dataset.playlistId);
-        const currentName = this.elements.currentPlaylistName.textContent;
-        const nameElement = this.elements.currentPlaylistName;
-        const styles = window.getComputedStyle(nameElement);
-        const width = nameElement.offsetWidth;
-        const height = nameElement.offsetHeight;
-        const fontSize = styles.fontSize;
-        const fontWeight = styles.fontWeight;
-        const fontFamily = styles.fontFamily;
-        const textAlign = styles.textAlign;
-        const inputElement = document.createElement('input');
-        inputElement.type = 'text';
-        inputElement.value = currentName;
-        inputElement.id = 'editPlaylistNameInput';
-        inputElement.style.width = width + 'px';
-        inputElement.style.height = height + 'px';
-        inputElement.style.fontSize = fontSize;
-        inputElement.style.fontWeight = fontWeight;
-        inputElement.style.fontFamily = fontFamily;
-        inputElement.style.textAlign = textAlign;
-        inputElement.style.margin = '0';
-        inputElement.style.padding = '0';
-        nameElement.innerHTML = '';
-        nameElement.appendChild(inputElement);
-        inputElement.focus();
-        inputElement.select();
-        inputElement.addEventListener('blur', () =>
-          this.savePlaylistNameEdit(playlistId, inputElement)
-        );
-        inputElement.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            inputElement.blur();
-          } else if (e.key === 'Escape') {
-            e.preventDefault();
-            this.cancelPlaylistNameEdit(playlistId);
-          }
-        });
-        inputElement.addEventListener('click', (e) => e.stopPropagation());
-      })
-    );
+    this.elements.currentPlaylistName.addEventListener('click', this.handlePlaylistNameClick = () => {
+      const playlistId = parseInt(this.elements.currentPlaylistName.dataset.playlistId);
+      const currentName = this.elements.currentPlaylistName.textContent;
+      const nameElement = this.elements.currentPlaylistName;
+      const styles = window.getComputedStyle(nameElement);
+      const width = nameElement.offsetWidth;
+      const height = nameElement.offsetHeight;
+      const fontSize = styles.fontSize;
+      const fontWeight = styles.fontWeight;
+      const fontFamily = styles.fontFamily;
+      const textAlign = styles.textAlign;
+      const inputElement = document.createElement('input');
+      inputElement.type = 'text';
+      inputElement.value = currentName;
+      inputElement.id = 'editPlaylistNameInput';
+      inputElement.style.width = width + 'px';
+      inputElement.style.height = height + 'px';
+      inputElement.style.fontSize = fontSize;
+      inputElement.style.fontWeight = fontWeight;
+      inputElement.style.fontFamily = fontFamily;
+      inputElement.style.textAlign = textAlign;
+      inputElement.style.margin = '0';
+      inputElement.style.padding = '0';
+      nameElement.innerHTML = '';
+      nameElement.appendChild(inputElement);
+      inputElement.focus();
+      inputElement.select();
+      inputElement.addEventListener('blur', () => this.savePlaylistNameEdit(playlistId, inputElement));
+      inputElement.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          inputElement.blur();
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          this.cancelPlaylistNameEdit(playlistId);
+        }
+      });
+      inputElement.addEventListener('click', e => e.stopPropagation());
+    });
   }
   savePlaylistNameEdit(playlistId, inputElement) {
     const newName = inputElement.value.trim();
@@ -4279,31 +3810,27 @@ class AdvancedMusicPlayer {
       this.cancelPlaylistNameEdit(playlistId);
       return;
     }
-    const duplicatePlaylist = this.playlists.find(
-      (p) => p.id !== playlistId && p.name.toLowerCase() === newName.toLowerCase()
-    );
+    const duplicatePlaylist = this.playlists.find(p => p.id !== playlistId && p.name.toLowerCase() === newName.toLowerCase());
     if (duplicatePlaylist) {
       alert('A playlist with this name already exists');
       this.cancelPlaylistNameEdit(playlistId);
       return;
     }
-    const playlist = this.playlists.find((p) => p.id === playlistId);
+    const playlist = this.playlists.find(p => p.id === playlistId);
     if (playlist) {
       playlist.name = newName;
-      this.savePlaylists()
-        .then(() => {
-          this.elements.currentPlaylistName.textContent = newName;
-          this.renderPlaylists();
-        })
-        .catch((error) => {
-          console.error('Error saving playlist name:', error);
-          alert('Failed to save playlist name. Please try again.');
-          this.cancelPlaylistNameEdit(playlistId);
-        });
+      this.savePlaylists().then(() => {
+        this.elements.currentPlaylistName.textContent = newName;
+        this.renderPlaylists();
+      }).catch(error => {
+        console.error('Error saving playlist name:', error);
+        alert('Failed to save playlist name. Please try again.');
+        this.cancelPlaylistNameEdit(playlistId);
+      });
     }
   }
   cancelPlaylistNameEdit(playlistId) {
-    const playlist = this.playlists.find((p) => p.id === playlistId);
+    const playlist = this.playlists.find(p => p.id === playlistId);
     if (playlist) {
       this.elements.currentPlaylistName.textContent = playlist.name;
     }
@@ -4330,52 +3857,45 @@ class AdvancedMusicPlayer {
   handleDrop(e) {
     e.preventDefault();
     const playlistId = parseInt(this.elements.currentPlaylistName.dataset.playlistId);
-    const playlist = this.playlists.find((p) => p.id === playlistId);
+    const playlist = this.playlists.find(p => p.id === playlistId);
     if (!playlist) {
       return;
     }
     const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
-    const items = Array.from(
-      this.elements.currentPlaylistSongs.querySelectorAll('.playlist-song-item')
-    );
+    const items = Array.from(this.elements.currentPlaylistSongs.querySelectorAll('.playlist-song-item'));
     const toIndex = items.indexOf(e.currentTarget);
     if (fromIndex !== toIndex) {
       const [movedSong] = playlist.songs.splice(fromIndex, 1);
       playlist.songs.splice(toIndex, 0, movedSong);
-      this.savePlaylists()
-        .then(() => {
-          if (this.currentPlaylist && this.currentPlaylist.id === playlistId) {
-            this.renderPlaylistSidebar();
-          }
-        })
-        .catch((error) => {
-          console.error('Error reordering playlist:', error);
-          alert('Failed to reorder playlist. Please try again.');
-        });
+      this.savePlaylists().then(() => {
+        if (this.currentPlaylist && this.currentPlaylist.id === playlistId) {
+          this.renderPlaylistSidebar();
+        }
+      }).catch(error => {
+        console.error('Error reordering playlist:', error);
+        alert('Failed to reorder playlist. Please try again.');
+      });
     }
   }
   handleDragEnd(e) {
     e.currentTarget.classList.remove('dragging');
   }
   getDragAfterElement(container, y) {
-    const draggableElements = [...container.querySelectorAll('.playlist-song-item:not(.dragging)')];
-    return draggableElements.reduce(
-      (closest, child) => {
-        const box = child.getBoundingClientRect();
-        const offset = y - box.top - box.height / 2;
-        if (offset < 0 && offset > closest.offset) {
-          return {
-            offset: offset,
-            element: child,
-          };
-        } else {
-          return closest;
-        }
-      },
-      {
-        offset: Number.NEGATIVE_INFINITY,
+    const draggableElements = [ ...container.querySelectorAll('.playlist-song-item:not(.dragging)') ];
+    return draggableElements.reduce((closest, child) => {
+      const box = child.getBoundingClientRect();
+      const offset = y - box.top - box.height / 2;
+      if (offset < 0 && offset > closest.offset) {
+        return {
+          offset: offset,
+          element: child
+        };
+      } else {
+        return closest;
       }
-    ).element;
+    }, {
+      offset: Number.NEGATIVE_INFINITY
+    }).element;
   }
   handlePlaylistDragStart(e) {
     e.currentTarget.classList.add('dragging');
@@ -4399,40 +3919,35 @@ class AdvancedMusicPlayer {
   handlePlaylistDrop(e) {
     e.preventDefault();
     const draggedPlaylistId = parseInt(e.dataTransfer.getData('text/plain'));
-    const playlistElements = Array.from(
-      this.elements.playlistContainer.querySelectorAll('.playlist-card')
-    );
+    const playlistElements = Array.from(this.elements.playlistContainer.querySelectorAll('.playlist-card'));
     playlistElements.forEach((element, index) => {
       const playlistId = parseInt(element.dataset.playlistId);
-      const playlist = this.playlists.find((p) => p.id === playlistId);
+      const playlist = this.playlists.find(p => p.id === playlistId);
       if (playlist) {
         playlist.position = index;
       }
     });
-    this.savePlaylists().catch((error) => {
+    this.savePlaylists().catch(error => {
       console.error('Error saving playlist positions:', error);
       alert('Failed to save playlist order. Please try again.');
     });
   }
   getPlaylistDragAfterElement(container, y) {
-    const draggableElements = [...container.querySelectorAll('.playlist-card:not(.dragging)')];
-    return draggableElements.reduce(
-      (closest, child) => {
-        const box = child.getBoundingClientRect();
-        const offset = y - box.top - box.height / 2;
-        if (offset < 0 && offset > closest.offset) {
-          return {
-            offset: offset,
-            element: child,
-          };
-        } else {
-          return closest;
-        }
-      },
-      {
-        offset: Number.NEGATIVE_INFINITY,
+    const draggableElements = [ ...container.querySelectorAll('.playlist-card:not(.dragging)') ];
+    return draggableElements.reduce((closest, child) => {
+      const box = child.getBoundingClientRect();
+      const offset = y - box.top - box.height / 2;
+      if (offset < 0 && offset > closest.offset) {
+        return {
+          offset: offset,
+          element: child
+        };
+      } else {
+        return closest;
       }
-    ).element;
+    }, {
+      offset: Number.NEGATIVE_INFINITY
+    }).element;
   }
   getPlaylistDuration(playlist) {
     if (!playlist || !playlist.songs || playlist.songs.length === 0) {
@@ -4441,12 +3956,7 @@ class AdvancedMusicPlayer {
     let totalSeconds = 0;
     let hasAnyDuration = false;
     for (const song of playlist.songs) {
-      if (
-        this.ytPlayer &&
-        this.ytPlayer.getVideoData &&
-        this.ytPlayer.getVideoData().video_id === song.videoId &&
-        this.ytPlayer.getDuration
-      ) {
+      if (this.ytPlayer && this.ytPlayer.getVideoData && this.ytPlayer.getVideoData().video_id === song.videoId && this.ytPlayer.getDuration) {
         const duration = this.ytPlayer.getDuration();
         if (duration && duration > 0) {
           totalSeconds += duration;
@@ -4465,49 +3975,39 @@ class AdvancedMusicPlayer {
     }
     return `${this.currentPlaylist.songs.length} songs`;
   }
-
   playSong(songId) {
-    const song = this.songLibrary.find((s) => s.id === songId);
+    const song = this.songLibrary.find(s => s.id === songId);
     if (!song) {
       return;
     }
     this.currentPlaylist = null;
-    this.currentSongIndex = this.songLibrary.findIndex((s) => s.id === songId);
+    this.currentSongIndex = this.songLibrary.findIndex(s => s.id === songId);
     this.currentSong = song;
     this.playSongById(song.videoId);
     this.hideSidebar();
     this.saveRecentlyPlayedSong(song);
     this.updateCurrentSongDisplay();
     this._discordScheduleSend();
-    if (
-      document.getElementById('lyrics') &&
-      document.getElementById('lyrics').classList.contains('active')
-    ) {
+    if (document.getElementById('lyrics') && document.getElementById('lyrics').classList.contains('active')) {
       this.renderLyricsTab();
     }
   }
   handleSongNameRightClick(event) {
     event.preventDefault();
-    const songName =
-      this.elements.currentSongName?.textContent ||
-      document.getElementById('currentSongName')?.textContent;
+    const songName = this.elements.currentSongName?.textContent || document.getElementById('currentSongName')?.textContent;
     if (songName && songName !== 'No Song Playing' && songName !== 'Unknown Title') {
-      navigator.clipboard
-        .writeText(songName)
-        .then(() => {
-          const targetElement =
-            this.elements.currentSongName || document.getElementById('currentSongName');
-          if (targetElement) {
-            const originalText = targetElement.textContent;
-            targetElement.textContent = 'Copied!';
-            setTimeout(() => {
-              targetElement.textContent = originalText;
-            }, 1e3);
-          }
-        })
-        .catch(() => {
-          console.warn('Failed to copy to clipboard');
-        });
+      navigator.clipboard.writeText(songName).then(() => {
+        const targetElement = this.elements.currentSongName || document.getElementById('currentSongName');
+        if (targetElement) {
+          const originalText = targetElement.textContent;
+          targetElement.textContent = 'Copied!';
+          setTimeout(() => {
+            targetElement.textContent = originalText;
+          }, 1e3);
+        }
+      }).catch(() => {
+        console.warn('Failed to copy to clipboard');
+      });
     }
   }
   async playSongById(videoId) {
@@ -4517,13 +4017,11 @@ class AdvancedMusicPlayer {
     }
     this._statCountedForCurrentPlay = false;
     const currentId = this.currentSong?.id;
-    const masterSong =
-      (currentId && this.songLibrary.find((s) => s.id === currentId)) ||
-      this.songLibrary.find((s) => s.videoId === videoId);
+    const masterSong = currentId && this.songLibrary.find(s => s.id === currentId) || this.songLibrary.find(s => s.videoId === videoId);
     if (masterSong?.localFileHandle) {
       try {
         const perm = await masterSong.localFileHandle.requestPermission({
-          mode: 'read',
+          mode: 'read'
         });
         if (perm === 'granted') {
           const file = await masterSong.localFileHandle.getFile();
@@ -4536,12 +4034,12 @@ class AdvancedMusicPlayer {
         const errorMessages = {
           NotFoundError: 'Local file not found — was it renamed or moved?',
           NotAllowedError: 'Local file access was denied.',
-          SecurityError: 'Security error reading local file.',
+          SecurityError: 'Security error reading local file.'
         };
         const msg = errorMessages[error.name] || `Local file error (${error.name}).`;
         this.showNotification(`${msg} Falling back to YouTube.`, 'error');
         if (error.name === 'NotFoundError') {
-          const idx = this.songLibrary.findIndex((s) => s.id === masterSong.id);
+          const idx = this.songLibrary.findIndex(s => s.id === masterSong.id);
           if (idx !== -1) {
             this.songLibrary[idx].localFileHandle = null;
             this.songLibrary[idx].localFileName = null;
@@ -4567,7 +4065,7 @@ class AdvancedMusicPlayer {
       console.log('Loading video:', videoId);
       this.ytPlayer.loadVideoById({
         videoId: videoId,
-        suggestedQuality: 'small',
+        suggestedQuality: 'small'
       });
       setTimeout(() => {
         try {
@@ -4649,11 +4147,7 @@ class AdvancedMusicPlayer {
     if (!source.length) {
       return;
     }
-    if (
-      this.currentPlaylist &&
-      this.temporarilySkippedSongs &&
-      this.temporarilySkippedSongs.size > 0
-    ) {
+    if (this.currentPlaylist && this.temporarilySkippedSongs && this.temporarilySkippedSongs.size > 0) {
       this.playNextNonSkippedSong();
       return;
     }
@@ -4697,7 +4191,7 @@ class AdvancedMusicPlayer {
       }
       this.currentSongIndex = prevIndex;
       const song = source[this.currentSongIndex];
-      this.currentSong = this.songLibrary.find((s) => s.id === song.id) ?? song;
+      this.currentSong = this.songLibrary.find(s => s.id === song.id) ?? song;
       this.saveRecentlyPlayedSong(song);
       this.playSongById(song.videoId);
       this.updateCurrentSongDisplay();
@@ -4706,9 +4200,7 @@ class AdvancedMusicPlayer {
     }
     this.currentSongIndex = (this.currentSongIndex - 1 + source.length) % source.length;
     const song = source[this.currentSongIndex];
-    this.currentSong = this.currentPlaylist
-      ? (this.songLibrary.find((s) => s.id === song.id) ?? song)
-      : song;
+    this.currentSong = this.currentPlaylist ? this.songLibrary.find(s => s.id === song.id) ?? song : song;
     this.saveRecentlyPlayedSong(song);
     if (this.currentPlaylist) {
       this.playSongById(song.videoId);
@@ -4745,7 +4237,7 @@ class AdvancedMusicPlayer {
     this._discordScheduleSend();
   }
   _syncTransportDisplays(currentTime, duration) {
-    const pct = duration > 0 ? (currentTime / duration) * 100 : 0;
+    const pct = duration > 0 ? currentTime / duration * 100 : 0;
     const timeText = `${this.formatTime(currentTime)}/${this.formatTime(duration)}`;
     if (this.elements.progressBar) {
       this.elements.progressBar.value = pct;
@@ -4773,28 +4265,32 @@ class AdvancedMusicPlayer {
       name: song.name || 'Unknown',
       author: song.author || '',
       videoId: song.videoId,
-      thumbnailUrl: song.thumbnailUrl || `https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg`,
+      thumbnailUrl: song.thumbnailUrl || `https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg`
     };
   }
   getUpcomingSongsPreview(count = 3) {
     const items = [];
-
     for (const block of this.songQueue) {
       if (items.length >= count) break;
       if (block.type === 'stop') {
-        items.push({ isMarker: true, name: 'Stop Autoplay' });
+        items.push({
+          isMarker: true,
+          name: 'Stop Autoplay'
+        });
         break;
       }
       if (block.type === 'loop') {
-        items.push({ isMarker: true, name: 'Loop Previous Song Forever' });
+        items.push({
+          isMarker: true,
+          name: 'Loop Previous Song Forever'
+        });
         break;
       }
       if (block.type === 'song') {
         items.push(this._songToPreviewItem(block));
       }
     }
-
-    if (items.length < count && !items.some((i) => i.isMarker)) {
+    if (items.length < count && !items.some(i => i.isMarker)) {
       const source = this._getPreviewSource();
       if (source.length && this.isLooping) {
         const current = source[this.currentSongIndex];
@@ -4817,7 +4313,6 @@ class AdvancedMusicPlayer {
         }
       }
     }
-
     return items.slice(0, count);
   }
   getPreviousSongsPreview(count = 3) {
@@ -4843,12 +4338,10 @@ class AdvancedMusicPlayer {
   _buildTransportPreviewPopup(items, label) {
     const popup = document.createElement('div');
     popup.className = 'transport-preview-popup';
-
     const title = document.createElement('div');
     title.className = 'transport-preview-title';
     title.textContent = label;
     popup.appendChild(title);
-
     if (!items.length) {
       const empty = document.createElement('div');
       empty.className = 'transport-preview-empty';
@@ -4856,35 +4349,25 @@ class AdvancedMusicPlayer {
       popup.appendChild(empty);
       return popup;
     }
-
-    items.forEach((item) => {
+    items.forEach(item => {
       const row = document.createElement('div');
       row.className = 'transport-preview-item';
       if (item.isMarker) {
         row.classList.add('transport-preview-marker');
         row.innerHTML = `<i class="fa fa-info-circle"></i><span>${this.escapeHtml(item.name)}</span>`;
       } else {
-        row.innerHTML = `
-          <img class="transport-preview-thumb" src="${item.thumbnailUrl}" alt="" loading="lazy">
-          <div class="transport-preview-info">
-            <div class="transport-preview-name">${this.escapeHtml(item.name)}</div>
-            ${item.author ? `<div class="transport-preview-author">${this.escapeHtml(item.author)}</div>` : ''}
-          </div>
-        `;
+        row.innerHTML = `\n          <img class="transport-preview-thumb" src="${item.thumbnailUrl}" alt="" loading="lazy">\n          <div class="transport-preview-info">\n            <div class="transport-preview-name">${this.escapeHtml(item.name)}</div>\n            ${item.author ? `<div class="transport-preview-author">${this.escapeHtml(item.author)}</div>` : ''}\n          </div>\n        `;
       }
       popup.appendChild(row);
     });
-
     return popup;
   }
   showTransportPreview(anchorEl, direction) {
     this.hideTransportPreview();
-    const items =
-      direction === 'next' ? this.getUpcomingSongsPreview(3) : this.getPreviousSongsPreview(3);
+    const items = direction === 'next' ? this.getUpcomingSongsPreview(3) : this.getPreviousSongsPreview(3);
     const label = direction === 'next' ? 'Next Up' : 'Previously Played';
     const popup = this._buildTransportPreviewPopup(items, label);
     document.body.appendChild(popup);
-
     const rect = anchorEl.getBoundingClientRect();
     const popupRect = popup.getBoundingClientRect();
     let top = rect.top - popupRect.height - 10;
@@ -4893,10 +4376,8 @@ class AdvancedMusicPlayer {
     }
     let left = rect.left + rect.width / 2 - popupRect.width / 2;
     left = Math.max(8, Math.min(left, window.innerWidth - popupRect.width - 8));
-
     popup.style.top = `${top + window.scrollY}px`;
     popup.style.left = `${left + window.scrollX}px`;
-
     requestAnimationFrame(() => popup.classList.add('visible'));
     this._transportPreviewEl = popup;
   }
@@ -4931,11 +4412,7 @@ class AdvancedMusicPlayer {
   }
   seekMusic(e) {
     const isLocal = this.isLocalPlayback && this.localAudio;
-    const duration = isLocal
-      ? this.localAudio.duration || 0
-      : this.ytPlayer
-        ? this.ytPlayer.getDuration()
-        : 0;
+    const duration = isLocal ? this.localAudio.duration || 0 : this.ytPlayer ? this.ytPlayer.getDuration() : 0;
     if (!duration) {
       return;
     }
@@ -4968,10 +4445,7 @@ class AdvancedMusicPlayer {
       if (!duration) {
         return;
       }
-      this.localAudio.currentTime = Math.max(
-        0,
-        Math.min(duration, this.localAudio.currentTime + seconds)
-      );
+      this.localAudio.currentTime = Math.max(0, Math.min(duration, this.localAudio.currentTime + seconds));
       const current = this.localAudio.currentTime;
       this._syncTransportDisplays(current, duration);
       this.updateHighlightedLyric(current, this.currentLyrics ?? [], this.currentTimings ?? []);
@@ -5073,7 +4547,7 @@ class AdvancedMusicPlayer {
     }
     this.updatePlayerUI();
     if (this.db) {
-      this.saveSetting('autoplay', this.isAutoplayEnabled).catch((error) => {
+      this.saveSetting('autoplay', this.isAutoplayEnabled).catch(error => {
         console.error('Error saving autoplay setting:', error);
       });
     }
@@ -5087,7 +4561,7 @@ class AdvancedMusicPlayer {
       }
       return;
     }
-    const transaction = this.db.transaction(['settings'], 'readonly');
+    const transaction = this.db.transaction([ 'settings' ], 'readonly');
     const store = transaction.objectStore('settings');
     const request = store.get('autoplay');
     request.onsuccess = () => {
@@ -5098,7 +4572,7 @@ class AdvancedMusicPlayer {
       }
       console.log('Autoplay initialized:', this.isAutoplayEnabled);
     };
-    request.onerror = (event) => {
+    request.onerror = event => {
       console.error('Error loading autoplay setting:', event.target.error);
       this.isAutoplayEnabled = true;
       if (this.elements.autoplayBtn) {
@@ -5116,7 +4590,7 @@ class AdvancedMusicPlayer {
     if (this.isLocalPlayback && this.localAudio) {
       this.localAudio.playbackRate = speed;
     }
-    this.saveSetting('playbackSpeed', speed).catch((err) => {
+    this.saveSetting('playbackSpeed', speed).catch(err => {
       console.error('Error saving playback speed:', err);
     });
   }
@@ -5124,11 +4598,8 @@ class AdvancedMusicPlayer {
     this.elements.speedOptions.classList.toggle('show');
     if (this.elements.speedOptions.classList.contains('show')) {
       setTimeout(() => {
-        const closeSpeedMenu = (e) => {
-          if (
-            !this.elements.speedBtn.contains(e.target) &&
-            !this.elements.speedOptions.contains(e.target)
-          ) {
+        const closeSpeedMenu = e => {
+          if (!this.elements.speedBtn.contains(e.target) && !this.elements.speedOptions.contains(e.target)) {
             this.elements.speedOptions.classList.remove('show');
             document.removeEventListener('click', closeSpeedMenu);
           }
@@ -5158,9 +4629,7 @@ class AdvancedMusicPlayer {
     }
     this.renderPlaylistSidebar();
     if (this.currentPlaylist && this.isPlaying) {
-      const currentSongEntryId =
-        this.currentPlaylist.songs[this.currentSongIndex].entryId ||
-        'id_' + this.currentPlaylist.songs[this.currentSongIndex].videoId;
+      const currentSongEntryId = this.currentPlaylist.songs[this.currentSongIndex].entryId || 'id_' + this.currentPlaylist.songs[this.currentSongIndex].videoId;
       if (entryId === currentSongEntryId) {
         this.playNextNonSkippedSong();
       } else {
@@ -5225,7 +4694,7 @@ class AdvancedMusicPlayer {
         const current = this.localAudio.currentTime;
         const duration = this.localAudio.duration || 0;
         if (duration > 0) {
-          const pct = (current / duration) * 100;
+          const pct = current / duration * 100;
           if (this.elements.progressBar) {
             this.elements.progressBar.value = pct;
           }
@@ -5263,7 +4732,7 @@ class AdvancedMusicPlayer {
         }
         if (this.isLooping) {
           this.localAudio.currentTime = 0;
-          this.localAudio.play().catch((e) => console.warn('Loop replay failed:', e));
+          this.localAudio.play().catch(e => console.warn('Loop replay failed:', e));
           this.isPlaying = true;
           this._statCountedForCurrentPlay = false;
         } else if (this.isAutoplayEnabled) {
@@ -5307,7 +4776,7 @@ class AdvancedMusicPlayer {
     if (this.elements.timeDisplay) {
       this.elements.timeDisplay.textContent = '0:00/0:00';
     }
-    this.localAudio.play().catch((e) => console.error('Local audio play failed:', e));
+    this.localAudio.play().catch(e => console.error('Local audio play failed:', e));
     this.updatePlayerUI();
     this.updatePageTitle();
     this._discordScheduleSend();
@@ -5341,7 +4810,7 @@ class AdvancedMusicPlayer {
         const currentTime = this.ytPlayer.getCurrentTime() || 0;
         const duration = this.ytPlayer.getDuration() || 0;
         if (duration > 0) {
-          const progressPercent = (currentTime / duration) * 100;
+          const progressPercent = currentTime / duration * 100;
           this.elements.progressBar.value = progressPercent;
           const npBar = document.getElementById('npProgressBar');
           const npTime = document.getElementById('npTimeDisplay');
@@ -5354,11 +4823,7 @@ class AdvancedMusicPlayer {
           if (this.elements.timeDisplay) {
             this.elements.timeDisplay.textContent = `${this.formatTime(currentTime)}/${this.formatTime(duration)}`;
           }
-          this.updateHighlightedLyric(
-            currentTime,
-            this.currentLyrics ?? [],
-            this.currentTimings ?? []
-          );
+          this.updateHighlightedLyric(currentTime, this.currentLyrics ?? [], this.currentTimings ?? []);
           if (this.listeningStatsEnabled && !this._statCountedForCurrentPlay) {
             const threshold = Math.min(10, duration / 3);
             if (currentTime >= threshold) {
@@ -5383,10 +4848,7 @@ class AdvancedMusicPlayer {
         try {
           const videoData = this.ytPlayer.getVideoData();
           const currentVideoId = videoData.video_id;
-          currentSong =
-            this.songLibrary.find((s) => s.videoId === currentVideoId) ||
-            (this.currentPlaylist &&
-              this.currentPlaylist.songs.find((s) => s.videoId === currentVideoId));
+          currentSong = this.songLibrary.find(s => s.videoId === currentVideoId) || this.currentPlaylist && this.currentPlaylist.songs.find(s => s.videoId === currentVideoId);
         } catch (error) {
           console.warn('Could not get current video data:', error);
         }
@@ -5453,7 +4915,7 @@ class AdvancedMusicPlayer {
       return '0:00';
     }
     const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
+    const minutes = Math.floor(seconds % 3600 / 60);
     const secs = Math.floor(seconds % 60);
     if (hours > 0) {
       return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
@@ -5461,7 +4923,6 @@ class AdvancedMusicPlayer {
       return `${minutes}:${secs.toString().padStart(2, '0')}`;
     }
   }
-
   setupYouTubePlayer() {
     if (window.YT && window.YT.Player) {
       this.initializeYouTubePlayer();
@@ -5488,17 +4949,17 @@ class AdvancedMusicPlayer {
         hl: 'en',
         enablejsapi: 1,
         origin: window.location.origin,
-        widget_referrer: window.location.href,
+        widget_referrer: window.location.href
       },
       events: {
-        onReady: (event) => {
+        onReady: event => {
           this.onPlayerReady(event);
           this.ytPlayerReady = true;
           console.log('YouTube player is ready');
         },
         onStateChange: this.onPlayerStateChange.bind(this),
-        onError: this.onPlayerError.bind(this),
-      },
+        onError: this.onPlayerError.bind(this)
+      }
     });
   }
   onPlayerReady(event) {
@@ -5519,22 +4980,22 @@ class AdvancedMusicPlayer {
   onPlayerError(event) {
     console.error('YouTube player error:', event.data);
     switch (event.data) {
-      case 2:
-        console.error('Invalid video ID');
-        break;
+     case 2:
+      console.error('Invalid video ID');
+      break;
 
-      case 5:
-        console.error('Video not available in HTML5 player');
-        break;
+     case 5:
+      console.error('Video not available in HTML5 player');
+      break;
 
-      case 100:
-        console.error('Video not found or private');
-        break;
+     case 100:
+      console.error('Video not found or private');
+      break;
 
-      case 101:
-      case 150:
-        console.error('Video not allowed to be played in embedded players');
-        break;
+     case 101:
+     case 150:
+      console.error('Video not allowed to be played in embedded players');
+      break;
     }
     if (this.isAutoplayEnabled) {
       setTimeout(() => {
@@ -5595,10 +5056,7 @@ class AdvancedMusicPlayer {
         this.updateProgressBar();
       }
       this.startListeningTimeTracking();
-      if (
-        document.getElementById('lyrics') &&
-        document.getElementById('lyrics').classList.contains('active')
-      ) {
+      if (document.getElementById('lyrics') && document.getElementById('lyrics').classList.contains('active')) {
         if (!this.currentLyrics?.length) {
           this.renderLyricsTab();
         } else {
@@ -5617,7 +5075,6 @@ class AdvancedMusicPlayer {
       }
     }
   }
-
   togglePlaylistSidebar() {
     if (this.isSidebarVisible) {
       this.hideSidebar();
@@ -5658,13 +5115,11 @@ class AdvancedMusicPlayer {
       this.renderPlaylistSidebarOverlayMode();
     }
     if (this.currentPlaylist.songs.length > 0) {
-      const activeElement = this.elements.sidebarPlaylistSongs.querySelector(
-        '.sidebar-song-item.active, .sidebar-song-card.active'
-      );
+      const activeElement = this.elements.sidebarPlaylistSongs.querySelector('.sidebar-song-item.active, .sidebar-song-card.active');
       if (activeElement) {
         activeElement.scrollIntoView({
           behavior: 'smooth',
-          block: 'center',
+          block: 'center'
         });
       }
     }
@@ -5686,18 +5141,18 @@ class AdvancedMusicPlayer {
       const thumbnailUrl = `https://img.youtube.com/vi/${song.videoId}/default.jpg`;
       songCard.innerHTML = `\n\t\t\t<img src="${thumbnailUrl}" alt="${song.name}" class="song-card-thumbnail" loading="lazy">\n\t\t\t<div class="song-card-info">\n\t\t\t\t<div class="song-card-index">#${index + 1}</div>\n\t\t\t\t<div class="song-card-title">${song.name}</div>\n\t\t\t</div>\n\t\t\t<div class="song-card-actions">\n\t\t\t\t<button class="song-card-btn play-btn" title="Play this song">\n\t\t\t\t\t<i class="fas fa-play"></i>\n\t\t\t\t</button>\n\t\t\t\t<button class="song-card-btn skip-btn ${this.temporarilySkippedSongs.has(entryId) ? 'active' : ''}" title="Temporarily skip">\n\t\t\t\t\t<i class="fas fa-ban"></i>\n\t\t\t\t</button>\n\t\t\t</div>\n\t\t`;
       const playBtn = songCard.querySelector('.play-btn');
-      playBtn.addEventListener('click', (e) => {
+      playBtn.addEventListener('click', e => {
         e.stopPropagation();
         if (!this.temporarilySkippedSongs.has(entryId)) {
           this.playSongFromPlaylist(index);
         }
       });
       const skipBtn = songCard.querySelector('.skip-btn');
-      skipBtn.addEventListener('click', (e) => {
+      skipBtn.addEventListener('click', e => {
         e.stopPropagation();
         this.temporarilySkipSong(entryId);
       });
-      songCard.addEventListener('click', (e) => {
+      songCard.addEventListener('click', e => {
         if (!e.target.closest('.song-card-btn') && !this.temporarilySkippedSongs.has(entryId)) {
           this.playSongFromPlaylist(index);
         }
@@ -5726,13 +5181,13 @@ class AdvancedMusicPlayer {
         songElement.classList.add('temporarily-skipped');
       }
       songElement.innerHTML = `\n\t\t\t<span>${index + 1}. ${song.name}</span>\n\t\t`;
-      let clickHandler = (e) => {
+      let clickHandler = e => {
         if (!this.isLongPressing) {
           this.playSongFromPlaylist(index);
         }
       };
       songElement.addEventListener('click', clickHandler);
-      songElement.addEventListener('mousedown', (e) => {
+      songElement.addEventListener('mousedown', e => {
         clearTimeout(this.longPressTimer);
         this.isLongPressing = false;
         this.longPressTimer = setTimeout(() => {
@@ -5748,7 +5203,7 @@ class AdvancedMusicPlayer {
       };
       songElement.addEventListener('mouseup', cancelLongPress);
       songElement.addEventListener('mouseleave', cancelLongPress);
-      songElement.addEventListener('touchstart', (e) => {
+      songElement.addEventListener('touchstart', e => {
         clearTimeout(this.longPressTimer);
         this.isLongPressing = false;
         this.longPressTimer = setTimeout(() => {
@@ -5818,7 +5273,7 @@ class AdvancedMusicPlayer {
       });
     }
     if (this.elements.sidebarSearchInput) {
-      this.elements.sidebarSearchInput.addEventListener('input', (e) => {
+      this.elements.sidebarSearchInput.addEventListener('input', e => {
         this.filterPlaylistSidebarSongs(e.target.value);
       });
     }
@@ -5852,7 +5307,7 @@ class AdvancedMusicPlayer {
     this.sidebarSearchDebounceTimer = setTimeout(() => {
       const query = searchTerm.toLowerCase().trim();
       const songCards = this.elements.sidebarPlaylistSongs.querySelectorAll('.sidebar-song-card');
-      songCards.forEach((card) => {
+      songCards.forEach(card => {
         const songName = card.dataset.songName;
         if (!query || songName.includes(query)) {
           card.style.display = 'flex';
@@ -5862,10 +5317,9 @@ class AdvancedMusicPlayer {
       });
     }, 50);
   }
-
   switchTab(tabName) {
-    this.elements.tabs.forEach((tab) => tab.classList.remove('active'));
-    this.elements.tabPanes.forEach((pane) => pane.classList.remove('active'));
+    this.elements.tabs.forEach(tab => tab.classList.remove('active'));
+    this.elements.tabPanes.forEach(pane => pane.classList.remove('active'));
     document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add('active');
     document.getElementById(tabName).classList.add('active');
     if (tabName === 'lyrics') {
@@ -5905,25 +5359,19 @@ class AdvancedMusicPlayer {
     this.switchTab(nextTabName);
   }
   initNowPlayingTab() {
-    document
-      .getElementById('npPlayPauseBtn')
-      ?.addEventListener('click', () => this.togglePlayPause());
+    document.getElementById('npPlayPauseBtn')?.addEventListener('click', () => this.togglePlayPause());
     document.getElementById('npPrevBtn')?.addEventListener('click', () => this.playPreviousSong());
     document.getElementById('npNextBtn')?.addEventListener('click', () => this.playNextSong());
     document.getElementById('npLoopBtn')?.addEventListener('click', () => this.toggleLoop());
-    document
-      .getElementById('npAutoplayBtn')
-      ?.addEventListener('click', () => this.toggleAutoplay());
-    document
-      .getElementById('npShowPlaylistBtn')
-      ?.addEventListener('click', () => this.togglePlaylistSidebar());
-    document.getElementById('npProgressBar')?.addEventListener('change', (e) => {
+    document.getElementById('npAutoplayBtn')?.addEventListener('click', () => this.toggleAutoplay());
+    document.getElementById('npShowPlaylistBtn')?.addEventListener('click', () => this.togglePlaylistSidebar());
+    document.getElementById('npProgressBar')?.addEventListener('change', e => {
       if (this.isLocalPlayback && this.localAudio) {
         const duration = this.localAudio.duration || 0;
         if (!duration) {
           return;
         }
-        const seekTime = (e.target.value / 100) * duration;
+        const seekTime = e.target.value / 100 * duration;
         this.localAudio.currentTime = seekTime;
         this._syncTransportDisplays(seekTime, duration);
         this.updateHighlightedLyric(seekTime, this.currentLyrics ?? [], this.currentTimings ?? []);
@@ -5933,12 +5381,12 @@ class AdvancedMusicPlayer {
         return;
       }
       const duration = this.ytPlayer.getDuration();
-      const seekTime = (e.target.value / 100) * duration;
+      const seekTime = e.target.value / 100 * duration;
       this.ytPlayer.seekTo(seekTime, true);
       this._syncTransportDisplays(seekTime, duration);
       this.updateHighlightedLyric(seekTime, this.currentLyrics ?? [], this.currentTimings ?? []);
     });
-    document.getElementById('npVolumeSlider')?.addEventListener('input', (e) => {
+    document.getElementById('npVolumeSlider')?.addEventListener('input', e => {
       this.setVolume(e.target.value);
       if (this.elements.volumeSlider) {
         this.elements.volumeSlider.value = e.target.value;
@@ -5946,11 +5394,11 @@ class AdvancedMusicPlayer {
     });
     const npSpeedBtn = document.getElementById('npSpeedBtn');
     const npSpeedOptions = document.getElementById('npSpeedOptions');
-    npSpeedBtn?.addEventListener('click', (e) => {
+    npSpeedBtn?.addEventListener('click', e => {
       e.stopPropagation();
       npSpeedOptions?.classList.toggle('show');
     });
-    document.querySelectorAll('#npSpeedOptions .speed-option').forEach((opt) => {
+    document.querySelectorAll('#npSpeedOptions .speed-option').forEach(opt => {
       opt.addEventListener('click', () => {
         const speed = parseFloat(opt.dataset.speed);
         this.setPlaybackSpeed(speed);
@@ -5984,9 +5432,7 @@ class AdvancedMusicPlayer {
     if (!this.currentSong) {
       return;
     }
-    const song = this.currentPlaylist
-      ? this.songLibrary.find((s) => s.videoId === this.currentSong.videoId) || this.currentSong
-      : this.currentSong;
+    const song = this.currentPlaylist ? this.songLibrary.find(s => s.videoId === this.currentSong.videoId) || this.currentSong : this.currentSong;
     const thumb = document.getElementById('npThumbnail');
     const name = document.getElementById('npSongName');
     const author = document.getElementById('npSongAuthor');
@@ -5996,7 +5442,7 @@ class AdvancedMusicPlayer {
     const autoBtn = document.getElementById('npAutoplayBtn');
     if (thumb) {
       thumb.src = `https://img.youtube.com/vi/${song.videoId}/maxresdefault.jpg`;
-      thumb.onload = function () {
+      thumb.onload = function() {
         if (thumb.naturalHeight <= 90) {
           thumb.onload = null;
           thumb.src = `https://img.youtube.com/vi/${song.videoId}/hqdefault.jpg`;
@@ -6018,9 +5464,7 @@ class AdvancedMusicPlayer {
       vol.value = this.elements.volumeSlider.value;
     }
     if (ppBtn) {
-      ppBtn.innerHTML = this.isPlaying
-        ? '<i class="fas fa-pause"></i>'
-        : '<i class="fas fa-play"></i>';
+      ppBtn.innerHTML = this.isPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
     }
     if (loopBtn) {
       loopBtn.classList.toggle('active', this.isLooping);
@@ -6042,7 +5486,7 @@ class AdvancedMusicPlayer {
     this.updateNowPlayingView();
     let displaySong = this.currentSong;
     if (this.currentPlaylist) {
-      const libMatch = this.songLibrary.find((s) => s.videoId === this.currentSong.videoId);
+      const libMatch = this.songLibrary.find(s => s.videoId === this.currentSong.videoId);
       if (libMatch) {
         displaySong = libMatch;
       }
@@ -6052,8 +5496,7 @@ class AdvancedMusicPlayer {
     const nameElement = document.getElementById('currentSongName');
     const authorElement = document.getElementById('currentSongAuthor');
     if (thumbnailElement) {
-      thumbnailElement.src =
-        displaySong.thumbnailUrl || `https://img.youtube.com/vi/${displaySong.videoId}/default.jpg`;
+      thumbnailElement.src = displaySong.thumbnailUrl || `https://img.youtube.com/vi/${displaySong.videoId}/default.jpg`;
       thumbnailElement.alt = displaySong.name || 'Current Song';
     }
     if (nameElement) {
@@ -6087,8 +5530,7 @@ class AdvancedMusicPlayer {
     }
     this.elements.additionalDetails.innerHTML = '';
     const headerContainer = document.createElement('div');
-    headerContainer.style.cssText =
-      'display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border-color);flex-shrink:0;';
+    headerContainer.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border-color);flex-shrink:0;';
     const headerText = document.createElement('h3');
     headerText.className = 'additional-details-header';
     headerText.textContent = 'Music Explorer';
@@ -6121,10 +5563,11 @@ class AdvancedMusicPlayer {
     this.elements.additionalDetails.appendChild(currentSongDiv);
     this.updateCurrentSongDisplay();
     const defs = this._getDefaultSectionOrder();
-    const order = this.sectionOrder || defs.map((s) => s.key);
-    order.forEach((key) => {
+    const order = this.sectionOrder || defs.map(s => s.key);
+    order.forEach(key => {
       switch (key) {
-        case 'recentlyListened': {
+       case 'recentlyListened':
+        {
           const limit = this.recentlyPlayedDisplayLimit;
           if (!limit || limit <= 0) {
             return;
@@ -6136,48 +5579,39 @@ class AdvancedMusicPlayer {
           break;
         }
 
-        case 'suggested': {
+       case 'suggested':
+        {
           const limit = this.suggestedSongsDisplayLimit;
           if (!limit || limit <= 0) {
             return;
           }
           if (this.songLibrary.length > 0) {
-            this.createDetailsSection(
-              'Suggested',
-              this.getRandomItems(this.songLibrary, limit),
-              'song'
-            );
+            this.createDetailsSection('Suggested', this.getRandomItems(this.songLibrary, limit), 'song');
           }
           break;
         }
 
-        case 'yourPicks': {
+       case 'yourPicks':
+        {
           const limit = this.yourPicksDisplayLimit;
           if (!limit || limit <= 0) {
             return;
           }
-          const favoriteSongs = this.songLibrary.filter((s) => s.favorite);
+          const favoriteSongs = this.songLibrary.filter(s => s.favorite);
           if (favoriteSongs.length > 0) {
-            this.createDetailsSection(
-              'Your Picks',
-              this.getRandomItems(favoriteSongs, limit),
-              'song'
-            );
+            this.createDetailsSection('Your Picks', this.getRandomItems(favoriteSongs, limit), 'song');
           }
           break;
         }
 
-        case 'recentPlaylists': {
+       case 'recentPlaylists':
+        {
           const limit = this.recentlyPlayedPlaylistsDisplayLimit;
           if (!limit || limit <= 0) {
             return;
           }
           if (this.recentlyPlayedPlaylists.length > 0) {
-            this.createDetailsSection(
-              'Recently Played Playlists',
-              this.recentlyPlayedPlaylists.slice(0, limit),
-              'playlist'
-            );
+            this.createDetailsSection('Recently Played Playlists', this.recentlyPlayedPlaylists.slice(0, limit), 'playlist');
           }
           break;
         }
@@ -6186,16 +5620,16 @@ class AdvancedMusicPlayer {
   }
   getCombinedRecentlyPlayed() {
     const combined = [];
-    this.recentlyPlayedSongs.forEach((song) => {
+    this.recentlyPlayedSongs.forEach(song => {
       combined.push({
         ...song,
-        itemType: 'song',
+        itemType: 'song'
       });
     });
-    this.recentlyPlayedPlaylists.forEach((playlist) => {
+    this.recentlyPlayedPlaylists.forEach(playlist => {
       combined.push({
         ...playlist,
-        itemType: 'playlist',
+        itemType: 'playlist'
       });
     });
     combined.sort((a, b) => b.timestamp - a.timestamp);
@@ -6230,7 +5664,7 @@ class AdvancedMusicPlayer {
     section.appendChild(sectionTitle);
     const itemsList = document.createElement('div');
     itemsList.classList.add('details-items-list');
-    items.forEach((item) => {
+    items.forEach(item => {
       const itemElement = document.createElement('div');
       itemElement.classList.add('details-item');
       const actualType = type === 'mixed' ? item.itemType : type;
@@ -6242,13 +5676,11 @@ class AdvancedMusicPlayer {
       thumbnail.classList.add('details-item-thumbnail');
       if (actualType === 'song') {
         const thumbnailImg = document.createElement('img');
-        thumbnailImg.src =
-          item.thumbnailUrl || `https://img.youtube.com/vi/${item.videoId}/default.jpg`;
+        thumbnailImg.src = item.thumbnailUrl || `https://img.youtube.com/vi/${item.videoId}/default.jpg`;
         thumbnailImg.alt = item.name;
-        thumbnailImg.onerror = function () {
+        thumbnailImg.onerror = function() {
           this.onerror = null;
-          this.src =
-            "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='90'%3E%3Crect width='120' height='90' fill='%23333'/%3E%3Ctext x='60' y='50' text-anchor='middle' font-size='11' fill='%23fff' font-family='sans-serif'%3ENo Image%3C/text%3E%3C/svg%3E";
+          this.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='90'%3E%3Crect width='120' height='90' fill='%23333'/%3E%3Ctext x='60' y='50' text-anchor='middle' font-size='11' fill='%23fff' font-family='sans-serif'%3ENo Image%3C/text%3E%3C/svg%3E";
         };
         thumbnail.appendChild(thumbnailImg);
       } else {
@@ -6256,10 +5688,9 @@ class AdvancedMusicPlayer {
           const thumbnailImg = document.createElement('img');
           thumbnailImg.src = item.thumbnailUrl;
           thumbnailImg.alt = item.name;
-          thumbnailImg.onerror = function () {
+          thumbnailImg.onerror = function() {
             this.onerror = null;
-            this.src =
-              "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='90'%3E%3Crect width='120' height='90' fill='%23333'/%3E%3Ctext x='60' y='50' text-anchor='middle' font-size='11' fill='%23fff' font-family='sans-serif'%3EPlaylist%3C/text%3E%3C/svg%3E";
+            this.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='90'%3E%3Crect width='120' height='90' fill='%23333'/%3E%3Ctext x='60' y='50' text-anchor='middle' font-size='11' fill='%23fff' font-family='sans-serif'%3EPlaylist%3C/text%3E%3C/svg%3E";
           };
           thumbnail.appendChild(thumbnailImg);
         } else {
@@ -6283,7 +5714,7 @@ class AdvancedMusicPlayer {
         currentSongDiv.style.marginTop = '4px';
         itemInfo.appendChild(currentSongDiv);
       }
-      itemElement.addEventListener('click', (e) => {
+      itemElement.addEventListener('click', e => {
         e.preventDefault();
         if (actualType === 'song') {
           this.playSong(item.id);
@@ -6292,7 +5723,7 @@ class AdvancedMusicPlayer {
         }
       });
       if (actualType === 'song') {
-        itemElement.addEventListener('contextmenu', (e) => {
+        itemElement.addEventListener('contextmenu', e => {
           e.preventDefault();
           this.addToQueue(item);
         });
@@ -6310,9 +5741,7 @@ class AdvancedMusicPlayer {
     if (!this.elements.additionalDetails) {
       return;
     }
-    const sectionToRefresh = this.elements.additionalDetails.querySelector(
-      `[data-section-title="${sectionTitle}"]`
-    );
+    const sectionToRefresh = this.elements.additionalDetails.querySelector(`[data-section-title="${sectionTitle}"]`);
     if (!sectionToRefresh) {
       return;
     }
@@ -6323,7 +5752,7 @@ class AdvancedMusicPlayer {
         newItems = this.getRandomItems(this.songLibrary, this.suggestedSongsDisplayLimit || 2);
       }
     } else if (sectionTitle === 'Your Picks') {
-      const favoriteSongs = this.songLibrary.filter((song) => song.favorite);
+      const favoriteSongs = this.songLibrary.filter(song => song.favorite);
       if (favoriteSongs.length > 0) {
         newItems = this.getRandomItems(favoriteSongs, this.yourPicksDisplayLimit || 2);
       }
@@ -6336,7 +5765,7 @@ class AdvancedMusicPlayer {
       return;
     }
     itemsList.innerHTML = '';
-    newItems.forEach((item) => {
+    newItems.forEach(item => {
       const itemElement = document.createElement('div');
       itemElement.classList.add('details-item');
       if (type === 'song') {
@@ -6347,13 +5776,11 @@ class AdvancedMusicPlayer {
       thumbnail.classList.add('details-item-thumbnail');
       if (type === 'song') {
         const thumbnailImg = document.createElement('img');
-        thumbnailImg.src =
-          item.thumbnailUrl || `https://img.youtube.com/vi/${item.videoId}/default.jpg`;
+        thumbnailImg.src = item.thumbnailUrl || `https://img.youtube.com/vi/${item.videoId}/default.jpg`;
         thumbnailImg.alt = item.name;
-        thumbnailImg.onerror = function () {
+        thumbnailImg.onerror = function() {
           this.onerror = null;
-          this.src =
-            "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='90'%3E%3Crect width='120' height='90' fill='%23333'/%3E%3Ctext x='60' y='50' text-anchor='middle' font-size='11' fill='%23fff' font-family='sans-serif'%3ENo Image%3C/text%3E%3C/svg%3E";
+          this.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='90'%3E%3Crect width='120' height='90' fill='%23333'/%3E%3Ctext x='60' y='50' text-anchor='middle' font-size='11' fill='%23fff' font-family='sans-serif'%3ENo Image%3C/text%3E%3C/svg%3E";
         };
         thumbnail.appendChild(thumbnailImg);
       } else {
@@ -6367,7 +5794,7 @@ class AdvancedMusicPlayer {
       itemName.classList.add('details-item-name');
       itemName.textContent = item.name;
       itemInfo.appendChild(itemName);
-      itemElement.addEventListener('click', (e) => {
+      itemElement.addEventListener('click', e => {
         e.preventDefault();
         if (type === 'song') {
           this.playSong(item.id);
@@ -6376,7 +5803,7 @@ class AdvancedMusicPlayer {
         }
       });
       if (type === 'song') {
-        itemElement.addEventListener('contextmenu', (e) => {
+        itemElement.addEventListener('contextmenu', e => {
           e.preventDefault();
           this.addToQueue(item);
         });
@@ -6404,10 +5831,10 @@ class AdvancedMusicPlayer {
   }
   getRandomItems(array, count) {
     if (array.length <= count) {
-      return [...array];
+      return [ ...array ];
     }
     const result = [];
-    const copyArray = [...array];
+    const copyArray = [ ...array ];
     for (let i = 0; i < count; i++) {
       const randomIndex = Math.floor(Math.random() * copyArray.length);
       result.push(copyArray[randomIndex]);
@@ -6415,7 +5842,6 @@ class AdvancedMusicPlayer {
     }
     return result;
   }
-
   showRecentlyPlayedModal() {
     const modal = document.getElementById('recentlyPlayedModal');
     const limitInput = document.getElementById('recentlyPlayedLimitInput');
@@ -6435,7 +5861,7 @@ class AdvancedMusicPlayer {
     closeBtn.addEventListener('click', () => {
       this.hideRecentlyPlayedModal();
     });
-    modal.addEventListener('click', (e) => {
+    modal.addEventListener('click', e => {
       if (e.target === modal) {
         this.hideRecentlyPlayedModal();
       }
@@ -6448,7 +5874,7 @@ class AdvancedMusicPlayer {
         limitInput.value = this.recentlyPlayedLimit || 20;
       }
     });
-    document.addEventListener('keydown', (e) => {
+    document.addEventListener('keydown', e => {
       if (e.key === 'Escape' && modal.style.display === 'flex') {
         this.hideRecentlyPlayedModal();
       }
@@ -6471,10 +5897,9 @@ class AdvancedMusicPlayer {
       thumbnail.src = song.thumbnailUrl || `https://img.youtube.com/vi/${song.videoId}/default.jpg`;
       thumbnail.alt = song.name;
       thumbnail.classList.add('recently-played-thumbnail');
-      thumbnail.onerror = function () {
+      thumbnail.onerror = function() {
         this.onerror = null;
-        this.src =
-          "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='90'%3E%3Crect width='120' height='90' fill='%23333'/%3E%3Ctext x='60' y='50' text-anchor='middle' font-size='11' fill='%23fff' font-family='sans-serif'%3ENo Image%3C/text%3E%3C/svg%3E";
+        this.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='90'%3E%3Crect width='120' height='90' fill='%23333'/%3E%3Ctext x='60' y='50' text-anchor='middle' font-size='11' fill='%23fff' font-family='sans-serif'%3ENo Image%3C/text%3E%3C/svg%3E";
       };
       const info = document.createElement('div');
       info.classList.add('recently-played-info');
@@ -6489,7 +5914,7 @@ class AdvancedMusicPlayer {
       removeBtn.classList.add('recently-played-remove');
       removeBtn.innerHTML = '×';
       removeBtn.title = 'Remove from recently played';
-      removeBtn.addEventListener('click', (e) => {
+      removeBtn.addEventListener('click', e => {
         e.stopPropagation();
         this.removeFromRecentlyPlayed(song.id, index);
       });
@@ -6515,13 +5940,13 @@ class AdvancedMusicPlayer {
     this.renderAdditionalDetails();
     if (this.db) {
       try {
-        const transaction = this.db.transaction(['recentlyPlayed'], 'readwrite');
+        const transaction = this.db.transaction([ 'recentlyPlayed' ], 'readwrite');
         const store = transaction.objectStore('recentlyPlayed');
         store.put({
           type: 'songs',
-          items: this.recentlyPlayedSongs,
+          items: this.recentlyPlayedSongs
         });
-        transaction.onerror = (event) => {
+        transaction.onerror = event => {
           console.error('Error removing from recently played:', event.target.error);
         };
       } catch (error) {
@@ -6548,26 +5973,24 @@ class AdvancedMusicPlayer {
   }
   updateRecentlyPlayedLimit(newLimit) {
     this.recentlyPlayedLimit = newLimit;
-    this.saveSetting('recentlyPlayedLimit', newLimit)
-      .then(() => {
-        if (this.recentlyPlayedSongs.length > newLimit) {
-          this.recentlyPlayedSongs = this.recentlyPlayedSongs.slice(0, newLimit);
-          if (this.db) {
-            const transaction = this.db.transaction(['recentlyPlayed'], 'readwrite');
-            const store = transaction.objectStore('recentlyPlayed');
-            store.put({
-              type: 'songs',
-              items: this.recentlyPlayedSongs,
-            });
-            this.renderRecentlyPlayedContent();
-            this.renderAdditionalDetails();
-          }
+    this.saveSetting('recentlyPlayedLimit', newLimit).then(() => {
+      if (this.recentlyPlayedSongs.length > newLimit) {
+        this.recentlyPlayedSongs = this.recentlyPlayedSongs.slice(0, newLimit);
+        if (this.db) {
+          const transaction = this.db.transaction([ 'recentlyPlayed' ], 'readwrite');
+          const store = transaction.objectStore('recentlyPlayed');
+          store.put({
+            type: 'songs',
+            items: this.recentlyPlayedSongs
+          });
+          this.renderRecentlyPlayedContent();
+          this.renderAdditionalDetails();
         }
-      })
-      .catch((error) => {
-        console.error('Error saving recently played limit:', error);
-        this.recentlyPlayedLimit = this.recentlyPlayedLimit || 20;
-      });
+      }
+    }).catch(error => {
+      console.error('Error saving recently played limit:', error);
+      this.recentlyPlayedLimit = this.recentlyPlayedLimit || 20;
+    });
   }
   saveRecentlyPlayedSong(song) {
     if (!this.db || !song) {
@@ -6582,9 +6005,9 @@ class AdvancedMusicPlayer {
       name: song.name,
       videoId: song.videoId,
       thumbnailUrl: song.thumbnailUrl || `https://img.youtube.com/vi/${song.videoId}/default.jpg`,
-      timestamp: Date.now(),
+      timestamp: Date.now()
     };
-    const transaction = this.db.transaction(['recentlyPlayed'], 'readwrite');
+    const transaction = this.db.transaction([ 'recentlyPlayed' ], 'readwrite');
     const store = transaction.objectStore('recentlyPlayed');
     const request = store.get('songs');
     request.onsuccess = () => {
@@ -6592,7 +6015,7 @@ class AdvancedMusicPlayer {
       if (request.result && Array.isArray(request.result.items)) {
         recentlyPlayedSongs = request.result.items;
       }
-      recentlyPlayedSongs = recentlyPlayedSongs.filter((item) => item.id !== song.id);
+      recentlyPlayedSongs = recentlyPlayedSongs.filter(item => item.id !== song.id);
       recentlyPlayedSongs.unshift(songData);
       const limit = this.recentlyPlayedLimit || 20;
       if (recentlyPlayedSongs.length > limit) {
@@ -6601,11 +6024,11 @@ class AdvancedMusicPlayer {
       this.recentlyPlayedSongs = recentlyPlayedSongs;
       store.put({
         type: 'songs',
-        items: recentlyPlayedSongs,
+        items: recentlyPlayedSongs
       });
       this.renderAdditionalDetails();
     };
-    request.onerror = (event) => {
+    request.onerror = event => {
       console.warn('Error updating recently played songs:', event.target.error);
     };
   }
@@ -6619,13 +6042,10 @@ class AdvancedMusicPlayer {
       name: playlist.name,
       timestamp: Date.now(),
       currentSongName: currentSong ? currentSong.name : '',
-      thumbnailUrl: currentSong
-        ? currentSong.thumbnailUrl ||
-          `https://img.youtube.com/vi/${currentSong.videoId}/default.jpg`
-        : '',
+      thumbnailUrl: currentSong ? currentSong.thumbnailUrl || `https://img.youtube.com/vi/${currentSong.videoId}/default.jpg` : ''
     };
     try {
-      const transaction = this.db.transaction(['recentlyPlayed'], 'readwrite');
+      const transaction = this.db.transaction([ 'recentlyPlayed' ], 'readwrite');
       const store = transaction.objectStore('recentlyPlayed');
       const request = store.get('playlists');
       request.onsuccess = () => {
@@ -6633,7 +6053,7 @@ class AdvancedMusicPlayer {
         if (request.result && Array.isArray(request.result.items)) {
           recentlyPlayedPlaylists = request.result.items;
         }
-        recentlyPlayedPlaylists = recentlyPlayedPlaylists.filter((item) => item.id !== playlist.id);
+        recentlyPlayedPlaylists = recentlyPlayedPlaylists.filter(item => item.id !== playlist.id);
         recentlyPlayedPlaylists.unshift(playlistData);
         if (recentlyPlayedPlaylists.length > 20) {
           recentlyPlayedPlaylists = recentlyPlayedPlaylists.slice(0, 20);
@@ -6641,36 +6061,30 @@ class AdvancedMusicPlayer {
         this.recentlyPlayedPlaylists = recentlyPlayedPlaylists;
         store.put({
           type: 'playlists',
-          items: recentlyPlayedPlaylists,
+          items: recentlyPlayedPlaylists
         });
         this.renderAdditionalDetails();
       };
-      request.onerror = (event) => {
+      request.onerror = event => {
         console.warn('Error updating recently played playlists:', event.target.error);
       };
     } catch (error) {
       console.warn('Error saving recently played playlist:', error);
     }
   }
-
   renderLyricsTab() {
     if (!this.elements.lyricsPane) {
       return;
     }
     this.elements.lyricsPane.innerHTML = '';
-    if (
-      this.currentSongIndex === undefined ||
-      (!this.songLibrary.length && !this.currentPlaylist)
-    ) {
+    if (this.currentSongIndex === undefined || !this.songLibrary.length && !this.currentPlaylist) {
       const emptyMessage = document.createElement('div');
       emptyMessage.classList.add('empty-lyrics-message');
       emptyMessage.textContent = 'No song is currently playing.';
       this.elements.lyricsPane.appendChild(emptyMessage);
       return;
     }
-    const currentSong = this.currentPlaylist
-      ? this.currentPlaylist.songs[this.currentSongIndex]
-      : this.songLibrary[this.currentSongIndex];
+    const currentSong = this.currentPlaylist ? this.currentPlaylist.songs[this.currentSongIndex] : this.songLibrary[this.currentSongIndex];
     if (!currentSong) {
       const errorMessage = document.createElement('div');
       errorMessage.classList.add('error-message');
@@ -6680,9 +6094,7 @@ class AdvancedMusicPlayer {
     }
     let songWithLyrics = currentSong;
     if (this.currentPlaylist) {
-      const libraryMatch = this.songLibrary.find(
-        (libSong) => libSong.videoId === currentSong.videoId
-      );
+      const libraryMatch = this.songLibrary.find(libSong => libSong.videoId === currentSong.videoId);
       if (libraryMatch && libraryMatch.lyrics) {
         songWithLyrics = libraryMatch;
       }
@@ -6715,9 +6127,7 @@ class AdvancedMusicPlayer {
       importSubtitlesBtn.style.padding = '8px 16px';
       importSubtitlesBtn.style.cursor = 'pointer';
       importSubtitlesBtn.style.flex = '1';
-      const librarySong = this.currentPlaylist
-        ? this.songLibrary.find((s) => s.videoId === currentSong.videoId)
-        : currentSong;
+      const librarySong = this.currentPlaylist ? this.songLibrary.find(s => s.videoId === currentSong.videoId) : currentSong;
       if (librarySong) {
         addLyricsBtn.addEventListener('click', () => {
           this.openLyricsMakerModal(librarySong.id);
@@ -6738,7 +6148,7 @@ class AdvancedMusicPlayer {
     const lyricsArray = [];
     const timingsArray = [];
     let hasTimestamps = false;
-    const lines = songWithLyrics.lyrics.split('\n').filter((line) => line.trim() !== '');
+    const lines = songWithLyrics.lyrics.split('\n').filter(line => line.trim() !== '');
     for (const line of lines) {
       if (line.match(/.*\s*\[(\d+):(\d+)\]/)) {
         hasTimestamps = true;
@@ -6779,7 +6189,7 @@ class AdvancedMusicPlayer {
     lyricsPlayer.appendChild(lyricsDisplay);
     const floatingButtonsContainer = document.createElement('div');
     floatingButtonsContainer.style.cssText = `\n\t        position: absolute;\n\t        top: 10px;\n\t        right: 15px;\n\t        display: flex;\n\t        gap: 7px;\n\t        z-index: 100;\n\t        pointer-events: none;\n\t    `;
-    const addSimpleHover = (btn) => {
+    const addSimpleHover = btn => {
       btn.addEventListener('mouseenter', () => {
         btn.style.opacity = '1';
         btn.style.transform = 'scale(1.1)';
@@ -6799,9 +6209,7 @@ class AdvancedMusicPlayer {
     autoCenterButton.style.cssText = `\n\t        background: ${this.autoCenterLyrics ? 'rgba(93, 156, 89, 0.25)' : 'rgba(128, 128, 128, 0.15)'};\n\t        backdrop-filter: blur(10px);\n\t        border: 1px solid rgba(255, 255, 255, 0.2);\n\t        border-radius: 50%;\n\t        width: 25px;\n\t        height: 25px;\n\t        display: flex;\n\t        align-items: center;\n\t        justify-content: center;\n\t        cursor: pointer;\n\t        transition: all 0.3s ease;\n\t        color: var(--text-primary);\n\t        font-size: 10px;\n\t        pointer-events: auto;\n\t        opacity: ${this.autoCenterLyrics ? '1' : '0.5'};\n\t    `;
     const updateAutoCenterStyle = () => {
       const on = this.autoCenterLyrics;
-      autoCenterButton.style.background = on
-        ? 'rgba(93, 156, 89, 0.25)'
-        : 'rgba(128, 128, 128, 0.15)';
+      autoCenterButton.style.background = on ? 'rgba(93, 156, 89, 0.25)' : 'rgba(128, 128, 128, 0.15)';
       autoCenterButton.style.opacity = on ? '1' : '0.5';
       autoCenterButton._baseOpacity = on ? '1' : '0.5';
       autoCenterButton.title = on ? 'Auto-center: ON' : 'Auto-center: OFF';
@@ -6851,11 +6259,7 @@ class AdvancedMusicPlayer {
     }
     if (hasTimestamps && this.ytPlayer) {
       this.lyricsInterval = setInterval(() => {
-        if (
-          this.ytPlayer &&
-          this.ytPlayer.getCurrentTime &&
-          this.ytPlayer.getPlayerState() === YT.PlayerState.PLAYING
-        ) {
+        if (this.ytPlayer && this.ytPlayer.getCurrentTime && this.ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
           const currentTime = this.ytPlayer.getCurrentTime();
           this.updateHighlightedLyric(currentTime, this.currentLyrics, this.currentTimings);
         }
@@ -6865,7 +6269,7 @@ class AdvancedMusicPlayer {
   generateKaraokeURL(song, lyricsWithTimestamps) {
     const lines = [];
     const lyricsArray = lyricsWithTimestamps.split('\n');
-    lyricsArray.forEach((line) => {
+    lyricsArray.forEach(line => {
       const match = line.match(/^(.+?)\s*\[(\d+):(\d+)\]$/);
       if (match) {
         const text = match[1].trim();
@@ -6874,7 +6278,7 @@ class AdvancedMusicPlayer {
         const timeInSeconds = minutes * 60 + seconds;
         lines.push({
           text: text,
-          time: timeInSeconds,
+          time: timeInSeconds
         });
       }
     });
@@ -6884,19 +6288,15 @@ class AdvancedMusicPlayer {
     }
     return KaraokeEncoder.generateURL(song.videoId, lines);
   }
-  shareKaraokeURL() {
-    const currentSong = this.currentPlaylist
-      ? this.currentPlaylist.songs[this.currentSongIndex]
-      : this.songLibrary[this.currentSongIndex];
+  async shareKaraokeURL() {
+    const currentSong = this.currentPlaylist ? this.currentPlaylist.songs[this.currentSongIndex] : this.songLibrary[this.currentSongIndex];
     if (!currentSong) {
       this.showNotification('No song is currently playing', 'error');
       return;
     }
     let songWithLyrics = currentSong;
     if (this.currentPlaylist) {
-      const libraryMatch = this.songLibrary.find(
-        (libSong) => libSong.videoId === currentSong.videoId
-      );
+      const libraryMatch = this.songLibrary.find(libSong => libSong.videoId === currentSong.videoId);
       if (libraryMatch && libraryMatch.lyrics) {
         songWithLyrics = libraryMatch;
       }
@@ -6907,10 +6307,13 @@ class AdvancedMusicPlayer {
     }
     const hasTimestamps = songWithLyrics.lyrics.match(/.*\s*\[(\d+):(\d+)\]/);
     if (!hasTimestamps) {
-      this.showNotification(
-        'Lyrics need timestamps to create karaoke. Use the lyric maker.',
-        'error'
-      );
+      this.showNotification('Lyrics need timestamps to create karaoke. Use the lyric maker.', 'error');
+      return;
+    }
+    try {
+      await loadKaraokeShareDependencies();
+    } catch (err) {
+      this.showNotification('Failed to load karaoke sharing tools. Check your connection.', 'error');
       return;
     }
     const url = this.generateKaraokeURL(songWithLyrics, songWithLyrics.lyrics);
@@ -6938,10 +6341,7 @@ class AdvancedMusicPlayer {
       }
     }
     if (highlightIndex !== this.currentHighlightedLyricIndex) {
-      if (
-        this.currentHighlightedLyricIndex !== undefined &&
-        this.currentHighlightedLyricIndex !== -1
-      ) {
+      if (this.currentHighlightedLyricIndex !== undefined && this.currentHighlightedLyricIndex !== -1) {
         const prevElement = document.getElementById(`lyric-${this.currentHighlightedLyricIndex}`);
         if (prevElement) {
           prevElement.classList.remove('active');
@@ -6954,7 +6354,7 @@ class AdvancedMusicPlayer {
           if (this.autoCenterLyrics !== false) {
             currentElement.scrollIntoView({
               behavior: 'smooth',
-              block: 'center',
+              block: 'center'
             });
           }
         }
@@ -7015,19 +6415,16 @@ class AdvancedMusicPlayer {
     contentContainer.style.display = 'flex';
     contentContainer.style.flexDirection = 'column';
     contentContainer.style.gap = '10px';
-    const songsWithLyrics = this.songLibrary.filter(
-      (song) => song.lyrics && song.lyrics.trim() !== ''
-    );
+    const songsWithLyrics = this.songLibrary.filter(song => song.lyrics && song.lyrics.trim() !== '');
     if (songsWithLyrics.length === 0) {
       const noLyricsMessage = document.createElement('div');
-      noLyricsMessage.textContent =
-        'No songs with lyrics found. Add lyrics to your songs to see them here.';
+      noLyricsMessage.textContent = 'No songs with lyrics found. Add lyrics to your songs to see them here.';
       noLyricsMessage.style.textAlign = 'center';
       noLyricsMessage.style.color = 'var(--text-secondary)';
       noLyricsMessage.style.padding = '20px';
       contentContainer.appendChild(noLyricsMessage);
     } else {
-      songsWithLyrics.forEach((song) => {
+      songsWithLyrics.forEach(song => {
         const songItem = document.createElement('div');
         songItem.style.display = 'flex';
         songItem.style.alignItems = 'center';
@@ -7047,13 +6444,8 @@ class AdvancedMusicPlayer {
         songName.style.textOverflow = 'ellipsis';
         songName.style.whiteSpace = 'nowrap';
         const lyricsPreview = document.createElement('div');
-        const firstLine =
-          song.lyrics
-            .split('\n')[0]
-            ?.replace(/\[.*?\]/g, '')
-            .trim() || 'No preview available';
-        lyricsPreview.textContent =
-          firstLine.length > 50 ? firstLine.substring(0, 50) + '...' : firstLine;
+        const firstLine = song.lyrics.split('\n')[0]?.replace(/\[.*?\]/g, '').trim() || 'No preview available';
+        lyricsPreview.textContent = firstLine.length > 50 ? firstLine.substring(0, 50) + '...' : firstLine;
         lyricsPreview.style.color = 'var(--text-secondary)';
         lyricsPreview.style.fontSize = '0.9em';
         lyricsPreview.style.overflow = 'hidden';
@@ -7082,21 +6474,18 @@ class AdvancedMusicPlayer {
           copyBtn.style.backgroundColor = 'var(--accent-color)';
         });
         copyBtn.onclick = () => {
-          navigator.clipboard
-            .writeText(song.lyrics)
-            .then(() => {
-              const originalText = copyBtn.textContent;
-              copyBtn.textContent = 'Copied!';
-              copyBtn.style.backgroundColor = '#4CAF50';
-              setTimeout(() => {
-                copyBtn.textContent = originalText;
-                copyBtn.style.backgroundColor = 'var(--accent-color)';
-              }, 1e3);
-            })
-            .catch((err) => {
-              console.error('Failed to copy lyrics:', err);
-              alert('Failed to copy lyrics to clipboard');
-            });
+          navigator.clipboard.writeText(song.lyrics).then(() => {
+            const originalText = copyBtn.textContent;
+            copyBtn.textContent = 'Copied!';
+            copyBtn.style.backgroundColor = '#4CAF50';
+            setTimeout(() => {
+              copyBtn.textContent = originalText;
+              copyBtn.style.backgroundColor = 'var(--accent-color)';
+            }, 1e3);
+          }).catch(err => {
+            console.error('Failed to copy lyrics:', err);
+            alert('Failed to copy lyrics to clipboard');
+          });
         };
         const editBtn = document.createElement('button');
         editBtn.textContent = 'Edit';
@@ -7129,7 +6518,7 @@ class AdvancedMusicPlayer {
     modalContent.appendChild(contentContainer);
     modal.appendChild(modalContent);
     document.body.appendChild(modal);
-    modal.onclick = (e) => {
+    modal.onclick = e => {
       if (e.target === modal) {
         modal.remove();
       }
@@ -7140,13 +6529,13 @@ class AdvancedMusicPlayer {
     if (!lyricsTab) {
       return;
     }
-    lyricsTab.addEventListener('contextmenu', (e) => {
+    lyricsTab.addEventListener('contextmenu', e => {
       e.preventDefault();
       this.openLyricsLibraryModal();
     });
   }
   openLyricsMakerModal(songId) {
-    const song = this.songLibrary.find((s) => s.id === songId);
+    const song = this.songLibrary.find(s => s.id === songId);
     if (!song) {
       return;
     }
@@ -7183,14 +6572,14 @@ class AdvancedMusicPlayer {
     const modal = document.getElementById('lyricsModal');
     const closeBtn = document.getElementById('closeLyricsModal');
     const player = {
-      ytPlayer: null,
+      ytPlayer: null
     };
     const state = {
       lyrics: [],
       timings: [],
       currentLineIndex: -1,
       isRecording: false,
-      timeUpdateInterval: null,
+      timeUpdateInterval: null
     };
     const closeModal = () => {
       modal.classList.add('hidden');
@@ -7202,24 +6591,22 @@ class AdvancedMusicPlayer {
       }
     };
     closeBtn.onclick = closeModal;
-    const showTab = (tabId) => {
-      document
-        .querySelectorAll('.lyrics-tab, .lyrics-nav-item')
-        .forEach((el) => el.classList.remove('active'));
+    const showTab = tabId => {
+      document.querySelectorAll('.lyrics-tab, .lyrics-nav-item').forEach(el => el.classList.remove('active'));
       document.getElementById(tabId).classList.add('active');
-      document.querySelectorAll('.lyrics-nav-item').forEach((item) => {
+      document.querySelectorAll('.lyrics-nav-item').forEach(item => {
         if (item.dataset.tab === tabId) {
           item.classList.add('active');
         }
       });
     };
-    const tabClickHandler = (tab) => () => showTab(tab.dataset.tab);
+    const tabClickHandler = tab => () => showTab(tab.dataset.tab);
     const tabHandlers = [];
-    document.querySelectorAll('.lyrics-nav-item').forEach((tab) => {
+    document.querySelectorAll('.lyrics-nav-item').forEach(tab => {
       const handler = tabClickHandler(tab);
       tabHandlers.push({
         element: tab,
-        handler: handler,
+        handler: handler
       });
       tab.addEventListener('click', handler);
     });
@@ -7246,7 +6633,7 @@ class AdvancedMusicPlayer {
         createYouTubePlayer(videoId);
       }
     };
-    const createYouTubePlayer = (videoId) => {
+    const createYouTubePlayer = videoId => {
       const container = document.getElementById('videoContainer');
       if (!container) {
         return;
@@ -7260,26 +6647,24 @@ class AdvancedMusicPlayer {
         videoId: videoId,
         playerVars: {
           playsinline: 1,
-          controls: 1,
+          controls: 1
         },
         events: {
-          onStateChange: (event) => {
+          onStateChange: event => {
             if (event.data === YT.PlayerState.PLAYING) {
               clearInterval(state.timeUpdateInterval);
               state.timeUpdateInterval = setInterval(() => {
                 if (player.ytPlayer && player.ytPlayer.getCurrentTime) {
-                  document.getElementById('currentTime').textContent = formatTime(
-                    player.ytPlayer.getCurrentTime()
-                  );
+                  document.getElementById('currentTime').textContent = formatTime(player.ytPlayer.getCurrentTime());
                   updateLyricMakerVisualTimeline();
                 }
               }, 100);
             }
-          },
-        },
+          }
+        }
       });
     };
-    const formatTime = (seconds) => {
+    const formatTime = seconds => {
       const minutes = Math.floor(seconds / 60);
       const remainingSeconds = Math.floor(seconds % 60);
       return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
@@ -7323,7 +6708,9 @@ class AdvancedMusicPlayer {
         loadingIndicator.style.display = 'flex';
       }
       try {
-        const params = new URLSearchParams({ song: song.name });
+        const params = new URLSearchParams({
+          song: song.name
+        });
         if (song.author) {
           params.set('artist', song.author);
         }
@@ -7338,10 +6725,7 @@ class AdvancedMusicPlayer {
         this.showNotification('Lyrics fetched from Genius!', 'success');
       } catch (error) {
         console.error('Genius auto-fetch failed:', error);
-        this.showNotification(
-          'Could not auto-fetch lyrics. Try one of the manual search options below.',
-          'error'
-        );
+        this.showNotification('Could not auto-fetch lyrics. Try one of the manual search options below.', 'error');
       } finally {
         if (btn) {
           btn.disabled = false;
@@ -7357,7 +6741,7 @@ class AdvancedMusicPlayer {
         alert('Please enter lyrics');
         return;
       }
-      state.lyrics = lyricsText.split('\n').filter((line) => line.trim() !== '');
+      state.lyrics = lyricsText.split('\n').filter(line => line.trim() !== '');
       const progressContainer = document.getElementById('progressContainer');
       progressContainer.innerHTML = '<h3>Progress</h3>';
       state.lyrics.forEach((line, index) => {
@@ -7449,7 +6833,7 @@ class AdvancedMusicPlayer {
         finishRecording();
       }
     };
-    const seekVideoToLyricTime = (timeInSeconds) => {
+    const seekVideoToLyricTime = timeInSeconds => {
       if (player.ytPlayer && typeof player.ytPlayer.seekTo === 'function') {
         player.ytPlayer.seekTo(timeInSeconds, true);
       }
@@ -7474,7 +6858,7 @@ class AdvancedMusicPlayer {
       if (duration === 0) {
         return;
       }
-      const percentage = (currentTime / duration) * 100;
+      const percentage = currentTime / duration * 100;
       const progressFill = document.getElementById('lyricmakerProgressFill');
       if (progressFill) {
         progressFill.style.width = `${percentage}%`;
@@ -7501,19 +6885,17 @@ class AdvancedMusicPlayer {
       }
       const LAYER_HEIGHT = 16;
       const TOTAL_LAYERS = 15;
-      const usedPositions = Array(TOTAL_LAYERS)
-        .fill()
-        .map(() => []);
+      const usedPositions = Array(TOTAL_LAYERS).fill().map(() => []);
       state.timings.forEach((time, index) => {
         if (time === null) {
           return;
         }
-        const percentage = (time / duration) * 100;
+        const percentage = time / duration * 100;
         let bestLayer = 0;
         let minConflict = Infinity;
         for (let layer = 0; layer < TOTAL_LAYERS; layer++) {
           let conflict = 0;
-          usedPositions[layer].forEach((pos) => {
+          usedPositions[layer].forEach(pos => {
             if (Math.abs(pos - percentage) < 8) {
               conflict++;
             }
@@ -7550,21 +6932,21 @@ class AdvancedMusicPlayer {
         const setupDragForMarkerGroup = () => {
           let isDragging = false;
           let dragStartX = 0;
-          const startDrag = (e) => {
+          const startDrag = e => {
             isDragging = true;
             dragStartX = e.clientX;
             marker.classList.add('lyricmaker-marker-dragging');
             e.preventDefault();
           };
-          const doDrag = (e) => {
+          const doDrag = e => {
             if (!isDragging) {
               return;
             }
             const timeline = singleLane;
             const rect = timeline.getBoundingClientRect();
             const x = e.clientX - rect.left;
-            const newPercentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
-            const newTime = (newPercentage / 100) * duration;
+            const newPercentage = Math.max(0, Math.min(100, x / rect.width * 100));
+            const newTime = newPercentage / 100 * duration;
             marker.style.left = `${newPercentage}%`;
             preview.style.left = `${newPercentage}%`;
             connector.style.left = `${newPercentage}%`;
@@ -7606,15 +6988,15 @@ class AdvancedMusicPlayer {
       if (!progressBar) {
         return;
       }
-      progressBar.addEventListener('click', (e) => {
+      progressBar.addEventListener('click', e => {
         if (!player.ytPlayer || !player.ytPlayer.getDuration) {
           return;
         }
         const rect = progressBar.getBoundingClientRect();
         const x = e.clientX - rect.left;
-        const percentage = (x / rect.width) * 100;
+        const percentage = x / rect.width * 100;
         const duration = player.ytPlayer.getDuration();
-        const seekTime = (percentage / 100) * duration;
+        const seekTime = percentage / 100 * duration;
         seekVideoToLyricTime(seekTime);
       });
     };
@@ -7675,28 +7057,24 @@ class AdvancedMusicPlayer {
         alert('No lyrics to save');
         return;
       }
-      this.updateSongDetails(song.id, song.name, song.author, song.videoId, lyricsText)
-        .then(() => {
-          alert('Lyrics saved successfully!');
-          closeModal();
-          if (document.getElementById('lyrics').classList.contains('active')) {
-            this.renderLyricsTab();
-          }
-        })
-        .catch((error) => {
-          console.error('Error saving lyrics:', error);
-          alert('Failed to save lyrics. Please try again.');
-        });
+      this.updateSongDetails(song.id, song.name, song.author, song.videoId, lyricsText).then(() => {
+        alert('Lyrics saved successfully!');
+        closeModal();
+        if (document.getElementById('lyrics').classList.contains('active')) {
+          this.renderLyricsTab();
+        }
+      }).catch(error => {
+        console.error('Error saving lyrics:', error);
+        alert('Failed to save lyrics. Please try again.');
+      });
     };
-    const handleKeyDown = (e) => {
+    const handleKeyDown = e => {
       if (e.key === 'Escape') {
         closeModal();
       }
     };
     document.getElementById('prepareLyricsBtn').addEventListener('click', prepareLyrics);
-    document
-      .getElementById('nextToRecordBtn')
-      .addEventListener('click', () => showTab('recordTab'));
+    document.getElementById('nextToRecordBtn').addEventListener('click', () => showTab('recordTab'));
     document.getElementById('startRecording').addEventListener('click', startRecording);
     document.getElementById('markLine').addEventListener('click', markCurrentLine);
     document.getElementById('finishRecording').addEventListener('click', finishRecording);
@@ -7708,9 +7086,7 @@ class AdvancedMusicPlayer {
     document.getElementById('letrasBtn').addEventListener('click', searchLetras);
     document.getElementById('geniusBtn').addEventListener('click', searchGenius);
     document.getElementById('googleBtn').addEventListener('click', searchGoogle);
-    document
-      .getElementById('autoFetchGeniusLyricsBtn')
-      ?.addEventListener('click', autoFetchGeniusLyrics);
+    document.getElementById('autoFetchGeniusLyricsBtn')?.addEventListener('click', autoFetchGeniusLyrics);
     document.addEventListener('keydown', handleKeyDown);
     this.lyricMakerCleanup = () => {
       document.getElementById('prepareLyricsBtn').removeEventListener('click', prepareLyrics);
@@ -7728,11 +7104,9 @@ class AdvancedMusicPlayer {
       document.getElementById('letrasBtn').removeEventListener('click', searchLetras);
       document.getElementById('geniusBtn').removeEventListener('click', searchGenius);
       document.getElementById('googleBtn').removeEventListener('click', searchGoogle);
-      document
-        .getElementById('autoFetchGeniusLyricsBtn')
-        ?.removeEventListener('click', autoFetchGeniusLyrics);
+      document.getElementById('autoFetchGeniusLyricsBtn')?.removeEventListener('click', autoFetchGeniusLyrics);
       document.addEventListener('keydown', handleKeyDown);
-      tabHandlers.forEach(({ element: element, handler: handler }) => {
+      tabHandlers.forEach(({element: element, handler: handler}) => {
         element.removeEventListener('click', handler);
       });
       if (state.timeUpdateInterval) {
@@ -7777,9 +7151,7 @@ class AdvancedMusicPlayer {
     }
     this.isLyricsFullscreen = true;
     this.elements.lyricsFullscreenModal.classList.add('active');
-    const currentSong = this.currentPlaylist
-      ? this.currentPlaylist.songs[this.currentSongIndex]
-      : this.songLibrary[this.currentSongIndex];
+    const currentSong = this.currentPlaylist ? this.currentPlaylist.songs[this.currentSongIndex] : this.songLibrary[this.currentSongIndex];
     if (currentSong) {
       this.elements.fullscreenSongName.textContent = currentSong.name;
       this.elements.fullscreenSongAuthor.textContent = currentSong.author || 'Unknown Artist';
@@ -7796,11 +7168,7 @@ class AdvancedMusicPlayer {
     }
     this.currentFullscreenHighlightedLyricIndex = -1;
     this.showMainUIFromLyrics();
-    if (
-      this.isPlaying &&
-      document.getElementById('lyrics') &&
-      document.getElementById('lyrics').classList.contains('active')
-    ) {
+    if (this.isPlaying && document.getElementById('lyrics') && document.getElementById('lyrics').classList.contains('active')) {
       this.renderLyricsTab();
     }
   }
@@ -7824,31 +7192,26 @@ class AdvancedMusicPlayer {
     if (!this.elements.fullscreenLyricsDisplay) {
       return;
     }
-    const currentSong = this.currentPlaylist
-      ? this.currentPlaylist.songs[this.currentSongIndex]
-      : this.songLibrary[this.currentSongIndex];
+    const currentSong = this.currentPlaylist ? this.currentPlaylist.songs[this.currentSongIndex] : this.songLibrary[this.currentSongIndex];
     if (!currentSong) {
       return;
     }
     let songWithLyrics = currentSong;
     if (this.currentPlaylist) {
-      const libraryMatch = this.songLibrary.find(
-        (libSong) => libSong.videoId === currentSong.videoId
-      );
+      const libraryMatch = this.songLibrary.find(libSong => libSong.videoId === currentSong.videoId);
       if (libraryMatch && libraryMatch.lyrics) {
         songWithLyrics = libraryMatch;
       }
     }
     if (!songWithLyrics.lyrics || songWithLyrics.lyrics.trim() === '') {
-      this.elements.fullscreenLyricsDisplay.innerHTML =
-        '<div class="no-lyrics-message">No lyrics available</div>';
+      this.elements.fullscreenLyricsDisplay.innerHTML = '<div class="no-lyrics-message">No lyrics available</div>';
       return;
     }
     this.elements.fullscreenLyricsDisplay.innerHTML = '';
     const lyricsArray = [];
     const timingsArray = [];
     let hasTimestamps = false;
-    const lines = songWithLyrics.lyrics.split('\n').filter((line) => line.trim() !== '');
+    const lines = songWithLyrics.lyrics.split('\n').filter(line => line.trim() !== '');
     for (const line of lines) {
       if (line.match(/.*\s*\[(\d+):(\d+)\]/)) {
         hasTimestamps = true;
@@ -7889,12 +7252,7 @@ class AdvancedMusicPlayer {
     this.currentFullscreenHighlightedLyricIndex = -1;
     if (hasTimestamps && this.ytPlayer && this.isPlaying && this.ytPlayer.getCurrentTime) {
       this.fullscreenLyricsInterval = setInterval(() => {
-        if (
-          this.ytPlayer &&
-          this.ytPlayer.getCurrentTime &&
-          this.isPlaying &&
-          this.isLyricsFullscreen
-        ) {
+        if (this.ytPlayer && this.ytPlayer.getCurrentTime && this.isPlaying && this.isLyricsFullscreen) {
           try {
             const currentTime = this.ytPlayer.getCurrentTime();
             this.updateFullscreenHighlightedLyric(currentTime, lyricsArray, timingsArray);
@@ -7919,7 +7277,7 @@ class AdvancedMusicPlayer {
     }
     if (highlightIndex !== this.currentFullscreenHighlightedLyricIndex) {
       const allLines = this.elements.fullscreenLyricsDisplay.querySelectorAll('.lyric-line');
-      allLines.forEach((line) => {
+      allLines.forEach(line => {
         line.classList.remove('active');
         line.style.backgroundColor = '';
         line.style.color = 'var(--text-secondary)';
@@ -7938,16 +7296,15 @@ class AdvancedMusicPlayer {
           currentElement.style.transform = 'scale(1.02)';
           currentElement.scrollIntoView({
             behavior: 'smooth',
-            block: 'center',
+            block: 'center'
           });
         }
       }
       this.currentFullscreenHighlightedLyricIndex = highlightIndex;
     }
   }
-
   openImportSubtitlesModal(songId) {
-    const song = this.songLibrary.find((s) => s.id === songId);
+    const song = this.songLibrary.find(s => s.id === songId);
     if (!song) {
       return;
     }
@@ -7976,7 +7333,7 @@ class AdvancedMusicPlayer {
     const cancelImportBtn = document.getElementById('cancelImportBtn');
     closeBtn.addEventListener('click', () => this.closeSubtitlesImportModal());
     cancelImportBtn.addEventListener('click', () => this.closeSubtitlesImportModal());
-    modal.addEventListener('click', (e) => {
+    modal.addEventListener('click', e => {
       if (e.target === modal) {
         this.closeSubtitlesImportModal();
       }
@@ -7984,10 +7341,7 @@ class AdvancedMusicPlayer {
     autoFetchBtn.addEventListener('click', () => this.autoFetchTranscript());
     openYouTubeBtn.addEventListener('click', () => {
       if (this.currentSongForSubtitlesImport) {
-        window.open(
-          `https://www.youtube.com/watch?v=${this.currentSongForSubtitlesImport.videoId}`,
-          '_blank'
-        );
+        window.open(`https://www.youtube.com/watch?v=${this.currentSongForSubtitlesImport.videoId}`, '_blank');
       }
     });
     convertBtn.addEventListener('click', () => this.convertTranscriptToLyricsHandler());
@@ -8023,7 +7377,7 @@ class AdvancedMusicPlayer {
       setTimeout(() => {
         lyricsPreview.scrollIntoView({
           behavior: 'smooth',
-          block: 'center',
+          block: 'center'
         });
       }, 100);
       this.showNotification('Transcript converted successfully!', 'success');
@@ -8043,13 +7397,7 @@ class AdvancedMusicPlayer {
       return;
     }
     try {
-      await this.updateSongDetails(
-        this.currentSongForSubtitlesImport.id,
-        this.currentSongForSubtitlesImport.name,
-        this.currentSongForSubtitlesImport.author,
-        this.currentSongForSubtitlesImport.videoId,
-        lyricsText
-      );
+      await this.updateSongDetails(this.currentSongForSubtitlesImport.id, this.currentSongForSubtitlesImport.name, this.currentSongForSubtitlesImport.author, this.currentSongForSubtitlesImport.videoId, lyricsText);
       this.showNotification('Lyrics saved successfully!', 'success');
       this.closeSubtitlesImportModal();
       if (document.getElementById('lyrics')?.classList.contains('active')) {
@@ -8069,8 +7417,7 @@ class AdvancedMusicPlayer {
         if (!line) {
           continue;
         }
-        const timestampMatch =
-          line.match(/^(\*\*)?(\d+):(\d+)(\*\*)?$/) || line.match(/^(\d+):(\d+)$/);
+        const timestampMatch = line.match(/^(\*\*)?(\d+):(\d+)(\*\*)?$/) || line.match(/^(\d+):(\d+)$/);
         if (timestampMatch) {
           const minutes = parseInt(timestampMatch[2] || timestampMatch[1]);
           const seconds = parseInt(timestampMatch[3] || timestampMatch[2]);
@@ -8137,17 +7484,14 @@ class AdvancedMusicPlayer {
       autoFetchBtn.disabled = true;
       autoFetchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Fetching...';
       const videoUrl = `https://www.youtube.com/watch?v=${this.currentSongForSubtitlesImport.videoId}`;
-      const apiUrl =
-        selectedLang === 'auto'
-          ? `https://api.supadata.ai/v1/youtube/transcript?url=${encodeURIComponent(videoUrl)}&text=false`
-          : `https://api.supadata.ai/v1/youtube/transcript?url=${encodeURIComponent(videoUrl)}&text=false&lang=${selectedLang}`;
+      const apiUrl = selectedLang === 'auto' ? `https://api.supadata.ai/v1/youtube/transcript?url=${encodeURIComponent(videoUrl)}&text=false` : `https://api.supadata.ai/v1/youtube/transcript?url=${encodeURIComponent(videoUrl)}&text=false&lang=${selectedLang}`;
       console.log('Fetching:', apiUrl);
       const response = await fetch(apiUrl, {
         method: 'GET',
         headers: {
           'x-api-key': this.supadataApiKey,
-          'Content-Type': 'application/json',
-        },
+          'Content-Type': 'application/json'
+        }
       });
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -8230,12 +7574,12 @@ class AdvancedMusicPlayer {
       cs: 'Czech',
       ro: 'Romanian',
       hu: 'Hungarian',
-      el: 'Greek',
+      el: 'Greek'
     };
     const newSelect = langSelect.cloneNode(false);
     langSelect.parentNode.replaceChild(newSelect, langSelect);
     newSelect.innerHTML = '';
-    langs.forEach((code) => {
+    langs.forEach(code => {
       const option = document.createElement('option');
       option.value = code;
       option.textContent = langNames[code] || code.toUpperCase();
@@ -8244,7 +7588,7 @@ class AdvancedMusicPlayer {
       }
       newSelect.appendChild(option);
     });
-    newSelect.addEventListener('change', (e) => {
+    newSelect.addEventListener('change', e => {
       console.log('Language changed to:', e.target.value);
       this.autoFetchTranscript();
     });
@@ -8256,15 +7600,11 @@ class AdvancedMusicPlayer {
         newBtn.addEventListener('click', () => {
           newSelect.focus();
           newSelect.size = newSelect.options.length;
-          newSelect.addEventListener(
-            'blur',
-            () => {
-              newSelect.size = 1;
-            },
-            {
-              once: true,
-            }
-          );
+          newSelect.addEventListener('blur', () => {
+            newSelect.size = 1;
+          }, {
+            once: true
+          });
         });
       } else {
         switchBtn.style.display = 'none';
@@ -8273,7 +7613,7 @@ class AdvancedMusicPlayer {
   }
   addTimestampsToPlainText(plainText) {
     try {
-      const lines = plainText.split('\n').filter((line) => line.trim());
+      const lines = plainText.split('\n').filter(line => line.trim());
       const formattedLines = [];
       let currentTime = 0;
       const secondsPerLine = 3.5;
@@ -8319,19 +7659,13 @@ class AdvancedMusicPlayer {
     text = text.toLowerCase();
     text = text.charAt(0).toUpperCase() + text.slice(1);
     text = text.replace(/\bi\b/g, 'I');
-    text = text.replace(
-      /([.!?]\s+)([a-z])/g,
-      (match, punctuation, letter) => punctuation + letter.toUpperCase()
-    );
+    text = text.replace(/([.!?]\s+)([a-z])/g, (match, punctuation, letter) => punctuation + letter.toUpperCase());
     return text;
   }
-
   isMobileConnection() {
     if ('connection' in navigator) {
       const connection = navigator.connection;
-      return (
-        ['slow-2g', '2g', '3g'].includes(connection.effectiveType) || connection.saveData === true
-      );
+      return [ 'slow-2g', '2g', '3g' ].includes(connection.effectiveType) || connection.saveData === true;
     }
     return window.innerWidth <= 768;
   }
@@ -8416,7 +7750,6 @@ class AdvancedMusicPlayer {
       hintEl.style.display = 'none';
     }
   }
-
   saveQueue() {
     try {
       sessionStorage.setItem('musicPlayerQueue', JSON.stringify(this.songQueue));
@@ -8433,13 +7766,7 @@ class AdvancedMusicPlayer {
   }
   addToQueue(song, repeat = 1) {
     const last = this.songQueue[this.songQueue.length - 1];
-    if (
-      last &&
-      last.type === 'song' &&
-      last.videoId === song.videoId &&
-      last.repeat !== -1 &&
-      repeat !== -1
-    ) {
+    if (last && last.type === 'song' && last.videoId === song.videoId && last.repeat !== -1 && repeat !== -1) {
       last.repeat = Math.min(99, last.repeat + repeat);
       this.saveQueue();
       this.updateQueueVisualIndicators();
@@ -8453,7 +7780,7 @@ class AdvancedMusicPlayer {
       ...song,
       type: 'song',
       repeat: repeat === -1 ? -1 : Math.max(1, repeat),
-      queueId: `${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      queueId: `${Date.now()}_${Math.random().toString(36).slice(2, 6)}`
     });
     if (repeat === -1) {
       this.showQueueNotification(`Added "${song.name}" (∞ loop on)`);
@@ -8470,7 +7797,7 @@ class AdvancedMusicPlayer {
     this.songQueue.push({
       type: 'stop',
       name: '— Stop —',
-      queueId: `stop_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      queueId: `stop_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`
     });
     this.saveQueue();
     this.updateQueueVisualIndicators();
@@ -8482,7 +7809,7 @@ class AdvancedMusicPlayer {
     this.songQueue.push({
       type: 'loop',
       name: '— Loop Forever —',
-      queueId: `loop_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      queueId: `loop_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`
     });
     this.saveQueue();
     this.updateQueueVisualIndicators();
@@ -8491,7 +7818,7 @@ class AdvancedMusicPlayer {
     this._queueRefreshPanel();
   }
   removeFromQueue(queueId) {
-    const idx = this.songQueue.findIndex((b) => b.queueId === queueId);
+    const idx = this.songQueue.findIndex(b => b.queueId === queueId);
     if (idx === -1) {
       return;
     }
@@ -8512,13 +7839,12 @@ class AdvancedMusicPlayer {
     this._queueRefreshPanel();
   }
   shuffleQueue() {
-    const stops = [],
-      songs = [];
+    const stops = [], songs = [];
     this.songQueue.forEach((b, i) => {
       if (b.type === 'stop') {
         stops.push({
           block: b,
-          originalIdx: i,
+          originalIdx: i
         });
       } else {
         songs.push(b);
@@ -8526,10 +7852,10 @@ class AdvancedMusicPlayer {
     });
     for (let i = songs.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [songs[i], songs[j]] = [songs[j], songs[i]];
+      [songs[i], songs[j]] = [ songs[j], songs[i] ];
     }
-    const result = [...songs];
-    stops.forEach(({ block: block, originalIdx: originalIdx }) => {
+    const result = [ ...songs ];
+    stops.forEach(({block: block, originalIdx: originalIdx}) => {
       result.splice(Math.min(originalIdx, result.length), 0, block);
     });
     this.songQueue = result;
@@ -8540,14 +7866,14 @@ class AdvancedMusicPlayer {
     this._queueRefreshPanel();
   }
   duplicateQueueBlock(queueId) {
-    const idx = this.songQueue.findIndex((b) => b.queueId === queueId);
+    const idx = this.songQueue.findIndex(b => b.queueId === queueId);
     if (idx === -1) {
       return;
     }
     const orig = this.songQueue[idx];
     const dupe = {
       ...orig,
-      queueId: `${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      queueId: `${Date.now()}_${Math.random().toString(36).slice(2, 6)}`
     };
     this.songQueue.splice(idx + 1, 0, dupe);
     this.saveQueue();
@@ -8608,9 +7934,9 @@ class AdvancedMusicPlayer {
       this._debouncedSaveQueue();
       this.updateQueueVisualIndicators();
       this._queueRefreshPanel();
-      const songInLibrary = this.songLibrary.find((s) => s.videoId === block.videoId);
+      const songInLibrary = this.songLibrary.find(s => s.videoId === block.videoId);
       if (songInLibrary) {
-        this.currentSongIndex = this.songLibrary.findIndex((s) => s.id === songInLibrary.id);
+        this.currentSongIndex = this.songLibrary.findIndex(s => s.id === songInLibrary.id);
       }
       this.currentPlaylist = null;
       this.currentSong = block;
@@ -8634,10 +7960,10 @@ class AdvancedMusicPlayer {
     this.updatePlayerUI();
   }
   updateQueueVisualIndicators() {
-    document.querySelectorAll('.queue-indicator').forEach((el) => el.remove());
+    document.querySelectorAll('.queue-indicator').forEach(el => el.remove());
     const seen = new Map();
     let pos = 0;
-    this.songQueue.forEach((block) => {
+    this.songQueue.forEach(block => {
       if (block.type === 'stop') {
         return;
       }
@@ -8646,11 +7972,8 @@ class AdvancedMusicPlayer {
       }
     });
     seen.forEach((position, videoId) => {
-      const songElements = [
-        ...document.querySelectorAll(`[data-video-id="${videoId}"]`),
-        ...document.querySelectorAll(`[onclick*="'${videoId}'"]`),
-      ];
-      songElements.forEach((element) => {
+      const songElements = [ ...document.querySelectorAll(`[data-video-id="${videoId}"]`), ...document.querySelectorAll(`[onclick*="'${videoId}'"]`) ];
+      songElements.forEach(element => {
         if (element.querySelector('.queue-indicator')) {
           return;
         }
@@ -8676,7 +7999,7 @@ class AdvancedMusicPlayer {
     const hide = () => {
       n.classList.remove('queue-notification--in');
       n.addEventListener('transitionend', () => n.remove(), {
-        once: true,
+        once: true
       });
     };
     this._queueNotifTimer = setTimeout(hide, 2200);
@@ -8701,10 +8024,7 @@ class AdvancedMusicPlayer {
     backdrop.appendChild(panel);
     document.body.appendChild(backdrop);
     this._queueRenderRows();
-    this._queueBindSearch(
-      document.getElementById('qv2-search-input'),
-      document.getElementById('qv2-dropdown')
-    );
+    this._queueBindSearch(document.getElementById('qv2-search-input'), document.getElementById('qv2-dropdown'));
     document.getElementById('qv2-shuffle').addEventListener('click', () => this.shuffleQueue());
     document.getElementById('qv2-add-stop').addEventListener('click', () => this.addStopBlock());
     document.getElementById('qv2-add-loop').addEventListener('click', () => this.addLoopBlock());
@@ -8715,12 +8035,12 @@ class AdvancedMusicPlayer {
       this.clearQueue();
     });
     document.getElementById('qv2-close').addEventListener('click', () => backdrop.remove());
-    backdrop.addEventListener('click', (e) => {
+    backdrop.addEventListener('click', e => {
       if (e.target === backdrop) {
         backdrop.remove();
       }
     });
-    const onKey = (e) => {
+    const onKey = e => {
       if (e.key === 'Escape') {
         backdrop.remove();
         document.removeEventListener('keydown', onKey);
@@ -8728,7 +8048,7 @@ class AdvancedMusicPlayer {
     };
     document.addEventListener('keydown', onKey);
     backdrop.addEventListener('remove', () => document.removeEventListener('keydown', onKey), {
-      once: true,
+      once: true
     });
     requestAnimationFrame(() => backdrop.classList.add('qv2-backdrop--in'));
   }
@@ -8799,8 +8119,8 @@ class AdvancedMusicPlayer {
         }
         this.saveQueue();
       });
-      input.addEventListener('keydown', (e) => {
-        const allowed = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter'];
+      input.addEventListener('keydown', e => {
+        const allowed = [ 'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter' ];
         if (allowed.includes(e.key)) {
           return;
         }
@@ -8828,7 +8148,7 @@ class AdvancedMusicPlayer {
         this.saveQueue();
       });
     }
-    row.addEventListener('click', (e) => {
+    row.addEventListener('click', e => {
       const btn = e.target.closest('[data-action]');
       if (!btn) {
         return;
@@ -8845,11 +8165,11 @@ class AdvancedMusicPlayer {
   }
   _queueBindDrag(container) {
     let dragSrcQueueId = null;
-    const getRow = (e) => {
+    const getRow = e => {
       const row = e.target.closest('.qv2-row');
       return row && container.contains(row) ? row : null;
     };
-    const onDragStart = (e) => {
+    const onDragStart = e => {
       const row = getRow(e);
       if (!row) {
         return;
@@ -8859,19 +8179,17 @@ class AdvancedMusicPlayer {
       e.dataTransfer.effectAllowed = 'move';
       requestAnimationFrame(() => row.classList.add('qv2-row--dragging'));
     };
-    const onDragOver = (e) => {
+    const onDragOver = e => {
       e.preventDefault();
       e.dataTransfer.dropEffect = 'move';
       const row = getRow(e);
       if (!row || row.dataset.queueId === dragSrcQueueId) {
         return;
       }
-      container
-        .querySelectorAll('.qv2-row--over')
-        .forEach((r) => r.classList.remove('qv2-row--over'));
+      container.querySelectorAll('.qv2-row--over').forEach(r => r.classList.remove('qv2-row--over'));
       row.classList.add('qv2-row--over');
     };
-    const onDrop = (e) => {
+    const onDrop = e => {
       e.preventDefault();
       const row = getRow(e);
       if (!row || !dragSrcQueueId) {
@@ -8881,8 +8199,8 @@ class AdvancedMusicPlayer {
       if (toQueueId === dragSrcQueueId) {
         return;
       }
-      const fromIdx = this.songQueue.findIndex((b) => b.queueId === dragSrcQueueId);
-      const toIdx = this.songQueue.findIndex((b) => b.queueId === toQueueId);
+      const fromIdx = this.songQueue.findIndex(b => b.queueId === dragSrcQueueId);
+      const toIdx = this.songQueue.findIndex(b => b.queueId === toQueueId);
       if (fromIdx === -1 || toIdx === -1) {
         return;
       }
@@ -8891,7 +8209,7 @@ class AdvancedMusicPlayer {
       dragSrcQueueId = null;
     };
     const onDragEnd = () => {
-      container.querySelectorAll('.qv2-row--dragging, .qv2-row--over').forEach((r) => {
+      container.querySelectorAll('.qv2-row--dragging, .qv2-row--over').forEach(r => {
         r.classList.remove('qv2-row--dragging', 'qv2-row--over');
       });
       dragSrcQueueId = null;
@@ -8906,19 +8224,13 @@ class AdvancedMusicPlayer {
       return;
     }
     let _debounce = null;
-    const renderResults = (term) => {
+    const renderResults = term => {
       if (!term) {
         dropdown.hidden = true;
         return;
       }
       const lower = term.toLowerCase();
-      const results = this.songLibrary
-        .filter(
-          (s) =>
-            s.name.toLowerCase().includes(lower) ||
-            (s.author && s.author.toLowerCase().includes(lower))
-        )
-        .slice(0, 8);
+      const results = this.songLibrary.filter(s => s.name.toLowerCase().includes(lower) || s.author && s.author.toLowerCase().includes(lower)).slice(0, 8);
       if (!results.length) {
         dropdown.hidden = true;
         return;
@@ -8933,7 +8245,7 @@ class AdvancedMusicPlayer {
         }
         item.dataset.idx = i;
         item.innerHTML = `\n\t                <div class="qv2-result-info">\n\t                    <span class="qv2-result-name">${this.escapeHtml(song.name)}</span>\n\t                    ${song.author ? `<span class="qv2-result-author">${this.escapeHtml(song.author)}</span>` : ''}\n\t                </div>`;
-        item.addEventListener('mousedown', (e) => {
+        item.addEventListener('mousedown', e => {
           e.preventDefault();
           this.addToQueue(song, 1);
           input.value = '';
@@ -8948,13 +8260,13 @@ class AdvancedMusicPlayer {
       clearTimeout(_debounce);
       _debounce = setTimeout(() => renderResults(input.value.trim()), 120);
     });
-    input.addEventListener('keydown', (e) => {
+    input.addEventListener('keydown', e => {
       if (e.key === 'Escape') {
         dropdown.hidden = true;
         input.value = '';
         return;
       }
-      const items = [...dropdown.querySelectorAll('.qv2-result')];
+      const items = [ ...dropdown.querySelectorAll('.qv2-result') ];
       const focused = dropdown.querySelector('.qv2-result--focused');
       let idx = focused ? items.indexOf(focused) : 0;
       if (e.key === 'Enter') {
@@ -8974,17 +8286,13 @@ class AdvancedMusicPlayer {
         items[idx].classList.add('qv2-result--focused');
       }
     });
-    document.addEventListener(
-      'mousedown',
-      (e) => {
-        if (!input.contains(e.target) && !dropdown.contains(e.target)) {
-          dropdown.hidden = true;
-        }
-      },
-      {
-        passive: true,
+    document.addEventListener('mousedown', e => {
+      if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.hidden = true;
       }
-    );
+    }, {
+      passive: true
+    });
   }
   addQueueStyles() {
     if (document.getElementById('qv2-styles')) {
@@ -8995,7 +8303,6 @@ class AdvancedMusicPlayer {
     style.textContent = `\n\t        .queue-notification {\n\t            position: fixed;\n\t            top: 20px;\n\t            right: 20px;\n\t            background: var(--accent-color);\n\t            color: #fff;\n\t            padding: 9px 16px;\n\t            border-radius: 6px;\n\t            font-size: 13px;\n\t            z-index: 9999;\n\t            opacity: 0;\n\t            transform: translateX(12px);\n\t            transition: opacity .22s ease, transform .22s ease;\n\t            pointer-events: none;\n\t            box-shadow: 0 4px 14px rgba(0,0,0,.25);\n\t        }\n\t        .queue-notification--in {\n\t            opacity: 1;\n\t            transform: translateX(0);\n\t        }\n\t    `;
     document.head.appendChild(style);
   }
-
   createWebEmbedOverlay() {
     if (this.webEmbedOverlay) {
       return;
@@ -9008,7 +8315,7 @@ class AdvancedMusicPlayer {
     exitBtn.innerHTML = '×';
     exitBtn.style.cssText = `\n    position: absolute;\n    top: 10px;\n    right: 10px;\n    width: 30px;\n    height: 30px;\n    background: rgba(0,0,0,0.7);\n    color: white;\n    border: none;\n    border-radius: 50%;\n    font-size: 18px;\n    cursor: pointer;\n    z-index: 10000;\n    font-weight: bold;\n  `;
     this.webEmbedExitHandler = () => this.toggleWebEmbedOverlay();
-    this.webEmbedKeyHandler = (e) => {
+    this.webEmbedKeyHandler = e => {
       if (e.key === 'Escape') {
         e.preventDefault();
         this.toggleWebEmbedOverlay();
@@ -9082,9 +8389,9 @@ class AdvancedMusicPlayer {
     }
     const config = {
       childList: true,
-      subtree: true,
+      subtree: true
     };
-    this.titleObserver = new MutationObserver((mutationsList) => {
+    this.titleObserver = new MutationObserver(mutationsList => {
       if (this.priorityModeActive && document.title !== priorityTitle) {
         document.title = priorityTitle;
       }
@@ -9121,11 +8428,7 @@ class AdvancedMusicPlayer {
     const defaultTitle = 'Music';
     const MAX_TITLE_LENGTH = 60;
     const SCROLL_THRESHOLD = 70;
-    if (
-      !this.isPlaying ||
-      !this.elements.currentSongName.textContent ||
-      this.elements.currentSongName.textContent === 'No Song Playing'
-    ) {
+    if (!this.isPlaying || !this.elements.currentSongName.textContent || this.elements.currentSongName.textContent === 'No Song Playing') {
       document.title = defaultTitle;
       if (this.titleScrollInterval) {
         clearInterval(this.titleScrollInterval);
@@ -9142,24 +8445,19 @@ class AdvancedMusicPlayer {
     if (fullTitle.length <= MAX_TITLE_LENGTH) {
       document.title = fullTitle;
     } else if (songName.length <= MAX_TITLE_LENGTH + 5) {
-      document.title =
-        songName.length <= MAX_TITLE_LENGTH
-          ? songName
-          : songName.substring(0, MAX_TITLE_LENGTH - 3) + '...';
+      document.title = songName.length <= MAX_TITLE_LENGTH ? songName : songName.substring(0, MAX_TITLE_LENGTH - 3) + '...';
     } else if (songName.length > SCROLL_THRESHOLD) {
       let currentPosition = 0;
       const scrollTitle = `${songName} • `;
       this.titleScrollInterval = setInterval(() => {
         currentPosition = (currentPosition + 1) % scrollTitle.length;
-        const scrolledTitle =
-          scrollTitle.substring(currentPosition) + scrollTitle.substring(0, currentPosition);
+        const scrolledTitle = scrollTitle.substring(currentPosition) + scrollTitle.substring(0, currentPosition);
         document.title = scrolledTitle;
       }, 500);
     } else {
       document.title = songName.substring(0, MAX_TITLE_LENGTH - 3) + '...';
     }
   }
-
   setSpecificTimeTimer(timeString) {
     const [hours, minutes] = timeString.split(':').map(Number);
     const now = new Date();
@@ -9185,7 +8483,7 @@ class AdvancedMusicPlayer {
     if (specificEndTime) {
       const formattedTime = this.timerEndTime.toLocaleTimeString([], {
         hour: '2-digit',
-        minute: '2-digit',
+        minute: '2-digit'
       });
       timerStatus.textContent = `${actionText} at ${formattedTime} (in ${minutes.toFixed(2)} minutes)`;
       const timerDisplay = document.getElementById('timerDisplay');
@@ -9250,8 +8548,7 @@ class AdvancedMusicPlayer {
     } catch (error) {
       console.log('Navigation redirect failed:', error);
     }
-    document.body.innerHTML =
-      '<div style="text-align: center; padding: 50px; background: #1a1a1a; color: #fff; position: fixed; top: 0; left: 0; right: 0; bottom: 0;"><h1>Session Ended</h1><p>Your music session has ended. The app has been closed.</p><button onclick="window.location.reload()" style="padding: 10px 20px; margin-top: 20px; background: #3498db; border: none; color: white; border-radius: 4px; cursor: pointer;">Restart App</button></div>';
+    document.body.innerHTML = '<div style="text-align: center; padding: 50px; background: #1a1a1a; color: #fff; position: fixed; top: 0; left: 0; right: 0; bottom: 0;"><h1>Session Ended</h1><p>Your music session has ended. The app has been closed.</p><button onclick="window.location.reload()" style="padding: 10px 20px; margin-top: 20px; background: #3498db; border: none; color: white; border-radius: 4px; cursor: pointer;">Restart App</button></div>';
     const scripts = document.getElementsByTagName('script');
     for (let i = scripts.length - 1; i >= 0; i--) {
       if (scripts[i].parentNode) {
@@ -9278,7 +8575,7 @@ class AdvancedMusicPlayer {
       const timeLeft = this.timerEndTime - now;
       if (timeLeft > 0) {
         const minutes = Math.floor(timeLeft / 6e4);
-        const seconds = Math.floor((timeLeft % 6e4) / 1e3);
+        const seconds = Math.floor(timeLeft % 6e4 / 1e3);
         const timerStatus = document.getElementById('timerStatus');
         const actionText = this.timerAction === 'stopMusic' ? 'Music will stop' : 'App will close';
         timerStatus.textContent = `${actionText} in ${minutes}m ${seconds}s`;
@@ -9308,15 +8605,15 @@ class AdvancedMusicPlayer {
     });
     document.getElementById('stopMusicAction').addEventListener('click', () => {
       this.timerAction = 'stopMusic';
-      document.querySelectorAll('.action-btn').forEach((btn) => btn.classList.remove('active'));
+      document.querySelectorAll('.action-btn').forEach(btn => btn.classList.remove('active'));
       document.getElementById('stopMusicAction').classList.add('active');
     });
     document.getElementById('closeAppAction').addEventListener('click', () => {
       this.timerAction = 'closeApp';
-      document.querySelectorAll('.action-btn').forEach((btn) => btn.classList.remove('active'));
+      document.querySelectorAll('.action-btn').forEach(btn => btn.classList.remove('active'));
       document.getElementById('closeAppAction').classList.add('active');
     });
-    document.querySelectorAll('.timer-options button').forEach((button) => {
+    document.querySelectorAll('.timer-options button').forEach(button => {
       button.addEventListener('click', () => {
         const minutes = parseFloat(button.getAttribute('data-time'));
         this.setAppTimer(minutes);
@@ -9337,13 +8634,12 @@ class AdvancedMusicPlayer {
         this.setSpecificTimeTimer(timeInput);
       }
     });
-    window.addEventListener('click', (event) => {
+    window.addEventListener('click', event => {
       if (event.target === document.getElementById('timerModal')) {
         document.getElementById('timerModal').style.display = 'none';
       }
     });
   }
-
   adjustLayoutTogglePosition() {
     const playlistSidebar = document.getElementById('currentPlaylistSidebar');
     if (playlistSidebar.classList.contains('open')) {
@@ -9391,11 +8687,8 @@ class AdvancedMusicPlayer {
     this.adjustLayoutTogglePosition();
   }
   toggleControlBar() {
-    const controlBarContainer = document
-      .querySelector('.player-controls')
-      .closest('.player-container');
-    const targetElement =
-      controlBarContainer || document.querySelector('.player-controls').parentElement;
+    const controlBarContainer = document.querySelector('.player-controls').closest('.player-container');
+    const targetElement = controlBarContainer || document.querySelector('.player-controls').parentElement;
     const layoutToggleBtn = document.querySelector('.layout-toggle-button');
     const isVisible = targetElement.style.visibility !== 'hidden';
     const leftBanner = document.querySelector('.left-advertisement-banner');
@@ -9455,50 +8748,38 @@ class AdvancedMusicPlayer {
       this.renderPlaylistSidebar();
     }
   }
-
   exportLibrary() {
     let exportText = '';
-    this.songLibrary.forEach((song) => {
+    this.songLibrary.forEach(song => {
       const author = song.author ? `, ${song.author}` : '';
       exportText += `${song.name}, https://www.youtube.com/watch?v=${song.videoId}${author}\n`;
     });
-    this.copyToClipboardWithFallback(
-      exportText,
-      'Library exported to clipboard successfully!',
-      'Export Library'
-    );
+    this.copyToClipboardWithFallback(exportText, 'Library exported to clipboard successfully!', 'Export Library');
   }
   exportPlaylist(playlistId) {
-    const playlist = this.playlists.find((p) => p.id === playlistId);
+    const playlist = this.playlists.find(p => p.id === playlistId);
     if (!playlist) {
       alert('Playlist not found');
       return;
     }
     let exportText = `${playlist.name}{\n`;
-    playlist.songs.forEach((playlistSong) => {
-      const libraryMatch = this.songLibrary.find((s) => s.videoId === playlistSong.videoId);
+    playlist.songs.forEach(playlistSong => {
+      const libraryMatch = this.songLibrary.find(s => s.videoId === playlistSong.videoId);
       const songName = libraryMatch ? libraryMatch.name : playlistSong.name;
       const author = libraryMatch ? libraryMatch.author : playlistSong.author || '';
       const authorText = author ? `, ${author}` : '';
       exportText += `    ${songName}, https://www.youtube.com/watch?v=${playlistSong.videoId}${authorText}\n`;
     });
     exportText += '}\n';
-    this.copyToClipboardWithFallback(
-      exportText,
-      `"${playlist.name}" playlist exported to clipboard successfully!`,
-      'Export Playlist'
-    );
+    this.copyToClipboardWithFallback(exportText, `"${playlist.name}" playlist exported to clipboard successfully!`, 'Export Playlist');
   }
   copyToClipboardWithFallback(text, successMessage, modalTitle) {
-    navigator.clipboard
-      .writeText(text)
-      .then(() => {
-        alert(successMessage);
-      })
-      .catch((err) => {
-        console.error('Failed to copy text: ', err);
-        this.showExportModal(text, modalTitle);
-      });
+    navigator.clipboard.writeText(text).then(() => {
+      alert(successMessage);
+    }).catch(err => {
+      console.error('Failed to copy text: ', err);
+      this.showExportModal(text, modalTitle);
+    });
   }
   showExportModal(exportText, title = 'Export') {
     const modal = document.createElement('div');
@@ -9601,8 +8882,8 @@ class AdvancedMusicPlayer {
     heading.classList.add('modal-heading');
     const playlistContainer = document.createElement('div');
     playlistContainer.classList.add('playlist-selection-container');
-    const sortedPlaylists = [...this.playlists].sort((a, b) => a.name.localeCompare(b.name));
-    sortedPlaylists.forEach((playlist) => {
+    const sortedPlaylists = [ ...this.playlists ].sort((a, b) => a.name.localeCompare(b.name));
+    sortedPlaylists.forEach(playlist => {
       const playlistButton = document.createElement('button');
       playlistButton.classList.add('playlist-selection-btn');
       const playlistName = document.createElement('div');
@@ -9627,15 +8908,15 @@ class AdvancedMusicPlayer {
   }
   exportSongsWithAllPlaylists() {
     let exportText = '';
-    this.songLibrary.forEach((song) => {
+    this.songLibrary.forEach(song => {
       const author = song.author ? `, ${song.author}` : '';
       exportText += `${song.name}, https://www.youtube.com/watch?v=${song.videoId}${author}\n`;
     });
     exportText += '\n';
-    this.playlists.forEach((playlist) => {
+    this.playlists.forEach(playlist => {
       exportText += `${playlist.name}{\n`;
-      playlist.songs.forEach((playlistSong) => {
-        const libraryMatch = this.songLibrary.find((s) => s.videoId === playlistSong.videoId);
+      playlist.songs.forEach(playlistSong => {
+        const libraryMatch = this.songLibrary.find(s => s.videoId === playlistSong.videoId);
         const songName = libraryMatch ? libraryMatch.name : playlistSong.name;
         const author = libraryMatch ? libraryMatch.author : playlistSong.author || '';
         const authorText = author ? `, ${author}` : '';
@@ -9643,23 +8924,19 @@ class AdvancedMusicPlayer {
       });
       exportText += '}\n';
     });
-    this.copyToClipboardWithFallback(
-      exportText,
-      'Songs and all playlists exported to clipboard successfully!',
-      'Export Songs with All Playlists'
-    );
+    this.copyToClipboardWithFallback(exportText, 'Songs and all playlists exported to clipboard successfully!', 'Export Songs with All Playlists');
   }
   importLibrary(importText) {
     if (!importText.trim()) {
       alert('Please enter songs to import.');
       return;
     }
-    const lines = importText.split('\n').filter((line) => line.trim());
+    const lines = importText.split('\n').filter(line => line.trim());
     const importedSongs = [];
     const failedImports = [];
     const duplicates = [];
-    const existingIds = new Set(this.songLibrary.map((song) => song.id));
-    const existingVideoIds = new Set(this.songLibrary.map((song) => song.videoId));
+    const existingIds = new Set(this.songLibrary.map(song => song.id));
+    const existingVideoIds = new Set(this.songLibrary.map(song => song.videoId));
     const currentImportVideoIds = new Set();
     const playlists = [];
     let currentPlaylist = null;
@@ -9672,11 +8949,9 @@ class AdvancedMusicPlayer {
       existingIds.add(newId);
       return newId;
     };
-    const findExistingSongByVideoId = (videoId) =>
-      this.songLibrary.find((song) => song.videoId === videoId);
-    const findImportedSongByVideoId = (videoId) =>
-      importedSongs.find((song) => song.videoId === videoId);
-    const extractVideoId = (url) => {
+    const findExistingSongByVideoId = videoId => this.songLibrary.find(song => song.videoId === videoId);
+    const findImportedSongByVideoId = videoId => importedSongs.find(song => song.videoId === videoId);
+    const extractVideoId = url => {
       if (!url) {
         return null;
       }
@@ -9701,13 +8976,13 @@ class AdvancedMusicPlayer {
     if (isPlaylistFormat) {
       const playlistRegex = /^(.+?)\{$/;
       const closeBraceRegex = /^\}$/;
-      lines.forEach((line) => {
+      lines.forEach(line => {
         const playlistMatch = line.match(playlistRegex);
         if (playlistMatch) {
           const playlistName = playlistMatch[1].trim();
           currentPlaylist = {
             name: playlistName,
-            songs: [],
+            songs: []
           };
           playlists.push(currentPlaylist);
         } else if (closeBraceRegex.test(line)) {
@@ -9719,7 +8994,7 @@ class AdvancedMusicPlayer {
               failedImports.push(`${line} (invalid format)`);
               return;
             }
-            const { songName: songName, songUrl: songUrl, author: author } = parsed;
+            const {songName: songName, songUrl: songUrl, author: author} = parsed;
             if (!songUrl.includes('youtube.com') && !songUrl.includes('youtu.be')) {
               failedImports.push(`${line} (not a YouTube URL)`);
               return;
@@ -9737,7 +9012,7 @@ class AdvancedMusicPlayer {
                 videoId: videoId,
                 name: existingSong.name,
                 author: existingSong.author || '',
-                entryId: Date.now() + Math.random() * 1e4,
+                entryId: Date.now() + Math.random() * 1e4
               });
             } else if (importedSong) {
               duplicates.push(line);
@@ -9745,7 +9020,7 @@ class AdvancedMusicPlayer {
                 videoId: videoId,
                 name: importedSong.name,
                 author: importedSong.author || '',
-                entryId: Date.now() + Math.random() * 1e4,
+                entryId: Date.now() + Math.random() * 1e4
               });
             } else {
               const newSong = {
@@ -9755,7 +9030,7 @@ class AdvancedMusicPlayer {
                 videoId: videoId,
                 favorite: false,
                 lyrics: '',
-                addedOn: new Date().toISOString(),
+                addedOn: (new Date()).toISOString()
               };
               importedSongs.push(newSong);
               existingVideoIds.add(videoId);
@@ -9764,7 +9039,7 @@ class AdvancedMusicPlayer {
                 videoId: videoId,
                 name: songName,
                 author: author || '',
-                entryId: Date.now() + Math.random() * 1e4,
+                entryId: Date.now() + Math.random() * 1e4
               });
             }
           } catch (error) {
@@ -9774,14 +9049,14 @@ class AdvancedMusicPlayer {
         }
       });
     } else {
-      lines.forEach((line) => {
+      lines.forEach(line => {
         try {
           const parsed = this.parseSongLine(line);
           if (!parsed) {
             failedImports.push(`${line} (invalid format)`);
             return;
           }
-          const { songName: songName, songUrl: songUrl, author: author } = parsed;
+          const {songName: songName, songUrl: songUrl, author: author} = parsed;
           if (!songUrl.includes('youtube.com') && !songUrl.includes('youtu.be')) {
             failedImports.push(`${line} (not a YouTube URL)`);
             return;
@@ -9802,7 +9077,7 @@ class AdvancedMusicPlayer {
             videoId: videoId,
             favorite: false,
             lyrics: '',
-            addedOn: new Date().toISOString(),
+            addedOn: (new Date()).toISOString()
           };
           importedSongs.push(newSong);
           existingVideoIds.add(videoId);
@@ -9820,36 +9095,34 @@ class AdvancedMusicPlayer {
     if (playlists.length > 0) {
       processPromises.push(this.createImportedPlaylists(playlists));
     }
-    Promise.all(processPromises)
-      .then(() => {
-        this.renderSongLibrary();
-        if (typeof this.updatePlaylistSelection === 'function') {
-          this.updatePlaylistSelection();
-        }
-        this.renderPlaylists();
-        let message = '';
-        if (importedSongs.length > 0) {
-          message += `Successfully imported ${importedSongs.length} new songs. `;
-        }
-        if (playlists.length > 0) {
-          message += `Created ${playlists.length} playlists. `;
-        }
-        if (duplicates.length > 0) {
-          message += `Skipped ${duplicates.length} duplicate songs. `;
-        }
-        if (failedImports.length > 0) {
-          message += `Failed to import ${failedImports.length} songs.`;
-          console.log('Failed imports:', failedImports);
-        }
-        if (!message) {
-          message = 'No new content was imported.';
-        }
-        alert(message);
-      })
-      .catch((error) => {
-        console.error('Error processing imports:', error);
-        alert('An error occurred while importing. Please check the console for details.');
-      });
+    Promise.all(processPromises).then(() => {
+      this.renderSongLibrary();
+      if (typeof this.updatePlaylistSelection === 'function') {
+        this.updatePlaylistSelection();
+      }
+      this.renderPlaylists();
+      let message = '';
+      if (importedSongs.length > 0) {
+        message += `Successfully imported ${importedSongs.length} new songs. `;
+      }
+      if (playlists.length > 0) {
+        message += `Created ${playlists.length} playlists. `;
+      }
+      if (duplicates.length > 0) {
+        message += `Skipped ${duplicates.length} duplicate songs. `;
+      }
+      if (failedImports.length > 0) {
+        message += `Failed to import ${failedImports.length} songs.`;
+        console.log('Failed imports:', failedImports);
+      }
+      if (!message) {
+        message = 'No new content was imported.';
+      }
+      alert(message);
+    }).catch(error => {
+      console.error('Error processing imports:', error);
+      alert('An error occurred while importing. Please check the console for details.');
+    });
   }
   parseSongLine(line) {
     line = line.trim();
@@ -9863,7 +9136,7 @@ class AdvancedMusicPlayer {
     let songName = '';
     let songUrl = '';
     let author = '';
-    const cleanParts = parts.map((part) => part.trim());
+    const cleanParts = parts.map(part => part.trim());
     if (cleanParts.length === 2) {
       songName = cleanParts[0];
       songUrl = cleanParts[1];
@@ -9896,7 +9169,7 @@ class AdvancedMusicPlayer {
     return {
       songName: songName,
       songUrl: songUrl,
-      author: author,
+      author: author
     };
   }
   createImportedPlaylists(playlists) {
@@ -9905,15 +9178,11 @@ class AdvancedMusicPlayer {
         reject(new Error('Database not initialized'));
         return;
       }
-      playlists.forEach((playlist) => {
-        const existingPlaylist = this.playlists.find(
-          (p) => p.name.toLowerCase() === playlist.name.toLowerCase()
-        );
+      playlists.forEach(playlist => {
+        const existingPlaylist = this.playlists.find(p => p.name.toLowerCase() === playlist.name.toLowerCase());
         if (existingPlaylist) {
-          playlist.songs.forEach((newSong) => {
-            const isDuplicate = existingPlaylist.songs.some(
-              (existingSong) => existingSong.videoId === newSong.videoId
-            );
+          playlist.songs.forEach(newSong => {
+            const isDuplicate = existingPlaylist.songs.some(existingSong => existingSong.videoId === newSong.videoId);
             if (!isDuplicate) {
               existingPlaylist.songs.push(newSong);
             }
@@ -9923,17 +9192,15 @@ class AdvancedMusicPlayer {
             id: Date.now() + Math.floor(Math.random() * 1e4),
             name: playlist.name,
             songs: playlist.songs,
-            position: this.playlists.length,
+            position: this.playlists.length
           };
           this.playlists.push(newPlaylist);
         }
       });
-      this.savePlaylists()
-        .then(() => resolve())
-        .catch((error) => {
-          console.error('Error saving imported playlists:', error);
-          reject(error);
-        });
+      this.savePlaylists().then(() => resolve()).catch(error => {
+        console.error('Error saving imported playlists:', error);
+        reject(error);
+      });
     });
   }
   addImportedSongsOneByOne(importedSongs) {
@@ -9942,11 +9209,11 @@ class AdvancedMusicPlayer {
         reject(new Error('Database not initialized'));
         return;
       }
-      this.songLibrary = [...this.songLibrary, ...importedSongs];
-      const transaction = this.db.transaction(['songLibrary'], 'readwrite');
+      this.songLibrary = [ ...this.songLibrary, ...importedSongs ];
+      const transaction = this.db.transaction([ 'songLibrary' ], 'readwrite');
       const store = transaction.objectStore('songLibrary');
       let successCount = 0;
-      importedSongs.forEach((song) => {
+      importedSongs.forEach(song => {
         try {
           const getRequest = store.get(song.id);
           getRequest.onsuccess = () => {
@@ -9957,7 +9224,7 @@ class AdvancedMusicPlayer {
             addRequest.onsuccess = () => {
               successCount++;
             };
-            addRequest.onerror = (e) => {
+            addRequest.onerror = e => {
               console.error('Failed to add song:', e.target.error);
             };
           };
@@ -9968,7 +9235,7 @@ class AdvancedMusicPlayer {
       transaction.oncomplete = () => {
         resolve();
       };
-      transaction.onerror = (event) => {
+      transaction.onerror = event => {
         console.error('Transaction error:', event.target.error);
         resolve();
       };
@@ -10002,17 +9269,13 @@ class AdvancedMusicPlayer {
           }
         }, 100);
       });
-      document.addEventListener('click', (e) => {
-        if (
-          !exportButton.contains(e.target) &&
-          !document.getElementById('exportDropdown')?.contains(e.target)
-        ) {
+      document.addEventListener('click', e => {
+        if (!exportButton.contains(e.target) && !document.getElementById('exportDropdown')?.contains(e.target)) {
           this.hideExportDropdown();
         }
       });
     }
   }
-
   handleOpenSettings() {
     this.elements.settingsModal.style.display = 'block';
     document.body.style.overflow = 'hidden';
@@ -10049,8 +9312,8 @@ class AdvancedMusicPlayer {
   }
   handleTabSwitch(event) {
     const targetTab = event.target.closest('.settings-tab-btn').dataset.tab;
-    document.querySelectorAll('.settings-tab-btn').forEach((btn) => btn.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach((panel) => panel.classList.remove('active'));
+    document.querySelectorAll('.settings-tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
     event.target.closest('.settings-tab-btn').classList.add('active');
     document.getElementById(targetTab + 'Panel').classList.add('active');
     if (targetTab === 'feedback') {
@@ -10069,7 +9332,7 @@ class AdvancedMusicPlayer {
     if (!this.db) {
       return;
     }
-    const transaction = this.db.transaction(['settings'], 'readonly');
+    const transaction = this.db.transaction([ 'settings' ], 'readonly');
     const store = transaction.objectStore('settings');
     const request = store.get('themeMode');
     request.onsuccess = () => {
@@ -10087,7 +9350,7 @@ class AdvancedMusicPlayer {
       }, 100);
       return;
     }
-    const transaction = this.db.transaction(['settings'], 'readonly');
+    const transaction = this.db.transaction([ 'settings' ], 'readonly');
     const store = transaction.objectStore('settings');
     const request = store.get('themeMode');
     request.onsuccess = () => {
@@ -10102,7 +9365,7 @@ class AdvancedMusicPlayer {
         }, 100);
       }
     };
-    request.onerror = (event) => {
+    request.onerror = event => {
       console.error('Error loading theme setting:', event.target.error);
       document.documentElement.setAttribute('data-theme', 'dark');
       this.updateThemeIcon('dark');
@@ -10128,35 +9391,18 @@ class AdvancedMusicPlayer {
       shadow: shadowRgba,
       error: this.elements.errorColorPicker?.value || '#dc3545',
       errorHover: this.elements.errorHoverColorPicker?.value || '#c82333',
-      youtubeRed: this.elements.youtubeRedColorPicker?.value || '#FF0000',
+      youtubeRed: this.elements.youtubeRedColorPicker?.value || '#FF0000'
     };
     this.applyCustomColors(customColors);
     document.documentElement.setAttribute('data-theme', 'custom');
-    const savePromises = [
-      this.saveSetting('customPrimary', customColors.primary),
-      this.saveSetting('customBackground', customColors.background),
-      this.saveSetting('customSecondary', customColors.secondary),
-      this.saveSetting('customTextPrimary', customColors.textPrimary),
-      this.saveSetting('customTextSecondary', customColors.textSecondary),
-      this.saveSetting('customHover', customColors.hover),
-      this.saveSetting('customBorder', customColors.border),
-      this.saveSetting('customAccent', customColors.accent),
-      this.saveSetting('customButtonText', customColors.buttonText),
-      this.saveSetting('customShadow', customColors.shadow),
-      this.saveSetting('customError', customColors.error),
-      this.saveSetting('customErrorHover', customColors.errorHover),
-      this.saveSetting('customYoutubeRed', customColors.youtubeRed),
-      this.saveSetting('themeMode', 'custom'),
-    ];
-    Promise.all(savePromises)
-      .then(() => {
-        console.log('Custom theme saved successfully');
-        this.showNotification('Custom theme saved!', 'success');
-      })
-      .catch((error) => {
-        console.error('Error saving custom theme:', error);
-        this.showNotification('Error saving theme', 'error');
-      });
+    const savePromises = [ this.saveSetting('customPrimary', customColors.primary), this.saveSetting('customBackground', customColors.background), this.saveSetting('customSecondary', customColors.secondary), this.saveSetting('customTextPrimary', customColors.textPrimary), this.saveSetting('customTextSecondary', customColors.textSecondary), this.saveSetting('customHover', customColors.hover), this.saveSetting('customBorder', customColors.border), this.saveSetting('customAccent', customColors.accent), this.saveSetting('customButtonText', customColors.buttonText), this.saveSetting('customShadow', customColors.shadow), this.saveSetting('customError', customColors.error), this.saveSetting('customErrorHover', customColors.errorHover), this.saveSetting('customYoutubeRed', customColors.youtubeRed), this.saveSetting('themeMode', 'custom') ];
+    Promise.all(savePromises).then(() => {
+      console.log('Custom theme saved successfully');
+      this.showNotification('Custom theme saved!', 'success');
+    }).catch(error => {
+      console.error('Error saving custom theme:', error);
+      this.showNotification('Error saving theme', 'error');
+    });
   }
   applyCustomColors(colors) {
     document.documentElement.style.setProperty('--custom-primary', colors.primary);
@@ -10177,34 +9423,19 @@ class AdvancedMusicPlayer {
     }, 150);
   }
   loadCustomTheme() {
-    const transaction = this.db.transaction(['settings'], 'readonly');
+    const transaction = this.db.transaction([ 'settings' ], 'readonly');
     const store = transaction.objectStore('settings');
-    const colorKeys = [
-      'customPrimary',
-      'customBackground',
-      'customSecondary',
-      'customTextPrimary',
-      'customTextSecondary',
-      'customHover',
-      'customBorder',
-      'customAccent',
-      'customButtonText',
-      'customShadow',
-      'customError',
-      'customErrorHover',
-      'customYoutubeRed',
-    ];
-    const requests = colorKeys.map((key) => {
+    const colorKeys = [ 'customPrimary', 'customBackground', 'customSecondary', 'customTextPrimary', 'customTextSecondary', 'customHover', 'customBorder', 'customAccent', 'customButtonText', 'customShadow', 'customError', 'customErrorHover', 'customYoutubeRed' ];
+    const requests = colorKeys.map(key => {
       const request = store.get(key);
-      return new Promise((resolve) => {
-        request.onsuccess = () =>
-          resolve({
-            key: key,
-            value: request.result?.value,
-          });
+      return new Promise(resolve => {
+        request.onsuccess = () => resolve({
+          key: key,
+          value: request.result?.value
+        });
       });
     });
-    Promise.all(requests).then((results) => {
+    Promise.all(requests).then(results => {
       const colors = {};
       const defaults = {
         customPrimary: '#3b82f6',
@@ -10214,9 +9445,9 @@ class AdvancedMusicPlayer {
         customTextSecondary: '#94a3b8',
         customHover: '#2563eb',
         customBorder: '#475569',
-        customAccent: '#3b82f6',
+        customAccent: '#3b82f6'
       };
-      results.forEach((result) => {
+      results.forEach(result => {
         colors[result.key] = result.value || defaults[result.key];
       });
       this.applyCustomColors({
@@ -10227,7 +9458,7 @@ class AdvancedMusicPlayer {
         textSecondary: colors.customTextSecondary,
         hover: colors.customHover,
         border: colors.customBorder,
-        accent: colors.customAccent,
+        accent: colors.customAccent
       });
       this.updateColorPickerValues(colors);
       document.documentElement.setAttribute('data-theme', 'custom');
@@ -10238,24 +9469,10 @@ class AdvancedMusicPlayer {
     if (!this.db) {
       return;
     }
-    const transaction = this.db.transaction(['settings'], 'readonly');
+    const transaction = this.db.transaction([ 'settings' ], 'readonly');
     const store = transaction.objectStore('settings');
-    const colorKeys = [
-      'customPrimary',
-      'customBackground',
-      'customSecondary',
-      'customTextPrimary',
-      'customTextSecondary',
-      'customHover',
-      'customBorder',
-      'customAccent',
-      'customButtonText',
-      'customShadow',
-      'customError',
-      'customErrorHover',
-      'customYoutubeRed',
-    ];
-    colorKeys.forEach((key) => {
+    const colorKeys = [ 'customPrimary', 'customBackground', 'customSecondary', 'customTextPrimary', 'customTextSecondary', 'customHover', 'customBorder', 'customAccent', 'customButtonText', 'customShadow', 'customError', 'customErrorHover', 'customYoutubeRed' ];
+    colorKeys.forEach(key => {
       const request = store.get(key);
       request.onsuccess = () => {
         if (request.result?.value) {
@@ -10273,7 +9490,7 @@ class AdvancedMusicPlayer {
       customTextSecondary: 'textSecondaryColorPicker',
       customHover: 'hoverColorPicker',
       customBorder: 'borderColorPicker',
-      customAccent: 'accentColorPicker',
+      customAccent: 'accentColorPicker'
     };
     const elementKey = pickerMap[key];
     if (this.elements[elementKey]) {
@@ -10289,7 +9506,7 @@ class AdvancedMusicPlayer {
       textSecondaryColorPicker: colors.customTextSecondary,
       hoverColorPicker: colors.customHover,
       borderColorPicker: colors.customBorder,
-      accentColorPicker: colors.customAccent,
+      accentColorPicker: colors.customAccent
     };
     Object.entries(pickerMap).forEach(([picker, value]) => {
       if (this.elements[picker]) {
@@ -10315,18 +9532,18 @@ class AdvancedMusicPlayer {
     const currentTheme = document.documentElement.getAttribute('data-theme');
     let newTheme;
     switch (currentTheme) {
-      case 'light':
-        newTheme = 'dark';
-        break;
+     case 'light':
+      newTheme = 'dark';
+      break;
 
-      case 'dark':
-        newTheme = 'custom';
-        break;
+     case 'dark':
+      newTheme = 'custom';
+      break;
 
-      case 'custom':
-      default:
-        newTheme = 'light';
-        break;
+     case 'custom':
+     default:
+      newTheme = 'light';
+      break;
     }
     if (newTheme === 'custom') {
       this.loadCustomTheme();
@@ -10337,7 +9554,7 @@ class AdvancedMusicPlayer {
         this.updateFaviconThemeFromDB();
       }, 100);
     }
-    this.saveSetting('themeMode', newTheme).catch((error) => {
+    this.saveSetting('themeMode', newTheme).catch(error => {
       console.error('Error saving theme:', error);
       document.documentElement.setAttribute('data-theme', currentTheme);
       this.updateThemeIcon(currentTheme);
@@ -10354,7 +9571,7 @@ class AdvancedMusicPlayer {
         console.log('Database not available');
         return;
       }
-      const transaction = this.db.transaction(['settings'], 'readonly');
+      const transaction = this.db.transaction([ 'settings' ], 'readonly');
       const store = transaction.objectStore('settings');
       const request = store.get('customAccent');
       request.onsuccess = () => {
@@ -10369,10 +9586,7 @@ class AdvancedMusicPlayer {
         this.updateFaviconColor('#3b82f6');
       };
     } else {
-      const accentColor = getComputedStyle(document.documentElement)
-        .getPropertyValue('--accent-color')
-        .trim()
-        .replace(/`/g, '');
+      const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim().replace(/`/g, '');
       if (!accentColor) {
         console.log('No accent color found for preset theme');
         return;
@@ -10383,24 +9597,21 @@ class AdvancedMusicPlayer {
     }
   }
   updateFaviconColor(color) {
-    fetch('favicon.svg')
-      .then((response) => response.text())
-      .then((svgText) => {
-        const coloredSvg = svgText.replace(/fill="#5D9C59"/g, `fill="${color}"`);
-        const blob = new Blob([coloredSvg], {
-          type: 'image/svg+xml',
-        });
-        const url = URL.createObjectURL(blob);
-        const favicon = document.querySelector('link[rel="icon"]');
-        if (favicon) {
-          if (favicon.href.startsWith('blob:')) {
-            URL.revokeObjectURL(favicon.href);
-          }
-          favicon.href = url;
-          console.log('Favicon updated successfully with color:', color);
+    fetch('favicon.svg').then(response => response.text()).then(svgText => {
+      const coloredSvg = svgText.replace(/fill="#5D9C59"/g, `fill="${color}"`);
+      const blob = new Blob([ coloredSvg ], {
+        type: 'image/svg+xml'
+      });
+      const url = URL.createObjectURL(blob);
+      const favicon = document.querySelector('link[rel="icon"]');
+      if (favicon) {
+        if (favicon.href.startsWith('blob:')) {
+          URL.revokeObjectURL(favicon.href);
         }
-      })
-      .catch((error) => console.error('Favicon update failed:', error));
+        favicon.href = url;
+        console.log('Favicon updated successfully with color:', color);
+      }
+    }).catch(error => console.error('Favicon update failed:', error));
   }
   lightenDarkColor(color) {
     const hex = color.replace('#', '');
@@ -10433,7 +9644,7 @@ class AdvancedMusicPlayer {
     notification.textContent = message;
     notification.style.cssText = `\n    position: fixed;\n    top: 20px;\n    right: 20px;\n    padding: 10px 20px;\n    border-radius: 4px;\n    color: white;\n    background-color: ${type === 'success' ? 'var(--accent-color)' : '#f44336'};\n    z-index: 10000;\n    opacity: 0;\n    transition: opacity 0.3s;\n  `;
     document.body.appendChild(notification);
-    setTimeout(() => (notification.style.opacity = '1'), 10);
+    setTimeout(() => notification.style.opacity = '1', 10);
     setTimeout(() => {
       notification.style.opacity = '0';
       setTimeout(() => document.body.removeChild(notification), 300);
@@ -10455,19 +9666,16 @@ class AdvancedMusicPlayer {
         shadowOpacity: this.elements.shadowOpacity?.value || '0.1',
         error: this.elements.errorColorPicker?.value || '#f44336',
         errorHover: this.elements.errorHoverColorPicker?.value || '#d32f2f',
-        youtubeRed: this.elements.youtubeRedColorPicker?.value || '#ff0000',
+        youtubeRed: this.elements.youtubeRedColorPicker?.value || '#ff0000'
       };
       const themeString = JSON.stringify(themeData, null, 2);
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard
-          .writeText(themeString)
-          .then(() => {
-            this.showNotification('Theme exported to clipboard!', 'success');
-          })
-          .catch((err) => {
-            console.error('Failed to copy theme: ', err);
-            this.fallbackCopyToClipboard(themeString);
-          });
+        navigator.clipboard.writeText(themeString).then(() => {
+          this.showNotification('Theme exported to clipboard!', 'success');
+        }).catch(err => {
+          console.error('Failed to copy theme: ', err);
+          this.fallbackCopyToClipboard(themeString);
+        });
       } else {
         this.fallbackCopyToClipboard(themeString);
       }
@@ -10487,8 +9695,8 @@ class AdvancedMusicPlayer {
       if (typeof themeData !== 'object' || themeData === null) {
         throw new Error('Invalid theme format: not an object');
       }
-      const expectedProps = ['primary', 'background', 'secondary', 'textPrimary'];
-      const hasValidProps = expectedProps.some((prop) => themeData.hasOwnProperty(prop));
+      const expectedProps = [ 'primary', 'background', 'secondary', 'textPrimary' ];
+      const hasValidProps = expectedProps.some(prop => themeData.hasOwnProperty(prop));
       if (!hasValidProps) {
         throw new Error('Invalid theme format: missing expected properties');
       }
@@ -10502,7 +9710,7 @@ class AdvancedMusicPlayer {
   }
   applyImportedTheme(themeData) {
     try {
-      const isValidHex = (hex) => /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(hex);
+      const isValidHex = hex => /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(hex);
       if (themeData.primary && isValidHex(themeData.primary)) {
         this.elements.primaryColorPicker.value = themeData.primary;
       }
@@ -10572,7 +9780,7 @@ class AdvancedMusicPlayer {
       textSecondary: '#94a3b8',
       hover: '#2563eb',
       border: '#475569',
-      accent: '#3b82f6',
+      accent: '#3b82f6'
     };
     this.applyCustomColors(defaultColors);
     this.updateColorPickerValues({
@@ -10583,7 +9791,7 @@ class AdvancedMusicPlayer {
       customTextSecondary: defaultColors.textSecondary,
       customHover: defaultColors.hover,
       customBorder: defaultColors.border,
-      customAccent: defaultColors.accent,
+      customAccent: defaultColors.accent
     });
   }
   saveNamedTheme() {
@@ -10611,14 +9819,14 @@ class AdvancedMusicPlayer {
       shadowOpacity: this.elements.shadowOpacity?.value || '0.1',
       error: this.elements.errorColorPicker?.value || '#dc3545',
       errorHover: this.elements.errorHoverColorPicker?.value || '#c82333',
-      youtubeRed: this.elements.youtubeRedColorPicker?.value || '#FF0000',
+      youtubeRed: this.elements.youtubeRedColorPicker?.value || '#FF0000'
     };
-    this._getSavedThemesRecord().then((themes) => {
+    this._getSavedThemesRecord().then(themes => {
       themes.push({
         id: `st_${Date.now()}`,
         name: name,
         data: themeData,
-        savedAt: Date.now(),
+        savedAt: Date.now()
       });
       this._writeSavedThemes(themes).then(() => {
         this.showNotification(`Theme "${name}" saved!`, 'success');
@@ -10632,32 +9840,28 @@ class AdvancedMusicPlayer {
     if (!container) {
       return;
     }
-    this._getSavedThemesRecord().then((themes) => {
+    this._getSavedThemesRecord().then(themes => {
       if (!themes.length) {
         container.innerHTML = '';
         return;
       }
       themes.sort((a, b) => b.savedAt - a.savedAt);
-      container.innerHTML = themes
-        .map((t) => {
-          const d = t.data;
-          const date = new Date(t.savedAt).toLocaleDateString(undefined, {
-            month: 'short',
-            day: 'numeric',
-            year: '2-digit',
-          });
-          const swatches = [d.background, d.secondary, d.primary, d.accent, d.textPrimary]
-            .map((c) => `<div class="saved-theme-swatch" style="background:${c}"></div>`)
-            .join('');
-          const safeName = d.name ? d.name.replace(/</g, '&lt;') : t.name.replace(/</g, '&lt;');
-          return `\n\t\t\t\t<div class="saved-theme-item" data-id="${t.id}">\n\t\t\t\t  <div class="saved-theme-swatches">${swatches}</div>\n\t\t\t\t  <span class="saved-theme-name">${t.name.replace(/</g, '&lt;')}</span>\n\t\t\t\t  <span class="saved-theme-date">${date}</span>\n\t\t\t\t  <div class="saved-theme-actions">\n\t\t\t\t\t<button class="load-theme-btn" title="Apply" onclick="musicPlayer.applySavedTheme('${t.id}')"><i class="fa-solid fa-check"></i></button>\n\t\t\t\t\t<button class="delete-theme-btn" title="Delete" onclick="musicPlayer.deleteSavedTheme('${t.id}')"><i class="fa-solid fa-trash"></i></button>\n\t\t\t\t  </div>\n\t\t\t\t</div>`;
-        })
-        .join('');
+      container.innerHTML = themes.map(t => {
+        const d = t.data;
+        const date = new Date(t.savedAt).toLocaleDateString(undefined, {
+          month: 'short',
+          day: 'numeric',
+          year: '2-digit'
+        });
+        const swatches = [ d.background, d.secondary, d.primary, d.accent, d.textPrimary ].map(c => `<div class="saved-theme-swatch" style="background:${c}"></div>`).join('');
+        const safeName = d.name ? d.name.replace(/</g, '&lt;') : t.name.replace(/</g, '&lt;');
+        return `\n\t\t\t\t<div class="saved-theme-item" data-id="${t.id}">\n\t\t\t\t  <div class="saved-theme-swatches">${swatches}</div>\n\t\t\t\t  <span class="saved-theme-name">${t.name.replace(/</g, '&lt;')}</span>\n\t\t\t\t  <span class="saved-theme-date">${date}</span>\n\t\t\t\t  <div class="saved-theme-actions">\n\t\t\t\t\t<button class="load-theme-btn" title="Apply" onclick="musicPlayer.applySavedTheme('${t.id}')"><i class="fa-solid fa-check"></i></button>\n\t\t\t\t\t<button class="delete-theme-btn" title="Delete" onclick="musicPlayer.deleteSavedTheme('${t.id}')"><i class="fa-solid fa-trash"></i></button>\n\t\t\t\t  </div>\n\t\t\t\t</div>`;
+      }).join('');
     });
   }
   applySavedTheme(id) {
-    this._getSavedThemesRecord().then((themes) => {
-      const theme = themes.find((t) => t.id === id);
+    this._getSavedThemesRecord().then(themes => {
+      const theme = themes.find(t => t.id === id);
       if (!theme) {
         return;
       }
@@ -10690,22 +9894,19 @@ class AdvancedMusicPlayer {
     });
   }
   deleteSavedTheme(id) {
-    this._getSavedThemesRecord().then((themes) => {
-      this._writeSavedThemes(themes.filter((t) => t.id !== id)).then(() => {
+    this._getSavedThemesRecord().then(themes => {
+      this._writeSavedThemes(themes.filter(t => t.id !== id)).then(() => {
         this.showNotification('Theme deleted', 'success');
         this.loadSavedThemesList();
       });
     });
   }
   _getSavedThemesRecord() {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       if (!this.db) {
         return resolve([]);
       }
-      const req = this.db
-        .transaction(['settings'], 'readonly')
-        .objectStore('settings')
-        .get('savedThemes');
+      const req = this.db.transaction([ 'settings' ], 'readonly').objectStore('settings').get('savedThemes');
       req.onsuccess = () => {
         try {
           resolve(JSON.parse(req.result?.value || '[]'));
@@ -10718,16 +9919,15 @@ class AdvancedMusicPlayer {
   }
   _writeSavedThemes(themes) {
     return new Promise((resolve, reject) => {
-      const tx = this.db.transaction(['settings'], 'readwrite');
+      const tx = this.db.transaction([ 'settings' ], 'readwrite');
       tx.objectStore('settings').put({
         name: 'savedThemes',
-        value: JSON.stringify(themes),
+        value: JSON.stringify(themes)
       });
       tx.oncomplete = resolve;
       tx.onerror = reject;
     });
   }
-
   async loadAdvertisementSettings() {
     try {
       if (!this.db || !this.db.objectStoreNames.contains('settings')) {
@@ -10736,11 +9936,11 @@ class AdvancedMusicPlayer {
         this.updateAdvertisementDisplay();
         return;
       }
-      const transaction = this.db.transaction(['settings'], 'readonly');
+      const transaction = this.db.transaction([ 'settings' ], 'readonly');
       const store = transaction.objectStore('settings');
       const request = store.get('advertisementEnabled');
-      return new Promise((resolve) => {
-        request.onsuccess = (event) => {
+      return new Promise(resolve => {
+        request.onsuccess = event => {
           const result = event.target.result;
           if (result && typeof result.value !== 'undefined') {
             this.adsEnabled = result.value;
@@ -10773,12 +9973,12 @@ class AdvancedMusicPlayer {
         console.error("Settings store doesn't exist");
         return;
       }
-      const transaction = this.db.transaction(['settings'], 'readwrite');
+      const transaction = this.db.transaction([ 'settings' ], 'readwrite');
       const store = transaction.objectStore('settings');
       const settingsData = {
         name: 'advertisementEnabled',
         value: this.adsEnabled,
-        lastUpdated: new Date().toISOString(),
+        lastUpdated: (new Date()).toISOString()
       };
       const request = store.put(settingsData);
       return new Promise((resolve, reject) => {
@@ -10786,7 +9986,7 @@ class AdvancedMusicPlayer {
           console.log('Advertisement settings saved successfully:', this.adsEnabled);
           resolve();
         };
-        request.onerror = (event) => {
+        request.onerror = event => {
           console.error('Error saving advertisement settings:', event.target.error);
           reject(event.target.error);
         };
@@ -10826,13 +10026,12 @@ class AdvancedMusicPlayer {
     }
   }
   initializeAdvertisementSettings() {
-    this.loadAdvertisementSettings().catch((error) => {
+    this.loadAdvertisementSettings().catch(error => {
       console.error('Failed to load advertisement settings:', error);
       this.adsEnabled = false;
       this.updateAdvertisementDisplay();
     });
   }
-
   initializeVisualizer() {
     this.visualizer.canvas = document.getElementById('visualizerCanvas');
     if (!this.visualizer.canvas) {
@@ -10842,10 +10041,7 @@ class AdvancedMusicPlayer {
     this.resizeCanvas();
     this.createVisualizerBars();
     this._cachedAccentColor = this._readAccentColor();
-    window.addEventListener(
-      'resize',
-      this.debounce(() => this.resizeCanvas(), 150)
-    );
+    window.addEventListener('resize', this.debounce(() => this.resizeCanvas(), 150));
   }
   _readAccentColor() {
     return getComputedStyle(document.documentElement).getPropertyValue('--accent-color');
@@ -10880,17 +10076,14 @@ class AdvancedMusicPlayer {
       return;
     }
     this._visualizerFrameCount = (this._visualizerFrameCount || 0) + 1;
-
     if (this._visualizerFrameCount % 60 === 0) {
       this._cachedAccentColor = this._readAccentColor();
     }
-
     const idleSkipFrames = this.isPlaying ? 1 : 3;
     if (this._visualizerFrameCount % idleSkipFrames === 0) {
       this.animateBars();
       this.animateParticles();
     }
-
     if (this.isTabVisible && this.visualizer.isActive) {
       this.visualizer.animationId = requestAnimationFrame(() => this.animateVisualizer());
     }
@@ -10919,7 +10112,7 @@ class AdvancedMusicPlayer {
       this.createParticle();
     }
     const accentColor = this._cachedAccentColor || this._readAccentColor();
-    this.visualizer.particles = this.visualizer.particles.filter((particle) => {
+    this.visualizer.particles = this.visualizer.particles.filter(particle => {
       let speedMultiplier = this.isPlaying ? 1 : 0.3;
       particle.x += particle.vx * speedMultiplier;
       particle.y += particle.vy * speedMultiplier;
@@ -10946,7 +10139,7 @@ class AdvancedMusicPlayer {
       vy: (Math.random() - 0.5) * 2,
       size: Math.random() * 3 + 1,
       life: 1,
-      opacity: 1,
+      opacity: 1
     });
   }
   destroyVisualizer() {
@@ -10992,12 +10185,10 @@ class AdvancedMusicPlayer {
     }
     this.saveSetting('visualizerEnabled', isEnabled);
   }
-
   initSupabaseForFindSongs() {
     if (!this.supabase) {
       const supabaseUrl = 'https://cwhxanbpymkngzpbsshh.supabase.co';
-      const supabaseKey =
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3aHhhbmJweW1rbmd6cGJzc2hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4NTQzMTksImV4cCI6MjA2OTQzMDMxOX0.6K3eM1XoWaPmyMHsLYgw0mAnSxYjME4clflL4PxQalQ';
+      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3aHhhbmJweW1rbmd6cGJzc2hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4NTQzMTksImV4cCI6MjA2OTQzMDMxOX0.6K3eM1XoWaPmyMHsLYgw0mAnSxYjME4clflL4PxQalQ';
       this.supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
     }
   }
@@ -11011,13 +10202,13 @@ class AdvancedMusicPlayer {
     if (!bar) {
       return;
     }
-    bar.addEventListener('input', (e) => this.handleGlobalLibraryDebouncedSearchInput(e));
+    bar.addEventListener('input', e => this.handleGlobalLibraryDebouncedSearchInput(e));
     bar.addEventListener('focus', () => {
       if (bar.value.trim().length >= 2) {
         document.getElementById('globalLibrarySearchSuggestionsDropdown')?.classList.add('visible');
       }
     });
-    document.addEventListener('click', (e) => {
+    document.addEventListener('click', e => {
       const dropdown = document.getElementById('globalLibrarySearchSuggestionsDropdown');
       if (!dropdown) {
         return;
@@ -11046,21 +10237,16 @@ class AdvancedMusicPlayer {
     this.globalLibrarySearchAbortController = new AbortController();
     const signal = this.globalLibrarySearchAbortController.signal;
     try {
-      const [deezerResult, playlistResults] = await Promise.all([
-        fetch(`/api/deezer?type=search&query=${encodeURIComponent(query)}&limit=8`, {
-          signal: signal,
-        })
-          .then((r) => r.json())
-          .catch(() => null),
-        this.searchPremadePlaylistsSupabase(query).catch(() => []),
-      ]);
+      const [deezerResult, playlistResults] = await Promise.all([ fetch(`/api/deezer?type=search&query=${encodeURIComponent(query)}&limit=8`, {
+        signal: signal
+      }).then(r => r.json()).catch(() => null), this.searchPremadePlaylistsSupabase(query).catch(() => []) ]);
       if (signal.aborted) {
         return;
       }
-      const tracks = (deezerResult && deezerResult.data && deezerResult.data.data) || [];
+      const tracks = deezerResult && deezerResult.data && deezerResult.data.data || [];
       const seenArtistIds = new Set();
       const artists = [];
-      tracks.forEach((t) => {
+      tracks.forEach(t => {
         if (t.artist && !seenArtistIds.has(t.artist.id)) {
           seenArtistIds.add(t.artist.id);
           artists.push(t.artist);
@@ -11069,7 +10255,7 @@ class AdvancedMusicPlayer {
       this.renderGlobalLibrarySearchSuggestionsDropdown({
         tracks: tracks.slice(0, 6),
         artists: artists.slice(0, 4),
-        playlists: playlistResults,
+        playlists: playlistResults
       });
     } catch (error) {
       if (error.name !== 'AbortError') {
@@ -11082,11 +10268,7 @@ class AdvancedMusicPlayer {
     if (!this.supabase) {
       this.initSupabaseForFindSongs();
     }
-    const { data: data, error: error } = await this.supabase
-      .from('premade_playlists')
-      .select('id, name')
-      .ilike('name', `%${query}%`)
-      .limit(3);
+    const {data: data, error: error} = await this.supabase.from('premade_playlists').select('id, name').ilike('name', `%${query}%`).limit(3);
     if (error) {
       throw error;
     }
@@ -11105,14 +10287,9 @@ class AdvancedMusicPlayer {
     if (!dropdown) {
       return;
     }
-    dropdown.innerHTML =
-      '<div class="global-library-suggestions-loading">Search unavailable — try again</div>';
+    dropdown.innerHTML = '<div class="global-library-suggestions-loading">Search unavailable — try again</div>';
   }
-  renderGlobalLibrarySearchSuggestionsDropdown({
-    tracks: tracks,
-    artists: artists,
-    playlists: playlists,
-  }) {
+  renderGlobalLibrarySearchSuggestionsDropdown({tracks: tracks, artists: artists, playlists: playlists}) {
     const dropdown = document.getElementById('globalLibrarySearchSuggestionsDropdown');
     if (!dropdown) {
       return;
@@ -11125,56 +10302,35 @@ class AdvancedMusicPlayer {
     let html = '';
     if (artists.length > 0) {
       html += `<div class="global-library-suggestions-section-label">Artists</div>`;
-      html += artists
-        .map(
-          (a) =>
-            `\n\t            <div class="global-library-suggestion-artist-card" data-artist-id="${a.id}" data-artist-name="${a.name.replace(/"/g, '&quot;')}">\n\t                <img src="${a.picture_medium || a.picture}" alt="" class="global-library-suggestion-artist-thumb" loading="lazy">\n\t                <div class="global-library-suggestion-artist-name">${a.name}</div>\n\t            </div>\n\t        `
-        )
-        .join('');
+      html += artists.map(a => `\n\t            <div class="global-library-suggestion-artist-card" data-artist-id="${a.id}" data-artist-name="${a.name.replace(/"/g, '&quot;')}">\n\t                <img src="${a.picture_medium || a.picture}" alt="" class="global-library-suggestion-artist-thumb" loading="lazy">\n\t                <div class="global-library-suggestion-artist-name">${a.name}</div>\n\t            </div>\n\t        `).join('');
     }
     if (tracks.length > 0) {
       html += `<div class="global-library-suggestions-section-label">Songs</div>`;
-      html += tracks
-        .map(
-          (t) =>
-            `\n\t            <div class="global-library-suggestion-track-card"\n\t                 data-song-name="${t.title.replace(/"/g, '&quot;')}"\n\t                 data-artist-name="${t.artist.name.replace(/"/g, '&quot;')}"\n\t                 data-album-cover="${t.album?.cover_medium || ''}"\n\t                 data-deezer-track-id="${t.id}">\n\t                <img src="${t.album?.cover_medium || ''}" alt="" class="global-library-suggestion-track-thumb" loading="lazy">\n\t                <div class="global-library-suggestion-track-meta">\n\t                    <div class="global-library-suggestion-track-title">${t.title}</div>\n\t                    <div class="global-library-suggestion-track-artist">${t.artist.name}</div>\n\t                </div>\n\t            </div>\n\t        `
-        )
-        .join('');
+      html += tracks.map(t => `\n\t            <div class="global-library-suggestion-track-card"\n\t                 data-song-name="${t.title.replace(/"/g, '&quot;')}"\n\t                 data-artist-name="${t.artist.name.replace(/"/g, '&quot;')}"\n\t                 data-album-cover="${t.album?.cover_medium || ''}"\n\t                 data-deezer-track-id="${t.id}">\n\t                <img src="${t.album?.cover_medium || ''}" alt="" class="global-library-suggestion-track-thumb" loading="lazy">\n\t                <div class="global-library-suggestion-track-meta">\n\t                    <div class="global-library-suggestion-track-title">${t.title}</div>\n\t                    <div class="global-library-suggestion-track-artist">${t.artist.name}</div>\n\t                </div>\n\t            </div>\n\t        `).join('');
     }
     if (playlists.length > 0) {
       html += `<div class="global-library-suggestions-section-label">Playlists</div>`;
-      html += playlists
-        .map(
-          (p) =>
-            `\n\t            <div class="global-library-suggestion-playlist-card" data-playlist-id="${p.id}" data-playlist-name="${p.name.replace(/"/g, '&quot;')}">\n\t                <div class="global-library-suggestion-playlist-icon">🎶</div>\n\t                <div class="global-library-suggestion-track-title">${p.name}</div>\n\t            </div>\n\t        `
-        )
-        .join('');
+      html += playlists.map(p => `\n\t            <div class="global-library-suggestion-playlist-card" data-playlist-id="${p.id}" data-playlist-name="${p.name.replace(/"/g, '&quot;')}">\n\t                <div class="global-library-suggestion-playlist-icon">🎶</div>\n\t                <div class="global-library-suggestion-track-title">${p.name}</div>\n\t            </div>\n\t        `).join('');
     }
     dropdown.innerHTML = html;
     dropdown.classList.add('visible');
-    dropdown.querySelectorAll('.global-library-suggestion-artist-card').forEach((el) => {
-      el.addEventListener('click', () =>
-        this.handleGlobalLibraryArtistCardClick({
-          id: el.dataset.artistId,
-          name: el.dataset.artistName,
-        })
-      );
+    dropdown.querySelectorAll('.global-library-suggestion-artist-card').forEach(el => {
+      el.addEventListener('click', () => this.handleGlobalLibraryArtistCardClick({
+        id: el.dataset.artistId,
+        name: el.dataset.artistName
+      }));
     });
-    dropdown.querySelectorAll('.global-library-suggestion-track-card').forEach((el) => {
-      el.addEventListener('click', () =>
-        this.handleGlobalLibrarySongCardClick({
-          name: el.dataset.songName,
-          artist: el.dataset.artistName,
-          albumCover: el.dataset.albumCover,
-          deezerTrackId: el.dataset.deezerTrackId,
-          sourceContext: 'root',
-        })
-      );
+    dropdown.querySelectorAll('.global-library-suggestion-track-card').forEach(el => {
+      el.addEventListener('click', () => this.handleGlobalLibrarySongCardClick({
+        name: el.dataset.songName,
+        artist: el.dataset.artistName,
+        albumCover: el.dataset.albumCover,
+        deezerTrackId: el.dataset.deezerTrackId,
+        sourceContext: 'root'
+      }));
     });
-    dropdown.querySelectorAll('.global-library-suggestion-playlist-card').forEach((el) => {
-      el.addEventListener('click', () =>
-        this.addPremadePlaylistToLocalLibrary(el.dataset.playlistId, el.dataset.playlistName)
-      );
+    dropdown.querySelectorAll('.global-library-suggestion-playlist-card').forEach(el => {
+      el.addEventListener('click', () => this.addPremadePlaylistToLocalLibrary(el.dataset.playlistId, el.dataset.playlistName));
     });
   }
   closeGlobalLibrarySearchSuggestionsDropdown() {
@@ -11190,7 +10346,7 @@ class AdvancedMusicPlayer {
       id: artist.id,
       name: artist.name,
       index: 0,
-      songs: [],
+      songs: []
     };
     await this.renderGlobalLibraryArtistSongsGrid();
   }
@@ -11206,56 +10362,32 @@ class AdvancedMusicPlayer {
     container.classList.add('visible');
     if (!appendMode) {
       container.innerHTML = `\n\t            <div class="global-library-artist-grid-header">\n\t                <button id="globalLibraryArtistGridBackBtn" class="global-library-artist-grid-back-btn">← Back</button>\n\t                <h3>${ctx.name}</h3>\n\t            </div>\n\t            <div id="globalLibraryArtistGridSongsList" class="global-library-artist-grid-songs-list"></div>\n\t            <button id="globalLibraryArtistGridLoadMoreBtn" class="global-library-artist-grid-load-more-btn" style="display:none;">Load more</button>\n\t        `;
-      document
-        .getElementById('globalLibraryArtistGridBackBtn')
-        .addEventListener('click', () => this.closeGlobalLibraryArtistSongsGrid());
-      document
-        .getElementById('globalLibraryArtistGridLoadMoreBtn')
-        .addEventListener('click', () => this.loadMoreGlobalLibraryArtistSongs());
+      document.getElementById('globalLibraryArtistGridBackBtn').addEventListener('click', () => this.closeGlobalLibraryArtistSongsGrid());
+      document.getElementById('globalLibraryArtistGridLoadMoreBtn').addEventListener('click', () => this.loadMoreGlobalLibraryArtistSongs());
     }
     const listEl = document.getElementById('globalLibraryArtistGridSongsList');
-    listEl.insertAdjacentHTML(
-      'beforeend',
-      '<div class="global-library-suggestions-loading" id="globalLibraryArtistGridSpinner">Loading songs…</div>'
-    );
+    listEl.insertAdjacentHTML('beforeend', '<div class="global-library-suggestions-loading" id="globalLibraryArtistGridSpinner">Loading songs…</div>');
     try {
-      const res = await fetch(
-        `/api/deezer?type=artist_top&artistId=${encodeURIComponent(ctx.id)}&index=${ctx.index}&limit=25`
-      );
+      const res = await fetch(`/api/deezer?type=artist_top&artistId=${encodeURIComponent(ctx.id)}&index=${ctx.index}&limit=25`);
       const result = await res.json();
       document.getElementById('globalLibraryArtistGridSpinner')?.remove();
-      const tracks = (result.data && result.data.data) || [];
+      const tracks = result.data && result.data.data || [];
       ctx.songs.push(...tracks);
-      listEl.insertAdjacentHTML(
-        'beforeend',
-        tracks
-          .map(
-            (t) =>
-              `\n\t            <div class="global-library-artist-grid-song-row"\n\t                 data-song-name="${t.title.replace(/"/g, '&quot;')}"\n\t                 data-artist-name="${ctx.name.replace(/"/g, '&quot;')}"\n\t                 data-album-cover="${t.album?.cover_medium || ''}">\n\t                <img src="${t.album?.cover_medium || ''}" alt="" class="global-library-artist-grid-song-thumb" loading="lazy">\n\t                <div class="global-library-artist-grid-song-title">${t.title}</div>\n\t            </div>\n\t        `
-          )
-          .join('')
-      );
-      listEl
-        .querySelectorAll('.global-library-artist-grid-song-row:not([data-bound])')
-        .forEach((el) => {
-          el.setAttribute('data-bound', 'true');
-          el.addEventListener('click', () =>
-            this.handleGlobalLibrarySongCardClick({
-              name: el.dataset.songName,
-              artist: el.dataset.artistName,
-              albumCover: el.dataset.albumCover,
-              sourceContext: 'artist',
-            })
-          );
-        });
+      listEl.insertAdjacentHTML('beforeend', tracks.map(t => `\n\t            <div class="global-library-artist-grid-song-row"\n\t                 data-song-name="${t.title.replace(/"/g, '&quot;')}"\n\t                 data-artist-name="${ctx.name.replace(/"/g, '&quot;')}"\n\t                 data-album-cover="${t.album?.cover_medium || ''}">\n\t                <img src="${t.album?.cover_medium || ''}" alt="" class="global-library-artist-grid-song-thumb" loading="lazy">\n\t                <div class="global-library-artist-grid-song-title">${t.title}</div>\n\t            </div>\n\t        `).join(''));
+      listEl.querySelectorAll('.global-library-artist-grid-song-row:not([data-bound])').forEach(el => {
+        el.setAttribute('data-bound', 'true');
+        el.addEventListener('click', () => this.handleGlobalLibrarySongCardClick({
+          name: el.dataset.songName,
+          artist: el.dataset.artistName,
+          albumCover: el.dataset.albumCover,
+          sourceContext: 'artist'
+        }));
+      });
       const loadMoreBtn = document.getElementById('globalLibraryArtistGridLoadMoreBtn');
       loadMoreBtn.style.display = tracks.length === 25 && ctx.index + 25 < 50 ? 'block' : 'none';
     } catch (error) {
       document.getElementById('globalLibraryArtistGridSpinner')?.remove();
-      listEl.insertAdjacentHTML(
-        'beforeend',
-        '<div class="global-library-suggestions-loading">Couldn\'t load songs — try again</div>'
-      );
+      listEl.insertAdjacentHTML('beforeend', '<div class="global-library-suggestions-loading">Couldn\'t load songs — try again</div>');
       console.error('Artist songs fetch failed:', error);
     }
   }
@@ -11293,9 +10425,7 @@ class AdvancedMusicPlayer {
     }
     card.classList.add('visible');
     card.innerHTML = `\n\t        <button id="globalLibrarySongDetailCloseBtn" class="global-library-song-detail-close-btn">×</button>\n\t        <div class="global-library-song-detail-loading">\n\t            <img src="${song.albumCover || ''}" alt="" class="global-library-song-detail-thumb-placeholder">\n\t            <div>Finding "${song.name}"…</div>\n\t        </div>\n\t    `;
-    document
-      .getElementById('globalLibrarySongDetailCloseBtn')
-      .addEventListener('click', () => this.closeGlobalLibrarySongDetailCard());
+    document.getElementById('globalLibrarySongDetailCloseBtn').addEventListener('click', () => this.closeGlobalLibrarySongDetailCard());
   }
   renderGlobalLibrarySongDetailCardError() {
     const card = document.getElementById('globalLibrarySongDetailCard');
@@ -11303,9 +10433,7 @@ class AdvancedMusicPlayer {
       return;
     }
     card.innerHTML = `\n\t        <button id="globalLibrarySongDetailCloseBtn" class="global-library-song-detail-close-btn">×</button>\n\t        <div class="global-library-song-detail-loading">Couldn't find a match — try another search</div>\n\t    `;
-    document
-      .getElementById('globalLibrarySongDetailCloseBtn')
-      .addEventListener('click', () => this.closeGlobalLibrarySongDetailCard());
+    document.getElementById('globalLibrarySongDetailCloseBtn').addEventListener('click', () => this.closeGlobalLibrarySongDetailCard());
   }
   renderGlobalLibrarySongDetailCard(songRow) {
     const card = document.getElementById('globalLibrarySongDetailCard');
@@ -11313,30 +10441,16 @@ class AdvancedMusicPlayer {
       return;
     }
     const thumbUrl = `https://i.ytimg.com/vi/${songRow.yt_id}/hqdefault.jpg`;
-    const viewsText = songRow.view_count
-      ? `${Number(songRow.view_count).toLocaleString()} views`
-      : 'View count unavailable';
-    const dateText = songRow.published_at
-      ? new Date(songRow.published_at).toLocaleDateString(undefined, {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        })
-      : 'Date unavailable';
+    const viewsText = songRow.view_count ? `${Number(songRow.view_count).toLocaleString()} views` : 'View count unavailable';
+    const dateText = songRow.published_at ? new Date(songRow.published_at).toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }) : 'Date unavailable';
     card.innerHTML = `\n\t        <button id="globalLibrarySongDetailCloseBtn" class="global-library-song-detail-close-btn">×</button>\n\t        <img src="${thumbUrl}" alt="" class="global-library-song-detail-thumb">\n\t        <div class="global-library-song-detail-info">\n\t            <div class="global-library-song-detail-title">${songRow.name}</div>\n\t            <div class="global-library-song-detail-artist">${songRow.artist}</div>\n\t            <div class="global-library-song-detail-meta">${viewsText} · ${dateText}</div>\n\t        </div>\n\t        <div class="global-library-song-detail-actions">\n\t\t\t    <button id="globalLibrarySongDetailListenBtn" class="listen-temp-song-btn" title="Preview this song">▶ Listen</button>\n\t\t\t    <button id="globalLibrarySongDetailAddBtn" class="global-library-song-detail-add-btn">+ Add to local library</button>\n\t\t\t</div>\n\t    `;
-    document
-      .getElementById('globalLibrarySongDetailCloseBtn')
-      .addEventListener('click', () => this.closeGlobalLibrarySongDetailCard());
-    document
-      .getElementById('globalLibrarySongDetailAddBtn')
-      .addEventListener('click', () =>
-        this.populateAddSongToLibraryModalFromGlobalLibrary(songRow)
-      );
-    document
-      .getElementById('globalLibrarySongDetailListenBtn')
-      .addEventListener('click', () =>
-        this.samplePlayTemporarySong(`https://www.youtube.com/watch?v=${songRow.yt_id}`)
-      );
+    document.getElementById('globalLibrarySongDetailCloseBtn').addEventListener('click', () => this.closeGlobalLibrarySongDetailCard());
+    document.getElementById('globalLibrarySongDetailAddBtn').addEventListener('click', () => this.populateAddSongToLibraryModalFromGlobalLibrary(songRow));
+    document.getElementById('globalLibrarySongDetailListenBtn').addEventListener('click', () => this.samplePlayTemporarySong(`https://www.youtube.com/watch?v=${songRow.yt_id}`));
   }
   closeGlobalLibrarySongDetailCard() {
     const card = document.getElementById('globalLibrarySongDetailCard');
@@ -11365,30 +10479,22 @@ class AdvancedMusicPlayer {
       artist: artistName,
       yt_id: resolvedFromYouTube.yt_id,
       view_count: resolvedFromYouTube.view_count,
-      published_at: resolvedFromYouTube.published_at,
+      published_at: resolvedFromYouTube.published_at
     });
     return saved;
   }
   async checkGlobalSongCacheSupabase(searchKey) {
-    const { data: data, error: error } = await this.supabase
-      .from('global_song_cache')
-      .select('*')
-      .eq('search_key', searchKey)
-      .maybeSingle();
+    const {data: data, error: error} = await this.supabase.from('global_song_cache').select('*').eq('search_key', searchKey).maybeSingle();
     if (error) {
       throw error;
     }
     return data || null;
   }
   async insertGlobalSongCacheSupabase(payload) {
-    const { data: data, error: error } = await this.supabase
-      .from('global_song_cache')
-      .upsert([payload], {
-        onConflict: 'search_key',
-        ignoreDuplicates: false,
-      })
-      .select('*')
-      .single();
+    const {data: data, error: error} = await this.supabase.from('global_song_cache').upsert([ payload ], {
+      onConflict: 'search_key',
+      ignoreDuplicates: false
+    }).select('*').single();
     if (error) {
       throw error;
     }
@@ -11408,7 +10514,7 @@ class AdvancedMusicPlayer {
     return {
       yt_id: item.id.videoId,
       view_count: item.statistics ? parseInt(item.statistics.viewCount, 10) : null,
-      published_at: item.snippet?.publishedAt ? item.snippet.publishedAt.slice(0, 10) : null,
+      published_at: item.snippet?.publishedAt ? item.snippet.publishedAt.slice(0, 10) : null
     };
   }
   async runGlobalLibraryYouTubeSearch(query) {
@@ -11451,22 +10557,13 @@ class AdvancedMusicPlayer {
   }
   async addPremadePlaylistToLocalLibrary(playlistId, playlistName) {
     try {
-      const { data: data, error: error } = await this.supabase
-        .from('premade_playlist_songs')
-        .select(`position, global_song_cache(name, artist, yt_id)`)
-        .eq('playlist_id', playlistId)
-        .order('position', {
-          ascending: true,
-        });
+      const {data: data, error: error} = await this.supabase.from('premade_playlist_songs').select(`position, global_song_cache(name, artist, yt_id)`).eq('playlist_id', playlistId).order('position', {
+        ascending: true
+      });
       if (error) {
         throw error;
       }
-      const importText = data
-        .map(
-          (row) =>
-            `${row.global_song_cache.name},https://www.youtube.com/watch?v=${row.global_song_cache.yt_id},${row.global_song_cache.artist || ''}`
-        )
-        .join('\n');
+      const importText = data.map(row => `${row.global_song_cache.name},https://www.youtube.com/watch?v=${row.global_song_cache.yt_id},${row.global_song_cache.artist || ''}`).join('\n');
       const playlistImportText = `${playlistName}{\n${importText}\n}`;
       this.importLibrary(playlistImportText);
       this.closeGlobalLibrarySearchSuggestionsDropdown();
@@ -11490,17 +10587,13 @@ class AdvancedMusicPlayer {
     this.closeGlobalLibrarySongDetailCard();
     this.closeGlobalLibraryArtistSongsGrid();
   }
-
   async loadRecommendations() {
     await this.loadBillboardHot100Top3();
     await this.loadRandomRecommendations();
   }
   async loadRandomRecommendations() {
     try {
-      const { data: randomSongs, error: error } = await this.supabase
-        .from('songs')
-        .select('id, name, artist, yt_id')
-        .limit(100);
+      const {data: randomSongs, error: error} = await this.supabase.from('songs').select('id, name, artist, yt_id').limit(100);
       if (error) {
         throw error;
       }
@@ -11509,61 +10602,49 @@ class AdvancedMusicPlayer {
       this.displayRandomRecommendations(selectedSongs);
     } catch (error) {
       console.error('Error loading random recommendations:', error);
-      document.getElementById('randomSongsContainer').innerHTML =
-        '<div style="color: var(--text-secondary); font-size: 12px;">Unable to load recommendations</div>';
+      document.getElementById('randomSongsContainer').innerHTML = '<div style="color: var(--text-secondary); font-size: 12px;">Unable to load recommendations</div>';
     }
   }
   displayRandomRecommendations(songs) {
     const container = document.getElementById('randomSongsContainer');
     if (!songs || songs.length === 0) {
-      container.innerHTML =
-        '<div style="color: var(--text-secondary); font-size: 12px;">No recommendations available</div>';
+      container.innerHTML = '<div style="color: var(--text-secondary); font-size: 12px;">No recommendations available</div>';
       return;
     }
-    container.innerHTML = songs
-      .map((song) => {
-        const youtubeUrl = `https://www.youtube.com/watch?v=${song.yt_id}`;
-        const thumbnailUrl = `https://img.youtube.com/vi/${song.yt_id}/mqdefault.jpg`;
-        return `\n\t            <div class="recommendation-song-item" onclick="musicPlayer.samplePlayTemporarySong('${youtubeUrl}')" style="cursor: pointer;" title="Click to preview">\n\t                <img src="${thumbnailUrl}" \n\t                     alt="Thumbnail" \n\t                     class="song-thumbnail" \n\t                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='30' viewBox='0 0 40 30'%3E%3Crect fill='%23ddd' width='40' height='30'/%3E%3Ctext x='20' y='18' text-anchor='middle' font-size='8' fill='%23666'%3E♪%3C/text%3E%3C/svg%3E'">\n\t                <div class="recommendation-song-info">\n\t                    <div class="recommendation-song-name">${song.name}</div>\n\t                    <div class="recommendation-song-author">by ${song.artist || 'Unknown'}</div>\n\t                </div>\n\t            </div>\n\t        `;
-      })
-      .join('');
+    container.innerHTML = songs.map(song => {
+      const youtubeUrl = `https://www.youtube.com/watch?v=${song.yt_id}`;
+      const thumbnailUrl = `https://img.youtube.com/vi/${song.yt_id}/mqdefault.jpg`;
+      return `\n\t            <div class="recommendation-song-item" onclick="musicPlayer.samplePlayTemporarySong('${youtubeUrl}')" style="cursor: pointer;" title="Click to preview">\n\t                <img src="${thumbnailUrl}" \n\t                     alt="Thumbnail" \n\t                     class="song-thumbnail" \n\t                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='30' viewBox='0 0 40 30'%3E%3Crect fill='%23ddd' width='40' height='30'/%3E%3Ctext x='20' y='18' text-anchor='middle' font-size='8' fill='%23666'%3E♪%3C/text%3E%3C/svg%3E'">\n\t                <div class="recommendation-song-info">\n\t                    <div class="recommendation-song-name">${song.name}</div>\n\t                    <div class="recommendation-song-author">by ${song.artist || 'Unknown'}</div>\n\t                </div>\n\t            </div>\n\t        `;
+    }).join('');
   }
   async loadBillboardHot100Top3() {
     try {
-      const { data: top3Songs, error: error } = await this.supabase
-        .from('billboard_top_3')
-        .select('*')
-        .order('position');
+      const {data: top3Songs, error: error} = await this.supabase.from('billboard_top_3').select('*').order('position');
       if (error) {
         throw error;
       }
       this.displayBillboardHot100Top3(top3Songs || []);
     } catch (error) {
       console.error('Error loading Billboard Hot 100 top 3:', error);
-      document.getElementById('topSongsContainer').innerHTML =
-        '<div style="color: var(--text-secondary); font-size: 12px;">Unable to load Billboard Hot 100</div>';
+      document.getElementById('topSongsContainer').innerHTML = '<div style="color: var(--text-secondary); font-size: 12px;">Unable to load Billboard Hot 100</div>';
     }
   }
   displayBillboardHot100Top3(top3Songs) {
     const container = document.getElementById('topSongsContainer');
     if (!top3Songs || top3Songs.length === 0) {
-      container.innerHTML =
-        '<div style="color: var(--text-secondary); font-size: 12px;">No Billboard Hot 100 data available</div>';
+      container.innerHTML = '<div style="color: var(--text-secondary); font-size: 12px;">No Billboard Hot 100 data available</div>';
       document.getElementById('billboardLastUpdated').innerHTML = '';
       return;
     }
     if (top3Songs[0]?.last_updated) {
       const lastUpdated = new Date(top3Songs[0].last_updated);
       const timeAgo = this.getTimeAgo(lastUpdated);
-      document.getElementById('billboardLastUpdated').innerHTML =
-        `Updated ${timeAgo} • <a href="https://www.billboard.com/charts/hot-100/" target="_blank" style="color: var(--accent-color); text-decoration: none;">View Official Chart</a>`;
+      document.getElementById('billboardLastUpdated').innerHTML = `Updated ${timeAgo} • <a href="https://www.billboard.com/charts/hot-100/" target="_blank" style="color: var(--accent-color); text-decoration: none;">View Official Chart</a>`;
     }
-    container.innerHTML = top3Songs
-      .map((song) => {
-        const thumbnailUrl = this.getYouTubeThumbnail(song.youtube_url);
-        return `\n            <div class="recommendation-song-item" onclick="musicPlayer.samplePlayTemporarySong('${song.youtube_url}')" style="cursor: pointer;" title="Click to preview">\n                <img src="${thumbnailUrl}" \n                     alt="Thumbnail" \n                     class="song-thumbnail" \n                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'40\\' height=\\'30\\' viewBox=\\'0 0 40 30\\'%3E%3Crect fill=\\'%23ddd\\' width=\\'40\\' height=\\'30\\'/%3E%3Ctext x=\\'20\\' y=\\'18\\' text-anchor=\\'middle\\' font-size=\\'8\\' fill=\\'%23666\\'%3E♪%3C/text%3E%3C/svg%3E'">\n                <div class="recommendation-song-info">\n                    <div class="recommendation-song-name">${song.song}</div>\n                    <div class="recommendation-song-author">by ${song.artist}</div>\n                </div>\n            </div>\n        `;
-      })
-      .join('');
+    container.innerHTML = top3Songs.map(song => {
+      const thumbnailUrl = this.getYouTubeThumbnail(song.youtube_url);
+      return `\n            <div class="recommendation-song-item" onclick="musicPlayer.samplePlayTemporarySong('${song.youtube_url}')" style="cursor: pointer;" title="Click to preview">\n                <img src="${thumbnailUrl}" \n                     alt="Thumbnail" \n                     class="song-thumbnail" \n                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'40\\' height=\\'30\\' viewBox=\\'0 0 40 30\\'%3E%3Crect fill=\\'%23ddd\\' width=\\'40\\' height=\\'30\\'/%3E%3Ctext x=\\'20\\' y=\\'18\\' text-anchor=\\'middle\\' font-size=\\'8\\' fill=\\'%23666\\'%3E♪%3C/text%3E%3C/svg%3E'">\n                <div class="recommendation-song-info">\n                    <div class="recommendation-song-name">${song.song}</div>\n                    <div class="recommendation-song-author">by ${song.artist}</div>\n                </div>\n            </div>\n        `;
+    }).join('');
   }
   getTimeAgo(date) {
     const now = new Date();
@@ -11578,7 +10659,7 @@ class AdvancedMusicPlayer {
       week: 604800,
       day: 86400,
       hour: 3600,
-      minute: 60,
+      minute: 60
     };
     for (const [unit, secondsInUnit] of Object.entries(intervals)) {
       const interval = Math.floor(seconds / secondsInUnit);
@@ -11590,10 +10671,7 @@ class AdvancedMusicPlayer {
   }
   async openBillboardHot100Modal() {
     try {
-      const { data: allSongs, error: error } = await this.supabase
-        .from('billboard_hot_100')
-        .select('*')
-        .order('this_week');
+      const {data: allSongs, error: error} = await this.supabase.from('billboard_hot_100').select('*').order('this_week');
       if (error) {
         throw error;
       }
@@ -11607,9 +10685,9 @@ class AdvancedMusicPlayer {
     const modal = document.createElement('div');
     modal.className = 'billboard-hot-100-modal';
     modal.id = 'billboardHot100Modal';
-    modal.innerHTML = `\n        <div class="billboard-modal-content">\n            <div class="billboard-modal-header">\n                <h2>Billboard Hot 100</h2>\n                <button class="billboard-close-btn" onclick="musicPlayer.closeBillboardHot100Modal()">×</button>\n            </div>\n            <div class="billboard-songs-container">\n                ${songs.map((song) => this.createBillboardSongElementInModal(song)).join('')}\n            </div>\n        </div>\n    `;
+    modal.innerHTML = `\n        <div class="billboard-modal-content">\n            <div class="billboard-modal-header">\n                <h2>Billboard Hot 100</h2>\n                <button class="billboard-close-btn" onclick="musicPlayer.closeBillboardHot100Modal()">×</button>\n            </div>\n            <div class="billboard-songs-container">\n                ${songs.map(song => this.createBillboardSongElementInModal(song)).join('')}\n            </div>\n        </div>\n    `;
     document.body.appendChild(modal);
-    modal.addEventListener('click', (e) => {
+    modal.addEventListener('click', e => {
       if (e.target === modal) {
         this.closeBillboardHot100Modal();
       }
@@ -11647,7 +10725,7 @@ class AdvancedMusicPlayer {
       this.showNotification('Invalid YouTube URL', 'error');
       return;
     }
-    if (this.songLibrary.some((song) => song.videoId === videoId)) {
+    if (this.songLibrary.some(song => song.videoId === videoId)) {
       this.showNotification('This song is already in your library', 'error');
       return;
     }
@@ -11656,7 +10734,7 @@ class AdvancedMusicPlayer {
       name: songName,
       author: artist,
       videoId: videoId,
-      favorite: false,
+      favorite: false
     };
     this.songLibrary.push(newSong);
     try {
@@ -11682,7 +10760,6 @@ class AdvancedMusicPlayer {
   async refreshRandomRecommendations() {
     await this.loadRandomRecommendations();
   }
-
   async searchYouTubeForLibraryMatches(searchTerm, pageToken = null) {
     const maxResults = 5;
     const effectiveSearchTerm = this.topicKeywordEnabled ? `${searchTerm} "topic"` : searchTerm;
@@ -11710,7 +10787,7 @@ class AdvancedMusicPlayer {
         }
         return {
           items: data.items || [],
-          nextPageToken: data.nextPageToken || null,
+          nextPageToken: data.nextPageToken || null
         };
       } catch (error) {
         console.error(`YouTube API attempt ${attempt + 1} failed:`, error);
@@ -11724,7 +10801,7 @@ class AdvancedMusicPlayer {
     const fragment = document.createDocumentFragment();
     const youtubeResultsContainer = document.createElement('div');
     youtubeResultsContainer.classList.add('youtube-library-results');
-    results.forEach((video) => {
+    results.forEach(video => {
       const card = this.createYouTubeLibraryResultCard(video);
       youtubeResultsContainer.appendChild(card);
     });
@@ -11751,14 +10828,10 @@ class AdvancedMusicPlayer {
       btn.disabled = true;
     }
     try {
-      const { items: items, nextPageToken: nextPageToken } =
-        await this.searchYouTubeForLibraryMatches(
-          this.currentLibrarySearchTerm,
-          this.currentLibraryNextPageToken
-        );
+      const {items: items, nextPageToken: nextPageToken} = await this.searchYouTubeForLibraryMatches(this.currentLibrarySearchTerm, this.currentLibraryNextPageToken);
       this.currentLibraryNextPageToken = nextPageToken;
       const container = this.elements.songLibrary.querySelector('.youtube-library-results');
-      items.forEach((video) => {
+      items.forEach(video => {
         const card = this.createYouTubeLibraryResultCard(video);
         container.appendChild(card);
       });
@@ -11783,9 +10856,7 @@ class AdvancedMusicPlayer {
     const publishedAt = new Date(video.snippet.publishedAt);
     const thumbnail = video.snippet.thumbnails.high?.url || video.snippet.thumbnails.medium.url;
     const uploadDate = this.formatYouTubeUploadDate(publishedAt);
-    const viewCount = video.statistics?.viewCount
-      ? this.formatYouTubeViewCount(parseInt(video.statistics.viewCount))
-      : null;
+    const viewCount = video.statistics?.viewCount ? this.formatYouTubeViewCount(parseInt(video.statistics.viewCount)) : null;
     const meta = viewCount ? `${viewCount} • ${uploadDate}` : uploadDate;
     const card = document.createElement('div');
     card.classList.add('youtube-library-result-card');
@@ -11793,7 +10864,7 @@ class AdvancedMusicPlayer {
     return card;
   }
   setupYouTubeLibraryResultsDelegation() {
-    this.elements.songLibrary.addEventListener('click', (e) => {
+    this.elements.songLibrary.addEventListener('click', e => {
       const previewBtn = e.target.closest('.youtube-result-preview-btn');
       if (previewBtn) {
         const videoId = previewBtn.dataset.videoId;
@@ -11848,21 +10919,20 @@ class AdvancedMusicPlayer {
       return 'Today';
     }
   }
-
   loadKeybinds() {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       if (!this.db) {
         resolve();
         return;
       }
-      const transaction = this.db.transaction(['userSettings'], 'readonly');
+      const transaction = this.db.transaction([ 'userSettings' ], 'readonly');
       const store = transaction.objectStore('userSettings');
       const request = store.get('keybinds');
-      request.onsuccess = (event) => {
+      request.onsuccess = event => {
         if (event.target.result && event.target.result.settings) {
           this.currentKeybinds = {
             ...this.defaultKeybinds,
-            ...event.target.result.settings,
+            ...event.target.result.settings
           };
         }
         resolve();
@@ -11876,19 +10946,19 @@ class AdvancedMusicPlayer {
         reject('Database not initialized');
         return;
       }
-      const transaction = this.db.transaction(['userSettings'], 'readwrite');
+      const transaction = this.db.transaction([ 'userSettings' ], 'readwrite');
       const store = transaction.objectStore('userSettings');
       store.put({
         category: 'keybinds',
-        settings: this.currentKeybinds,
+        settings: this.currentKeybinds
       });
       transaction.oncomplete = () => resolve();
-      transaction.onerror = (event) => reject('Could not save keybinds');
+      transaction.onerror = event => reject('Could not save keybinds');
     });
   }
   loadKeybindsSettings() {
     const keybindInputs = document.querySelectorAll('.keybind-input');
-    keybindInputs.forEach((input) => {
+    keybindInputs.forEach(input => {
       const action = input.dataset.action;
       input.classList.remove('unbound');
       const keyCode = this.currentKeybinds[action];
@@ -11915,7 +10985,7 @@ class AdvancedMusicPlayer {
       Equal: '+ (Plus)',
       Minus: '- (Minus)',
       Escape: 'Esc',
-      Backspace: 'Backspace',
+      Backspace: 'Backspace'
     };
     if (code.startsWith('Key')) {
       return code.replace('Key', '');
@@ -11940,7 +11010,7 @@ class AdvancedMusicPlayer {
     this.recordingInput = inputElement;
     inputElement.value = 'Press a key...';
     inputElement.classList.add('recording');
-    this.keybindListener = (e) => {
+    this.keybindListener = e => {
       e.preventDefault();
       e.stopPropagation();
       if (e.code === 'Escape') {
@@ -11977,7 +11047,7 @@ class AdvancedMusicPlayer {
       toggleWebEmbed: 'Toggle Web Embed',
       toggleMusicExplorer: 'Toggle Music Explorer',
       seekForward: 'Seek Forward 5s',
-      seekBackward: 'Seek Backward 5s',
+      seekBackward: 'Seek Backward 5s'
     };
     return actionNames[action] || action;
   }
@@ -11985,23 +11055,16 @@ class AdvancedMusicPlayer {
     if (!this.isRecordingKeybind) {
       return;
     }
-    const conflictingAction = Object.keys(this.currentKeybinds).find(
-      (action) => this.currentKeybinds[action] === keyCode && action !== this.recordingAction
-    );
+    const conflictingAction = Object.keys(this.currentKeybinds).find(action => this.currentKeybinds[action] === keyCode && action !== this.recordingAction);
     if (conflictingAction) {
       const currentActionBase = this.recordingAction.replace(/2$/, '');
       const conflictActionBase = conflictingAction.replace(/2$/, '');
       if (currentActionBase !== conflictActionBase) {
-        alert(
-          `Key "${this.getKeyDisplayName(keyCode)}" is already used for "${this.getActionDisplayName(conflictingAction)}"!`
-        );
+        alert(`Key "${this.getKeyDisplayName(keyCode)}" is already used for "${this.getActionDisplayName(conflictingAction)}"!`);
         this.cancelKeybindRecording();
         return;
       }
-      const userChoice = confirm(
-        `Key "${this.getKeyDisplayName(keyCode)}" is already used for the same action. ` +
-          `Click OK to swap the keys, or Cancel to keep both.`
-      );
+      const userChoice = confirm(`Key "${this.getKeyDisplayName(keyCode)}" is already used for the same action. ` + `Click OK to swap the keys, or Cancel to keep both.`);
       if (userChoice) {
         this.currentKeybinds[conflictingAction] = '';
       }
@@ -12009,18 +11072,14 @@ class AdvancedMusicPlayer {
     this.currentKeybinds[this.recordingAction] = keyCode;
     this.recordingInput.value = this.getKeyDisplayName(keyCode);
     this.recordingInput.classList.remove('recording');
-    this.saveKeybinds()
-      .then(() => {
-        this.loadKeybindsSettings();
-      })
-      .catch(console.error);
+    this.saveKeybinds().then(() => {
+      this.loadKeybindsSettings();
+    }).catch(console.error);
     this.stopKeybindRecording();
   }
   cancelKeybindRecording() {
     if (this.recordingInput) {
-      this.recordingInput.value = this.getKeyDisplayName(
-        this.currentKeybinds[this.recordingAction]
-      );
+      this.recordingInput.value = this.getKeyDisplayName(this.currentKeybinds[this.recordingAction]);
       this.recordingInput.classList.remove('recording');
     }
     this.stopKeybindRecording();
@@ -12037,13 +11096,11 @@ class AdvancedMusicPlayer {
   resetKeybindsToDefault() {
     if (confirm('Reset all keybinds to default?')) {
       this.currentKeybinds = {
-        ...this.defaultKeybinds,
+        ...this.defaultKeybinds
       };
-      this.saveKeybinds()
-        .then(() => {
-          this.loadKeybindsSettings();
-        })
-        .catch(console.error);
+      this.saveKeybinds().then(() => {
+        this.loadKeybindsSettings();
+      }).catch(console.error);
     }
   }
   handleKeybind(code) {
@@ -12052,20 +11109,11 @@ class AdvancedMusicPlayer {
       this.cycleFaviconAndTitle();
     } else if (code === k.toggleWebEmbed && k.toggleWebEmbed !== '') {
       this.toggleWebEmbedOverlay();
-    } else if (
-      (code === k.togglePlayPause && k.togglePlayPause !== '') ||
-      (code === k.togglePlayPause2 && k.togglePlayPause2 !== '')
-    ) {
+    } else if (code === k.togglePlayPause && k.togglePlayPause !== '' || code === k.togglePlayPause2 && k.togglePlayPause2 !== '') {
       this.togglePlayPause();
-    } else if (
-      (code === k.previousSong && k.previousSong !== '') ||
-      (code === k.previousSong2 && k.previousSong2 !== '')
-    ) {
+    } else if (code === k.previousSong && k.previousSong !== '' || code === k.previousSong2 && k.previousSong2 !== '') {
       this.playPreviousSong();
-    } else if (
-      (code === k.nextSong && k.nextSong !== '') ||
-      (code === k.nextSong2 && k.nextSong2 !== '')
-    ) {
+    } else if (code === k.nextSong && k.nextSong !== '' || code === k.nextSong2 && k.nextSong2 !== '') {
       this.playNextSong();
     } else if (code === k.volumeUp && k.volumeUp !== '') {
       this.adjustVolume(0.1);
@@ -12085,10 +11133,7 @@ class AdvancedMusicPlayer {
       this.adjustVolume(-0.01);
     } else if (code === k.toggleControlBar && k.toggleControlBar !== '') {
       this.toggleControlBar();
-    } else if (
-      (code === k.togglePlaylistSidebar && k.togglePlaylistSidebar !== '') ||
-      (code === k.togglePlaylistSidebar2 && k.togglePlaylistSidebar2 !== '')
-    ) {
+    } else if (code === k.togglePlaylistSidebar && k.togglePlaylistSidebar !== '' || code === k.togglePlaylistSidebar2 && k.togglePlaylistSidebar2 !== '') {
       this.togglePlaylistSidebar();
     } else if (code === k.cycleTab && k.cycleTab !== '') {
       this.cycleToNextTab();
@@ -12106,12 +11151,11 @@ class AdvancedMusicPlayer {
       this.seekBy(-5);
     }
   }
-
   async loadDiscordSettings() {
     try {
-      const tx = this.db.transaction(['settings'], 'readonly');
+      const tx = this.db.transaction([ 'settings' ], 'readonly');
       const req = tx.objectStore('settings').get('discordRPC');
-      return new Promise((resolve) => {
+      return new Promise(resolve => {
         req.onsuccess = () => {
           if (req.result) {
             this.discordEnabled = req.result.enabled || false;
@@ -12124,10 +11168,10 @@ class AdvancedMusicPlayer {
   }
   async saveDiscordSettings() {
     try {
-      const tx = this.db.transaction(['settings'], 'readwrite');
+      const tx = this.db.transaction([ 'settings' ], 'readwrite');
       tx.objectStore('settings').put({
         name: 'discordRPC',
-        enabled: this.discordEnabled,
+        enabled: this.discordEnabled
       });
     } catch (error) {}
   }
@@ -12191,13 +11235,12 @@ class AdvancedMusicPlayer {
         this._discordWsOk = false;
         this._discordApiOk = false;
         this.discordConnected = false;
-        this._discordLastError =
-          'Cannot reach ws://localhost:9112 — is the SweetEscape desktop app running?';
+        this._discordLastError = 'Cannot reach ws://localhost:9112 — is the SweetEscape desktop app running?';
         this._discordShowError(this._discordLastError);
         this._discordRefreshModal();
         this.updateDiscordButtonUI();
       };
-      this.discordWs.onmessage = (event) => {
+      this.discordWs.onmessage = event => {
         try {
           const r = JSON.parse(event.data);
           if (r.status === 'app_ready') {
@@ -12245,12 +11288,10 @@ class AdvancedMusicPlayer {
   closeDiscordConnection() {
     if (this.discordWs?.readyState === WebSocket.OPEN) {
       try {
-        this.discordWs.send(
-          JSON.stringify({
-            action: 'clear',
-            enabled: false,
-          })
-        );
+        this.discordWs.send(JSON.stringify({
+          action: 'clear',
+          enabled: false
+        }));
       } catch (error) {}
       setTimeout(() => {
         this.discordWs?.close();
@@ -12276,13 +11317,11 @@ class AdvancedMusicPlayer {
     }
     const d = await this._discordGetEffective();
     try {
-      this.discordWs.send(
-        JSON.stringify({
-          song: d.song,
-          artist: d.artist,
-          url: d.url,
-        })
-      );
+      this.discordWs.send(JSON.stringify({
+        song: d.song,
+        artist: d.artist,
+        url: d.url
+      }));
       await this._discordSyncPreview();
     } catch (error) {
       console.error('Discord RPC send failed:', error);
@@ -12313,9 +11352,7 @@ class AdvancedMusicPlayer {
     }
     const desc = document.getElementById('discordToggleDesc');
     if (desc) {
-      desc.textContent = this.discordEnabled
-        ? 'Sharing your activity on Discord'
-        : 'Shows your current song on Discord';
+      desc.textContent = this.discordEnabled ? 'Sharing your activity on Discord' : 'Shows your current song on Discord';
     }
     let state = 'disabled';
     if (this._discordConnecting) {
@@ -12333,19 +11370,19 @@ class AdvancedMusicPlayer {
       disabled: 'fa-circle-minus',
       connecting: 'fa-circle-notch fa-spin',
       connected: 'fa-circle-check',
-      disconnected: 'fa-circle-xmark',
+      disconnected: 'fa-circle-xmark'
     };
     const titles = {
       disabled: 'Disabled',
       connecting: 'Connecting…',
       connected: 'Connected & Live',
-      disconnected: 'Not Connected',
+      disconnected: 'Not Connected'
     };
     const subs = {
       disabled: 'Toggle the switch above to enable',
       connecting: 'Looking for the desktop app…',
       connected: 'Your listening activity is live on Discord',
-      disconnected: this._discordLastError || 'Connection failed',
+      disconnected: this._discordLastError || 'Connection failed'
     };
     const bi = document.getElementById('discordBadgeIcon');
     if (bi) {
@@ -12369,10 +11406,7 @@ class AdvancedMusicPlayer {
     const cb = document.getElementById('discordConnectBtn');
     const db = document.getElementById('discordDisableBtn');
     if (cb) {
-      cb.style.display =
-        this.discordEnabled && !this.discordConnected && !this._discordConnecting
-          ? 'inline-flex'
-          : 'none';
+      cb.style.display = this.discordEnabled && !this.discordConnected && !this._discordConnecting ? 'inline-flex' : 'none';
     }
     if (db) {
       db.style.display = this.discordConnected ? 'inline-flex' : 'none';
@@ -12402,10 +11436,9 @@ class AdvancedMusicPlayer {
         const iconMap = {
           ok: 'fa-check',
           fail: 'fa-times',
-          idle: 'fa-circle',
+          idle: 'fa-circle'
         };
-        el.querySelector('.discord-step-icon').innerHTML =
-          `<i class="fas ${iconMap[stepState] || 'fa-circle'}"></i>`;
+        el.querySelector('.discord-step-icon').innerHTML = `<i class="fas ${iconMap[stepState] || 'fa-circle'}"></i>`;
       }
     };
     if (state === 'disabled') {
@@ -12421,23 +11454,13 @@ class AdvancedMusicPlayer {
       return;
     }
     if (!this._discordWsOk) {
-      set(
-        'discordStep2',
-        'discordStep2Desc',
-        'fail',
-        'Cannot reach ws://localhost:9112 — app not running?'
-      );
+      set('discordStep2', 'discordStep2Desc', 'fail', 'Cannot reach ws://localhost:9112 — app not running?');
       set('discordStep3', 'discordStep3Desc', 'idle', 'Waiting for WebSocket');
       return;
     }
     set('discordStep2', 'discordStep2Desc', 'ok', 'WebSocket connected to desktop app');
     if (!this._discordApiOk) {
-      set(
-        'discordStep3',
-        'discordStep3Desc',
-        'fail',
-        'Desktop app could not reach Discord — is Discord open?'
-      );
+      set('discordStep3', 'discordStep3Desc', 'fail', 'Desktop app could not reach Discord — is Discord open?');
       return;
     }
     set('discordStep3', 'discordStep3Desc', 'ok', 'Discord API connected — presence is live');
@@ -12474,7 +11497,7 @@ class AdvancedMusicPlayer {
   }
   async _discordSyncPreview() {
     const d = await this._discordGetEffective();
-    const el = (id) => document.getElementById(id);
+    const el = id => document.getElementById(id);
     if (el('discordPreviewSong')) {
       el('discordPreviewSong').textContent = d.song || 'No song playing';
     }
@@ -12486,9 +11509,7 @@ class AdvancedMusicPlayer {
       el('discordPreviewUrl').href = d.url || '#';
     }
     if (el('discordPreviewThumb')) {
-      el('discordPreviewThumb').innerHTML = d.thumbnail
-        ? `<img src="${d.thumbnail}" onerror="this.parentElement.innerHTML='<i class=\\'fas fa-music\\'></i>'" alt="">`
-        : '<i class="fas fa-music"></i>';
+      el('discordPreviewThumb').innerHTML = d.thumbnail ? `<img src="${d.thumbnail}" onerror="this.parentElement.innerHTML='<i class=\\'fas fa-music\\'></i>'" alt="">` : '<i class="fas fa-music"></i>';
     }
   }
   async _discordSyncFields() {
@@ -12496,7 +11517,7 @@ class AdvancedMusicPlayer {
       this._discordOverrides = {};
     }
     const a = await this._discordGetAuto();
-    const s = (id) => {
+    const s = id => {
       const e = document.getElementById(id);
       return e ? e : null;
     };
@@ -12526,9 +11547,7 @@ class AdvancedMusicPlayer {
       document.getElementById(groupId)?.classList.toggle('is-modified', modified);
       const badge = document.getElementById(badgeId);
       if (badge) {
-        badge.innerHTML = modified
-          ? '<i class="fas fa-pencil"></i> Custom'
-          : '<i class="fas fa-wand-magic-sparkles"></i> Auto';
+        badge.innerHTML = modified ? '<i class="fas fa-pencil"></i> Custom' : '<i class="fas fa-wand-magic-sparkles"></i> Auto';
       }
     };
     handle('discordEditSong', 'discordFieldSong', 'discordBadgeSong', 'song', a.song);
@@ -12538,10 +11557,8 @@ class AdvancedMusicPlayer {
   }
   async _discordResetFields() {
     this._discordOverrides = {};
-    ['discordFieldSong', 'discordFieldArtist', 'discordFieldThumb'].forEach((id) =>
-      document.getElementById(id)?.classList.remove('is-modified')
-    );
-    ['discordBadgeSong', 'discordBadgeArtist', 'discordBadgeThumb'].forEach((id) => {
+    [ 'discordFieldSong', 'discordFieldArtist', 'discordFieldThumb' ].forEach(id => document.getElementById(id)?.classList.remove('is-modified'));
+    [ 'discordBadgeSong', 'discordBadgeArtist', 'discordBadgeThumb' ].forEach(id => {
       const e = document.getElementById(id);
       if (e) {
         e.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Auto';
@@ -12591,7 +11608,7 @@ class AdvancedMusicPlayer {
       song: s?.name || '',
       artist: s?.author || '',
       url: v ? `https://www.youtube.com/watch?v=${v}` : '',
-      thumbnail: thumbnail,
+      thumbnail: thumbnail
     };
   }
   async _discordGetEffective() {
@@ -12601,7 +11618,7 @@ class AdvancedMusicPlayer {
       song: o.song ?? a.song,
       artist: o.artist ?? a.artist,
       url: o.url ?? a.url,
-      thumbnail: o.thumbnail ?? a.thumbnail,
+      thumbnail: o.thumbnail ?? a.thumbnail
     };
   }
   _discordSyncLastUpdate() {
@@ -12664,7 +11681,6 @@ class AdvancedMusicPlayer {
     this.initDiscordConnection();
     this._discordRefreshModal();
   }
-
   initDownloadModal() {
     const overlay = document.getElementById('downloadModal');
     const closeBtn = document.getElementById('dlCloseBtn');
@@ -12672,7 +11688,7 @@ class AdvancedMusicPlayer {
     const panels = {
       current: document.getElementById('dlPanelCurrent'),
       search: document.getElementById('dlPanelSearch'),
-      url: document.getElementById('dlPanelUrl'),
+      url: document.getElementById('dlPanelUrl')
     };
     const searchInput = document.getElementById('dlSearchInput');
     const searchResults = document.getElementById('dlSearchResults');
@@ -12682,8 +11698,7 @@ class AdvancedMusicPlayer {
     const queueList = document.getElementById('dlQueueList');
     const downloadAllBtn = document.getElementById('dlDownloadAllBtn');
     const downloadAllLabel = document.getElementById('dlDownloadAllLabel');
-    const escHtml = (s) =>
-      s ? s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
+    const escHtml = s => s ? s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
     const open = () => {
       overlay.style.display = 'flex';
       refreshCurrentPanel();
@@ -12695,21 +11710,21 @@ class AdvancedMusicPlayer {
     const close = () => {
       overlay.style.display = 'none';
     };
-    overlay.addEventListener('click', (e) => {
+    overlay.addEventListener('click', e => {
       if (e.target === overlay) {
         close();
       }
     });
     closeBtn.addEventListener('click', close);
-    document.addEventListener('keydown', (e) => {
+    document.addEventListener('keydown', e => {
       if (e.key === 'Escape' && overlay.style.display !== 'none') {
         close();
       }
     });
     document.getElementById('downloadButton').addEventListener('click', open);
-    const setMode = (mode) => {
-      modeBtns.forEach((b) => b.classList.toggle('active', b.dataset.mode === mode));
-      Object.entries(panels).forEach(([k, el]) => (el.style.display = k === mode ? '' : 'none'));
+    const setMode = mode => {
+      modeBtns.forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+      Object.entries(panels).forEach(([k, el]) => el.style.display = k === mode ? '' : 'none');
       if (mode === 'search') {
         setTimeout(() => searchInput.focus(), 50);
       }
@@ -12717,7 +11732,7 @@ class AdvancedMusicPlayer {
         setTimeout(() => urlInput.focus(), 50);
       }
     };
-    modeBtns.forEach((btn) => btn.addEventListener('click', () => setMode(btn.dataset.mode)));
+    modeBtns.forEach(btn => btn.addEventListener('click', () => setMode(btn.dataset.mode)));
     const refreshCurrentPanel = () => {
       const song = this.currentSong;
       const modeBtn = document.getElementById('dlModeCurrent');
@@ -12733,14 +11748,14 @@ class AdvancedMusicPlayer {
         thumb.style.backgroundImage = `url(https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg)`;
       }
       const addBtn = document.getElementById('dlCurrentAddBtn');
-      const alreadyQueued = this.dlQueue.some((q) => q.videoId === song.videoId);
+      const alreadyQueued = this.dlQueue.some(q => q.videoId === song.videoId);
       addBtn.disabled = alreadyQueued;
       addBtn.title = alreadyQueued ? 'Already in queue' : 'Add to queue';
       addBtn.onclick = () => {
         addToQueue({
           videoId: song.videoId,
           name: song.name,
-          author: song.author,
+          author: song.author
         });
         addBtn.disabled = true;
       };
@@ -12750,50 +11765,39 @@ class AdvancedMusicPlayer {
       clearTimeout(_debounce);
       _debounce = setTimeout(() => renderSearch(searchInput.value.trim()), 120);
     });
-    const renderSearch = (term) => {
+    const renderSearch = term => {
       if (!term) {
         searchResults.hidden = true;
         return;
       }
       const lower = term.toLowerCase();
-      const results = this.songLibrary
-        .filter(
-          (s) =>
-            s.name.toLowerCase().includes(lower) ||
-            (s.author && s.author.toLowerCase().includes(lower))
-        )
-        .slice(0, 5);
+      const results = this.songLibrary.filter(s => s.name.toLowerCase().includes(lower) || s.author && s.author.toLowerCase().includes(lower)).slice(0, 5);
       if (!results.length) {
         searchResults.hidden = true;
         return;
       }
       searchResults.hidden = false;
-      searchResults.innerHTML = results
-        .map(
-          (s, i) =>
-            `\n      <div class="dl-result${i === 0 ? ' focused' : ''}" data-idx="${i}">\n        <div style="flex:1;min-width:0;">\n          <span class="dl-result-name">${escHtml(s.name)}</span>\n          ${s.author ? `<span class="dl-result-author">${escHtml(s.author)}</span>` : ''}\n        </div>\n        <button class="dl-result-add" title="Add to queue"><i class="fas fa-plus"></i></button>\n      </div>`
-        )
-        .join('');
+      searchResults.innerHTML = results.map((s, i) => `\n      <div class="dl-result${i === 0 ? ' focused' : ''}" data-idx="${i}">\n        <div style="flex:1;min-width:0;">\n          <span class="dl-result-name">${escHtml(s.name)}</span>\n          ${s.author ? `<span class="dl-result-author">${escHtml(s.author)}</span>` : ''}\n        </div>\n        <button class="dl-result-add" title="Add to queue"><i class="fas fa-plus"></i></button>\n      </div>`).join('');
       searchResults.querySelectorAll('.dl-result').forEach((el, i) => {
-        el.querySelector('.dl-result-add').addEventListener('click', (e) => {
+        el.querySelector('.dl-result-add').addEventListener('click', e => {
           e.stopPropagation();
           addToQueue({
             videoId: results[i].videoId,
             name: results[i].name,
-            author: results[i].author,
+            author: results[i].author
           });
         });
         el.addEventListener('click', () => {
           addToQueue({
             videoId: results[i].videoId,
             name: results[i].name,
-            author: results[i].author,
+            author: results[i].author
           });
         });
       });
     };
-    const handleSearchKey = (e) => {
-      const items = [...searchResults.querySelectorAll('.dl-result')];
+    const handleSearchKey = e => {
+      const items = [ ...searchResults.querySelectorAll('.dl-result') ];
       const focused = searchResults.querySelector('.dl-result.focused');
       let idx = focused ? items.indexOf(focused) : 0;
       if (e.key === 'Enter') {
@@ -12818,44 +11822,41 @@ class AdvancedMusicPlayer {
       const id = this.extractYouTubeId(urlInput.value.trim());
       if (!id) {
         urlInput.style.borderColor = 'var(--error-color)';
-        setTimeout(() => (urlInput.style.borderColor = ''), 1200);
+        setTimeout(() => urlInput.style.borderColor = '', 1200);
         return;
       }
       addToQueue({
         videoId: id,
         name: id,
-        author: '',
+        author: ''
       });
-      fetch(`/api/song/${id}`)
-        .then((r) => r.text())
-        .then((html) => {
-          const m = html.match(/<title>(.*?)<\/title>/);
-          if (m) {
-            const item = this.dlQueue.find((q) => q.videoId === id);
-            if (item) {
-              item.name = m[1].replace(/ - .*/, '').trim();
-              renderQueue();
-            }
+      fetch(`/api/song/${id}`).then(r => r.text()).then(html => {
+        const m = html.match(/<title>(.*?)<\/title>/);
+        if (m) {
+          const item = this.dlQueue.find(q => q.videoId === id);
+          if (item) {
+            item.name = m[1].replace(/ - .*/, '').trim();
+            renderQueue();
           }
-        })
-        .catch(() => {});
+        }
+      }).catch(() => {});
       urlInput.value = '';
     };
     addUrlBtn.addEventListener('click', addFromUrl);
-    urlInput.addEventListener('keydown', (e) => {
+    urlInput.addEventListener('keydown', e => {
       if (e.key === 'Enter') {
         addFromUrl();
       }
     });
-    const addToQueue = (song) => {
-      if (this.dlQueue.some((q) => q.videoId === song.videoId)) {
+    const addToQueue = song => {
+      if (this.dlQueue.some(q => q.videoId === song.videoId)) {
         return;
       }
       this.dlQueue.push({
         ...song,
         status: 'idle',
         link: null,
-        opened: false,
+        opened: false
       });
       renderQueue();
       convertItem(this.dlQueue[this.dlQueue.length - 1]);
@@ -12866,22 +11867,16 @@ class AdvancedMusicPlayer {
         return;
       }
       queueSection.style.display = '';
-      const totalDone = this.dlQueue.filter((q) => q.status === 'done').length;
-      const notOpened = this.dlQueue.filter((q) => q.status === 'done' && !q.opened).length;
-      const anyOpened = this.dlQueue.some((q) => q.opened);
+      const totalDone = this.dlQueue.filter(q => q.status === 'done').length;
+      const notOpened = this.dlQueue.filter(q => q.status === 'done' && !q.opened).length;
+      const anyOpened = this.dlQueue.some(q => q.opened);
       if (anyOpened) {
-        downloadAllLabel.textContent =
-          notOpened > 0 ? `Download rest (${notOpened})` : 'All downloaded';
+        downloadAllLabel.textContent = notOpened > 0 ? `Download rest (${notOpened})` : 'All downloaded';
       } else {
         downloadAllLabel.textContent = `Download all (${totalDone}/${this.dlQueue.length})`;
       }
       downloadAllBtn.disabled = notOpened === 0;
-      queueList.innerHTML = this.dlQueue
-        .map(
-          (item, i) =>
-            `\n      <div class="dl-queue-item${item.opened ? ' dl-qi-opened' : ''}" data-idx="${i}">\n        <div class="dl-qi-thumb" style="${item.videoId ? `background-image:url(https://img.youtube.com/vi/${item.videoId}/mqdefault.jpg)` : ''}"></div>\n        <div class="dl-qi-info">\n          <div class="dl-qi-name">${escHtml(item.name)}</div>\n          <div class="dl-qi-status ${item.status}">\n            ${item.status === 'idle' ? 'Waiting…' : item.status === 'converting' ? '<span class="dl-spinner"></span> Converting…' : item.status === 'done' && item.opened ? '<i class="fas fa-check"></i> Downloaded' : item.status === 'done' ? 'Ready' : item._quotaExceeded ? 'API limit reached' : 'Failed — tap retry'}\n          </div>\n        </div>\n        <div class="dl-qi-actions">\n          ${item.status === 'done' && item.opened ? `<span class="dl-qi-tick" style="color:#5D9C59"><i class="fas fa-check-circle"></i></span>` : item.status === 'done' ? `<button class="dl-qi-download" title="Download"><i class="fas fa-download"></i></button>` : item.status === 'error' ? `<button class="dl-qi-download" title="Retry"><i class="fas fa-redo"></i></button>` : ''}\n          <button class="dl-qi-remove" title="Remove"><i class="fas fa-times"></i></button>\n        </div>\n      </div>`
-        )
-        .join('');
+      queueList.innerHTML = this.dlQueue.map((item, i) => `\n      <div class="dl-queue-item${item.opened ? ' dl-qi-opened' : ''}" data-idx="${i}">\n        <div class="dl-qi-thumb" style="${item.videoId ? `background-image:url(https://img.youtube.com/vi/${item.videoId}/mqdefault.jpg)` : ''}"></div>\n        <div class="dl-qi-info">\n          <div class="dl-qi-name">${escHtml(item.name)}</div>\n          <div class="dl-qi-status ${item.status}">\n            ${item.status === 'idle' ? 'Waiting…' : item.status === 'converting' ? '<span class="dl-spinner"></span> Converting…' : item.status === 'done' && item.opened ? '<i class="fas fa-check"></i> Downloaded' : item.status === 'done' ? 'Ready' : item._quotaExceeded ? 'API limit reached' : 'Failed — tap retry'}\n          </div>\n        </div>\n        <div class="dl-qi-actions">\n          ${item.status === 'done' && item.opened ? `<span class="dl-qi-tick" style="color:#5D9C59"><i class="fas fa-check-circle"></i></span>` : item.status === 'done' ? `<button class="dl-qi-download" title="Download"><i class="fas fa-download"></i></button>` : item.status === 'error' ? `<button class="dl-qi-download" title="Retry"><i class="fas fa-redo"></i></button>` : ''}\n          <button class="dl-qi-remove" title="Remove"><i class="fas fa-times"></i></button>\n        </div>\n      </div>`).join('');
       queueList.querySelectorAll('.dl-queue-item').forEach((el, i) => {
         const item = this.dlQueue[i];
         el.querySelector('.dl-qi-remove')?.addEventListener('click', () => {
@@ -12904,11 +11899,11 @@ class AdvancedMusicPlayer {
         }
       });
     };
-    const convertItem = async (item) => {
+    const convertItem = async item => {
       if (item.status === 'done' || item.status === 'converting') {
         return;
       }
-      const activeCount = this.dlQueue.filter((q) => q.status === 'converting').length;
+      const activeCount = this.dlQueue.filter(q => q.status === 'converting').length;
       if (activeCount >= 2) {
         setTimeout(() => convertItem(item), 2e3);
         return;
@@ -12944,16 +11939,13 @@ class AdvancedMusicPlayer {
       renderQueue();
     };
     downloadAllBtn.addEventListener('click', () => {
-      this.dlQueue
-        .filter((item) => item.status === 'done' && item.link && !item.opened)
-        .forEach((item) => {
-          item.opened = true;
-          window.open(item.link, '_blank');
-        });
+      this.dlQueue.filter(item => item.status === 'done' && item.link && !item.opened).forEach(item => {
+        item.opened = true;
+        window.open(item.link, '_blank');
+      });
       renderQueue();
     });
   }
-
   initShazamModal() {
     const MAX_SECONDS = 12;
     const PX_PER_SECOND = 40;
@@ -12987,17 +11979,12 @@ class AdvancedMusicPlayer {
     const micIcon = micBtn.querySelector('i');
     let audioCtx, sourceNode, gainNode, processorNode, mediaStream;
     let sampleRate = 48e3;
-    let chunks = [],
-      levels = [],
-      totalSamples = 0;
-    let isListening = false,
-      activeSource = null;
-    let selStart = 0,
-      selEnd = 0,
-      dragging = false;
+    let chunks = [], levels = [], totalSamples = 0;
+    let isListening = false, activeSource = null;
+    let selStart = 0, selEnd = 0, dragging = false;
     let currentClipUrl = null;
     let lastMatchedTrack = null;
-    const setStatus = (msg) => {
+    const setStatus = msg => {
       statusEl.textContent = msg;
     };
     const openModal = () => {
@@ -13012,9 +11999,9 @@ class AdvancedMusicPlayer {
     const acquireDisplayAudioStream = async () => {
       const displayStream = await navigator.mediaDevices.getDisplayMedia({
         video: true,
-        audio: true,
+        audio: true
       });
-      displayStream.getVideoTracks().forEach((t) => t.stop());
+      displayStream.getVideoTracks().forEach(t => t.stop());
       const audioTracks = displayStream.getAudioTracks();
       if (audioTracks.length === 0) {
         throw new Error('no-audio-track');
@@ -13026,26 +12013,24 @@ class AdvancedMusicPlayer {
       });
       return new MediaStream(audioTracks);
     };
-    const acquireMicStream = () =>
-      navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: false,
-          noiseSuppression: false,
-          autoGainControl: false,
-          channelCount: 1,
-        },
-      });
+    const acquireMicStream = () => navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: false,
+        noiseSuppression: false,
+        autoGainControl: false,
+        channelCount: 1
+      }
+    });
     if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
       captureTabBtn.disabled = true;
       captureTabBtn.title = 'Not supported in this browser';
     }
-    const startCapture = async (kind) => {
+    const startCapture = async kind => {
       if (isListening) {
         return;
       }
       try {
-        mediaStream =
-          kind === 'display' ? await acquireDisplayAudioStream() : await acquireMicStream();
+        mediaStream = kind === 'display' ? await acquireDisplayAudioStream() : await acquireMicStream();
       } catch (error) {
         if (kind === 'display' && error.message === 'no-audio-track') {
           setStatus('That share had no audio — pick "Share tab audio", or use the microphone');
@@ -13079,7 +12064,7 @@ class AdvancedMusicPlayer {
       silent.gain.value = 0;
       processorNode.connect(silent);
       silent.connect(audioCtx.destination);
-      processorNode.onaudioprocess = (e) => {
+      processorNode.onaudioprocess = e => {
         const copy = new Float32Array(e.inputBuffer.getChannelData(0));
         chunks.push(copy);
         let peak = 0;
@@ -13100,10 +12085,7 @@ class AdvancedMusicPlayer {
       isListening = true;
       activeSource = kind;
       updateSourceButtons();
-      setStatus(
-        (kind === 'display' ? 'Capturing tab/system audio' : 'Listening on microphone') +
-          `… up to ${MAX_SECONDS}s, then drag to select the music`
-      );
+      setStatus((kind === 'display' ? 'Capturing tab/system audio' : 'Listening on microphone') + `… up to ${MAX_SECONDS}s, then drag to select the music`);
     };
     const stopCapture = () => {
       if (!isListening) {
@@ -13112,7 +12094,7 @@ class AdvancedMusicPlayer {
       processorNode?.disconnect();
       gainNode?.disconnect();
       sourceNode?.disconnect();
-      mediaStream?.getTracks().forEach((t) => t.stop());
+      mediaStream?.getTracks().forEach(t => t.stop());
       audioCtx?.close();
       isListening = false;
       activeSource = null;
@@ -13145,29 +12127,25 @@ class AdvancedMusicPlayer {
       waveCtx.fillStyle = 'rgba(255,255,255,0.15)';
       waveCtx.fillRect(0, 34, width, 2);
       const pxPerChunk = PX_PER_SECOND * chunkDurationSec();
-      waveCtx.fillStyle =
-        getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim() ||
-        '#4C8DFF';
+      waveCtx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim() || '#4C8DFF';
       levels.forEach((lvl, i) => {
         const h = Math.max(2, lvl * 60);
         waveCtx.fillRect(i * pxPerChunk, 35 - h / 2, Math.max(1, pxPerChunk - 1), h);
       });
       if (selEnd > selStart) {
-        const x1 = selStart * PX_PER_SECOND,
-          x2 = selEnd * PX_PER_SECOND;
+        const x1 = selStart * PX_PER_SECOND, x2 = selEnd * PX_PER_SECOND;
         waveCtx.fillStyle = 'rgba(93,156,89,0.25)';
         waveCtx.fillRect(x1, 0, x2 - x1, 70);
       }
     };
-    const pixelToTime = (px) =>
-      Math.max(0, Math.min(totalSamples / sampleRate, px / PX_PER_SECOND));
-    const onWaveMouseDown = (e) => {
+    const pixelToTime = px => Math.max(0, Math.min(totalSamples / sampleRate, px / PX_PER_SECOND));
+    const onWaveMouseDown = e => {
       dragging = true;
       const t = pixelToTime(e.offsetX);
       selStart = t;
       selEnd = t;
     };
-    const onWaveMouseMove = (e) => {
+    const onWaveMouseMove = e => {
       if (!dragging) {
         return;
       }
@@ -13186,8 +12164,7 @@ class AdvancedMusicPlayer {
       }
       const dur = (selEnd - selStart).toFixed(1);
       selInfo.style.display = 'block';
-      selInfo.textContent =
-        dur > 0 ? `Selected ${dur}s` : 'Drag across the waveform to select part of the clip';
+      selInfo.textContent = dur > 0 ? `Selected ${dur}s` : 'Drag across the waveform to select part of the clip';
       identifySelBtn.disabled = selEnd <= selStart;
       drawWaveform();
     };
@@ -13195,11 +12172,9 @@ class AdvancedMusicPlayer {
       const startSample = Math.floor(startSec * sampleRate);
       const endSample = Math.floor(endSec * sampleRate);
       const out = new Float32Array(Math.max(0, endSample - startSample));
-      let pos = 0,
-        outIdx = 0;
+      let pos = 0, outIdx = 0;
       for (const chunk of chunks) {
-        const chunkStart = pos,
-          chunkEnd = pos + chunk.length;
+        const chunkStart = pos, chunkEnd = pos + chunk.length;
         if (chunkEnd > startSample && chunkStart < endSample) {
           const from = Math.max(0, startSample - chunkStart);
           const to = Math.min(chunk.length, endSample - chunkStart);
@@ -13240,11 +12215,11 @@ class AdvancedMusicPlayer {
         view.setInt16(off, s < 0 ? s * 32768 : s * 32767, true);
         off += 2;
       }
-      return new Blob([view], {
-        type: 'audio/wav',
+      return new Blob([ view ], {
+        type: 'audio/wav'
       });
     };
-    const setClipForPlayback = (blob) => {
+    const setClipForPlayback = blob => {
       if (currentClipUrl) {
         URL.revokeObjectURL(currentClipUrl);
       }
@@ -13252,7 +12227,7 @@ class AdvancedMusicPlayer {
       playback.src = currentClipUrl;
       playback.style.display = 'block';
     };
-    const recognize = async (blob) => {
+    const recognize = async blob => {
       setStatus('Matching…');
       resultCard.style.display = 'none';
       lastMatchedTrack = null;
@@ -13262,17 +12237,13 @@ class AdvancedMusicPlayer {
         const res = await fetch('/api/shazam', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/octet-stream',
+            'Content-Type': 'application/octet-stream'
           },
-          body: blob,
+          body: blob
         });
         const data = await res.json();
         if (!res.ok) {
-          setStatus(
-            data.error === 'quota_exceeded'
-              ? 'Recognition quota exhausted for this month'
-              : data.message || `Recognition failed (${res.status})`
-          );
+          setStatus(data.error === 'quota_exceeded' ? 'Recognition quota exhausted for this month' : data.message || `Recognition failed (${res.status})`);
           return;
         }
         if (!data.matches || data.matches.length === 0 || !data.track) {
@@ -13288,7 +12259,7 @@ class AdvancedMusicPlayer {
         identifyAllBtn.disabled = totalSamples === 0;
       }
     };
-    const renderTrack = (track) => {
+    const renderTrack = track => {
       rTitle.textContent = track.title || 'Unknown title';
       rArtist.textContent = track.subtitle || '';
       let album = '';
@@ -13298,7 +12269,7 @@ class AdvancedMusicPlayer {
           if (!Array.isArray(meta)) {
             continue;
           }
-          const albumEntry = meta.find((m) => /album/i.test(m.title || ''));
+          const albumEntry = meta.find(m => /album/i.test(m.title || ''));
           if (albumEntry) {
             album = albumEntry.text;
             break;
@@ -13321,7 +12292,7 @@ class AdvancedMusicPlayer {
         }
       }
       if (track.hub?.type === 'APPLEMUSIC') {
-        const appleUri = track.hub.actions?.find((a) => a.type === 'uri')?.uri;
+        const appleUri = track.hub.actions?.find(a => a.type === 'uri')?.uri;
         if (appleUri) {
           rLinks.innerHTML += `<a href="${appleUri}" target="_blank" rel="noopener">Apple Music</a>`;
         }
@@ -13341,103 +12312,50 @@ class AdvancedMusicPlayer {
         libTabBtn.click();
       }
       this.elements.librarySearch.value = query;
-      this.elements.librarySearch.dispatchEvent(
-        new Event('input', {
-          bubbles: true,
-        })
-      );
-      this.elements.librarySearch.dispatchEvent(
-        new KeyboardEvent('keydown', {
-          key: 'Enter',
-          bubbles: true,
-        })
-      );
+      this.elements.librarySearch.dispatchEvent(new Event('input', {
+        bubbles: true
+      }));
+      this.elements.librarySearch.dispatchEvent(new KeyboardEvent('keydown', {
+        key: 'Enter',
+        bubbles: true
+      }));
       this.elements.librarySearch.focus();
     };
-    const bindings = [
-      [document.getElementById('shazamButton'), 'click', openModal],
-      [
-        overlay,
-        'click',
-        (e) => {
-          if (e.target === overlay) {
-            closeModal();
-          }
-        },
-      ],
-      [closeBtn, 'click', closeModal],
-      [
-        gainSlider,
-        'input',
-        () => {
-          if (gainNode) {
-            gainNode.gain.value = parseFloat(gainSlider.value);
-          }
-        },
-      ],
-      [
-        captureTabBtn,
-        'click',
-        () => (isListening && activeSource === 'display' ? stopCapture() : startCapture('display')),
-      ],
-      [
-        micBtn,
-        'click',
-        () => (isListening && activeSource === 'mic' ? stopCapture() : startCapture('mic')),
-      ],
-      [uploadBtn, 'click', () => fileInput.click()],
-      [
-        fileInput,
-        'change',
-        () => {
-          const file = fileInput.files[0];
-          if (!file) {
-            return;
-          }
-          if (file.size > 3 * 1024 * 1024) {
-            setStatus('That file is too large — please trim it to a few seconds first');
-            return;
-          }
-          setStatus('Matching uploaded clip…');
-          setClipForPlayback(file);
-          recognize(file);
-        },
-      ],
-      [waveCanvas, 'mousedown', onWaveMouseDown],
-      [waveCanvas, 'mousemove', onWaveMouseMove],
-      [window, 'mouseup', onWindowMouseUp],
-      [
-        identifySelBtn,
-        'click',
-        () => {
-          const w = encodeWAV(extractSamples(selStart, selEnd), sampleRate);
-          setClipForPlayback(w);
-          recognize(w);
-        },
-      ],
-      [
-        identifyAllBtn,
-        'click',
-        () => {
-          const w = encodeWAV(extractSamples(0, totalSamples / sampleRate), sampleRate);
-          setClipForPlayback(w);
-          recognize(w);
-        },
-      ],
-      [addToLibraryBtn, 'click', sendMatchToLibrarySearch],
-      [
-        document,
-        'keydown',
-        (e) => {
-          if (e.key === 'Escape' && overlay.style.display !== 'none') {
-            closeModal();
-          }
-        },
-      ],
-    ];
+    const bindings = [ [ document.getElementById('shazamButton'), 'click', openModal ], [ overlay, 'click', e => {
+      if (e.target === overlay) {
+        closeModal();
+      }
+    } ], [ closeBtn, 'click', closeModal ], [ gainSlider, 'input', () => {
+      if (gainNode) {
+        gainNode.gain.value = parseFloat(gainSlider.value);
+      }
+    } ], [ captureTabBtn, 'click', () => isListening && activeSource === 'display' ? stopCapture() : startCapture('display') ], [ micBtn, 'click', () => isListening && activeSource === 'mic' ? stopCapture() : startCapture('mic') ], [ uploadBtn, 'click', () => fileInput.click() ], [ fileInput, 'change', () => {
+      const file = fileInput.files[0];
+      if (!file) {
+        return;
+      }
+      if (file.size > 3 * 1024 * 1024) {
+        setStatus('That file is too large — please trim it to a few seconds first');
+        return;
+      }
+      setStatus('Matching uploaded clip…');
+      setClipForPlayback(file);
+      recognize(file);
+    } ], [ waveCanvas, 'mousedown', onWaveMouseDown ], [ waveCanvas, 'mousemove', onWaveMouseMove ], [ window, 'mouseup', onWindowMouseUp ], [ identifySelBtn, 'click', () => {
+      const w = encodeWAV(extractSamples(selStart, selEnd), sampleRate);
+      setClipForPlayback(w);
+      recognize(w);
+    } ], [ identifyAllBtn, 'click', () => {
+      const w = encodeWAV(extractSamples(0, totalSamples / sampleRate), sampleRate);
+      setClipForPlayback(w);
+      recognize(w);
+    } ], [ addToLibraryBtn, 'click', sendMatchToLibrarySearch ], [ document, 'keydown', e => {
+      if (e.key === 'Escape' && overlay.style.display !== 'none') {
+        closeModal();
+      }
+    } ] ];
     bindings.forEach(([el, evt, fn]) => el?.addEventListener(evt, fn));
   }
-
   handleListeningStatsToggle(event) {
     this.listeningStatsEnabled = event.target.checked;
     this.saveListeningStatsSetting();
@@ -13449,18 +12367,18 @@ class AdvancedMusicPlayer {
     if (!this.db || !this.db.objectStoreNames.contains('settings')) {
       return;
     }
-    const transaction = this.db.transaction(['settings'], 'readwrite');
+    const transaction = this.db.transaction([ 'settings' ], 'readwrite');
     transaction.objectStore('settings').put({
       name: 'listeningStatsEnabled',
       value: this.listeningStatsEnabled,
-      lastUpdated: new Date().toISOString(),
+      lastUpdated: (new Date()).toISOString()
     });
   }
   clearListeningStats() {
     if (!this.db || !this.db.objectStoreNames.contains('listeningStats')) {
       return;
     }
-    const transaction = this.db.transaction(['listeningStats'], 'readwrite');
+    const transaction = this.db.transaction([ 'listeningStats' ], 'readwrite');
     transaction.objectStore('listeningStats').clear();
     console.log('Listening stats cleared');
   }
@@ -13469,7 +12387,7 @@ class AdvancedMusicPlayer {
   }
   _pruneOldDays(days) {
     const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1e3;
-    Object.keys(days).forEach((key) => {
+    Object.keys(days).forEach(key => {
       if (new Date(key + 'T00:00:00Z').getTime() < cutoff) {
         delete days[key];
       }
@@ -13482,14 +12400,14 @@ class AdvancedMusicPlayer {
     if (!this.db.objectStoreNames.contains('listeningStats')) {
       return;
     }
-    const transaction = this.db.transaction(['listeningStats'], 'readwrite');
+    const transaction = this.db.transaction([ 'listeningStats' ], 'readwrite');
     const store = transaction.objectStore('listeningStats');
     const getReq = store.get(songId);
     getReq.onsuccess = () => {
       const record = getReq.result || {
         id: songId,
         lifetime: 0,
-        days: {},
+        days: {}
       };
       record.lifetime += 1;
       const todayKey = this._statsDayKey();
@@ -13497,7 +12415,7 @@ class AdvancedMusicPlayer {
       this._pruneOldDays(record.days);
       store.put(record);
     };
-    getReq.onerror = (e) => console.error('Failed to read listening stat:', e);
+    getReq.onerror = e => console.error('Failed to read listening stat:', e);
   }
   get30DayCount(record) {
     if (!record || !record.days) {
@@ -13522,34 +12440,25 @@ class AdvancedMusicPlayer {
       panel.innerHTML = `<p class="ls-disabled-msg">No data yet.</p>`;
       return;
     }
-    const transaction = this.db.transaction(['listeningStats'], 'readonly');
+    const transaction = this.db.transaction([ 'listeningStats' ], 'readonly');
     const request = transaction.objectStore('listeningStats').getAll();
     request.onsuccess = () => {
       const records = request.result || [];
-      const timeRecord = records.find((r) => r.id === '_global_time');
-      const time30dSeconds = timeRecord
-        ? Object.values(timeRecord.days || {}).reduce((a, b) => a + b, 0)
-        : 0;
-      const withNames = records
-        .map((r) => ({
-          ...r,
-          song: this.songLibrary.find((s) => s.id === r.id),
-        }))
-        .filter((r) => r.song);
-      const byLifetime = withNames
-        .filter((r) => r.lifetime > 0)
-        .sort((a, b) => b.lifetime - a.lifetime);
-      const by30Day = withNames
-        .map((r) => ({
-          ...r,
-          count30: this.get30DayCount(r),
-        }))
-        .filter((r) => r.count30 > 0)
-        .sort((a, b) => b.count30 - a.count30);
+      const timeRecord = records.find(r => r.id === '_global_time');
+      const time30dSeconds = timeRecord ? Object.values(timeRecord.days || {}).reduce((a, b) => a + b, 0) : 0;
+      const withNames = records.map(r => ({
+        ...r,
+        song: this.songLibrary.find(s => s.id === r.id)
+      })).filter(r => r.song);
+      const byLifetime = withNames.filter(r => r.lifetime > 0).sort((a, b) => b.lifetime - a.lifetime);
+      const by30Day = withNames.map(r => ({
+        ...r,
+        count30: this.get30DayCount(r)
+      })).filter(r => r.count30 > 0).sort((a, b) => b.count30 - a.count30);
       this._statsCache = {
         by30Day: by30Day,
         byLifetime: byLifetime,
-        time30dSeconds: time30dSeconds,
+        time30dSeconds: time30dSeconds
       };
       if (this._statsRange === undefined) {
         this._statsRange = '30';
@@ -13595,17 +12504,13 @@ class AdvancedMusicPlayer {
   filterListeningStatisticsSongResults(list, searchTerm) {
     const ranked = list.map((r, i) => ({
       ...r,
-      _rank: i + 1,
+      _rank: i + 1
     }));
     const term = (searchTerm || '').toLowerCase().trim();
     if (!term) {
       return ranked;
     }
-    return ranked.filter(
-      (r) =>
-        r.song.name.toLowerCase().includes(term) ||
-        (r.song.author && r.song.author.toLowerCase().includes(term))
-    );
+    return ranked.filter(r => r.song.name.toLowerCase().includes(term) || r.song.author && r.song.author.toLowerCase().includes(term));
   }
   _songThumbHtml(song, sizeClass) {
     if (song.videoId) {
@@ -13618,7 +12523,7 @@ class AdvancedMusicPlayer {
     if (!filtered.length) {
       return `<p class="ls-empty">No songs match "${this.escapeHtml(searchTerm)}"</p>`;
     }
-    const items = filtered.map((r) => this._fullListItemHtml(r, r._rank, countKey)).join('');
+    const items = filtered.map(r => this._fullListItemHtml(r, r._rank, countKey)).join('');
     return `<ul class="ls-full-ranked-list">${items}</ul>`;
   }
   _heroCardHtml(r, countKey) {
@@ -13680,24 +12585,24 @@ class AdvancedMusicPlayer {
     }
     const seconds = this._pending30DaySeconds;
     this._pending30DaySeconds = 0;
-    const transaction = this.db.transaction(['listeningStats'], 'readwrite');
+    const transaction = this.db.transaction([ 'listeningStats' ], 'readwrite');
     const store = transaction.objectStore('listeningStats');
     const getReq = store.get('_global_time');
     getReq.onsuccess = () => {
       const record = getReq.result || {
         id: '_global_time',
-        days: {},
+        days: {}
       };
       const todayKey = this._statsDayKey();
       record.days[todayKey] = (record.days[todayKey] || 0) + seconds;
       this._pruneOldDays(record.days);
       store.put(record);
     };
-    getReq.onerror = (e) => console.error('Failed to flush 30-day time:', e);
+    getReq.onerror = e => console.error('Failed to flush 30-day time:', e);
   }
   formatSecondsAsHM(totalSeconds) {
     const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const minutes = Math.floor(totalSeconds % 3600 / 60);
     return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
   }
   updateListeningTimeDisplay() {
@@ -13732,17 +12637,13 @@ class AdvancedMusicPlayer {
       clearTimeout(this.saveTimeout);
     }
     this.saveTimeout = setTimeout(() => {
-      this.saveSetting('listeningTime', this.listeningTime).catch((error) =>
-        console.error('Error saving listening time:', error)
-      );
+      this.saveSetting('listeningTime', this.listeningTime).catch(error => console.error('Error saving listening time:', error));
     }, 100);
   }
-
   toggleTopicKeyword() {
     this.topicKeywordEnabled = !this.topicKeywordEnabled;
     this.elements.libTopicBtn.classList.toggle('is-off', !this.topicKeywordEnabled);
   }
-
   initializeVisibilityTracking() {
     this.handleVisibilityChange = () => {
       const wasVisible = this.isTabVisible;
@@ -13768,7 +12669,7 @@ class AdvancedMusicPlayer {
         const currentTime = this.localAudio.currentTime || 0;
         const duration = this.localAudio.duration || 0;
         if (duration > 0 && this.elements.progressBar) {
-          const progressPercent = (currentTime / duration) * 100;
+          const progressPercent = currentTime / duration * 100;
           this.elements.progressBar.value = progressPercent;
           if (this.elements.timeDisplay) {
             this.elements.timeDisplay.textContent = `${this.formatTime(currentTime)}/${this.formatTime(duration)}`;
@@ -13784,7 +12685,7 @@ class AdvancedMusicPlayer {
         const currentTime = this.ytPlayer.getCurrentTime() || 0;
         const duration = this.ytPlayer.getDuration() || 0;
         if (duration > 0 && this.elements.progressBar) {
-          const progressPercent = (currentTime / duration) * 100;
+          const progressPercent = currentTime / duration * 100;
           this.elements.progressBar.value = progressPercent;
           if (this.elements.timeDisplay) {
             const formattedCurrentTime = this.formatTime(currentTime);
@@ -13797,7 +12698,6 @@ class AdvancedMusicPlayer {
       }
     }
   }
-
   samplePlayTemporarySong(youtubeUrl) {
     const videoId = this.extractYouTubeId(youtubeUrl);
     if (!videoId) {
@@ -13851,7 +12751,7 @@ class AdvancedMusicPlayer {
         window.open(url, '_blank');
       }
     });
-    modal.addEventListener('click', (e) => {
+    modal.addEventListener('click', e => {
       if (e.target === modal) {
         this.closeTemporarySongSampleModal();
       }
@@ -13876,7 +12776,7 @@ class AdvancedMusicPlayer {
         autoplay: 1,
         iv_load_policy: 3,
         enablejsapi: 1,
-        origin: window.location.origin,
+        origin: window.location.origin
       },
       events: {
         onReady: () => {
@@ -13886,11 +12786,11 @@ class AdvancedMusicPlayer {
             this.temporarySongPendingVideoId = null;
           }
         },
-        onError: (event) => {
+        onError: event => {
           console.error('Temporary player error:', event.data);
           this.showNotification('Failed to load video', 'error');
-        },
-      },
+        }
+      }
     });
   }
   playTemporarySong(videoId) {
@@ -13920,11 +12820,10 @@ class AdvancedMusicPlayer {
       container.innerHTML = '<div id="tempYtPlayer"></div>';
     }
   }
-
   async loadVersion() {
     try {
       const response = await fetch('/current-version.txt', {
-        cache: 'no-store',
+        cache: 'no-store'
       });
       const version = (await response.text()).trim();
       const versionDisplay = document.getElementById('versionDisplay');
@@ -13954,25 +12853,16 @@ class AdvancedMusicPlayer {
     const modal = document.getElementById('changelogModal');
     const content = document.getElementById('changelogContent');
     if (modal && content && this.fullChangelog) {
-      const lines = this.fullChangelog
-        .trim()
-        .split('\n')
-        .filter((line) => line.trim());
-      const htmlContent = lines
-        .reverse()
-        .map((line) => {
-          const versionMatch = line.match(/(v\d+\.\d+\.\d+)/);
-          if (versionMatch) {
-            const version = versionMatch[1];
-            const change = line
-              .replace(/^\*\s*/, '')
-              .replace(version, '')
-              .trim();
-            return `<li><span class="changelog-version">${version}</span> - ${change}</li>`;
-          }
-          return `<li>${line.replace(/^\*\s*/, '')}</li>`;
-        })
-        .join('');
+      const lines = this.fullChangelog.trim().split('\n').filter(line => line.trim());
+      const htmlContent = lines.reverse().map(line => {
+        const versionMatch = line.match(/(v\d+\.\d+\.\d+)/);
+        if (versionMatch) {
+          const version = versionMatch[1];
+          const change = line.replace(/^\*\s*/, '').replace(version, '').trim();
+          return `<li><span class="changelog-version">${version}</span> - ${change}</li>`;
+        }
+        return `<li>${line.replace(/^\*\s*/, '')}</li>`;
+      }).join('');
       content.innerHTML = `<ul>${htmlContent}</ul>`;
       modal.style.display = 'block';
     }
@@ -13986,14 +12876,13 @@ class AdvancedMusicPlayer {
       });
     }
     if (modal) {
-      modal.addEventListener('click', (event) => {
+      modal.addEventListener('click', event => {
         if (event.target === modal) {
           modal.style.display = 'none';
         }
       });
     }
   }
-
   cleanup() {
     console.log('Starting cleanup process');
     this.saveCurrentState();
@@ -14041,12 +12930,7 @@ class AdvancedMusicPlayer {
         this.visualizer.bars = [];
         this.visualizer.particles = [];
         if (this.visualizer.ctx && this.visualizer.canvas) {
-          this.visualizer.ctx.clearRect(
-            0,
-            0,
-            this.visualizer.canvas.width,
-            this.visualizer.canvas.height
-          );
+          this.visualizer.ctx.clearRect(0, 0, this.visualizer.canvas.width, this.visualizer.canvas.height);
         }
         this.visualizer.ctx = null;
         this.visualizer.canvas = null;
@@ -14136,38 +13020,30 @@ class AdvancedMusicPlayer {
   }
   clearTimersAndIntervals() {
     console.log('Clearing active timers and intervals');
-    const timers = [
-      {
-        ref: 'progressInterval',
-        timer: this.progressInterval,
-      },
-      {
-        ref: 'listeningTimeInterval',
-        timer: this.listeningTimeInterval,
-      },
-      {
-        ref: 'longPressTimer',
-        timer: this.longPressTimer,
-      },
-      {
-        ref: 'titleScrollInterval',
-        timer: this.titleScrollInterval,
-      },
-      {
-        ref: 'appTimer',
-        timer: this.appTimer,
-      },
-      {
-        ref: '_discordSendTimer',
-        timer: this._discordSendTimer,
-      },
-      {
-        ref: 'discordReconnectTimer',
-        timer: this.discordReconnectTimer,
-      },
-    ];
+    const timers = [ {
+      ref: 'progressInterval',
+      timer: this.progressInterval
+    }, {
+      ref: 'listeningTimeInterval',
+      timer: this.listeningTimeInterval
+    }, {
+      ref: 'longPressTimer',
+      timer: this.longPressTimer
+    }, {
+      ref: 'titleScrollInterval',
+      timer: this.titleScrollInterval
+    }, {
+      ref: 'appTimer',
+      timer: this.appTimer
+    }, {
+      ref: '_discordSendTimer',
+      timer: this._discordSendTimer
+    }, {
+      ref: 'discordReconnectTimer',
+      timer: this.discordReconnectTimer
+    } ];
     let clearedCount = 0;
-    timers.forEach(({ ref: ref, timer: timer }) => {
+    timers.forEach(({ref: ref, timer: timer}) => {
       if (timer) {
         clearInterval(timer);
         clearTimeout(timer);
@@ -14272,7 +13148,7 @@ class AdvancedMusicPlayer {
     }
     try {
       const playlistItems = document.querySelectorAll(".playlist-item[draggable='true']");
-      playlistItems.forEach((item) => {
+      playlistItems.forEach(item => {
         item.draggable = false;
         removedCount++;
       });
@@ -14315,6 +13191,39 @@ class AdvancedMusicPlayer {
     this.closeGlobalLibraryArtistSongsGrid();
     console.log('Billboard and Global Library cleanup complete');
   }
+}
+
+let karaokeShareDepsPromise = null;
+
+function loadScriptOnce(src) {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src="${src}"]`)) {
+      resolve();
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = src;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error(`Failed to load ${src}`));
+    document.body.appendChild(script);
+  });
+}
+
+function loadKaraokeShareDependencies() {
+  if (!karaokeShareDepsPromise) {
+    karaokeShareDepsPromise = (async () => {
+      if (typeof pako === 'undefined') {
+        await loadScriptOnce('https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js');
+      }
+      if (typeof KaraokeEncoder === 'undefined') {
+        await loadScriptOnce('/karaoke-encoder.js');
+      }
+    })().catch(err => {
+      karaokeShareDepsPromise = null;
+      throw err;
+    });
+  }
+  return karaokeShareDepsPromise;
 }
 
 let musicPlayer;
