@@ -96,6 +96,11 @@ class AdvancedMusicPlayer {
     this.webEmbedSites = [ 'https://www.desmos.com/calculator', 'https://i2.res.24o.it/pdf2010/Editrice/ILSOLE24ORE/ILSOLE24ORE/Online/_Oggetti_Embedded/Documenti/2025/07/12/Preliminary%20Report%20VT.pdf', 'https://www.wikipedia.org', 'https://www.desmos.com/scientific', 'https://www.desmos.com/3d' ];
     this.adsEnabled = false;
     this.visualizerEnabled = true;
+    this.autoMiniplayerEnabled = false;
+    this.miniplayerWindow = null;
+    this.miniplayerAutoOpened = false;
+    this._miniplayerEls = null;
+    this._miniplayerInterval = null;
     this.isAutofillButtonHovered = false;
     this.ghostPreviewAbortController = null;
     this.currentGhostRequestId = null;
@@ -151,7 +156,8 @@ class AdvancedMusicPlayer {
       toggleWebEmbed: 'KeyN',
       toggleMusicExplorer: 'KeyO',
       seekForward: 'KeyG',
-      seekBackward: 'KeyF'
+      seekBackward: 'KeyF',
+      toggleMiniplayer: 'KeyI'
     };
     this.currentKeybinds = {
       ...this.defaultKeybinds
@@ -218,6 +224,9 @@ class AdvancedMusicPlayer {
     if (this.elements.listeningStatsToggle) {
       this.elements.listeningStatsToggle.checked = this.listeningStatsEnabled;
     }
+    if (this.elements.autoMiniplayerToggle) {
+      this.elements.autoMiniplayerToggle.checked = this.autoMiniplayerEnabled;
+    }
   }
   _setupComponents() {
     this.setupYouTubePlayer();
@@ -243,6 +252,7 @@ class AdvancedMusicPlayer {
     this.addQueueStyles();
     this.initLibraryFilter();
     this.setupTransportHoverPreviews();
+    this.setupMiniplayerAutoToggle();
   }
   _handleInitializationError(error) {
     const errorDiv = document.createElement('div');
@@ -416,6 +426,7 @@ class AdvancedMusicPlayer {
       saveDiscoverMoreSettings: document.getElementById('saveDiscoverMoreSettings'),
       discordButton: document.getElementById('discordButton'),
       visualizerToggle: document.getElementById('visualizerToggle'),
+      autoMiniplayerToggle: document.getElementById('autoMiniplayerToggle'),
       findSongsBtn: document.getElementById('findSongsBtn'),
       closeFindSongs: document.getElementById('closeFindSongs'),
       findSongsDiv: document.getElementById('findSongsDiv'),
@@ -589,9 +600,10 @@ class AdvancedMusicPlayer {
       librarySearchInput: this.handleLibrarySearchInput.bind(this),
       saveDiscoverMoreSettings: this.handleSaveDiscoverMoreSettings.bind(this),
       refreshRandomRecommendations: () => this.refreshRandomRecommendations(),
-      visualizerToggle: e => this.handleVisualizerToggle(e)
+      visualizerToggle: e => this.handleVisualizerToggle(e),
+      autoMiniplayerToggle: e => this.handleAutoMiniplayerToggle(e)
     };
-    const simpleBindings = [ [ this.elements.addSongBtn, 'click', handlers.addSong ], [ this.elements.createPlaylistBtn, 'click', handlers.createPlaylist ], [ this.elements.closePlaylistModalBtn, 'click', handlers.closePlaylistModal ], [ this.elements.addSongToPlaylistBtn, 'click', handlers.addSongToPlaylist ], [ this.elements.playPauseBtn, 'click', handlers.togglePlayPause ], [ this.elements.prevBtn, 'click', handlers.playPrevious ], [ this.elements.nextBtn, 'click', handlers.playNext ], [ this.elements.loopBtn, 'click', handlers.toggleLoop ], [ this.elements.showPlaylistBtn, 'click', handlers.toggleSidebar ], [ this.elements.closeSidebarBtn, 'click', handlers.toggleSidebar ], [ this.elements.themeToggle, 'click', handlers.toggleTheme ], [ this.elements.autoplayBtn, 'click', handlers.toggleAutoplay ], [ this.elements.speedBtn, 'click', handlers.toggleSpeedOptions ], [ this.elements.volumeSlider, 'input', handlers.volumeChange ], [ this.elements.progressBar, 'click', handlers.seekMusic ], [ this.elements.currentSongName, 'contextmenu', handlers.songNameRightClick ], [ this.elements.toggleControlBarBtn, 'click', handlers.toggleControlBar ], [ this.elements.modifyLibraryBtn, 'click', handlers.openLibraryModal ], [ this.elements.closeLibraryModalBtn, 'click', handlers.closeLibraryModal ], [ this.elements.importLibraryBtn, 'click', handlers.importLibrary ], [ this.elements.exportLibraryBtn, 'click', handlers.exportLibrary ], [ this.elements.libraryModificationTabAddSong, 'click', handlers.libraryModificationTabAddSongClick ], [ this.elements.libraryModificationTabImportExport, 'click', handlers.libraryModificationTabImportExportClick ], [ this.elements.loopPlaylistBtn, 'click', handlers.togglePlaylistLoop ], [ this.elements.discordButton, 'click', handlers.discordClick ], [ this.elements.librarySortToggle, 'change', handlers.librarySortToggle ], [ this.elements.libraryReverseToggle, 'change', handlers.libraryReverseToggle ], [ this.elements.closeImportModalBtn, 'click', handlers.closeImportModal ], [ this.elements.importSongsBtn, 'click', handlers.importSongs ], [ this.elements.playlistSearch, 'input', handlers.filterPlaylists ], [ this.elements.playlistSearch, 'keypress', handlers.playlistSearchEnter ], [ this.elements.toggleCreatePlaylistBtn, 'click', handlers.toggleCreatePlaylistDiv ], [ this.elements.togglePlaylistEditModeBtn, 'click', handlers.togglePlaylistEditMode ], [ this.elements.settingsButton, 'click', handlers.openSettings ], [ this.elements.settingsCloseBtn, 'click', handlers.closeSettings ], [ this.elements.settingsModal, 'click', handlers.settingsModalClick ], [ this.elements.themeMode, 'change', handlers.themeModeChange ], [ this.elements.saveCustomTheme, 'click', handlers.saveCustomTheme ], [ this.elements.adsToggle, 'change', handlers.adsToggle ], [ this.elements.saveDiscoverMoreSettings, 'click', handlers.saveDiscoverMoreSettings ], [ this.elements.visualizerToggle, 'change', handlers.visualizerToggle ], [ this.elements.findSongsBtn, 'click', handlers.findSongsOpen ], [ this.elements.closeFindSongs, 'click', handlers.findSongsClose ], [ this.elements.searchSongsToAdd, 'input', handlers.searchSongsToAdd ], [ this.elements.statsButton, 'click', this.openStatsModal.bind(this) ], [ this.elements.lsPanel, 'click', this._handleStatsShowAllClick.bind(this) ], [ this.elements.lsPanel, 'input', this._handleStatsSearchInput.bind(this) ], [ document.getElementById('lsCloseBtn'), 'click', this.closeStatsModal.bind(this) ], [ this.elements.lsRangeToggle, 'change', this._handleStatsRangeToggle.bind(this) ], [ this.elements.listeningStatsToggle, 'change', this.handleListeningStatsToggle.bind(this) ], [ this.elements.libTopicBtn, 'click', handlers.toggleTopicKeyword ] ];
+    const simpleBindings = [ [ this.elements.addSongBtn, 'click', handlers.addSong ], [ this.elements.createPlaylistBtn, 'click', handlers.createPlaylist ], [ this.elements.closePlaylistModalBtn, 'click', handlers.closePlaylistModal ], [ this.elements.addSongToPlaylistBtn, 'click', handlers.addSongToPlaylist ], [ this.elements.playPauseBtn, 'click', handlers.togglePlayPause ], [ this.elements.prevBtn, 'click', handlers.playPrevious ], [ this.elements.nextBtn, 'click', handlers.playNext ], [ this.elements.loopBtn, 'click', handlers.toggleLoop ], [ this.elements.showPlaylistBtn, 'click', handlers.toggleSidebar ], [ this.elements.closeSidebarBtn, 'click', handlers.toggleSidebar ], [ this.elements.themeToggle, 'click', handlers.toggleTheme ], [ this.elements.autoplayBtn, 'click', handlers.toggleAutoplay ], [ this.elements.speedBtn, 'click', handlers.toggleSpeedOptions ], [ this.elements.volumeSlider, 'input', handlers.volumeChange ], [ this.elements.progressBar, 'click', handlers.seekMusic ], [ this.elements.currentSongName, 'contextmenu', handlers.songNameRightClick ], [ this.elements.toggleControlBarBtn, 'click', handlers.toggleControlBar ], [ this.elements.modifyLibraryBtn, 'click', handlers.openLibraryModal ], [ this.elements.closeLibraryModalBtn, 'click', handlers.closeLibraryModal ], [ this.elements.importLibraryBtn, 'click', handlers.importLibrary ], [ this.elements.exportLibraryBtn, 'click', handlers.exportLibrary ], [ this.elements.libraryModificationTabAddSong, 'click', handlers.libraryModificationTabAddSongClick ], [ this.elements.libraryModificationTabImportExport, 'click', handlers.libraryModificationTabImportExportClick ], [ this.elements.loopPlaylistBtn, 'click', handlers.togglePlaylistLoop ], [ this.elements.discordButton, 'click', handlers.discordClick ], [ this.elements.librarySortToggle, 'change', handlers.librarySortToggle ], [ this.elements.libraryReverseToggle, 'change', handlers.libraryReverseToggle ], [ this.elements.closeImportModalBtn, 'click', handlers.closeImportModal ], [ this.elements.importSongsBtn, 'click', handlers.importSongs ], [ this.elements.playlistSearch, 'input', handlers.filterPlaylists ], [ this.elements.playlistSearch, 'keypress', handlers.playlistSearchEnter ], [ this.elements.toggleCreatePlaylistBtn, 'click', handlers.toggleCreatePlaylistDiv ], [ this.elements.togglePlaylistEditModeBtn, 'click', handlers.togglePlaylistEditMode ], [ this.elements.settingsButton, 'click', handlers.openSettings ], [ this.elements.settingsCloseBtn, 'click', handlers.closeSettings ], [ this.elements.settingsModal, 'click', handlers.settingsModalClick ], [ this.elements.themeMode, 'change', handlers.themeModeChange ], [ this.elements.saveCustomTheme, 'click', handlers.saveCustomTheme ], [ this.elements.adsToggle, 'change', handlers.adsToggle ], [ this.elements.saveDiscoverMoreSettings, 'click', handlers.saveDiscoverMoreSettings ], [ this.elements.visualizerToggle, 'change', handlers.visualizerToggle ], [ this.elements.autoMiniplayerToggle, 'change', handlers.autoMiniplayerToggle ], [ this.elements.findSongsBtn, 'click', handlers.findSongsOpen ], [ this.elements.closeFindSongs, 'click', handlers.findSongsClose ], [ this.elements.searchSongsToAdd, 'input', handlers.searchSongsToAdd ], [ this.elements.statsButton, 'click', this.openStatsModal.bind(this) ], [ this.elements.lsPanel, 'click', this._handleStatsShowAllClick.bind(this) ], [ this.elements.lsPanel, 'input', this._handleStatsSearchInput.bind(this) ], [ document.getElementById('lsCloseBtn'), 'click', this.closeStatsModal.bind(this) ], [ this.elements.lsRangeToggle, 'change', this._handleStatsRangeToggle.bind(this) ], [ this.elements.listeningStatsToggle, 'change', this.handleListeningStatsToggle.bind(this) ], [ this.elements.libTopicBtn, 'click', handlers.toggleTopicKeyword ] ];
     simpleBindings.forEach(([element, event, handler]) => {
       if (element) {
         element.addEventListener(event, handler);
@@ -875,6 +887,10 @@ class AdvancedMusicPlayer {
           key: 'listeningStatsEnabled',
           default: false,
           target: 'listeningStatsEnabled'
+        }, {
+          key: 'autoMiniplayerEnabled',
+          default: false,
+          target: 'autoMiniplayerEnabled'
         } ];
         settingsToLoad.forEach(setting => {
           const request = store.get(setting.key);
@@ -1532,6 +1548,7 @@ class AdvancedMusicPlayer {
       if (!this.elements.songLibrary) {
         return;
       }
+      this.elements.songLibrary.classList.remove('is-compact-view');
       if (searchTerm === null && this.elements.librarySearch) {
         searchTerm = this.elements.librarySearch.value.toLowerCase().trim();
       }
@@ -1634,9 +1651,109 @@ class AdvancedMusicPlayer {
     const view = document.createElement('div');
     view.className = 'compact-library-view';
     view.appendChild(this._buildFavoritesCard());
+    view.appendChild(this._buildPlaylistsShelf());
     view.appendChild(this._buildDiscoveryCard());
     this.elements.songLibrary.innerHTML = '';
+    this.elements.songLibrary.classList.add('is-compact-view');
     this.elements.songLibrary.appendChild(view);
+  }
+  _refreshPlaylistsShelf() {
+    const shelf = document.getElementById('playlistsShelf');
+    if (!shelf) {
+      return;
+    }
+    shelf.replaceWith(this._buildPlaylistsShelf());
+  }
+  _buildPlaylistsShelf() {
+    const shelf = document.createElement('div');
+    shelf.className = 'playlists-shelf';
+    shelf.id = 'playlistsShelf';
+    const favPlaylist = this.getFavoritesPlaylist();
+    const playlists = this.playlists.filter(p => p !== favPlaylist);
+    const header = document.createElement('div');
+    header.className = 'shelf-header';
+    header.innerHTML = `<span class="shelf-title"><i class="fa fa-list"></i> Playlists</span>`;
+    if (playlists.length > 0) {
+      const seeAllBtn = document.createElement('button');
+      seeAllBtn.className = 'shelf-see-all-btn';
+      seeAllBtn.innerHTML = `View all <i class="fa fa-chevron-right"></i>`;
+      seeAllBtn.addEventListener('click', () => this.switchTab('playlists'));
+      header.appendChild(seeAllBtn);
+    }
+    shelf.appendChild(header);
+    const row = document.createElement('div');
+    row.className = 'playlists-shelf-row';
+    if (playlists.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'playlists-shelf-empty';
+      empty.innerHTML = `<i class="fa fa-list"></i><span>No playlists yet</span>`;
+      row.appendChild(empty);
+    } else {
+      const sorted = [ ...playlists ].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+      const frag = document.createDocumentFragment();
+      sorted.forEach(playlist => frag.appendChild(this._buildPlaylistShelfTile(playlist)));
+      row.appendChild(frag);
+    }
+    row.appendChild(this._buildCreatePlaylistShelfTile());
+    shelf.appendChild(row);
+    return shelf;
+  }
+  _buildPlaylistShelfTile(playlist) {
+    const tile = document.createElement('div');
+    tile.className = 'playlist-shelf-tile';
+    tile.dataset.playlistId = playlist.id;
+    const thumb = document.createElement('div');
+    thumb.className = 'playlist-shelf-thumb';
+    const songsForArt = playlist.songs.slice(0, 4);
+    if (songsForArt.length === 0) {
+      thumb.classList.add('is-empty');
+      thumb.innerHTML = `<i class="fa fa-music"></i>`;
+    } else {
+      thumb.classList.add(`has-${Math.min(songsForArt.length, 4)}`);
+      songsForArt.forEach(song => {
+        const img = document.createElement('img');
+        img.alt = '';
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        img.src = song.thumbnailUrl || `https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg`;
+        img.onerror = () => {
+          img.onerror = null;
+          img.src = `https://img.youtube.com/vi/${song.videoId}/default.jpg`;
+        };
+        thumb.appendChild(img);
+      });
+    }
+    const playOverlay = document.createElement('div');
+    playOverlay.className = 'playlist-shelf-play-overlay';
+    playOverlay.innerHTML = `<i class="fa fa-play"></i>`;
+    thumb.appendChild(playOverlay);
+    const name = document.createElement('div');
+    name.className = 'playlist-shelf-name';
+    name.textContent = playlist.name;
+    const count = document.createElement('div');
+    count.className = 'playlist-shelf-count';
+    count.textContent = `${playlist.songs.length} song${playlist.songs.length !== 1 ? 's' : ''}`;
+    tile.appendChild(thumb);
+    tile.appendChild(name);
+    tile.appendChild(count);
+    tile.addEventListener('click', () => this.playPlaylist(playlist.id));
+    return tile;
+  }
+  _buildCreatePlaylistShelfTile() {
+    const tile = document.createElement('div');
+    tile.className = 'playlist-shelf-tile playlist-shelf-create-tile';
+    tile.innerHTML = `\n\t        <div class="playlist-shelf-thumb is-empty is-create">\n\t            <i class="fa fa-plus"></i>\n\t        </div>\n\t        <div class="playlist-shelf-name">New Playlist</div>\n\t    `;
+    tile.addEventListener('click', () => this._openCreatePlaylistFromShelf());
+    return tile;
+  }
+  _openCreatePlaylistFromShelf() {
+    this.switchTab('playlists');
+    const createDiv = this.elements.createPlaylistDiv;
+    if (!createDiv || createDiv.style.display === 'none' || !createDiv.style.display) {
+      this.toggleCreatePlaylistDiv();
+    } else {
+      this.elements.newPlaylistName?.focus();
+    }
   }
   _mountVirtualScroll(container, songs) {
     const BUFFER = 5;
@@ -2021,19 +2138,24 @@ class AdvancedMusicPlayer {
       }
     });
     let lastCols = 0;
+    let lastRows = 0;
     let rafId = null;
     let resizeTimer = null;
     const renderGrid = () => {
       const containerWidth = card.offsetWidth || 300;
       const cellSize = 80;
+      const rowHeight = 114;
       const gap = 8;
       const padding = 24;
       const cols = Math.max(1, Math.floor((containerWidth - padding + gap) / (cellSize + gap)));
-      if (cols === lastCols && grid.children.length > 0) {
+      const availableHeight = grid.clientHeight || rowHeight * 2;
+      const rows = Math.max(2, Math.floor((availableHeight + gap) / (rowHeight + gap)));
+      if (cols === lastCols && rows === lastRows && grid.children.length > 0) {
         return;
       }
       lastCols = cols;
-      const maxSongs = cols * 2;
+      lastRows = rows;
+      const maxSongs = cols * rows;
       grid.innerHTML = '';
       if (shuffled.length === 0) {
         const msg = document.createElement('div');
@@ -3241,6 +3363,7 @@ class AdvancedMusicPlayer {
     }
   }
   renderPlaylists() {
+    this._refreshPlaylistsShelf();
     this.elements.playlistContainer.innerHTML = '';
     const playlistsToRender = this.currentSearchTerm ? this.filteredPlaylists : this.playlists;
     const sortedPlaylists = [ ...playlistsToRender ].sort((a, b) => {
@@ -10185,6 +10308,115 @@ class AdvancedMusicPlayer {
     }
     this.saveSetting('visualizerEnabled', isEnabled);
   }
+  handleAutoMiniplayerToggle(event) {
+    this.autoMiniplayerEnabled = event.target.checked;
+    this.saveSetting('autoMiniplayerEnabled', this.autoMiniplayerEnabled);
+  }
+  setupMiniplayerAutoToggle() {
+    document.addEventListener('visibilitychange', () => {
+      if (!this.autoMiniplayerEnabled) {
+        return;
+      }
+      if (document.hidden) {
+        if (!this.miniplayerWindow && this.currentSong) {
+          this.openMiniplayer(true);
+        }
+      } else if (this.miniplayerWindow && this.miniplayerAutoOpened) {
+        this.closeMiniplayer();
+      }
+    });
+  }
+  toggleMiniplayer() {
+    if (this.miniplayerWindow) {
+      this.closeMiniplayer();
+    } else {
+      this.openMiniplayer(false);
+    }
+  }
+  async openMiniplayer(isAuto) {
+    if (this.miniplayerWindow) {
+      return;
+    }
+    if (!('documentPictureInPicture' in window)) {
+      this.showNotification('Miniplayer requires Chrome or Edge.', 'error');
+      return;
+    }
+    try {
+      const pipWindow = await documentPictureInPicture.requestWindow({
+        width: 320,
+        height: 96
+      });
+      this.miniplayerWindow = pipWindow;
+      this.miniplayerAutoOpened = isAuto;
+      this.buildMiniplayerDOM(pipWindow);
+      this.updateMiniplayerUI();
+      this._miniplayerInterval = setInterval(() => this.updateMiniplayerUI(), 500);
+      pipWindow.addEventListener('pagehide', () => this.handleMiniplayerClosed(), {
+        once: true
+      });
+      this.showNotification('Miniplayer on', 'success');
+    } catch (err) {
+      console.warn('Failed to open miniplayer:', err);
+      this.showNotification('Could not open miniplayer.', 'error');
+    }
+  }
+  closeMiniplayer() {
+    if (!this.miniplayerWindow) {
+      return;
+    }
+    this.miniplayerWindow.close();
+  }
+  handleMiniplayerClosed() {
+    if (!this.miniplayerWindow) {
+      return;
+    }
+    this.miniplayerWindow = null;
+    this._miniplayerEls = null;
+    this.miniplayerAutoOpened = false;
+    if (this._miniplayerInterval) {
+      clearInterval(this._miniplayerInterval);
+      this._miniplayerInterval = null;
+    }
+    this.showNotification('Miniplayer off', 'success');
+  }
+  buildMiniplayerDOM(pipWindow) {
+    const doc = pipWindow.document;
+    const cs = getComputedStyle(document.documentElement);
+    const varNames = [ '--bg-primary', '--bg-secondary', '--text-primary', '--text-secondary', '--accent-color', '--hover-color', '--border-color' ];
+    const varsCss = varNames.map(name => `${name}:${cs.getPropertyValue(name).trim()}`).join(';');
+    doc.documentElement.setAttribute('style', varsCss);
+    const style = doc.createElement('style');
+    style.textContent = `\n\t        * { margin:0; padding:0; box-sizing:border-box; }\n\t        html, body { width:100%; height:100%; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg-secondary); color: var(--text-primary); overflow:hidden; }\n\t        .mp-body { display:flex; align-items:center; gap:10px; height:100%; padding:10px; }\n\t        .mp-thumb { width:60px; height:60px; border-radius:6px; object-fit:cover; flex-shrink:0; background:var(--bg-primary); }\n\t        .mp-info { flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:2px; }\n\t        .mp-name { font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }\n\t        .mp-artist { font-size:11px; color:var(--text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }\n\t        .mp-controls { display:flex; align-items:center; gap:6px; flex-shrink:0; }\n\t        .mp-btn { border:none; background:transparent; color:var(--text-primary); cursor:pointer; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:15px; transition:background .15s; }\n\t        .mp-btn:hover { background:var(--border-color); }\n\t        .mp-play { width:38px; height:38px; background:var(--accent-color); color:#fff; font-size:16px; }\n\t        .mp-play:hover { background:var(--hover-color); }\n\t    `;
+    doc.head.appendChild(style);
+    const body = doc.createElement('div');
+    body.className = 'mp-body';
+    body.innerHTML = `\n\t        <img class="mp-thumb" id="mpThumb" alt="">\n\t        <div class="mp-info">\n\t            <div class="mp-name" id="mpName">No Song Playing</div>\n\t            <div class="mp-artist" id="mpArtist"></div>\n\t        </div>\n\t        <div class="mp-controls">\n\t            <button class="mp-btn" id="mpPrev" title="Previous" aria-label="Previous">⏮</button>\n\t            <button class="mp-btn mp-play" id="mpPlayPause" title="Play/Pause" aria-label="Play/Pause">▶</button>\n\t            <button class="mp-btn" id="mpNext" title="Next" aria-label="Next">⏭</button>\n\t        </div>\n\t    `;
+    doc.body.appendChild(body);
+    doc.getElementById('mpPrev').addEventListener('click', () => this.playPreviousSong());
+    doc.getElementById('mpPlayPause').addEventListener('click', () => this.togglePlayPause());
+    doc.getElementById('mpNext').addEventListener('click', () => this.playNextSong());
+    this._miniplayerEls = {
+      thumb: doc.getElementById('mpThumb'),
+      name: doc.getElementById('mpName'),
+      artist: doc.getElementById('mpArtist'),
+      playPauseBtn: doc.getElementById('mpPlayPause')
+    };
+  }
+  updateMiniplayerUI() {
+    if (!this._miniplayerEls) {
+      return;
+    }
+    const thumb = document.getElementById('currentSongThumbnail');
+    const name = document.getElementById('currentSongName');
+    const author = document.getElementById('currentSongAuthor');
+    if (thumb && thumb.src) {
+      this._miniplayerEls.thumb.src = thumb.src;
+    }
+    this._miniplayerEls.name.textContent = name?.textContent || 'No Song Playing';
+    this._miniplayerEls.artist.textContent = author?.textContent || '';
+    const isPlaying = this.isLocalPlayback && this.localAudio ? !this.localAudio.paused : this.isPlaying;
+    this._miniplayerEls.playPauseBtn.textContent = isPlaying ? '⏸' : '▶';
+  }
   initSupabaseForFindSongs() {
     if (!this.supabase) {
       const supabaseUrl = 'https://cwhxanbpymkngzpbsshh.supabase.co';
@@ -11047,7 +11279,8 @@ class AdvancedMusicPlayer {
       toggleWebEmbed: 'Toggle Web Embed',
       toggleMusicExplorer: 'Toggle Music Explorer',
       seekForward: 'Seek Forward 5s',
-      seekBackward: 'Seek Backward 5s'
+      seekBackward: 'Seek Backward 5s',
+      toggleMiniplayer: 'Toggle Miniplayer'
     };
     return actionNames[action] || action;
   }
@@ -11149,6 +11382,8 @@ class AdvancedMusicPlayer {
       this.seekBy(5);
     } else if (code === k.seekBackward && k.seekBackward !== '') {
       this.seekBy(-5);
+    } else if (code === k.toggleMiniplayer && k.toggleMiniplayer !== '') {
+      this.toggleMiniplayer();
     }
   }
   async loadDiscordSettings() {

@@ -709,3 +709,4 @@
 -  fixed is playlist looping saved to localstorage bug. v70.7.0
 -  removed duplicate css and optimized css v70.8.0
 -  sped up initial page load (deferred scripts, lazy loaded karaoke share deps, dropped unused font preconnects) and cleaned up code formatting v70.9.0
+-  added miniplayer v71.0.0

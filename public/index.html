@@ -989,6 +989,10 @@ Another Playlist{
                                      <label>Toggle Music Explorer</label>
                                      <input type="text" class="keybind-input" data-action="toggleMusicExplorer" readonly>
                                  </div>
+                                 <div class="keybind-item">
+                                     <label>Toggle Miniplayer</label>
+                                     <input type="text" class="keybind-input" data-action="toggleMiniplayer" readonly>
+                                 </div>
                               </div>
                            </div>
                         </div>
@@ -1047,6 +1051,16 @@ Another Playlist{
                            </label>
                         </div>
                         <p class="setting-description">Tracks how often you play each song (lifetime and last 30 days). Turning this off permanently deletes all stored listening data.</p>
+                     </div>
+                     <div class="setting-group">
+                        <label for="autoMiniplayerToggle">Automatically Open Miniplayer:</label>
+                        <div class="toggle-switch">
+                           <input type="checkbox" id="autoMiniplayerToggle" class="toggle-input">
+                           <label for="autoMiniplayerToggle" class="toggle-label">
+                           <span class="toggle-slider"></span>
+                           </label>
+                        </div>
+                        <p class="setting-description">Opens a small floating window with player controls when you switch to another tab or app, like Spotify. Close it by switching back.</p>
                      </div>
                   </div>
                </div>
