@@ -96,9 +96,7 @@ class AdvancedMusicPlayer {
     this.webEmbedSites = [ 'https://www.desmos.com/calculator', 'https://i2.res.24o.it/pdf2010/Editrice/ILSOLE24ORE/ILSOLE24ORE/Online/_Oggetti_Embedded/Documenti/2025/07/12/Preliminary%20Report%20VT.pdf', 'https://www.wikipedia.org', 'https://www.desmos.com/scientific', 'https://www.desmos.com/3d' ];
     this.adsEnabled = false;
     this.visualizerEnabled = true;
-    this.autoMiniplayerEnabled = false;
     this.miniplayerWindow = null;
-    this.miniplayerAutoOpened = false;
     this._miniplayerEls = null;
     this._miniplayerInterval = null;
     this.isAutofillButtonHovered = false;
@@ -224,9 +222,6 @@ class AdvancedMusicPlayer {
     if (this.elements.listeningStatsToggle) {
       this.elements.listeningStatsToggle.checked = this.listeningStatsEnabled;
     }
-    if (this.elements.autoMiniplayerToggle) {
-      this.elements.autoMiniplayerToggle.checked = this.autoMiniplayerEnabled;
-    }
   }
   _setupComponents() {
     this.setupYouTubePlayer();
@@ -252,7 +247,6 @@ class AdvancedMusicPlayer {
     this.addQueueStyles();
     this.initLibraryFilter();
     this.setupTransportHoverPreviews();
-    this.setupMiniplayerAutoToggle();
   }
   _handleInitializationError(error) {
     const errorDiv = document.createElement('div');
@@ -426,7 +420,6 @@ class AdvancedMusicPlayer {
       saveDiscoverMoreSettings: document.getElementById('saveDiscoverMoreSettings'),
       discordButton: document.getElementById('discordButton'),
       visualizerToggle: document.getElementById('visualizerToggle'),
-      autoMiniplayerToggle: document.getElementById('autoMiniplayerToggle'),
       findSongsBtn: document.getElementById('findSongsBtn'),
       closeFindSongs: document.getElementById('closeFindSongs'),
       findSongsDiv: document.getElementById('findSongsDiv'),
@@ -600,10 +593,9 @@ class AdvancedMusicPlayer {
       librarySearchInput: this.handleLibrarySearchInput.bind(this),
       saveDiscoverMoreSettings: this.handleSaveDiscoverMoreSettings.bind(this),
       refreshRandomRecommendations: () => this.refreshRandomRecommendations(),
-      visualizerToggle: e => this.handleVisualizerToggle(e),
-      autoMiniplayerToggle: e => this.handleAutoMiniplayerToggle(e)
+      visualizerToggle: e => this.handleVisualizerToggle(e)
     };
-    const simpleBindings = [ [ this.elements.addSongBtn, 'click', handlers.addSong ], [ this.elements.createPlaylistBtn, 'click', handlers.createPlaylist ], [ this.elements.closePlaylistModalBtn, 'click', handlers.closePlaylistModal ], [ this.elements.addSongToPlaylistBtn, 'click', handlers.addSongToPlaylist ], [ this.elements.playPauseBtn, 'click', handlers.togglePlayPause ], [ this.elements.prevBtn, 'click', handlers.playPrevious ], [ this.elements.nextBtn, 'click', handlers.playNext ], [ this.elements.loopBtn, 'click', handlers.toggleLoop ], [ this.elements.showPlaylistBtn, 'click', handlers.toggleSidebar ], [ this.elements.closeSidebarBtn, 'click', handlers.toggleSidebar ], [ this.elements.themeToggle, 'click', handlers.toggleTheme ], [ this.elements.autoplayBtn, 'click', handlers.toggleAutoplay ], [ this.elements.speedBtn, 'click', handlers.toggleSpeedOptions ], [ this.elements.volumeSlider, 'input', handlers.volumeChange ], [ this.elements.progressBar, 'click', handlers.seekMusic ], [ this.elements.currentSongName, 'contextmenu', handlers.songNameRightClick ], [ this.elements.toggleControlBarBtn, 'click', handlers.toggleControlBar ], [ this.elements.modifyLibraryBtn, 'click', handlers.openLibraryModal ], [ this.elements.closeLibraryModalBtn, 'click', handlers.closeLibraryModal ], [ this.elements.importLibraryBtn, 'click', handlers.importLibrary ], [ this.elements.exportLibraryBtn, 'click', handlers.exportLibrary ], [ this.elements.libraryModificationTabAddSong, 'click', handlers.libraryModificationTabAddSongClick ], [ this.elements.libraryModificationTabImportExport, 'click', handlers.libraryModificationTabImportExportClick ], [ this.elements.loopPlaylistBtn, 'click', handlers.togglePlaylistLoop ], [ this.elements.discordButton, 'click', handlers.discordClick ], [ this.elements.librarySortToggle, 'change', handlers.librarySortToggle ], [ this.elements.libraryReverseToggle, 'change', handlers.libraryReverseToggle ], [ this.elements.closeImportModalBtn, 'click', handlers.closeImportModal ], [ this.elements.importSongsBtn, 'click', handlers.importSongs ], [ this.elements.playlistSearch, 'input', handlers.filterPlaylists ], [ this.elements.playlistSearch, 'keypress', handlers.playlistSearchEnter ], [ this.elements.toggleCreatePlaylistBtn, 'click', handlers.toggleCreatePlaylistDiv ], [ this.elements.togglePlaylistEditModeBtn, 'click', handlers.togglePlaylistEditMode ], [ this.elements.settingsButton, 'click', handlers.openSettings ], [ this.elements.settingsCloseBtn, 'click', handlers.closeSettings ], [ this.elements.settingsModal, 'click', handlers.settingsModalClick ], [ this.elements.themeMode, 'change', handlers.themeModeChange ], [ this.elements.saveCustomTheme, 'click', handlers.saveCustomTheme ], [ this.elements.adsToggle, 'change', handlers.adsToggle ], [ this.elements.saveDiscoverMoreSettings, 'click', handlers.saveDiscoverMoreSettings ], [ this.elements.visualizerToggle, 'change', handlers.visualizerToggle ], [ this.elements.autoMiniplayerToggle, 'change', handlers.autoMiniplayerToggle ], [ this.elements.findSongsBtn, 'click', handlers.findSongsOpen ], [ this.elements.closeFindSongs, 'click', handlers.findSongsClose ], [ this.elements.searchSongsToAdd, 'input', handlers.searchSongsToAdd ], [ this.elements.statsButton, 'click', this.openStatsModal.bind(this) ], [ this.elements.lsPanel, 'click', this._handleStatsShowAllClick.bind(this) ], [ this.elements.lsPanel, 'input', this._handleStatsSearchInput.bind(this) ], [ document.getElementById('lsCloseBtn'), 'click', this.closeStatsModal.bind(this) ], [ this.elements.lsRangeToggle, 'change', this._handleStatsRangeToggle.bind(this) ], [ this.elements.listeningStatsToggle, 'change', this.handleListeningStatsToggle.bind(this) ], [ this.elements.libTopicBtn, 'click', handlers.toggleTopicKeyword ] ];
+    const simpleBindings = [ [ this.elements.addSongBtn, 'click', handlers.addSong ], [ this.elements.createPlaylistBtn, 'click', handlers.createPlaylist ], [ this.elements.closePlaylistModalBtn, 'click', handlers.closePlaylistModal ], [ this.elements.addSongToPlaylistBtn, 'click', handlers.addSongToPlaylist ], [ this.elements.playPauseBtn, 'click', handlers.togglePlayPause ], [ this.elements.prevBtn, 'click', handlers.playPrevious ], [ this.elements.nextBtn, 'click', handlers.playNext ], [ this.elements.loopBtn, 'click', handlers.toggleLoop ], [ this.elements.showPlaylistBtn, 'click', handlers.toggleSidebar ], [ this.elements.closeSidebarBtn, 'click', handlers.toggleSidebar ], [ this.elements.themeToggle, 'click', handlers.toggleTheme ], [ this.elements.autoplayBtn, 'click', handlers.toggleAutoplay ], [ this.elements.speedBtn, 'click', handlers.toggleSpeedOptions ], [ this.elements.volumeSlider, 'input', handlers.volumeChange ], [ this.elements.progressBar, 'click', handlers.seekMusic ], [ this.elements.currentSongName, 'contextmenu', handlers.songNameRightClick ], [ this.elements.toggleControlBarBtn, 'click', handlers.toggleControlBar ], [ this.elements.modifyLibraryBtn, 'click', handlers.openLibraryModal ], [ this.elements.closeLibraryModalBtn, 'click', handlers.closeLibraryModal ], [ this.elements.importLibraryBtn, 'click', handlers.importLibrary ], [ this.elements.exportLibraryBtn, 'click', handlers.exportLibrary ], [ this.elements.libraryModificationTabAddSong, 'click', handlers.libraryModificationTabAddSongClick ], [ this.elements.libraryModificationTabImportExport, 'click', handlers.libraryModificationTabImportExportClick ], [ this.elements.loopPlaylistBtn, 'click', handlers.togglePlaylistLoop ], [ this.elements.discordButton, 'click', handlers.discordClick ], [ this.elements.librarySortToggle, 'change', handlers.librarySortToggle ], [ this.elements.libraryReverseToggle, 'change', handlers.libraryReverseToggle ], [ this.elements.closeImportModalBtn, 'click', handlers.closeImportModal ], [ this.elements.importSongsBtn, 'click', handlers.importSongs ], [ this.elements.playlistSearch, 'input', handlers.filterPlaylists ], [ this.elements.playlistSearch, 'keypress', handlers.playlistSearchEnter ], [ this.elements.toggleCreatePlaylistBtn, 'click', handlers.toggleCreatePlaylistDiv ], [ this.elements.togglePlaylistEditModeBtn, 'click', handlers.togglePlaylistEditMode ], [ this.elements.settingsButton, 'click', handlers.openSettings ], [ this.elements.settingsCloseBtn, 'click', handlers.closeSettings ], [ this.elements.settingsModal, 'click', handlers.settingsModalClick ], [ this.elements.themeMode, 'change', handlers.themeModeChange ], [ this.elements.saveCustomTheme, 'click', handlers.saveCustomTheme ], [ this.elements.adsToggle, 'change', handlers.adsToggle ], [ this.elements.saveDiscoverMoreSettings, 'click', handlers.saveDiscoverMoreSettings ], [ this.elements.visualizerToggle, 'change', handlers.visualizerToggle ], [ this.elements.findSongsBtn, 'click', handlers.findSongsOpen ], [ this.elements.closeFindSongs, 'click', handlers.findSongsClose ], [ this.elements.searchSongsToAdd, 'input', handlers.searchSongsToAdd ], [ this.elements.statsButton, 'click', this.openStatsModal.bind(this) ], [ this.elements.lsPanel, 'click', this._handleStatsShowAllClick.bind(this) ], [ this.elements.lsPanel, 'input', this._handleStatsSearchInput.bind(this) ], [ document.getElementById('lsCloseBtn'), 'click', this.closeStatsModal.bind(this) ], [ this.elements.lsRangeToggle, 'change', this._handleStatsRangeToggle.bind(this) ], [ this.elements.listeningStatsToggle, 'change', this.handleListeningStatsToggle.bind(this) ], [ this.elements.libTopicBtn, 'click', handlers.toggleTopicKeyword ] ];
     simpleBindings.forEach(([element, event, handler]) => {
       if (element) {
         element.addEventListener(event, handler);
@@ -887,10 +879,6 @@ class AdvancedMusicPlayer {
           key: 'listeningStatsEnabled',
           default: false,
           target: 'listeningStatsEnabled'
-        }, {
-          key: 'autoMiniplayerEnabled',
-          default: false,
-          target: 'autoMiniplayerEnabled'
         } ];
         settingsToLoad.forEach(setting => {
           const request = store.get(setting.key);
@@ -1950,6 +1938,7 @@ class AdvancedMusicPlayer {
       const songId = firstSongElement.dataset.songId;
       if (songId) {
         this.playSong(parseInt(songId));
+        this.elements.librarySearch?.blur();
       }
     }
   }
@@ -5261,7 +5250,7 @@ class AdvancedMusicPlayer {
       if (this.temporarilySkippedSongs.has(entryId)) {
         songCard.classList.add('temporarily-skipped');
       }
-      const thumbnailUrl = `https://img.youtube.com/vi/${song.videoId}/default.jpg`;
+      const thumbnailUrl = song.thumbnailUrl || `https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg`;
       songCard.innerHTML = `\n\t\t\t<img src="${thumbnailUrl}" alt="${song.name}" class="song-card-thumbnail" loading="lazy">\n\t\t\t<div class="song-card-info">\n\t\t\t\t<div class="song-card-index">#${index + 1}</div>\n\t\t\t\t<div class="song-card-title">${song.name}</div>\n\t\t\t</div>\n\t\t\t<div class="song-card-actions">\n\t\t\t\t<button class="song-card-btn play-btn" title="Play this song">\n\t\t\t\t\t<i class="fas fa-play"></i>\n\t\t\t\t</button>\n\t\t\t\t<button class="song-card-btn skip-btn ${this.temporarilySkippedSongs.has(entryId) ? 'active' : ''}" title="Temporarily skip">\n\t\t\t\t\t<i class="fas fa-ban"></i>\n\t\t\t\t</button>\n\t\t\t</div>\n\t\t`;
       const playBtn = songCard.querySelector('.play-btn');
       playBtn.addEventListener('click', e => {
@@ -10308,32 +10297,14 @@ class AdvancedMusicPlayer {
     }
     this.saveSetting('visualizerEnabled', isEnabled);
   }
-  handleAutoMiniplayerToggle(event) {
-    this.autoMiniplayerEnabled = event.target.checked;
-    this.saveSetting('autoMiniplayerEnabled', this.autoMiniplayerEnabled);
-  }
-  setupMiniplayerAutoToggle() {
-    document.addEventListener('visibilitychange', () => {
-      if (!this.autoMiniplayerEnabled) {
-        return;
-      }
-      if (document.hidden) {
-        if (!this.miniplayerWindow && this.currentSong) {
-          this.openMiniplayer(true);
-        }
-      } else if (this.miniplayerWindow && this.miniplayerAutoOpened) {
-        this.closeMiniplayer();
-      }
-    });
-  }
   toggleMiniplayer() {
     if (this.miniplayerWindow) {
       this.closeMiniplayer();
     } else {
-      this.openMiniplayer(false);
+      this.openMiniplayer();
     }
   }
-  async openMiniplayer(isAuto) {
+  async openMiniplayer() {
     if (this.miniplayerWindow) {
       return;
     }
@@ -10347,7 +10318,6 @@ class AdvancedMusicPlayer {
         height: 96
       });
       this.miniplayerWindow = pipWindow;
-      this.miniplayerAutoOpened = isAuto;
       this.buildMiniplayerDOM(pipWindow);
       this.updateMiniplayerUI();
       this._miniplayerInterval = setInterval(() => this.updateMiniplayerUI(), 500);
@@ -10372,7 +10342,6 @@ class AdvancedMusicPlayer {
     }
     this.miniplayerWindow = null;
     this._miniplayerEls = null;
-    this.miniplayerAutoOpened = false;
     if (this._miniplayerInterval) {
       clearInterval(this._miniplayerInterval);
       this._miniplayerInterval = null;
@@ -10385,12 +10354,16 @@ class AdvancedMusicPlayer {
     const varNames = [ '--bg-primary', '--bg-secondary', '--text-primary', '--text-secondary', '--accent-color', '--hover-color', '--border-color' ];
     const varsCss = varNames.map(name => `${name}:${cs.getPropertyValue(name).trim()}`).join(';');
     doc.documentElement.setAttribute('style', varsCss);
+    const iconLink = doc.createElement('link');
+    iconLink.rel = 'stylesheet';
+    iconLink.href = '/all.min.css';
+    doc.head.appendChild(iconLink);
     const style = doc.createElement('style');
-    style.textContent = `\n\t        * { margin:0; padding:0; box-sizing:border-box; }\n\t        html, body { width:100%; height:100%; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg-secondary); color: var(--text-primary); overflow:hidden; }\n\t        .mp-body { display:flex; align-items:center; gap:10px; height:100%; padding:10px; }\n\t        .mp-thumb { width:60px; height:60px; border-radius:6px; object-fit:cover; flex-shrink:0; background:var(--bg-primary); }\n\t        .mp-info { flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:2px; }\n\t        .mp-name { font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }\n\t        .mp-artist { font-size:11px; color:var(--text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }\n\t        .mp-controls { display:flex; align-items:center; gap:6px; flex-shrink:0; }\n\t        .mp-btn { border:none; background:transparent; color:var(--text-primary); cursor:pointer; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:15px; transition:background .15s; }\n\t        .mp-btn:hover { background:var(--border-color); }\n\t        .mp-play { width:38px; height:38px; background:var(--accent-color); color:#fff; font-size:16px; }\n\t        .mp-play:hover { background:var(--hover-color); }\n\t    `;
+    style.textContent = `\n\t        * { margin:0; padding:0; box-sizing:border-box; }\n\t        html, body { width:100%; height:100%; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg-secondary); color: var(--text-primary); overflow:hidden; display:flex; justify-content:center; }\n\t        .mp-body { display:flex; align-items:center; gap:10px; height:100%; width:100%; max-width:320px; padding:10px; }\n\t        .mp-thumb { width:50px; height:50px; border-radius:6px; object-fit:cover; flex-shrink:0; background:var(--bg-primary); }\n\t        .mp-info { flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:2px; }\n\t        .mp-name { font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }\n\t        .mp-artist { font-size:11px; color:var(--text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }\n\t        .mp-controls { display:flex; align-items:center; gap:6px; flex-shrink:0; }\n\t        .mp-btn { border:none; background:transparent; color:var(--text-primary); cursor:pointer; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; transition:background .15s; }\n\t        .mp-btn:hover { background:var(--border-color); }\n\t        .mp-play { width:38px; height:38px; background:var(--accent-color); color:#fff; font-size:15px; }\n\t        .mp-play:hover { background:var(--hover-color); }\n\t    `;
     doc.head.appendChild(style);
     const body = doc.createElement('div');
     body.className = 'mp-body';
-    body.innerHTML = `\n\t        <img class="mp-thumb" id="mpThumb" alt="">\n\t        <div class="mp-info">\n\t            <div class="mp-name" id="mpName">No Song Playing</div>\n\t            <div class="mp-artist" id="mpArtist"></div>\n\t        </div>\n\t        <div class="mp-controls">\n\t            <button class="mp-btn" id="mpPrev" title="Previous" aria-label="Previous">⏮</button>\n\t            <button class="mp-btn mp-play" id="mpPlayPause" title="Play/Pause" aria-label="Play/Pause">▶</button>\n\t            <button class="mp-btn" id="mpNext" title="Next" aria-label="Next">⏭</button>\n\t        </div>\n\t    `;
+    body.innerHTML = `\n\t        <img class="mp-thumb" id="mpThumb" alt="">\n\t        <div class="mp-info">\n\t            <div class="mp-name" id="mpName">No Song Playing</div>\n\t            <div class="mp-artist" id="mpArtist"></div>\n\t        </div>\n\t        <div class="mp-controls">\n\t            <button class="mp-btn" id="mpPrev" title="Previous" aria-label="Previous"><i class="fas fa-step-backward"></i></button>\n\t            <button class="mp-btn mp-play" id="mpPlayPause" title="Play/Pause" aria-label="Play/Pause"><i class="fas fa-play" id="mpPlayPauseIcon"></i></button>\n\t            <button class="mp-btn" id="mpNext" title="Next" aria-label="Next"><i class="fas fa-step-forward"></i></button>\n\t        </div>\n\t    `;
     doc.body.appendChild(body);
     doc.getElementById('mpPrev').addEventListener('click', () => this.playPreviousSong());
     doc.getElementById('mpPlayPause').addEventListener('click', () => this.togglePlayPause());
@@ -10399,7 +10372,7 @@ class AdvancedMusicPlayer {
       thumb: doc.getElementById('mpThumb'),
       name: doc.getElementById('mpName'),
       artist: doc.getElementById('mpArtist'),
-      playPauseBtn: doc.getElementById('mpPlayPause')
+      playPauseIcon: doc.getElementById('mpPlayPauseIcon')
     };
   }
   updateMiniplayerUI() {
@@ -10415,7 +10388,7 @@ class AdvancedMusicPlayer {
     this._miniplayerEls.name.textContent = name?.textContent || 'No Song Playing';
     this._miniplayerEls.artist.textContent = author?.textContent || '';
     const isPlaying = this.isLocalPlayback && this.localAudio ? !this.localAudio.paused : this.isPlaying;
-    this._miniplayerEls.playPauseBtn.textContent = isPlaying ? '⏸' : '▶';
+    this._miniplayerEls.playPauseIcon.className = `fas ${isPlaying ? 'fa-pause' : 'fa-play'}`;
   }
   initSupabaseForFindSongs() {
     if (!this.supabase) {

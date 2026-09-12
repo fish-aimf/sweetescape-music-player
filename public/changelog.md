@@ -710,3 +710,9 @@
 -  removed duplicate css and optimized css v70.8.0
 -  sped up initial page load (deferred scripts, lazy loaded karaoke share deps, dropped unused font preconnects) and cleaned up code formatting v70.9.0
 -  added miniplayer v71.0.0
+-  fixed missing keybind input styling v71.1.0
+-  made miniplayer prev/next icons consistent with the rest of the player v71.2.0
+-  fixed service worker so updates apply seamlessly without manually unregistering v71.2.1
+-  leaving the tab no longer opens the miniplayer, only the hotkey toggles it now v71.3.0
+-  fixed badly cropped miniplayer thumbnail and matched sidebar playlist thumbnails to the same crop v71.4.0
+-  search bar unfocuses after pressing enter to play a song so hotkeys work immediately v71.5.0

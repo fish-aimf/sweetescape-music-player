@@ -30,7 +30,16 @@ async function fetchLiveVersion() {
 
 async function precache(cacheName) {
   const cache = await caches.open(cacheName);
-  await cache.addAll(STATIC_ASSETS);
+  await Promise.all(STATIC_ASSETS.map(async url => {
+    try {
+      const res = await fetch(url, {
+        cache: "no-store"
+      });
+      if (res.ok) await cache.put(url, res);
+    } catch (err) {
+      console.warn("[sw] failed to precache", url, err);
+    }
+  }));
 }
 
 async function deleteOldCaches(currentCacheName) {

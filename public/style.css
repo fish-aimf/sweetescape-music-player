@@ -4615,6 +4615,21 @@ body:has(#ytPlayer.fullscreen-video) {
   padding-bottom: 10px;
   border-bottom: 1px solid var(--border-color);
 }
+.keybind-input {
+  width: 140px;
+  padding: 8px 10px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.85em;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
 .keybind-input.recording,
 .keybind-input.unbound:hover,
 .keybind-input:hover,
