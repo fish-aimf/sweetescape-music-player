@@ -38,6 +38,20 @@ function extractMeta(payload) {
   return { title, artist, albumArt };
 }
 
+async function fetchFromLyricsOvh(song, artist) {
+  if (!artist) {
+    return null;
+  }
+  const url = `https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(song)}`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    return null;
+  }
+  const payload = await response.json();
+  const lyrics = typeof payload?.lyrics === 'string' && payload.lyrics.trim() ? payload.lyrics.trim() : null;
+  return lyrics ? { lyrics, title: song, artist, albumArt: null } : null;
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET') {
     res.status(405).json({ status: 405, error: 'Method not allowed' });
@@ -52,16 +66,9 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  if (KEYS.length === 0) {
-    res.status(500).json({
-      status: 500,
-      error: 'No RapidAPI keys configured (set RAPIDAPI_KEY_1 / RAPIDAPI_KEY_2)',
-    });
-    return;
-  }
-
   const requestUrl = buildRequestUrl(song, artist);
-  let lastError = null;
+  let lastError = KEYS.length === 0 ? 'No RapidAPI keys configured' : null;
+  let foundButEmpty = false;
 
   for (const key of KEYS) {
     try {
@@ -88,8 +95,8 @@ module.exports = async function handler(req, res) {
       const lyrics = extractLyrics(payload);
 
       if (!lyrics) {
-        res.status(404).json({ status: 404, error: 'No lyrics found for this song' });
-        return;
+        foundButEmpty = true;
+        continue;
       }
 
       const meta = extractMeta(payload);
@@ -100,5 +107,22 @@ module.exports = async function handler(req, res) {
     }
   }
 
-  res.status(502).json({ status: 502, error: lastError || 'All RapidAPI keys failed' });
+  // RapidAPI keys are missing, unsubscribed, or rate-limited - fall back to
+  // the free, keyless lyrics.ovh API so the feature still works.
+  try {
+    const fallback = await fetchFromLyricsOvh(song, artist);
+    if (fallback) {
+      res.status(200).json({ status: 200, ...fallback });
+      return;
+    }
+  } catch (error) {
+    lastError = error.message || lastError;
+  }
+
+  if (foundButEmpty) {
+    res.status(404).json({ status: 404, error: 'No lyrics found for this song' });
+    return;
+  }
+
+  res.status(502).json({ status: 502, error: lastError || 'All lyrics providers failed' });
 };
