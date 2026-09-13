@@ -1472,7 +1472,8 @@ class AdvancedMusicPlayer {
     };
     this.songLibrary.push(newSong);
     this.saveSingleSong(newSong).then(() => {
-      this.renderSongLibrary();
+      const searchTerm = this.elements.librarySearch ? this.elements.librarySearch.value.toLowerCase().trim() : '';
+      searchTerm === '' ? this.renderLibraryView() : this.renderSongLibrary(searchTerm);
       this.updatePlaylistSelection();
       this.elements.songNameInput.value = '';
       this.elements.songAuthorInput.value = '';
