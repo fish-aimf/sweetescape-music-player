@@ -718,3 +718,4 @@
 -  search bar unfocuses after pressing enter to play a song so hotkeys work immediately v71.5.0
 -  fixed library view collapsing into a flattened list after adding a song via pasted YouTube URL v71.5.1
 -  fixed genius lyrics auto-fetch failing (RapidAPI key rejected) by falling back to a free lyrics provider v71.6.0
+-  fixed listening stats not counting plays from playlists since playlist songs don't carry the library id, now tracked by video id instead v71.7.0

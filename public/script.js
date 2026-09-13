@@ -4827,7 +4827,7 @@ class AdvancedMusicPlayer {
             const threshold = Math.min(10, duration / 3);
             if (current >= threshold) {
               this._statCountedForCurrentPlay = true;
-              this.recordSongPlayStat(this.currentSong?.id);
+              this.recordSongPlayStat(this.currentSong?.videoId);
             }
           }
         }
@@ -4941,7 +4941,7 @@ class AdvancedMusicPlayer {
             const threshold = Math.min(10, duration / 3);
             if (currentTime >= threshold) {
               this._statCountedForCurrentPlay = true;
-              this.recordSongPlayStat(this.currentSong?.id);
+              this.recordSongPlayStat(this.currentSong?.videoId);
             }
           }
         }
@@ -12602,8 +12602,8 @@ class AdvancedMusicPlayer {
       }
     });
   }
-  recordSongPlayStat(songId) {
-    if (!this.listeningStatsEnabled || !this.db || !songId) {
+  recordSongPlayStat(videoId) {
+    if (!this.listeningStatsEnabled || !this.db || !videoId) {
       return;
     }
     if (!this.db.objectStoreNames.contains('listeningStats')) {
@@ -12611,20 +12611,45 @@ class AdvancedMusicPlayer {
     }
     const transaction = this.db.transaction([ 'listeningStats' ], 'readwrite');
     const store = transaction.objectStore('listeningStats');
-    const getReq = store.get(songId);
+    const getReq = store.get(videoId);
     getReq.onsuccess = () => {
-      const record = getReq.result || {
-        id: songId,
-        lifetime: 0,
-        days: {}
+      if (getReq.result) {
+        this._applyPlayStat(store, getReq.result);
+        return;
+      }
+      const librarySong = this.songLibrary.find(s => s.videoId === videoId);
+      const legacyId = librarySong?.id;
+      if (legacyId === undefined || legacyId === videoId) {
+        this._applyPlayStat(store, {
+          id: videoId,
+          lifetime: 0,
+          days: {}
+        });
+        return;
+      }
+      const legacyReq = store.get(legacyId);
+      legacyReq.onsuccess = () => {
+        const legacy = legacyReq.result;
+        if (legacy) {
+          store.delete(legacyId);
+        }
+        this._applyPlayStat(store, {
+          ...legacy,
+          id: videoId,
+          lifetime: legacy?.lifetime || 0,
+          days: legacy?.days || {}
+        });
       };
-      record.lifetime += 1;
-      const todayKey = this._statsDayKey();
-      record.days[todayKey] = (record.days[todayKey] || 0) + 1;
-      this._pruneOldDays(record.days);
-      store.put(record);
+      legacyReq.onerror = e => console.error('Failed to read legacy listening stat:', e);
     };
     getReq.onerror = e => console.error('Failed to read listening stat:', e);
+  }
+  _applyPlayStat(store, record) {
+    record.lifetime += 1;
+    const todayKey = this._statsDayKey();
+    record.days[todayKey] = (record.days[todayKey] || 0) + 1;
+    this._pruneOldDays(record.days);
+    store.put(record);
   }
   get30DayCount(record) {
     if (!record || !record.days) {
@@ -12657,7 +12682,7 @@ class AdvancedMusicPlayer {
       const time30dSeconds = timeRecord ? Object.values(timeRecord.days || {}).reduce((a, b) => a + b, 0) : 0;
       const withNames = records.map(r => ({
         ...r,
-        song: this.songLibrary.find(s => s.id === r.id)
+        song: this.songLibrary.find(s => s.videoId === r.id) || this.songLibrary.find(s => s.id === r.id)
       })).filter(r => r.song);
       const byLifetime = withNames.filter(r => r.lifetime > 0).sort((a, b) => b.lifetime - a.lifetime);
       const by30Day = withNames.map(r => ({
