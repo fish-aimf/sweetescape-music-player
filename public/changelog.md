@@ -720,3 +720,4 @@
 -  fixed genius lyrics auto-fetch failing (RapidAPI key rejected) by falling back to a free lyrics provider v71.6.0
 -  fixed listening stats not counting plays from playlists since playlist songs don't carry the library id, now tracked by video id instead v71.7.0
 -  standardized every modal and symbol onto one design system (ui-system.css): shared tokens, one modal shell (header / body / footer), one close button, one button and input set, consistent font awesome icons; removed all code comments v71.8.0
+-  removed unused css (148 dead rules, 2 dead keyframes, 12 unused design tokens) from style.css and ui-system.css v71.8.1
