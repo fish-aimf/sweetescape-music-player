@@ -1,3 +1,88 @@
+const UI = {
+  SIZES: [ 'sm', 'md', 'lg', 'xl', '2xl', 'full' ],
+  el(tag, className, html) {
+    const node = document.createElement(tag);
+    if (className) {
+      node.className = className;
+    }
+    if (html !== undefined) {
+      node.innerHTML = html;
+    }
+    return node;
+  },
+  icon(name, extra) {
+    return `<i class="${name.startsWith('fa') && name.includes(' ') ? name : 'fas ' + name}${extra ? ' ' + extra : ''}"></i>`;
+  },
+  button(label, { variant = '', size = '', icon = '', block = false, className = '', onClick } = {}) {
+    const classes = [ 'ui-btn' ];
+    if (variant) {
+      classes.push(`ui-btn--${variant}`);
+    }
+    if (size) {
+      classes.push(`ui-btn--${size}`);
+    }
+    if (block) {
+      classes.push('ui-btn--block');
+    }
+    if (className) {
+      classes.push(className);
+    }
+    const node = this.el('button', classes.join(' '), `${icon ? this.icon(icon) + ' ' : ''}${label}`);
+    node.type = 'button';
+    if (onClick) {
+      node.addEventListener('click', onClick);
+    }
+    return node;
+  },
+  modal({ title = '', icon = '', size = 'md', className = '', bodyClassName = '', dismissible = true, onClose } = {}) {
+    const overlay = this.el('div', `modal ui-overlay${className ? ' ' + className : ''}`);
+    overlay.style.display = 'flex';
+    const shell = this.el('div', `modal-content ui-modal ui-modal--${this.SIZES.includes(size) ? size : 'md'}`);
+    const header = this.el('div', 'ui-modal__header');
+    const heading = this.el('h2', 'ui-modal__title', `${icon ? this.icon(icon) + ' ' : ''}${title}`);
+    const closeBtn = this.el('button', 'close-btn ui-modal__close', this.icon('fa-times'));
+    closeBtn.type = 'button';
+    closeBtn.title = 'Close';
+    const body = this.el('div', `ui-modal__body${bodyClassName ? ' ' + bodyClassName : ''}`);
+    const footer = this.el('div', 'ui-modal__footer');
+    footer.hidden = true;
+    header.append(heading, closeBtn);
+    shell.append(header, body, footer);
+    overlay.append(shell);
+    const close = () => {
+      overlay.remove();
+      if (onClose) {
+        onClose();
+      }
+    };
+    closeBtn.addEventListener('click', close);
+    if (dismissible) {
+      overlay.addEventListener('click', event => {
+        if (event.target === overlay) {
+          close();
+        }
+      });
+    }
+    return {
+      overlay,
+      shell,
+      header,
+      heading,
+      body,
+      footer,
+      close,
+      addFooter(...nodes) {
+        footer.hidden = false;
+        footer.append(...nodes);
+        return footer;
+      },
+      open(parent = document.body) {
+        parent.appendChild(overlay);
+        return overlay;
+      }
+    };
+  }
+};
 class AdvancedMusicPlayer {
   constructor() {
     this.playlists = [];
@@ -1661,11 +1746,11 @@ class AdvancedMusicPlayer {
     const playlists = this.playlists.filter(p => p !== favPlaylist);
     const header = document.createElement('div');
     header.className = 'shelf-header';
-    header.innerHTML = `<span class="shelf-title"><i class="fa fa-list"></i> Playlists</span>`;
+    header.innerHTML = `<span class="shelf-title"><i class="fas fa-list"></i> Playlists</span>`;
     if (playlists.length > 0) {
       const seeAllBtn = document.createElement('button');
       seeAllBtn.className = 'shelf-see-all-btn';
-      seeAllBtn.innerHTML = `View all <i class="fa fa-chevron-right"></i>`;
+      seeAllBtn.innerHTML = `View all <i class="fas fa-chevron-right"></i>`;
       seeAllBtn.addEventListener('click', () => this.switchTab('playlists'));
       header.appendChild(seeAllBtn);
     }
@@ -1675,7 +1760,7 @@ class AdvancedMusicPlayer {
     if (playlists.length === 0) {
       const empty = document.createElement('div');
       empty.className = 'playlists-shelf-empty';
-      empty.innerHTML = `<i class="fa fa-list"></i><span>No playlists yet</span>`;
+      empty.innerHTML = `<i class="fas fa-list"></i><span>No playlists yet</span>`;
       row.appendChild(empty);
     } else {
       const sorted = [ ...playlists ].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
@@ -1696,7 +1781,7 @@ class AdvancedMusicPlayer {
     const songsForArt = playlist.songs.slice(0, 4);
     if (songsForArt.length === 0) {
       thumb.classList.add('is-empty');
-      thumb.innerHTML = `<i class="fa fa-music"></i>`;
+      thumb.innerHTML = `<i class="fas fa-music"></i>`;
     } else {
       thumb.classList.add(`has-${Math.min(songsForArt.length, 4)}`);
       songsForArt.forEach(song => {
@@ -1714,7 +1799,7 @@ class AdvancedMusicPlayer {
     }
     const playOverlay = document.createElement('div');
     playOverlay.className = 'playlist-shelf-play-overlay';
-    playOverlay.innerHTML = `<i class="fa fa-play"></i>`;
+    playOverlay.innerHTML = `<i class="fas fa-play"></i>`;
     thumb.appendChild(playOverlay);
     const name = document.createElement('div');
     name.className = 'playlist-shelf-name';
@@ -1731,7 +1816,7 @@ class AdvancedMusicPlayer {
   _buildCreatePlaylistShelfTile() {
     const tile = document.createElement('div');
     tile.className = 'playlist-shelf-tile playlist-shelf-create-tile';
-    tile.innerHTML = `\n\t        <div class="playlist-shelf-thumb is-empty is-create">\n\t            <i class="fa fa-plus"></i>\n\t        </div>\n\t        <div class="playlist-shelf-name">New Playlist</div>\n\t    `;
+    tile.innerHTML = `\n\t        <div class="playlist-shelf-thumb is-empty is-create">\n\t            <i class="fas fa-plus"></i>\n\t        </div>\n\t        <div class="playlist-shelf-name">New Playlist</div>\n\t    `;
     tile.addEventListener('click', () => this._openCreatePlaylistFromShelf());
     return tile;
   }
@@ -1819,12 +1904,12 @@ class AdvancedMusicPlayer {
     const hasLyrics = !!(song.lyrics && song.lyrics.trim());
     let indicatorsHtml = '';
     if (isFav || isDl || hasLyrics) {
-      const lyricsHtml = hasLyrics ? `<span class="song-lyrics-indicator" title="Has lyrics"><i class="fa fa-closed-captioning"></i></span>` : '';
-      const dlHtml = isDl ? `<span class="song-dl-indicator"     title="Downloaded"><i class="fa fa-download"></i></span>` : '';
-      const favHtml = isFav ? `<span class="song-fav-indicator"    title="Favourited"><i class="fa fa-star"></i></span>` : '';
+      const lyricsHtml = hasLyrics ? `<span class="song-lyrics-indicator" title="Has lyrics"><i class="fas fa-closed-captioning"></i></span>` : '';
+      const dlHtml = isDl ? `<span class="song-dl-indicator"     title="Downloaded"><i class="fas fa-download"></i></span>` : '';
+      const favHtml = isFav ? `<span class="song-fav-indicator"    title="Favourited"><i class="fas fa-star"></i></span>` : '';
       indicatorsHtml = `<div class="song-status-indicators">${lyricsHtml}${dlHtml}${favHtml}</div>`;
     }
-    songElement.innerHTML = `\n\t        <span class="song-name" data-song-id="${song.id}">\n\t            ${this.escapeHtml(song.name)}\n\t            ${song.author ? `<small class="song-author">by ${this.escapeHtml(song.author)}</small>` : ''}\n\t        </span>\n\t        <div class="song-item-right">\n\t            ${indicatorsHtml}\n\t            <div class="song-actions">\n\t                <button class="song-card-btn favorite-btn" data-song-id="${song.id}" title="${isFav ? 'Unfavourite' : 'Favourite'}">\n\t                    <i class="fa ${isFav ? 'fa-star' : 'fa-star-o'}"></i>\n\t                </button>\n\t                <button class="song-card-btn play-btn" data-song-id="${song.id}" title="Play">\n\t                    <i class="fa fa-play"></i>\n\t                </button>\n\t                <button class="song-card-btn delete-btn" data-song-id="${song.id}" title="Delete">\n\t                    <i class="fa fa-trash"></i>\n\t                </button>\n\t                <button class="song-card-btn edit-btn" data-song-id="${song.id}" title="Edit">\n\t                    <i class="fa fa-pencil"></i>\n\t                </button>\n\t            </div>\n\t        </div>\n\t    `;
+    songElement.innerHTML = `\n\t        <span class="song-name" data-song-id="${song.id}">\n\t            ${this.escapeHtml(song.name)}\n\t            ${song.author ? `<small class="song-author">by ${this.escapeHtml(song.author)}</small>` : ''}\n\t        </span>\n\t        <div class="song-item-right">\n\t            ${indicatorsHtml}\n\t            <div class="song-actions">\n\t                <button class="song-card-btn favorite-btn" data-song-id="${song.id}" title="${isFav ? 'Unfavourite' : 'Favourite'}">\n\t                    <i class="${isFav ? 'fas fa-star' : 'far fa-star'}"></i>\n\t                </button>\n\t                <button class="song-card-btn play-btn" data-song-id="${song.id}" title="Play">\n\t                    <i class="fas fa-play"></i>\n\t                </button>\n\t                <button class="song-card-btn delete-btn" data-song-id="${song.id}" title="Delete">\n\t                    <i class="fas fa-trash"></i>\n\t                </button>\n\t                <button class="song-card-btn edit-btn" data-song-id="${song.id}" title="Edit">\n\t                    <i class="fas fa-pen"></i>\n\t                </button>\n\t            </div>\n\t        </div>\n\t    `;
     return songElement;
   }
   setupSongLibraryDelegation() {
@@ -1957,7 +2042,7 @@ class AdvancedMusicPlayer {
     if (favorites.length === 0) {
       const empty = document.createElement('div');
       empty.className = 'favorites-empty';
-      empty.innerHTML = `<i class="fa fa-star-o"></i><span>No favourites yet</span>`;
+      empty.innerHTML = `<i class="far fa-star"></i><span>No favourites yet</span>`;
       grid.appendChild(empty);
     } else {
       const shuffled = this._shuffleArray([ ...favorites ]);
@@ -1990,7 +2075,7 @@ class AdvancedMusicPlayer {
     panel.innerHTML = `\n\t        <div class="favorites-panel-top">\n\t            <div class="favorites-panel-title">Favourites</div>\n\t            <div class="favorites-panel-count">${favorites.length} <span class="favorites-panel-sublabel">song${favorites.length !== 1 ? 's' : ''}</span></div>\n\t        </div>\n\t        <div class="favorites-panel-bottom"></div>\n\t    `;
     const playBtn = document.createElement('button');
     playBtn.className = 'fav-play-btn';
-    playBtn.innerHTML = `<i class="fa fa-play"></i> Play`;
+    playBtn.innerHTML = `<i class="fas fa-play"></i> Play`;
     playBtn.addEventListener('click', () => {
       if (favPlaylist) {
         this.playPlaylist(favPlaylist.id);
@@ -2000,11 +2085,11 @@ class AdvancedMusicPlayer {
     });
     const expandBtn = document.createElement('button');
     expandBtn.className = 'fav-expand-btn';
-    expandBtn.innerHTML = `<i class="fa fa-chevron-down"></i> All`;
+    expandBtn.innerHTML = `<i class="fas fa-chevron-down"></i> All`;
     expandBtn.addEventListener('click', () => {
       const isExpanded = card.classList.toggle('expanded');
       expandBtn.classList.toggle('is-expanded', isExpanded);
-      expandBtn.innerHTML = isExpanded ? `<i class="fa fa-chevron-up"></i> Less` : `<i class="fa fa-chevron-down"></i> All`;
+      expandBtn.innerHTML = isExpanded ? `<i class="fas fa-chevron-up"></i> Less` : `<i class="fas fa-chevron-down"></i> All`;
       let expList = card.querySelector('.favorites-expanded-list');
       if (isExpanded) {
         if (!expList) {
@@ -2055,7 +2140,7 @@ class AdvancedMusicPlayer {
     label.className = 'fav-thumb-label';
     const icon = document.createElement('div');
     icon.className = 'fav-thumb-play-icon';
-    icon.innerHTML = `<i class="fa fa-play"></i>`;
+    icon.innerHTML = `<i class="fas fa-play"></i>`;
     const name = document.createElement('span');
     name.textContent = song.name;
     label.appendChild(icon);
@@ -2099,10 +2184,10 @@ class AdvancedMusicPlayer {
     right.style.cssText = 'display:flex;gap:6px;align-items:center;';
     const shuffleBtn = document.createElement('button');
     shuffleBtn.className = 'discovery-shuffle-btn';
-    shuffleBtn.innerHTML = `<i class="fa fa-random"></i> Shuffle`;
+    shuffleBtn.innerHTML = `<i class="fas fa-random"></i> Shuffle`;
     const expandBtn = document.createElement('button');
     expandBtn.className = 'discovery-expand-btn';
-    expandBtn.innerHTML = `<i class="fa fa-chevron-down"></i> All`;
+    expandBtn.innerHTML = `<i class="fas fa-chevron-down"></i> All`;
     right.appendChild(shuffleBtn);
     right.appendChild(expandBtn);
     header.appendChild(left);
@@ -2174,7 +2259,7 @@ class AdvancedMusicPlayer {
     });
     expandBtn.addEventListener('click', () => {
       const isExpanded = card.classList.toggle('expanded');
-      expandBtn.innerHTML = isExpanded ? `<i class="fa fa-chevron-up"></i> Less` : `<i class="fa fa-chevron-down"></i> All`;
+      expandBtn.innerHTML = isExpanded ? `<i class="fas fa-chevron-up"></i> Less` : `<i class="fas fa-chevron-down"></i> All`;
       let expList = card.querySelector('.discovery-expanded-list');
       if (isExpanded) {
         if (!expList) {
@@ -2253,7 +2338,7 @@ class AdvancedMusicPlayer {
     };
     const overlay = document.createElement('div');
     overlay.className = 'discovery-play-overlay';
-    overlay.innerHTML = `<i class="fa fa-play"></i>`;
+    overlay.innerHTML = `<i class="fas fa-play"></i>`;
     const nameEl = document.createElement('div');
     nameEl.className = 'discovery-song-name';
     nameEl.textContent = song.name;
@@ -2284,7 +2369,7 @@ class AdvancedMusicPlayer {
     const favoriteBtn = document.querySelector(`.favorite-btn[data-song-id="${songId}"]`);
     if (favoriteBtn) {
       const icon = favoriteBtn.querySelector('i');
-      icon.className = `fa ${newFavoriteStatus ? 'fa-star' : 'fa-star-o'}`;
+      icon.className = `${newFavoriteStatus ? 'fas fa-star' : 'far fa-star'}`;
       favoriteBtn.title = newFavoriteStatus ? 'Unfavourite' : 'Favourite';
     }
     const songItem = favoriteBtn?.closest('.song-item');
@@ -2299,8 +2384,8 @@ class AdvancedMusicPlayer {
           right.insertBefore(indicators, right.querySelector('.song-actions'));
         }
         if (indicators) {
-          const dlHtml = isDl ? `<span class="song-dl-indicator" title="Downloaded"><i class="fa fa-download"></i></span>` : '';
-          const favHtml = newFavoriteStatus ? `<span class="song-fav-indicator" title="Favourited"><i class="fa fa-star"></i></span>` : '';
+          const dlHtml = isDl ? `<span class="song-dl-indicator" title="Downloaded"><i class="fas fa-download"></i></span>` : '';
+          const favHtml = newFavoriteStatus ? `<span class="song-fav-indicator" title="Favourited"><i class="fas fa-star"></i></span>` : '';
           indicators.innerHTML = dlHtml + favHtml;
         }
       } else {
@@ -2347,7 +2432,7 @@ class AdvancedMusicPlayer {
         song.favorite = !isFavorited;
         const favoriteBtn = document.querySelector(`.favorite-btn[data-song-id="${song.id}"]`);
         if (favoriteBtn) {
-          favoriteBtn.querySelector('i').className = `fa ${song.favorite ? 'fa-star' : 'fa-star-o'}`;
+          favoriteBtn.querySelector('i').className = `${song.favorite ? 'fas fa-star' : 'far fa-star'}`;
           favoriteBtn.title = song.favorite ? 'Unfavourite' : 'Favourite';
         }
         const songItem = favoriteBtn?.closest('.song-item');
@@ -2358,8 +2443,8 @@ class AdvancedMusicPlayer {
           if (!song.favorite && !isDl) {
             indicators?.remove();
           } else if (indicators) {
-            const dlHtml = isDl ? `<span class="song-dl-indicator" title="Downloaded"><i class="fa fa-download"></i></span>` : '';
-            const favHtml = song.favorite ? `<span class="song-fav-indicator" title="Favourited"><i class="fa fa-star"></i></span>` : '';
+            const dlHtml = isDl ? `<span class="song-dl-indicator" title="Downloaded"><i class="fas fa-download"></i></span>` : '';
+            const favHtml = song.favorite ? `<span class="song-fav-indicator" title="Favourited"><i class="fas fa-star"></i></span>` : '';
             indicators.innerHTML = dlHtml + favHtml;
           }
         }
@@ -2771,9 +2856,9 @@ class AdvancedMusicPlayer {
     let pendingLocalHandle = null;
     let pendingClearHandle = false;
     const modal = document.createElement('div');
-    modal.className = 'modal';
+    modal.className = 'modal ui-overlay';
     modal.style.display = 'flex';
-    modal.innerHTML = `\n\t        <div class="modal-content song-edit-modal-content">\n\t            <div class="song-edit-modal-header">\n\t                <h3>Edit Song Details</h3>\n\t                <span class="close-btn song-edit-close-btn">&times;</span>\n\t            </div>\n\t            <form class="song-edit-form">\n\t                <div class="song-edit-form-grid">\n\t                    <label class="song-edit-form-label">Song Name:</label>\n\t                    <input class="song-edit-form-input" data-field="name" type="text" required>\n\t\n\t                    <label class="song-edit-form-label">Author:</label>\n\t                    <input class="song-edit-form-input" data-field="author" type="text" placeholder="Author name (optional)">\n\t\n\t                    <label class="song-edit-form-label">YouTube URL:</label>\n\t                    <input class="song-edit-form-input" data-field="url" type="text" required>\n\t\n\t                    <label class="song-edit-form-label">Local file:</label>\n\t                    <div class="song-edit-local-file-wrapper">\n\t                        <button type="button" class="song-edit-local-file-btn" data-field="localFileBtn"></button>\n\t                        <button type="button" class="song-edit-unlink-btn" data-field="unlinkBtn" title="Remove local file">&#x2715;</button>\n\t                    </div>\n\t                </div>\n\t\n\t                <div class="song-edit-thumbnail-container">\n\t                    <img class="song-edit-thumbnail" data-field="thumbnail" alt="Video thumbnail">\n\t                </div>\n\t\n\t                <div class="song-edit-lyrics-container">\n\t                    <label class="song-edit-lyrics-label">Lyrics (Format: "Lyric line [MM:SS]" - one per line):</label>\n\t                    <textarea class="song-edit-lyrics-input" data-field="lyrics"\n\t                        placeholder="Enter lyrics with timestamps like:&#10;This is the end [0:33]&#10;Hold your breath and count to ten [0:38]"></textarea>\n\t                </div>\n\t\n\t                <button type="submit" class="song-edit-save-btn">Save Changes</button>\n\t            </form>\n\t        </div>\n\t    `;
+    modal.innerHTML = `\n\t        <div class="modal-content song-edit-modal-content ui-modal ui-modal--md">\n\t            <div class="song-edit-modal-header ui-modal__header">\n\t                <h3 class="ui-modal__title"><i class="fas fa-pen"></i> Edit Song Details</h3>\n\t                <span class="close-btn song-edit-close-btn ui-modal__close" role="button" title="Close"><i class="fas fa-times"></i></span>\n\t            </div>\n\t            <form class="song-edit-form ui-modal__body ui-modal__body--stack">\n\t                <div class="song-edit-form-grid">\n\t                    <label class="song-edit-form-label">Song Name:</label>\n\t                    <input class="song-edit-form-input" data-field="name" type="text" required>\n\t\n\t                    <label class="song-edit-form-label">Author:</label>\n\t                    <input class="song-edit-form-input" data-field="author" type="text" placeholder="Author name (optional)">\n\t\n\t                    <label class="song-edit-form-label">YouTube URL:</label>\n\t                    <input class="song-edit-form-input" data-field="url" type="text" required>\n\t\n\t                    <label class="song-edit-form-label">Local file:</label>\n\t                    <div class="song-edit-local-file-wrapper">\n\t                        <button type="button" class="song-edit-local-file-btn" data-field="localFileBtn"></button>\n\t                        <button type="button" class="song-edit-unlink-btn" data-field="unlinkBtn" title="Remove local file">&#x2715;</button>\n\t                    </div>\n\t                </div>\n\t\n\t                <div class="song-edit-thumbnail-container">\n\t                    <img class="song-edit-thumbnail" data-field="thumbnail" alt="Video thumbnail">\n\t                </div>\n\t\n\t                <div class="song-edit-lyrics-container">\n\t                    <label class="song-edit-lyrics-label">Lyrics (Format: "Lyric line [MM:SS]" - one per line):</label>\n\t                    <textarea class="song-edit-lyrics-input" data-field="lyrics"\n\t                        placeholder="Enter lyrics with timestamps like:&#10;This is the end [0:33]&#10;Hold your breath and count to ten [0:38]"></textarea>\n\t                </div>\n\t\n\t                <button type="submit" class="song-edit-save-btn ui-btn ui-btn--primary ui-btn--block"><i class="fas fa-floppy-disk"></i> Save Changes</button>\n\t            </form>\n\t        </div>\n\t    `;
     const nameInput = modal.querySelector('[data-field="name"]');
     const authorInput = modal.querySelector('[data-field="author"]');
     const urlInput = modal.querySelector('[data-field="url"]');
@@ -2890,9 +2975,9 @@ class AdvancedMusicPlayer {
                 indicators.className = 'song-status-indicators';
                 right.insertBefore(indicators, right.querySelector('.song-actions'));
               }
-              const lyricsHtml = hasLyrics ? `<span class="song-lyrics-indicator" title="Has lyrics"><i class="fa fa-closed-captioning"></i></span>` : '';
-              const dlHtml = isDl ? `<span class="song-dl-indicator"     title="Downloaded"><i class="fa fa-download"></i></span>` : '';
-              const favHtml = isFav ? `<span class="song-fav-indicator"    title="Favourited"><i class="fa fa-star"></i></span>` : '';
+              const lyricsHtml = hasLyrics ? `<span class="song-lyrics-indicator" title="Has lyrics"><i class="fas fa-closed-captioning"></i></span>` : '';
+              const dlHtml = isDl ? `<span class="song-dl-indicator"     title="Downloaded"><i class="fas fa-download"></i></span>` : '';
+              const favHtml = isFav ? `<span class="song-fav-indicator"    title="Favourited"><i class="fas fa-star"></i></span>` : '';
               indicators.innerHTML = lyricsHtml + dlHtml + favHtml;
             } else {
               indicators?.remove();
@@ -3232,9 +3317,9 @@ class AdvancedMusicPlayer {
           const updatedSong = this.songLibrary.find(s => s.id === songId);
           const isFav = !!updatedSong?.favorite;
           const hasLyrics = !!updatedSong?.lyrics?.trim();
-          const lyricsHtml = hasLyrics ? `<span class="song-lyrics-indicator" title="Has lyrics"><i class="fa fa-closed-captioning"></i></span>` : '';
-          const dlHtml = `<span class="song-dl-indicator" title="Downloaded"><i class="fa fa-download"></i></span>`;
-          const favHtml = isFav ? `<span class="song-fav-indicator" title="Favourited"><i class="fa fa-star"></i></span>` : '';
+          const lyricsHtml = hasLyrics ? `<span class="song-lyrics-indicator" title="Has lyrics"><i class="fas fa-closed-captioning"></i></span>` : '';
+          const dlHtml = `<span class="song-dl-indicator" title="Downloaded"><i class="fas fa-download"></i></span>`;
+          const favHtml = isFav ? `<span class="song-fav-indicator" title="Favourited"><i class="fas fa-star"></i></span>` : '';
           indicators.innerHTML = lyricsHtml + dlHtml + favHtml;
         }
         setTimeout(() => {
@@ -3260,41 +3345,28 @@ class AdvancedMusicPlayer {
     if (this.songLibrary.length > 0) {
       return;
     }
-    const modal = document.createElement('div');
-    modal.classList.add('modal', 'welcome-modal');
-    modal.style.display = 'block';
-    const modalContent = document.createElement('div');
-    modalContent.classList.add('modal-content', 'welcome-content');
-    const closeBtn = document.createElement('span');
-    closeBtn.classList.add('close-btn');
-    closeBtn.innerHTML = '&times;';
-    closeBtn.onclick = () => modal.remove();
-    const heading = document.createElement('h2');
-    heading.textContent = 'Welcome to Music Player!';
-    const instructions = document.createElement('div');
-    instructions.classList.add('welcome-instructions');
+    const dialog = UI.modal({
+      title: 'Welcome to Music Player!',
+      icon: 'fa-music',
+      size: 'md',
+      className: 'welcome-modal'
+    });
+    const instructions = UI.el('div', 'welcome-instructions');
     this.loadInstructions(instructions);
-    const buttonContainer = document.createElement('div');
-    buttonContainer.classList.add('welcome-buttons');
-    const skipBtn = document.createElement('button');
-    skipBtn.textContent = 'Get Started';
-    skipBtn.classList.add('welcome-skip-btn');
-    skipBtn.onclick = () => modal.remove();
-    const addSongsBtn = document.createElement('button');
-    addSongsBtn.textContent = 'Add Songs to Get Started';
-    addSongsBtn.classList.add('welcome-add-songs-btn');
-    addSongsBtn.onclick = () => {
-      this.openFindSongs();
-      modal.remove();
-    };
-    buttonContainer.appendChild(skipBtn);
-    buttonContainer.appendChild(addSongsBtn);
-    modalContent.appendChild(closeBtn);
-    modalContent.appendChild(heading);
-    modalContent.appendChild(instructions);
-    modalContent.appendChild(buttonContainer);
-    modal.appendChild(modalContent);
-    document.body.appendChild(modal);
+    dialog.body.appendChild(instructions);
+    dialog.addFooter(UI.button('Get Started', {
+      className: 'welcome-skip-btn',
+      onClick: dialog.close
+    }), UI.button('Add Songs to Get Started', {
+      variant: 'primary',
+      icon: 'fa-plus',
+      className: 'welcome-add-songs-btn',
+      onClick: () => {
+        this.openFindSongs();
+        dialog.close();
+      }
+    }));
+    dialog.open();
   }
   loadInstructions(instructionsElement) {
     fetch('instructions.txt').then(response => {
@@ -3534,7 +3606,7 @@ class AdvancedMusicPlayer {
     this.renderCurrentPlaylistSongs(playlist);
     this.createDuplicateToggle();
     this.renderLibrarySearchResults(playlist);
-    this.elements.playlistEditModal.style.display = 'block';
+    this.elements.playlistEditModal.style.display = 'flex';
   }
   createDuplicateToggle() {
     let toggleContainer = document.querySelector('.duplicate-toggle-container');
@@ -3595,7 +3667,7 @@ class AdvancedMusicPlayer {
     if (playlist.songs.length > 0) {
       const randomizeBtn = document.createElement('button');
       randomizeBtn.className = 'randomize-btn-absolute';
-      randomizeBtn.innerHTML = '<i class="fa fa-refresh"></i>';
+      randomizeBtn.innerHTML = '<i class="fas fa-arrows-rotate"></i>';
       randomizeBtn.title = 'Randomize Playlist';
       randomizeBtn.addEventListener('click', () => {
         this.randomizePlaylist();
@@ -4467,7 +4539,7 @@ class AdvancedMusicPlayer {
       row.className = 'transport-preview-item';
       if (item.isMarker) {
         row.classList.add('transport-preview-marker');
-        row.innerHTML = `<i class="fa fa-info-circle"></i><span>${this.escapeHtml(item.name)}</span>`;
+        row.innerHTML = `<i class="fas fa-info-circle"></i><span>${this.escapeHtml(item.name)}</span>`;
       } else {
         row.innerHTML = `\n          <img class="transport-preview-thumb" src="${item.thumbnailUrl}" alt="" loading="lazy">\n          <div class="transport-preview-info">\n            <div class="transport-preview-name">${this.escapeHtml(item.name)}</div>\n            ${item.author ? `<div class="transport-preview-author">${this.escapeHtml(item.author)}</div>` : ''}\n          </div>\n        `;
       }
@@ -6476,166 +6548,57 @@ class AdvancedMusicPlayer {
     }
   }
   openLyricsLibraryModal() {
-    const modal = document.createElement('div');
-    modal.classList.add('lyrics-library-modal');
-    modal.style.display = 'flex';
-    modal.style.position = 'fixed';
-    modal.style.top = '0';
-    modal.style.left = '0';
-    modal.style.width = '100%';
-    modal.style.height = '100%';
-    modal.style.backgroundColor = 'rgba(0,0,0,0.7)';
-    modal.style.zIndex = '1000';
-    modal.style.justifyContent = 'center';
-    modal.style.alignItems = 'center';
-    const modalContent = document.createElement('div');
-    modalContent.classList.add('modal-content');
-    modalContent.style.backgroundColor = 'var(--bg-secondary)';
-    modalContent.style.color = 'var(--text-primary)';
-    modalContent.style.padding = '20px';
-    modalContent.style.borderRadius = '5px';
-    modalContent.style.width = '90%';
-    modalContent.style.maxWidth = '800px';
-    modalContent.style.maxHeight = '80vh';
-    modalContent.style.overflowY = 'auto';
-    modalContent.style.boxShadow = '0 0 15px rgba(0,0,0,0.3)';
-    modalContent.style.position = 'relative';
-    const headerContainer = document.createElement('div');
-    headerContainer.style.position = 'sticky';
-    headerContainer.style.top = '0';
-    headerContainer.style.backgroundColor = 'var(--bg-secondary)';
-    headerContainer.style.paddingBottom = '10px';
-    headerContainer.style.marginBottom = '10px';
-    headerContainer.style.borderBottom = '1px solid var(--border-color)';
-    headerContainer.style.display = 'flex';
-    headerContainer.style.justifyContent = 'space-between';
-    headerContainer.style.alignItems = 'center';
-    headerContainer.style.zIndex = '10';
-    const header = document.createElement('h3');
-    header.textContent = 'Songs with Lyrics';
-    header.style.margin = '0';
-    header.style.color = 'var(--text-primary)';
-    const closeBtn = document.createElement('span');
-    closeBtn.innerHTML = '&times;';
-    closeBtn.style.fontSize = '24px';
-    closeBtn.style.cursor = 'pointer';
-    closeBtn.style.color = 'var(--text-primary)';
-    closeBtn.style.lineHeight = '24px';
-    closeBtn.onclick = () => modal.remove();
-    headerContainer.appendChild(header);
-    headerContainer.appendChild(closeBtn);
-    const contentContainer = document.createElement('div');
-    contentContainer.style.display = 'flex';
-    contentContainer.style.flexDirection = 'column';
-    contentContainer.style.gap = '10px';
+    const dialog = UI.modal({
+      title: 'Songs with Lyrics',
+      icon: 'fa-closed-captioning',
+      size: 'xl',
+      className: 'lyrics-library-modal',
+      bodyClassName: 'ui-modal__body--stack'
+    });
     const songsWithLyrics = this.songLibrary.filter(song => song.lyrics && song.lyrics.trim() !== '');
     if (songsWithLyrics.length === 0) {
-      const noLyricsMessage = document.createElement('div');
-      noLyricsMessage.textContent = 'No songs with lyrics found. Add lyrics to your songs to see them here.';
-      noLyricsMessage.style.textAlign = 'center';
-      noLyricsMessage.style.color = 'var(--text-secondary)';
-      noLyricsMessage.style.padding = '20px';
-      contentContainer.appendChild(noLyricsMessage);
+      dialog.body.appendChild(UI.el('div', 'ui-empty', `${UI.icon('fa-closed-captioning')}<span>No songs with lyrics found. Add lyrics to your songs to see them here.</span>`));
     } else {
       songsWithLyrics.forEach(song => {
-        const songItem = document.createElement('div');
-        songItem.style.display = 'flex';
-        songItem.style.alignItems = 'center';
-        songItem.style.padding = '10px';
-        songItem.style.backgroundColor = 'var(--bg-primary)';
-        songItem.style.borderRadius = '5px';
-        songItem.style.border = '1px solid var(--border-color)';
-        songItem.style.gap = '10px';
-        const songInfo = document.createElement('div');
-        songInfo.style.flex = '1';
-        songInfo.style.minWidth = '0';
-        const songName = document.createElement('div');
+        const songItem = UI.el('div', 'ui-card lyrics-library-item');
+        const songInfo = UI.el('div', 'lyrics-library-info');
+        const songName = UI.el('div', 'lyrics-library-name');
         songName.textContent = song.name;
-        songName.style.fontWeight = 'bold';
-        songName.style.color = 'var(--text-primary)';
-        songName.style.overflow = 'hidden';
-        songName.style.textOverflow = 'ellipsis';
-        songName.style.whiteSpace = 'nowrap';
-        const lyricsPreview = document.createElement('div');
         const firstLine = song.lyrics.split('\n')[0]?.replace(/\[.*?\]/g, '').trim() || 'No preview available';
+        const lyricsPreview = UI.el('div', 'lyrics-library-preview');
         lyricsPreview.textContent = firstLine.length > 50 ? firstLine.substring(0, 50) + '...' : firstLine;
-        lyricsPreview.style.color = 'var(--text-secondary)';
-        lyricsPreview.style.fontSize = '0.9em';
-        lyricsPreview.style.overflow = 'hidden';
-        lyricsPreview.style.textOverflow = 'ellipsis';
-        lyricsPreview.style.whiteSpace = 'nowrap';
-        songInfo.appendChild(songName);
-        songInfo.appendChild(lyricsPreview);
-        const buttonContainer = document.createElement('div');
-        buttonContainer.style.display = 'flex';
-        buttonContainer.style.gap = '5px';
-        buttonContainer.style.flexShrink = '0';
-        const copyBtn = document.createElement('button');
-        copyBtn.textContent = 'Copy';
-        copyBtn.style.padding = '5px 10px';
-        copyBtn.style.fontSize = '0.8em';
-        copyBtn.style.backgroundColor = 'var(--accent-color)';
-        copyBtn.style.color = 'white';
-        copyBtn.style.border = 'none';
-        copyBtn.style.borderRadius = '3px';
-        copyBtn.style.cursor = 'pointer';
-        copyBtn.style.transition = 'background-color 0.3s';
-        copyBtn.addEventListener('mouseover', () => {
-          copyBtn.style.backgroundColor = 'var(--hover-color)';
+        songInfo.append(songName, lyricsPreview);
+        const copyBtn = UI.button('Copy', {
+          variant: 'primary',
+          size: 'sm',
+          icon: 'fa-copy',
+          onClick: () => {
+            navigator.clipboard.writeText(song.lyrics).then(() => {
+              copyBtn.innerHTML = `${UI.icon('fa-check')} Copied!`;
+              setTimeout(() => {
+                copyBtn.innerHTML = `${UI.icon('fa-copy')} Copy`;
+              }, 1e3);
+            }).catch(err => {
+              console.error('Failed to copy lyrics:', err);
+              alert('Failed to copy lyrics to clipboard');
+            });
+          }
         });
-        copyBtn.addEventListener('mouseout', () => {
-          copyBtn.style.backgroundColor = 'var(--accent-color)';
+        const editBtn = UI.button('Edit', {
+          size: 'sm',
+          icon: 'fa-pen',
+          onClick: () => {
+            dialog.close();
+            this.openSongEditModal(song.id);
+          }
         });
-        copyBtn.onclick = () => {
-          navigator.clipboard.writeText(song.lyrics).then(() => {
-            const originalText = copyBtn.textContent;
-            copyBtn.textContent = 'Copied!';
-            copyBtn.style.backgroundColor = '#4CAF50';
-            setTimeout(() => {
-              copyBtn.textContent = originalText;
-              copyBtn.style.backgroundColor = 'var(--accent-color)';
-            }, 1e3);
-          }).catch(err => {
-            console.error('Failed to copy lyrics:', err);
-            alert('Failed to copy lyrics to clipboard');
-          });
-        };
-        const editBtn = document.createElement('button');
-        editBtn.textContent = 'Edit';
-        editBtn.style.padding = '5px 10px';
-        editBtn.style.fontSize = '0.8em';
-        editBtn.style.backgroundColor = '#6c757d';
-        editBtn.style.color = 'white';
-        editBtn.style.border = 'none';
-        editBtn.style.borderRadius = '3px';
-        editBtn.style.cursor = 'pointer';
-        editBtn.style.transition = 'background-color 0.3s';
-        editBtn.addEventListener('mouseover', () => {
-          editBtn.style.backgroundColor = '#5a6268';
-        });
-        editBtn.addEventListener('mouseout', () => {
-          editBtn.style.backgroundColor = '#6c757d';
-        });
-        editBtn.onclick = () => {
-          modal.remove();
-          this.openSongEditModal(song.id);
-        };
-        buttonContainer.appendChild(copyBtn);
-        buttonContainer.appendChild(editBtn);
-        songItem.appendChild(songInfo);
-        songItem.appendChild(buttonContainer);
-        contentContainer.appendChild(songItem);
+        const actions = UI.el('div', 'lyrics-library-actions');
+        actions.append(copyBtn, editBtn);
+        songItem.append(songInfo, actions);
+        dialog.body.appendChild(songItem);
       });
     }
-    modalContent.appendChild(headerContainer);
-    modalContent.appendChild(contentContainer);
-    modal.appendChild(modalContent);
-    document.body.appendChild(modal);
-    modal.onclick = e => {
-      if (e.target === modal) {
-        modal.remove();
-      }
-    };
+    dialog.open();
   }
   setupLyricsTabContextMenu() {
     const lyricsTab = document.querySelector('.tab[data-tab="lyrics"]');
@@ -7650,7 +7613,7 @@ class AdvancedMusicPlayer {
     } finally {
       loadingIndicator.style.display = 'none';
       autoFetchBtn.disabled = false;
-      autoFetchBtn.innerHTML = '<i class="fas fa-magic"></i> Auto-Fetch Transcript';
+      autoFetchBtn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Auto-Fetch Transcript';
     }
   }
   populateTranscriptLangDropdown(langs, currentLang) {
@@ -8895,39 +8858,28 @@ class AdvancedMusicPlayer {
     });
   }
   showExportModal(exportText, title = 'Export') {
-    const modal = document.createElement('div');
-    modal.classList.add('modal');
-    modal.style.display = 'block';
-    const modalContent = document.createElement('div');
-    modalContent.classList.add('modal-content');
-    const closeBtn = document.createElement('span');
-    closeBtn.classList.add('close-btn');
-    closeBtn.innerHTML = '&times;';
-    closeBtn.onclick = () => modal.remove();
-    const heading = document.createElement('h2');
-    heading.textContent = title;
-    const instructions = document.createElement('p');
-    instructions.textContent = 'Copy the text below to share:';
-    const textarea = document.createElement('textarea');
+    const dialog = UI.modal({
+      title,
+      icon: 'fa-file-export',
+      size: 'md',
+      bodyClassName: 'ui-modal__body--stack'
+    });
+    const instructions = UI.el('p', 'instructions', 'Copy the text below to share:');
+    const textarea = UI.el('textarea', 'ui-textarea');
     textarea.value = exportText;
-    textarea.style.width = '100%';
-    textarea.style.height = '200px';
     textarea.readOnly = true;
-    const copyBtn = document.createElement('button');
-    copyBtn.textContent = 'Copy to Clipboard';
-    copyBtn.classList.add('copy-btn');
-    copyBtn.onclick = () => {
-      textarea.select();
-      document.execCommand('copy');
-      alert('Copied to clipboard!');
-    };
-    modalContent.appendChild(closeBtn);
-    modalContent.appendChild(heading);
-    modalContent.appendChild(instructions);
-    modalContent.appendChild(textarea);
-    modalContent.appendChild(copyBtn);
-    modal.appendChild(modalContent);
-    document.body.appendChild(modal);
+    dialog.body.append(instructions, textarea);
+    dialog.addFooter(UI.button('Copy to Clipboard', {
+      variant: 'primary',
+      icon: 'fa-copy',
+      className: 'copy-btn',
+      onClick: () => {
+        textarea.select();
+        document.execCommand('copy');
+        alert('Copied to clipboard!');
+      }
+    }));
+    dialog.open();
   }
   showExportDropdown(triggerElement) {
     this.hideExportDropdown();
@@ -8981,43 +8933,28 @@ class AdvancedMusicPlayer {
       alert('No playlists available. Create a playlist first.');
       return;
     }
-    const modal = document.createElement('div');
-    modal.classList.add('modal');
-    modal.style.display = 'block';
-    const modalContent = document.createElement('div');
-    modalContent.classList.add('modal-content', 'playlist-export-modal');
-    const closeBtn = document.createElement('span');
-    closeBtn.classList.add('close-btn');
-    closeBtn.innerHTML = '&times;';
-    closeBtn.onclick = () => modal.remove();
-    const heading = document.createElement('h2');
-    heading.textContent = 'Select Playlist to Export';
-    heading.classList.add('modal-heading');
-    const playlistContainer = document.createElement('div');
-    playlistContainer.classList.add('playlist-selection-container');
+    const dialog = UI.modal({
+      title: 'Select Playlist to Export',
+      icon: 'fa-list',
+      size: 'md',
+      className: 'playlist-export-modal'
+    });
+    const playlistContainer = UI.el('div', 'playlist-selection-container');
     const sortedPlaylists = [ ...this.playlists ].sort((a, b) => a.name.localeCompare(b.name));
     sortedPlaylists.forEach(playlist => {
-      const playlistButton = document.createElement('button');
-      playlistButton.classList.add('playlist-selection-btn');
-      const playlistName = document.createElement('div');
-      playlistName.classList.add('playlist-name');
-      playlistName.textContent = playlist.name;
-      const playlistInfo = document.createElement('div');
-      playlistInfo.classList.add('playlist-info');
-      playlistInfo.textContent = `${playlist.songs.length} songs`;
-      playlistButton.appendChild(playlistName);
-      playlistButton.appendChild(playlistInfo);
-      playlistButton.onclick = () => {
+      const playlistButton = UI.el('button', 'playlist-selection-btn');
+      playlistButton.type = 'button';
+      playlistButton.append(UI.el('div', 'playlist-name'), UI.el('div', 'playlist-info'));
+      playlistButton.firstChild.textContent = playlist.name;
+      playlistButton.lastChild.textContent = `${playlist.songs.length} songs`;
+      playlistButton.addEventListener('click', () => {
         this.exportPlaylist(playlist.id);
-        modal.remove();
-      };
+        dialog.close();
+      });
       playlistContainer.appendChild(playlistButton);
     });
-    modalContent.appendChild(closeBtn);
-    modalContent.appendChild(heading);
-    modalContent.appendChild(playlistContainer);
-    modal.appendChild(modalContent);
-    document.body.appendChild(modal);
+    dialog.body.appendChild(playlistContainer);
+    dialog.open();
   }
   exportSongsWithAllPlaylists() {
     let exportText = '';
@@ -9390,7 +9327,7 @@ class AdvancedMusicPlayer {
     }
   }
   handleOpenSettings() {
-    this.elements.settingsModal.style.display = 'block';
+    this.elements.settingsModal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
     this.initializeSettingsContent();
   }
@@ -10889,9 +10826,9 @@ class AdvancedMusicPlayer {
   }
   displayBillboardHot100FullModal(songs) {
     const modal = document.createElement('div');
-    modal.className = 'billboard-hot-100-modal';
+    modal.className = 'billboard-hot-100-modal ui-overlay';
     modal.id = 'billboardHot100Modal';
-    modal.innerHTML = `\n        <div class="billboard-modal-content">\n            <div class="billboard-modal-header">\n                <h2>Billboard Hot 100</h2>\n                <button class="billboard-close-btn" onclick="musicPlayer.closeBillboardHot100Modal()">×</button>\n            </div>\n            <div class="billboard-songs-container">\n                ${songs.map(song => this.createBillboardSongElementInModal(song)).join('')}\n            </div>\n        </div>\n    `;
+    modal.innerHTML = `\n        <div class="billboard-modal-content ui-modal ui-modal--full">\n            <div class="billboard-modal-header ui-modal__header">\n                <h2 class="ui-modal__title"><i class="fas fa-chart-line"></i> Billboard Hot 100</h2>\n                <button class="billboard-close-btn ui-modal__close" title="Close" onclick="musicPlayer.closeBillboardHot100Modal()"><i class="fas fa-times"></i></button>\n            </div>\n            <div class="billboard-songs-container ui-modal__body">\n                ${songs.map(song => this.createBillboardSongElementInModal(song)).join('')}\n            </div>\n        </div>\n    `;
     document.body.appendChild(modal);
     modal.addEventListener('click', e => {
       if (e.target === modal) {
@@ -11756,7 +11693,7 @@ class AdvancedMusicPlayer {
       document.getElementById(groupId)?.classList.toggle('is-modified', modified);
       const badge = document.getElementById(badgeId);
       if (badge) {
-        badge.innerHTML = modified ? '<i class="fas fa-pencil"></i> Custom' : '<i class="fas fa-wand-magic-sparkles"></i> Auto';
+        badge.innerHTML = modified ? '<i class="fas fa-pen"></i> Custom' : '<i class="fas fa-wand-magic-sparkles"></i> Auto';
       }
     };
     handle('discordEditSong', 'discordFieldSong', 'discordBadgeSong', 'song', a.song);
@@ -12490,20 +12427,20 @@ class AdvancedMusicPlayer {
       artEl.style.backgroundImage = artwork ? `url(${artwork})` : '';
       rLinks.innerHTML = '';
       if (track.url) {
-        rLinks.innerHTML += `<a href="${track.url}" target="_blank" rel="noopener">Shazam</a>`;
+        rLinks.innerHTML += `<a class="ui-chip" href="${track.url}" target="_blank" rel="noopener">Shazam</a>`;
       }
       if (Array.isArray(track.hub?.providers)) {
         for (const provider of track.hub.providers) {
           const uri = provider.actions?.[0]?.uri;
           if (uri) {
-            rLinks.innerHTML += `<a href="${uri}" target="_blank" rel="noopener">${provider.type || 'Listen'}</a>`;
+            rLinks.innerHTML += `<a class="ui-chip" href="${uri}" target="_blank" rel="noopener">${provider.type || 'Listen'}</a>`;
           }
         }
       }
       if (track.hub?.type === 'APPLEMUSIC') {
         const appleUri = track.hub.actions?.find(a => a.type === 'uri')?.uri;
         if (appleUri) {
-          rLinks.innerHTML += `<a href="${appleUri}" target="_blank" rel="noopener">Apple Music</a>`;
+          rLinks.innerHTML += `<a class="ui-chip" href="${appleUri}" target="_blank" rel="noopener">Apple Music</a>`;
         }
       }
       lastMatchedTrack = track;
@@ -12967,8 +12904,8 @@ class AdvancedMusicPlayer {
   createTemporarySongModal() {
     const modal = document.createElement('div');
     modal.id = 'tempSongModal';
-    modal.className = 'temp-song-modal';
-    modal.innerHTML = `\n\t\t<div class="temp-song-modal-content">\n\t\t\t<button class="temp-song-close-btn" id="closeTempSongBtn">&times;</button>\n\t\t\t<h3 class="temp-song-title">Song Preview</h3>\n\t\t\t<div id="tempYtPlayerContainer" class="temp-song-player-container">\n\t\t\t\t<div id="tempYtPlayer"></div>\n\t\t\t</div>\n\t\t\t<div class="temp-song-url-container">\n\t\t\t\t<input type="text" id="tempSongUrlDisplay" class="temp-song-url-input" readonly>\n\t\t\t\t<button id="copyTempUrlBtn" class="temp-song-action-btn" title="Copy URL">\n\t\t\t\t\t<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">\n\t\t\t\t\t\t<rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>\n\t\t\t\t\t\t<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>\n\t\t\t\t\t</svg>\n\t\t\t\t</button>\n\t\t\t\t<button id="openTempUrlBtn" class="temp-song-action-btn" title="Open in YouTube">\n\t\t\t\t\t<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">\n\t\t\t\t\t\t<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>\n\t\t\t\t\t\t<polyline points="15 3 21 3 21 9"></polyline>\n\t\t\t\t\t\t<line x1="10" y1="14" x2="21" y2="3"></line>\n\t\t\t\t\t</svg>\n\t\t\t\t</button>\n\t\t\t</div>\n\t\t</div>\n\t`;
+    modal.className = 'temp-song-modal ui-overlay';
+    modal.innerHTML = `\n\t\t<div class="temp-song-modal-content ui-modal ui-modal--lg">\n\t\t\t<div class="ui-modal__header">\n\t\t\t\t<h3 class="temp-song-title ui-modal__title"><i class="fas fa-play"></i> Song Preview</h3>\n\t\t\t\t<button class="temp-song-close-btn ui-modal__close" id="closeTempSongBtn" title="Close"><i class="fas fa-times"></i></button>\n\t\t\t</div>\n\t\t\t<div class="ui-modal__body ui-modal__body--stack">\n\t\t\t<div id="tempYtPlayerContainer" class="temp-song-player-container">\n\t\t\t\t<div id="tempYtPlayer"></div>\n\t\t\t</div>\n\t\t\t<div class="temp-song-url-container">\n\t\t\t\t<input type="text" id="tempSongUrlDisplay" class="temp-song-url-input" readonly>\n\t\t\t\t<button id="copyTempUrlBtn" class="temp-song-action-btn ui-icon-btn" title="Copy URL">\n\t\t\t\t\t<i class="fas fa-copy"></i>\n\t\t\t\t</button>\n\t\t\t\t<button id="openTempUrlBtn" class="temp-song-action-btn ui-icon-btn" title="Open in YouTube">\n\t\t\t\t\t<i class="fas fa-arrow-up-right-from-square"></i>\n\t\t\t\t</button>\n\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\n\t`;
     document.body.appendChild(modal);
     document.getElementById('closeTempSongBtn').addEventListener('click', () => {
       this.closeTemporarySongSampleModal();
@@ -13098,7 +13035,7 @@ class AdvancedMusicPlayer {
         return `<li>${line.replace(/^\*\s*/, '')}</li>`;
       }).join('');
       content.innerHTML = `<ul>${htmlContent}</ul>`;
-      modal.style.display = 'block';
+      modal.style.display = 'flex';
     }
   }
   setupChangelogModal() {

@@ -23,7 +23,7 @@
       ]
     },
     {
-      "source": "/(script\\.js|style\\.css|all\\.min\\.css|karaoke-encoder\\.js|favicon\\.svg)",
+      "source": "/(script\\.js|style\\.css|ui-system\\.css|all\\.min\\.css|karaoke-encoder\\.js|favicon\\.svg)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]

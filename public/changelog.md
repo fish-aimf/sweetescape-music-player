@@ -719,3 +719,4 @@
 -  fixed library view collapsing into a flattened list after adding a song via pasted YouTube URL v71.5.1
 -  fixed genius lyrics auto-fetch failing (RapidAPI key rejected) by falling back to a free lyrics provider v71.6.0
 -  fixed listening stats not counting plays from playlists since playlist songs don't carry the library id, now tracked by video id instead v71.7.0
+-  standardized every modal and symbol onto one design system (ui-system.css): shared tokens, one modal shell (header / body / footer), one close button, one button and input set, consistent font awesome icons; removed all code comments v71.8.0

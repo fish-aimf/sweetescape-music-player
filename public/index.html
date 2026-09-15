@@ -47,7 +47,8 @@
 
          <link rel="stylesheet" href="all.min.css">
          <link rel="stylesheet" href="style.css">
-         <noscript><link rel="stylesheet" href="all.min.css"><link rel="stylesheet" href="style.css"></noscript>
+         <link rel="stylesheet" href="ui-system.css">
+         <noscript><link rel="stylesheet" href="all.min.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="ui-system.css"></noscript>
 
         <meta property="og:title" content="SweetEscape – Music Player">
         <meta property="og:description" content="Seamless ad-free music streaming packed with features.">
@@ -149,11 +150,11 @@
                                <button class="lib-filter-btn lib-topic-btn" id="libTopicBtn" title='Appends "topic" to the search — topic videos significantly reduce data charges, audio quality and playback speed' aria-label='Toggle "topic" keyword'>"topic"</button>
 
                                <button class="lib-filter-btn" id="libFilterBtn" title="Filter library" aria-label="Filter library">
-                                   <i class="fa fa-filter"></i>
+                                   <i class="fas fa-filter"></i>
                                </button>
                                <div class="lib-filter-panel" id="libFilterPanel">
                                    <div class="lib-filter-row">
-                                       <span class="lib-filter-label"><i class="fa fa-star"></i> Favourite</span>
+                                       <span class="lib-filter-label"><i class="fas fa-star"></i> Favourite</span>
                                        <div class="lib-filter-toggle" data-filter="favorite">
                                            <button data-val="true" title="Must be favourited">Yes</button>
                                            <button data-val="null" class="active" title="Doesn't matter">Any</button>
@@ -161,7 +162,7 @@
                                        </div>
                                    </div>
                                    <div class="lib-filter-row">
-                                       <span class="lib-filter-label"><i class="fa fa-closed-captioning"></i> Lyrics</span>
+                                       <span class="lib-filter-label"><i class="fas fa-closed-captioning"></i> Lyrics</span>
                                        <div class="lib-filter-toggle" data-filter="lyrics">
                                            <button data-val="true" title="Has lyrics">Yes</button>
                                            <button data-val="null" class="active" title="Doesn't matter">Any</button>
@@ -169,7 +170,7 @@
                                        </div>
                                    </div>
                                    <div class="lib-filter-row">
-                                       <span class="lib-filter-label"><i class="fa fa-download"></i> Downloaded</span>
+                                       <span class="lib-filter-label"><i class="fas fa-download"></i> Downloaded</span>
                                        <div class="lib-filter-toggle" data-filter="downloaded">
                                            <button data-val="true" title="Is downloaded">Yes</button>
                                            <button data-val="null" class="active" title="Doesn't matter">Any</button>
@@ -267,19 +268,19 @@
                </div>
             </div>
          </div>
-         <div id="discordRpcModal" class="modal discord-rpc-modal-overlay">
-  <div class="modal-content discord-rpc-modal">
+         <div id="discordRpcModal" class="modal discord-rpc-modal-overlay ui-overlay">
+  <div class="modal-content discord-rpc-modal ui-modal ui-modal--lg">
 
-    <div class="discord-modal-header">
+    <div class="discord-modal-header ui-modal__header">
       <div class="discord-modal-logo"><i class="fab fa-discord"></i></div>
       <div class="discord-modal-header-text">
-        <h2>Discord Rich Presence</h2>
-        <p>Broadcast your listening activity to Discord</p>
+        <h2 class="ui-modal__title">Discord Rich Presence</h2>
+        <p class="ui-modal__subtitle">Broadcast your listening activity to Discord</p>
       </div>
-      <button class="discord-modal-close" id="closeDiscordModal"><i class="fas fa-times"></i></button>
+      <button class="discord-modal-close ui-modal__close" id="closeDiscordModal" title="Close"><i class="fas fa-times"></i></button>
     </div>
 
-    <div class="discord-modal-body">
+    <div class="discord-modal-body ui-modal__body ui-modal__body--stack">
 
       <div class="discord-enable-row">
         <div class="discord-enable-label">
@@ -392,50 +393,56 @@
 
     </div>
 
-    <div class="discord-modal-footer">
-      <button class="discord-btn discord-btn-danger discord-btn-sm" id="discordDisableBtn"><i class="fas fa-power-off"></i> Disable</button>
-      <button class="discord-btn discord-btn-ghost discord-btn-sm" id="discordCloseBtn2">Close</button>
-      <button class="discord-btn discord-btn-primary discord-btn-sm" id="discordConnectBtn"><i class="fas fa-plug"></i> Connect</button>
+    <div class="discord-modal-footer ui-modal__footer">
+      <button class="discord-btn discord-btn-danger discord-btn-sm ui-btn ui-btn--danger ui-btn--sm" id="discordDisableBtn"><i class="fas fa-power-off"></i> Disable</button>
+      <button class="discord-btn discord-btn-ghost discord-btn-sm ui-btn ui-btn--ghost ui-btn--sm" id="discordCloseBtn2">Close</button>
+      <button class="discord-btn discord-btn-primary discord-btn-sm ui-btn ui-btn--sm" id="discordConnectBtn"><i class="fas fa-plug"></i> Connect</button>
     </div>
 
   </div>
 </div>
-        <div id="libraryModificationModal" class="modal">
-            <div class="modal-content">
-               <span id="closeLibraryModal" class="close-btn">&times;</span>
-               <h2>Modify Your Local Library</h2>
-
-               <div class="library-modification-tab-navigation">
-                  <button id="libraryModificationTabAddSong" class="library-modification-tab-btn active">Add Song</button>
-                  <button id="libraryModificationTabImportExport" class="library-modification-tab-btn">Import/Export</button>
+        <div id="libraryModificationModal" class="modal ui-overlay">
+            <div class="modal-content ui-modal ui-modal--md">
+               <div class="ui-modal__header">
+                  <h2 class="ui-modal__title"><i class="fas fa-book"></i> Modify Your Local Library</h2>
+                  <span id="closeLibraryModal" class="close-btn ui-modal__close" role="button" title="Close"><i class="fas fa-times"></i></span>
+               </div>
+               <div class="ui-modal__body ui-modal__body--stack">
+               <div class="library-modification-tab-navigation ui-tabs">
+                  <button id="libraryModificationTabAddSong" class="library-modification-tab-btn ui-tab active">Add Song</button>
+                  <button id="libraryModificationTabImportExport" class="library-modification-tab-btn ui-tab">Import/Export</button>
                </div>
 
                <div class="add-song-section">
                   <div class="input-group">
-                     <input type="text" id="songName" placeholder="Song Name">
-                     <input type="text" id="songAuthor" placeholder="Author Name (Optional)">
-                     <input type="text" id="songUrl" placeholder="YouTube URL">
-                     <button id="autofillBtn" disabled>Autofill Name & Author</button>
+                     <input type="text" id="songName" class="ui-input" placeholder="Song Name">
+                     <input type="text" id="songAuthor" class="ui-input" placeholder="Author Name (Optional)">
+                     <input type="text" id="songUrl" class="ui-input" placeholder="YouTube URL">
+                     <button id="autofillBtn" class="ui-btn" disabled><i class="fas fa-wand-magic-sparkles"></i> Autofill Name &amp; Author</button>
 
-                     <button id="addSongBtn">Add to Library</button>
+                     <button id="addSongBtn" class="ui-btn ui-btn--primary"><i class="fas fa-plus"></i> Add to Library</button>
                   </div>
                </div>
                <div class="import-export-section">
                   <div class="bulk-actions">
-                     <button id="importLibraryBtn" title="Import songs from text">
+                     <button id="importLibraryBtn" class="ui-btn" title="Import songs from text">
                      <i class="fas fa-file-import"></i> Import Songs
                      </button>
-                     <button id="exportLibraryBtn" title="Export library to text">
+                     <button id="exportLibraryBtn" class="ui-btn" title="Export library to text">
                      <i class="fas fa-file-export"></i> Export Songs
                      </button>
                   </div>
                </div>
+               </div>
             </div>
          </div>
-         <div id="importModal" class="modal" style="display: none;">
-            <div class="modal-content">
-               <span class="close-btn" id="closeImportModal">&times;</span>
-               <h2>Import Songs</h2>
+         <div id="importModal" class="modal ui-overlay" style="display: none;">
+            <div class="modal-content ui-modal ui-modal--md">
+               <div class="ui-modal__header">
+                  <h2 class="ui-modal__title"><i class="fas fa-file-import"></i> Import Songs</h2>
+                  <span class="close-btn ui-modal__close" id="closeImportModal" role="button" title="Close"><i class="fas fa-times"></i></span>
+               </div>
+               <div class="ui-modal__body ui-modal__body--stack">
                <div class="import-instructions">
                   <h3>Import Format Options:</h3>
                   <p><strong>Simple format (one song per line):</strong></p>
@@ -469,16 +476,22 @@ Another Playlist{
                   Song Name, https://youtube.com/...
                   Another Song, https://youtube.com/...
                   }"></textarea>
-               <button id="importSongsBtn" class="import-btn">Import Songs</button>
+               </div>
+               <div class="ui-modal__footer">
+                  <button id="importSongsBtn" class="import-btn ui-btn ui-btn--primary"><i class="fas fa-file-import"></i> Import Songs</button>
+               </div>
             </div>
          </div>
-         <div id="playlistEditModal" class="modal">
-            <div class="modal-content">
-               <span id="closePlaylistModal" class="close-btn">&times;</span>
-               <h2 id="currentPlaylistName">Playlist Name</h2>
+         <div id="playlistEditModal" class="modal ui-overlay">
+            <div class="modal-content ui-modal ui-modal--md">
+               <div class="ui-modal__header">
+                  <h2 class="ui-modal__title" id="currentPlaylistName">Playlist Name</h2>
+                  <span id="closePlaylistModal" class="close-btn ui-modal__close" role="button" title="Close"><i class="fas fa-times"></i></span>
+               </div>
+               <div class="ui-modal__body">
                <div class="playlist-edit-section">
                   <div class="search-library-section">
-                     <input type="text" id="searchSongsToAdd" placeholder="Search songs to add...">
+                     <input type="text" id="searchSongsToAdd" class="ui-input" placeholder="Search songs to add...">
                      <div id="librarySearchResults" class="search-results"></div>
                   </div>
                   <div class="current-playlist-songs">
@@ -486,12 +499,16 @@ Another Playlist{
                      <div id="currentPlaylistSongs"></div>
                   </div>
                </div>
+               </div>
             </div>
          </div>
-         <div id="timerModal" class="modal">
-            <div class="modal-content timer-modal-content">
-               <span id="closeTimerModal" class="close-btn">&times;</span>
-               <h2>App Timer</h2>
+         <div id="timerModal" class="modal ui-overlay">
+            <div class="modal-content timer-modal-content ui-modal ui-modal--sm">
+               <div class="ui-modal__header">
+                  <h2 class="ui-modal__title"><i class="fas fa-clock"></i> App Timer</h2>
+                  <span id="closeTimerModal" class="close-btn ui-modal__close" role="button" title="Close"><i class="fas fa-times"></i></span>
+               </div>
+               <div class="ui-modal__body ui-modal__body--stack">
                <div class="timer-action-selection">
                   <h3>Timer Action</h3>
                   <hr class="section-divider">
@@ -511,20 +528,21 @@ Another Playlist{
                      <button data-time="15">15 min</button>
                   </div>
                   <div class="custom-timer">
-                     <input type="number" id="customTimerInput" placeholder="Custom minutes" step="0.1" min="0.1">
+                     <input type="number" id="customTimerInput" class="ui-input" placeholder="Custom minutes" step="0.1" min="0.1">
                      <button id="setCustomTimer">Set</button>
                   </div>
                </div>
                <div class="specific-time-section" id="specificTimeSection">
                   <h3>Set Specific Stop Time</h3>
                   <div class="specific-time-input">
-                     <input type="time" id="specificTimeInput">
+                     <input type="time" id="specificTimeInput" class="ui-input">
                      <button id="setSpecificTime">Set</button>
                   </div>
                </div>
                <div class="timer-status">
                   <span id="timerStatus">No timer set</span>
-                  <button id="cancelTimer" style="display: none">Cancel Timer</button>
+                  <button id="cancelTimer" class="ui-btn ui-btn--danger" style="display: none"><i class="fas fa-times"></i> Cancel Timer</button>
+               </div>
                </div>
             </div>
          </div>
@@ -645,50 +663,51 @@ Another Playlist{
       <div id="versionDisplay" class="version-display" title="">
          <span id="versionText"></span>
       </div>
-      <div id="changelogModal" class="changelog-modal">
-         <div class="changelog-modal-content">
-            <div class="changelog-modal-header">
-               <h2>Changelog</h2>
-               <span class="changelog-close">&times;</span>
+      <div id="changelogModal" class="changelog-modal ui-overlay">
+         <div class="changelog-modal-content ui-modal ui-modal--md">
+            <div class="changelog-modal-header ui-modal__header">
+               <h2 class="ui-modal__title"><i class="fas fa-clock-rotate-left"></i> Changelog</h2>
+               <span class="changelog-close ui-modal__close" role="button" title="Close"><i class="fas fa-times"></i></span>
             </div>
-            <div class="changelog-modal-body" id="changelogContent"></div>
+            <div class="changelog-modal-body ui-modal__body" id="changelogContent"></div>
          </div>
       </div>
       <div id="controlBarSpacer" class="control-bar-spacer"></div>
-      <div id="subtitlesImportModal" class="subtitles-import-modal-overlay" style="display: none;">
-         <div class="subtitles-import-modal-content">
-            <div class="subtitles-import-modal-header">
-               <h2 id="subtitlesImportModalTitle">Import Subtitles</h2>
-               <span class="subtitles-import-modal-close">&times;</span>
+      <div id="subtitlesImportModal" class="subtitles-import-modal-overlay ui-overlay" style="display: none;">
+         <div class="subtitles-import-modal-content ui-modal ui-modal--lg">
+            <div class="subtitles-import-modal-header ui-modal__header">
+               <h2 class="ui-modal__title" id="subtitlesImportModalTitle"><i class="fas fa-closed-captioning"></i> Import Subtitles</h2>
+               <span class="subtitles-import-modal-close ui-modal__close" role="button" title="Close"><i class="fas fa-times"></i></span>
             </div>
+            <div class="ui-modal__body ui-modal__body--stack">
             <div class="subtitles-import-instructions-container">
                <div class="subtitles-import-instructions">
-                  <p class="subtitles-import-instructions-title">Instructions:</p>
+                  <p class="subtitles-import-instructions-title ui-section-label">Instructions:</p>
                   <p>1. Click "Auto-Fetch Transcript" to automatically get subtitles, OR</p>
                   <p>2. Click "Open YouTube Video" → "..." menu → "Show transcript"</p>
                   <p>3. Copy the entire transcript and paste it below</p>
                   <p>4. Click "Convert to Lyrics" to format it properly</p>
                </div>
                <div class="subtitles-import-button-group">
-                  <button id="autoFetchTranscriptBtn" class="subtitles-import-auto-fetch-btn">
-                  <i class="fas fa-magic"></i> Auto-Fetch Transcript
+                  <button id="autoFetchTranscriptBtn" class="subtitles-import-auto-fetch-btn ui-btn ui-btn--primary">
+                  <i class="fas fa-wand-magic-sparkles"></i> Auto-Fetch Transcript
                   </button>
-                  <button id="openYouTubeBtn" class="subtitles-import-youtube-btn">
+                  <button id="openYouTubeBtn" class="subtitles-import-youtube-btn ui-btn">
                   <i class="fab fa-youtube"></i> Open YouTube Video
                   </button>
                </div>
                <div class="subtitles-import-lang-row">
-                <label for="transcriptLangSelect" class="subtitles-import-lang-label">Language:</label>
-                <select id="transcriptLangSelect" class="subtitles-import-lang-select">
+                <label for="transcriptLangSelect" class="subtitles-import-lang-label ui-label">Language:</label>
+                <select id="transcriptLangSelect" class="subtitles-import-lang-select ui-select">
                     <option value="auto">Auto</option>
                 </select>
-                <button id="switchLangBtn" class="subtitles-import-switch-lang-btn" style="display:none;">
+                <button id="switchLangBtn" class="subtitles-import-switch-lang-btn ui-btn ui-btn--sm" style="display:none;">
                    <i class="fas fa-language"></i> Switch Language
                </button>
             </div>
             </div>
-            <div class="subtitles-import-input-section">
-               <label for="transcriptInput" class="subtitles-import-input-label">
+            <div class="subtitles-import-input-section ui-field">
+               <label for="transcriptInput" class="subtitles-import-input-label ui-section-label">
                Paste YouTube transcript here:
                </label>
                <textarea
@@ -696,12 +715,12 @@ Another Playlist{
                   class="subtitles-import-transcript-textarea"
                   placeholder="Transcript will appear here automatically, or paste manually..."
                   ></textarea>
-               <button id="convertBtn" class="subtitles-import-convert-btn">
+               <button id="convertBtn" class="subtitles-import-convert-btn ui-btn ui-btn--primary ui-btn--block">
                <i class="fas fa-sync-alt"></i> Convert to Lyrics
                </button>
             </div>
             <div id="lyricsPreviewSection" class="subtitles-import-preview-section" style="display: none;">
-               <label for="lyricsPreview" class="subtitles-import-preview-label">
+               <label for="lyricsPreview" class="subtitles-import-preview-label ui-section-label">
                Converted Lyrics (Edit if needed):
                </label>
                <textarea
@@ -709,10 +728,10 @@ Another Playlist{
                   class="subtitles-import-lyrics-textarea"
                   ></textarea>
                <div class="subtitles-import-action-buttons">
-                  <button id="saveLyricsBtn">
+                  <button id="saveLyricsBtn" class="ui-btn ui-btn--primary">
                     <i class="fas fa-save"></i> Save Lyrics
                   </button>
-                  <button id="cancelImportBtn" class="subtitles-import-cancel-btn">
+                  <button id="cancelImportBtn" class="subtitles-import-cancel-btn ui-btn">
                   <i class="fas fa-times"></i> Cancel
                   </button>
                </div>
@@ -720,35 +739,36 @@ Another Playlist{
             <div id="loadingIndicator" class="subtitles-import-loading" style="display: none;">
                <i class="fas fa-spinner fa-spin"></i> Fetching transcript...
             </div>
+            </div>
          </div>
       </div>
-      <div id="settingsModal" class="settings-modal">
-         <div class="settings-modal-content">
-            <div class="settings-modal-header">
-               <h2>Settings</h2>
-               <button id="settingsCloseBtn" class="settings-close-btn">
+      <div id="settingsModal" class="settings-modal ui-overlay">
+         <div class="settings-modal-content ui-modal ui-modal--xl">
+            <div class="settings-modal-header ui-modal__header">
+               <h2 class="ui-modal__title"><i class="fas fa-cog"></i> Settings</h2>
+               <button id="settingsCloseBtn" class="settings-close-btn ui-modal__close" title="Close">
                <i class="fas fa-times"></i>
                </button>
             </div>
-            <div class="settings-modal-body">
-               <div class="settings-tabs">
-                  <button class="settings-tab-btn active" data-tab="theme">
+            <div class="settings-modal-body ui-modal__body">
+               <div class="settings-tabs ui-tabs">
+                  <button class="settings-tab-btn ui-tab active" data-tab="theme">
                   <i class="fas fa-palette"></i>
                   Theme
                   </button>
-                  <button class="settings-tab-btn" data-tab="recommendation">
+                  <button class="settings-tab-btn ui-tab" data-tab="recommendation">
                   <i class="fas fa-music"></i>
                   Recommendation
                   </button>
-                  <button class="settings-tab-btn" data-tab="keybinds">
+                  <button class="settings-tab-btn ui-tab" data-tab="keybinds">
                   <i class="fas fa-keyboard"></i>
                   Keybinds
                   </button>
-                  <button class="settings-tab-btn" data-tab="feedback">
+                  <button class="settings-tab-btn ui-tab" data-tab="feedback">
                   <i class="fas fa-comment"></i>
                   Feedback
                   </button>
-                  <button class="settings-tab-btn" data-tab="additional">
+                  <button class="settings-tab-btn ui-tab" data-tab="additional">
                   <i class="fas fa-cog"></i>
                   Additional
                   </button>
@@ -1064,44 +1084,44 @@ Another Playlist{
       </div>
       </div>
       </div>
-      <div id="recentlyPlayedModal" class="recently-played-modal-bg" style="display: none;">
-         <div class="recently-played-modal">
-            <div class="recently-played-header">
-               <h2>Recently Listened To</h2>
-               <div class="recently-played-settings">
-                  <label class="recently-played-settings-label">Store last </label>
+      <div id="recentlyPlayedModal" class="recently-played-modal-bg ui-overlay" style="display: none;">
+         <div class="recently-played-modal ui-modal ui-modal--md">
+            <div class="recently-played-header ui-modal__header">
+               <h2 class="ui-modal__title"><i class="fas fa-clock"></i> Recently Listened To</h2>
+               <div class="recently-played-settings ui-modal__header-actions">
+                  <label class="recently-played-settings-label">Store last</label>
                   <input type="number" min="1" max="100" value="20" class="recently-played-settings-input" id="recentlyPlayedLimitInput">
-                  <span class="recently-played-settings-label"> songs</span>
+                  <span class="recently-played-settings-label">songs</span>
                </div>
-               <button class="recently-played-close" id="closeRecentlyPlayedModal">×</button>
+               <button class="recently-played-close ui-modal__close" id="closeRecentlyPlayedModal" title="Close"><i class="fas fa-times"></i></button>
             </div>
-            <div class="recently-played-content" id="recentlyPlayedContent">
+            <div class="recently-played-content ui-modal__body" id="recentlyPlayedContent">
             </div>
          </div>
       </div>
-      <div id="lyricsModal" class="lyrics-maker-modal hidden">
-         <div class="lyrics-maker-content">
-            <div class="lyrics-header">
-               <h1 id="lyricsTitle">Lyrics Maker</h1>
-               <span id="closeLyricsModal" class="close-btn">&times;</span>
+      <div id="lyricsModal" class="lyrics-maker-modal hidden ui-overlay">
+         <div class="lyrics-maker-content ui-modal ui-modal--full">
+            <div class="lyrics-header ui-modal__header">
+               <h1 class="ui-modal__title" id="lyricsTitle"><i class="fas fa-wand-magic-sparkles"></i> Lyrics Maker</h1>
+               <span id="closeLyricsModal" class="close-btn ui-modal__close" role="button" title="Close"><i class="fas fa-times"></i></span>
             </div>
-            <div class="lyrics-navbar">
-               <button class="lyrics-nav-item active" data-tab="setupTab">1. Setup</button>
-               <button class="lyrics-nav-item" data-tab="recordTab">2. Record</button>
-               <button class="lyrics-nav-item" data-tab="exportTab">3. Export</button>
+            <div class="lyrics-navbar ui-tabs">
+               <button class="lyrics-nav-item ui-tab active" data-tab="setupTab">1. Setup</button>
+               <button class="lyrics-nav-item ui-tab" data-tab="recordTab">2. Record</button>
+               <button class="lyrics-nav-item ui-tab" data-tab="exportTab">3. Export</button>
             </div>
             <div id="setupTab" class="lyrics-tab active">
 
                <div class="lyrics-section">
                   <h2>Enter Lyrics</h2>
                   <div class="lyrics-search-buttons">
-                     <button id="autoFetchGeniusLyricsBtn" class="subtitles-import-auto-fetch-btn">
-                     <i class="fas fa-magic"></i> Auto-Fetch Lyrics (Genius)
+                     <button id="autoFetchGeniusLyricsBtn" class="subtitles-import-auto-fetch-btn ui-btn ui-btn--primary">
+                     <i class="fas fa-wand-magic-sparkles"></i> Auto-Fetch Lyrics (Genius)
                      </button>
-                     <button id="azlyricsBtn" class="lyrics-search-btn">Find Lyrics via AZLyrics</button>
-                     <button id="letrasBtn" class="lyrics-search-btn">Find Lyrics via Letras</button>
-                     <button id="geniusBtn" class="lyrics-search-btn">Find Lyrics via Genius</button>
-                     <button id="googleBtn" class="lyrics-search-btn">Find Lyrics via Google</button>
+                     <button id="azlyricsBtn" class="lyrics-search-btn ui-btn">Find Lyrics via AZLyrics</button>
+                     <button id="letrasBtn" class="lyrics-search-btn ui-btn">Find Lyrics via Letras</button>
+                     <button id="geniusBtn" class="lyrics-search-btn ui-btn">Find Lyrics via Genius</button>
+                     <button id="googleBtn" class="lyrics-search-btn ui-btn">Find Lyrics via Google</button>
                   </div>
                   <div id="geniusFetchLoading" class="subtitles-import-loading" style="display: none;">
                      <i class="fas fa-spinner fa-spin"></i> Fetching lyrics from Genius...
@@ -1165,9 +1185,9 @@ Another Playlist{
       </div>
       <div id="findSongsDiv" class="find-songs-container" style="display: none;">
       <div class="find-songs-content">
-         <div class="find-songs-header">
-            <h2>Find Songs from the Global Library</h2>
-            <button id="closeFindSongs" class="close-btn">&times;</button>
+         <div class="find-songs-header ui-modal__header">
+            <h2 class="ui-modal__title"><i class="fas fa-globe"></i> Find Songs from the Global Library</h2>
+            <button id="closeFindSongs" class="close-btn ui-modal__close" title="Close"><i class="fas fa-times"></i></button>
          </div>
          <div class="find-songs-body">
             <div class="recommendations-panel" id="recommendationsPanel">
@@ -1197,24 +1217,24 @@ Another Playlist{
          </div>
       </div>
       </div>
-      <div id="downloadModal" class="dl-overlay" style="display:none;" role="dialog" aria-modal="true" aria-label="Download songs">
-        <div class="dl-modal">
+      <div id="downloadModal" class="dl-overlay ui-overlay" style="display:none;" role="dialog" aria-modal="true" aria-label="Download songs">
+        <div class="dl-modal ui-modal ui-modal--lg">
 
-          <div class="dl-header">
-            <span class="dl-title"><i class="fas fa-download"></i> Download</span>
-            <button class="dl-close" id="dlCloseBtn" title="Close"><i class="fas fa-times"></i></button>
+          <div class="dl-header ui-modal__header">
+            <span class="dl-title ui-modal__title"><i class="fas fa-download"></i> Download</span>
+            <button class="dl-close ui-modal__close" id="dlCloseBtn" title="Close"><i class="fas fa-times"></i></button>
           </div>
 
-          <div class="dl-modes">
-            <button class="dl-mode-btn active" data-mode="current" id="dlModeCurrent">
+          <div class="dl-modes ui-tabs">
+            <button class="dl-mode-btn ui-tab active" data-mode="current" id="dlModeCurrent">
               <i class="fas fa-music"></i>
               <span>Current song</span>
             </button>
-            <button class="dl-mode-btn" data-mode="search" id="dlModeSearch">
+            <button class="dl-mode-btn ui-tab" data-mode="search" id="dlModeSearch">
               <i class="fas fa-search"></i>
               <span>Search library</span>
             </button>
-            <button class="dl-mode-btn" data-mode="url" id="dlModeUrl">
+            <button class="dl-mode-btn ui-tab" data-mode="url" id="dlModeUrl">
               <i class="fab fa-youtube"></i>
               <span>YouTube URL</span>
             </button>
@@ -1246,13 +1266,13 @@ Another Playlist{
               <i class="fab fa-youtube dl-search-icon"></i>
               <input type="text" id="dlUrlInput" class="dl-search-input" placeholder="Paste YouTube URL or video ID…" autocomplete="off" />
             </div>
-            <button class="dl-add-url-btn" id="dlAddUrlBtn"><i class="fas fa-plus"></i> Add to queue</button>
+            <button class="dl-add-url-btn ui-btn ui-btn--primary ui-btn--block" id="dlAddUrlBtn"><i class="fas fa-plus"></i> Add to queue</button>
           </div>
 
           <div class="dl-queue-section" id="dlQueueSection" style="display:none;">
             <div class="dl-queue-header">
-              <span class="dl-queue-label">Queue</span>
-              <button class="dl-download-all-btn" id="dlDownloadAllBtn">
+              <span class="dl-queue-label ui-section-label">Queue</span>
+              <button class="dl-download-all-btn ui-btn ui-btn--primary ui-btn--sm" id="dlDownloadAllBtn">
                 <i class="fas fa-download"></i> <span id="dlDownloadAllLabel">Download all</span>
               </button>
             </div>
@@ -1261,20 +1281,20 @@ Another Playlist{
 
         </div>
       </div>
-      <div id="shazamModal" class="sz-overlay" style="display:none;" role="dialog" aria-modal="true" aria-label="Identify song">
-        <div class="sz-modal">
+      <div id="shazamModal" class="sz-overlay ui-overlay" style="display:none;" role="dialog" aria-modal="true" aria-label="Identify song">
+        <div class="sz-modal ui-modal ui-modal--lg">
 
-          <div class="sz-header">
-            <span class="sz-title"><i class="fas fa-search"></i> Identify Song</span>
-            <button class="sz-close" id="szCloseBtn" title="Close"><i class="fas fa-times"></i></button>
+          <div class="sz-header ui-modal__header">
+            <span class="sz-title ui-modal__title"><i class="fas fa-wave-square"></i> Identify Song</span>
+            <button class="sz-close ui-modal__close" id="szCloseBtn" title="Close"><i class="fas fa-times"></i></button>
           </div>
 
-          <div class="sz-panel">
+          <div class="sz-panel ui-modal__body ui-modal__body--stack">
 
             <div class="sz-source-row">
-              <button class="sz-source-btn" id="szCaptureTabBtn"><i class="fas fa-desktop"></i><span>Tab / System audio</span></button>
-              <button class="sz-source-btn" id="szMicBtn"><i class="fas fa-microphone"></i><span>Microphone</span></button>
-              <button class="sz-source-btn" id="szUploadBtn"><i class="fas fa-file-audio"></i><span>Upload clip</span></button>
+              <button class="sz-source-btn ui-tab" id="szCaptureTabBtn"><i class="fas fa-desktop"></i><span>Tab / System audio</span></button>
+              <button class="sz-source-btn ui-tab" id="szMicBtn"><i class="fas fa-microphone"></i><span>Microphone</span></button>
+              <button class="sz-source-btn ui-tab" id="szUploadBtn"><i class="fas fa-file-audio"></i><span>Upload clip</span></button>
               <input type="file" id="szFileInput" accept="audio/*,video/*" hidden>
             </div>
 
@@ -1291,8 +1311,8 @@ Another Playlist{
             <div class="sz-sel-info" id="szSelInfo">Drag across the waveform to select part of the clip</div>
 
             <div class="sz-identify-row" id="szIdentifyRow">
-              <button class="sz-btn" id="szIdentifySelBtn" disabled><i class="fas fa-crop-alt"></i> Identify selection</button>
-              <button class="sz-btn sz-btn-primary" id="szIdentifyAllBtn" disabled><i class="fas fa-magic"></i> Identify clip</button>
+              <button class="sz-btn ui-btn" id="szIdentifySelBtn" disabled><i class="fas fa-crop-alt"></i> Identify selection</button>
+              <button class="sz-btn sz-btn-primary ui-btn ui-btn--primary" id="szIdentifyAllBtn" disabled><i class="fas fa-wand-magic-sparkles"></i> Identify clip</button>
             </div>
 
             <audio id="szPlayback" class="sz-playback" controls></audio>
@@ -1312,11 +1332,11 @@ Another Playlist{
           </div>
         </div>
       </div>
-      <div id="statsModal" class="ls-overlay" style="display:none;" role="dialog" aria-modal="true" aria-label="Listening statistics">
-        <div class="ls-modal-content">
-          <div class="ls-header">
-            <span class="ls-title"><i class="fas fa-chart-bar"></i> Listening Statistics</span>
-            <div class="ls-range-switch">
+      <div id="statsModal" class="ls-overlay ui-overlay" style="display:none;" role="dialog" aria-modal="true" aria-label="Listening statistics">
+        <div class="ls-modal-content ui-modal ui-modal--2xl">
+          <div class="ls-header ui-modal__header">
+            <span class="ls-title ui-modal__title"><i class="fas fa-chart-bar"></i> Listening Statistics</span>
+            <div class="ls-range-switch ui-modal__header-actions">
               <span class="ls-range-label" id="lsRangeLabelLeft">30 Days</span>
               <div class="toggle-switch">
                 <input type="checkbox" id="lsRangeToggle" class="toggle-input">
@@ -1326,9 +1346,9 @@ Another Playlist{
               </div>
               <span class="ls-range-label" id="lsRangeLabelRight">Lifetime</span>
             </div>
-            <button class="ls-close" id="lsCloseBtn"><i class="fas fa-times"></i></button>
+            <button class="ls-close ui-modal__close" id="lsCloseBtn" title="Close"><i class="fas fa-times"></i></button>
           </div>
-          <div class="ls-body" id="lsPanel"></div>
+          <div class="ls-body ui-modal__body" id="lsPanel"></div>
         </div>
       </div>
       <script src="script.js" defer fetchpriority="high"></script>

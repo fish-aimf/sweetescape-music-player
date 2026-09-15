@@ -2,7 +2,7 @@ const CACHE_PREFIX = "se-cache-";
 
 const VERSION_TIMEOUT_MS = 2500;
 
-const STATIC_ASSETS = [ "/", "/index.html", "/style.css", "/all.min.css", "/script.js", "/karaoke-encoder.js", "/favicon.svg" ];
+const STATIC_ASSETS = [ "/", "/index.html", "/style.css", "/ui-system.css", "/all.min.css", "/script.js", "/karaoke-encoder.js", "/favicon.svg" ];
 
 function timeout(ms) {
   return new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), ms));

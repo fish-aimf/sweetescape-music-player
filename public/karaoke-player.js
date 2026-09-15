@@ -1,5 +1,3 @@
-// karaoke-player.js - Karaoke Player functionality with SweetEscape integration
-
 class KaraokePlayer {
   constructor() {
     this.ytPlayer = null;
@@ -14,12 +12,12 @@ class KaraokePlayer {
     this.progressInterval = null;
     this.currentHighlightIndex = -1;
     this.db = null;
-    
+
     this.initElements();
     this.initializeDatabase();
     this.loadKaraokeData();
   }
-  
+
   initElements() {
     this.els = {
       playPauseBtn: document.getElementById('playPauseBtn'),
@@ -42,10 +40,10 @@ class KaraokePlayer {
       successToast: document.getElementById('successToast'),
       toastMessage: document.getElementById('toastMessage')
     };
-    
+
     this.setupEventListeners();
   }
-  
+
   setupEventListeners() {
     this.els.playPauseBtn.addEventListener('click', () => this.togglePlayPause());
     this.els.restartBtn.addEventListener('click', () => this.restart());
@@ -57,8 +55,7 @@ class KaraokePlayer {
     this.els.exitFullscreenBtn.addEventListener('click', () => this.exitFullscreen());
     this.els.copyURLBtn.addEventListener('click', () => this.copyURL());
     this.els.saveToLibraryBtn.addEventListener('click', () => this.saveToLibrary());
-    
-    // Keyboard shortcuts
+
     document.addEventListener('keydown', (e) => {
       if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
         e.preventDefault();
@@ -74,26 +71,24 @@ class KaraokePlayer {
       }
     });
   }
-  
-  // Database initialization
+
   async initializeDatabase() {
     try {
       this.db = await this.openDatabase();
       this.initializeTheme();
     } catch (error) {
       console.error('Database initialization error:', error);
-      // Set default theme if DB fails
       document.documentElement.setAttribute("data-theme", "dark");
     }
   }
-  
+
   openDatabase() {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open('musicPlayerDB', 1);
-      
+
       request.onerror = () => reject(request.error);
       request.onsuccess = () => resolve(request.result);
-      
+
       request.onupgradeneeded = (event) => {
         const db = event.target.result;
         const stores = [
@@ -103,7 +98,7 @@ class KaraokePlayer {
           { name: 'recentlyPlayed', keyPath: 'type' },
           { name: 'userSettings', keyPath: 'category' }
         ];
-        
+
         stores.forEach(({ name, keyPath }) => {
           if (!db.objectStoreNames.contains(name)) {
             db.createObjectStore(name, { keyPath });
@@ -112,18 +107,17 @@ class KaraokePlayer {
       };
     });
   }
-  
-  // Theme management
+
   initializeTheme() {
     if (!this.db) {
       document.documentElement.setAttribute("data-theme", "dark");
       return;
     }
-    
+
     const transaction = this.db.transaction(["settings"], "readonly");
     const store = transaction.objectStore("settings");
     const request = store.get("themeMode");
-    
+
     request.onsuccess = () => {
       const savedTheme = request.result ? request.result.value : "dark";
       if (savedTheme === "custom") {
@@ -132,13 +126,13 @@ class KaraokePlayer {
         document.documentElement.setAttribute("data-theme", savedTheme);
       }
     };
-    
+
     request.onerror = (event) => {
       console.error("Error loading theme setting:", event.target.error);
       document.documentElement.setAttribute("data-theme", "dark");
     };
   }
-  
+
   loadCustomTheme() {
     const transaction = this.db.transaction(["settings"], "readonly");
     const store = transaction.objectStore("settings");
@@ -148,7 +142,7 @@ class KaraokePlayer {
       'customBorder', 'customAccent', 'customButtonText',
       'customShadow', 'customError', 'customErrorHover', 'customYoutubeRed'
     ];
-    
+
     const requests = colorKeys.map(key => {
       const request = store.get(key);
       return new Promise(resolve => {
@@ -162,7 +156,7 @@ class KaraokePlayer {
         });
       });
     });
-    
+
     Promise.all(requests).then((results) => {
       const colors = {};
       const defaults = {
@@ -180,12 +174,11 @@ class KaraokePlayer {
         customErrorHover: '#c82333',
         customYoutubeRed: '#FF0000'
       };
-      
+
       results.forEach(result => {
         colors[result.key] = result.value || defaults[result.key];
       });
-      
-      // Apply all custom colors
+
       this.applyCustomColors({
         primary: colors.customPrimary,
         background: colors.customBackground,
@@ -201,18 +194,17 @@ class KaraokePlayer {
         errorHover: colors.customErrorHover,
         youtubeRed: colors.customYoutubeRed
       });
-      
+
       document.documentElement.setAttribute("data-theme", "custom");
     }).catch(error => {
       console.error("Error loading custom theme:", error);
       document.documentElement.setAttribute("data-theme", "dark");
     });
   }
-  
+
   applyCustomColors(colors) {
-    // Set CSS custom properties on the root element
     const root = document.documentElement;
-    
+
     root.style.setProperty('--custom-primary', colors.accent || colors.primary);
     root.style.setProperty('--custom-background', colors.background);
     root.style.setProperty('--custom-secondary', colors.secondary);
@@ -227,47 +219,43 @@ class KaraokePlayer {
     root.style.setProperty('--custom-error-hover', colors.errorHover);
     root.style.setProperty('--custom-youtube-red', colors.youtubeRed);
   }
-  
+
   hexToRgba(hex, opacity) {
-    // Handle if hex is already rgba
     if (hex.startsWith('rgba')) {
       return hex;
     }
-    
-    // Remove # if present
+
     hex = hex.replace('#', '');
-    
+
     const r = parseInt(hex.slice(0, 2), 16);
     const g = parseInt(hex.slice(2, 4), 16);
     const b = parseInt(hex.slice(4, 6), 16);
     return `rgba(${r}, ${g}, ${b}, ${opacity})`;
   }
-  
+
   loadKaraokeData() {
     try {
       this.karaokeData = KaraokeEncoder.getFromURL();
-      
+
       if (!this.karaokeData) {
         this.showError();
         return;
       }
-      
-      // Set share URL
+
       this.els.shareURL.value = window.location.href;
-      
-      // Initialize YouTube player
+
       this.initYouTubePlayer();
-      
+
     } catch (error) {
       console.error('Error loading karaoke data:', error);
       this.showError();
     }
   }
-  
+
   showError() {
     this.els.errorModal.classList.remove('hidden');
   }
-  
+
   initYouTubePlayer() {
     if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
       window.onYouTubeIframeAPIReady = () => {
@@ -277,7 +265,7 @@ class KaraokePlayer {
       this.createPlayer();
     }
   }
-  
+
   createPlayer() {
     this.ytPlayer = new YT.Player('ytPlayer', {
       height: '100%',
@@ -294,52 +282,52 @@ class KaraokePlayer {
       }
     });
   }
-  
+
   onPlayerReady(event) {
     this.ytPlayerReady = true;
     console.log('Player ready');
     this.renderLyrics();
     this.updateTitle();
   }
-  
+
   onPlayerStateChange(event) {
     if (event.data === YT.PlayerState.PLAYING) {
       this.isPlaying = true;
       this.updatePlayPauseButton();
       this.startProgressTracking();
       this.startLyricsTracking();
-      
+
       if (this.currentSpeed !== 1) {
         this.ytPlayer.setPlaybackRate(this.currentSpeed);
       }
-      
+
     } else if (event.data === YT.PlayerState.PAUSED) {
       this.isPlaying = false;
       this.updatePlayPauseButton();
       this.stopProgressTracking();
       this.stopLyricsTracking();
-      
+
     } else if (event.data === YT.PlayerState.ENDED) {
       this.isPlaying = false;
       this.updatePlayPauseButton();
-      
+
       if (this.isLooping) {
         this.ytPlayer.seekTo(0, true);
         this.ytPlayer.playVideo();
       }
     }
   }
-  
+
   togglePlayPause() {
     if (!this.ytPlayer || !this.ytPlayerReady) return;
-    
+
     if (this.isPlaying) {
       this.ytPlayer.pauseVideo();
     } else {
       this.ytPlayer.playVideo();
     }
   }
-  
+
   updatePlayPauseButton() {
     const icon = this.els.playPauseBtn.querySelector('i');
     if (this.isPlaying) {
@@ -348,13 +336,13 @@ class KaraokePlayer {
       icon.className = 'fas fa-play';
     }
   }
-  
+
   restart() {
     if (!this.ytPlayer || !this.ytPlayerReady) return;
     this.ytPlayer.seekTo(0, true);
     this.currentHighlightIndex = -1;
   }
-  
+
   toggleLoop() {
     this.isLooping = !this.isLooping;
     this.els.loopBtn.classList.toggle('active', this.isLooping);
@@ -362,8 +350,7 @@ class KaraokePlayer {
   toggleCentering() {
     this.isCentering = !this.isCentering;
     this.els.centerBtn.classList.toggle('active', this.isCentering);
-    
-    // If turning on centering, immediately center the current lyric
+
     if (this.isCentering && this.currentHighlightIndex !== -1) {
       const currentLine = document.getElementById(`lyric-${this.currentHighlightIndex}`);
       if (currentLine) {
@@ -374,34 +361,34 @@ class KaraokePlayer {
   changeSpeed(speed) {
     this.currentSpeed = parseFloat(speed);
     this.els.speedDisplay.textContent = `${this.currentSpeed.toFixed(1)}x`;
-    
+
     if (this.ytPlayer && this.ytPlayerReady) {
       this.ytPlayer.setPlaybackRate(this.currentSpeed);
     }
   }
-  
+
   seek(percentage) {
     if (!this.ytPlayer || !this.ytPlayerReady) return;
-    
+
     const duration = this.ytPlayer.getDuration();
     const seekTime = (percentage / 100) * duration;
     this.ytPlayer.seekTo(seekTime, true);
   }
-  
+
   startProgressTracking() {
     this.stopProgressTracking();
-    
+
     this.progressInterval = setInterval(() => {
       if (!this.ytPlayer || !this.ytPlayerReady) return;
-      
+
       try {
         const currentTime = this.ytPlayer.getCurrentTime();
         const duration = this.ytPlayer.getDuration();
-        
+
         if (duration > 0) {
           const percentage = (currentTime / duration) * 100;
           this.els.progressBar.value = percentage;
-          
+
           const currentFormatted = this.formatTime(currentTime);
           const durationFormatted = this.formatTime(duration);
           this.els.timeDisplay.textContent = `${currentFormatted} / ${durationFormatted}`;
@@ -411,53 +398,52 @@ class KaraokePlayer {
       }
     }, 200);
   }
-  
+
   stopProgressTracking() {
     if (this.progressInterval) {
       clearInterval(this.progressInterval);
       this.progressInterval = null;
     }
   }
-  
+
   formatTime(seconds) {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   }
-  
+
   renderLyrics() {
     if (!this.karaokeData || !this.karaokeData.lines) return;
-    
+
     this.els.lyricsDisplay.innerHTML = '';
-    
+
     this.karaokeData.lines.forEach((line, index) => {
       const lineEl = document.createElement('div');
       lineEl.className = 'lyric-line';
       lineEl.textContent = line.text;
       lineEl.id = `lyric-${index}`;
       lineEl.dataset.time = line.time;
-      
-      // Click to seek
+
       lineEl.addEventListener('click', () => {
         if (this.ytPlayer && this.ytPlayerReady) {
           this.ytPlayer.seekTo(line.time, true);
         }
       });
-      
+
       this.els.lyricsDisplay.appendChild(lineEl);
     });
   }
-  
+
   startLyricsTracking() {
     this.stopLyricsTracking();
-    
+
     this.lyricsInterval = setInterval(() => {
       if (!this.ytPlayer || !this.ytPlayerReady) return;
-      
+
       try {
         const currentTime = this.ytPlayer.getCurrentTime();
         this.updateHighlightedLyric(currentTime);
-        
+
         if (this.isFullscreen) {
           this.updateFullscreenLyric(currentTime);
         }
@@ -466,60 +452,57 @@ class KaraokePlayer {
       }
     }, 100);
   }
-  
+
   stopLyricsTracking() {
     if (this.lyricsInterval) {
       clearInterval(this.lyricsInterval);
       this.lyricsInterval = null;
     }
   }
-  
+
   updateHighlightedLyric(currentTime) {
     if (!this.karaokeData || !this.karaokeData.lines) return;
-    
+
     let highlightIndex = -1;
-    
+
     for (let i = 0; i < this.karaokeData.lines.length; i++) {
       if (currentTime >= this.karaokeData.lines[i].time) {
-        if (i === this.karaokeData.lines.length - 1 || 
+        if (i === this.karaokeData.lines.length - 1 ||
             currentTime < this.karaokeData.lines[i + 1].time) {
           highlightIndex = i;
         }
       }
     }
-    
+
     if (highlightIndex !== this.currentHighlightIndex) {
-      // Remove previous highlight
       const allLines = this.els.lyricsDisplay.querySelectorAll('.lyric-line');
       allLines.forEach(line => line.classList.remove('active'));
-      
-      // Add new highlight
+
       if (highlightIndex !== -1) {
         const currentLine = document.getElementById(`lyric-${highlightIndex}`);
         if (currentLine) {
           currentLine.classList.add('active');
-          // Only auto-scroll if centering is enabled
           if (this.isCentering) {
             currentLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
           }
         }
       }
-      
+
       this.currentHighlightIndex = highlightIndex;
     }
   }
-  
+
   enterFullscreen() {
     this.isFullscreen = true;
     this.els.fullscreenModal.classList.add('active');
     this.renderFullscreenLyrics();
   }
-  
+
   exitFullscreen() {
     this.isFullscreen = false;
     this.els.fullscreenModal.classList.remove('active');
   }
-  
+
   toggleFullscreen() {
     if (this.isFullscreen) {
       this.exitFullscreen();
@@ -527,12 +510,12 @@ class KaraokePlayer {
       this.enterFullscreen();
     }
   }
-  
+
   renderFullscreenLyrics() {
     if (!this.karaokeData || !this.karaokeData.lines) return;
-    
+
     this.els.fullscreenLyrics.innerHTML = '';
-    
+
     this.karaokeData.lines.forEach((line, index) => {
       const lineEl = document.createElement('div');
       lineEl.className = 'lyric-line';
@@ -542,24 +525,24 @@ class KaraokePlayer {
       this.els.fullscreenLyrics.appendChild(lineEl);
     });
   }
-  
+
   updateFullscreenLyric(currentTime) {
     if (!this.karaokeData || !this.karaokeData.lines) return;
-    
+
     let highlightIndex = -1;
-    
+
     for (let i = 0; i < this.karaokeData.lines.length; i++) {
       if (currentTime >= this.karaokeData.lines[i].time) {
-        if (i === this.karaokeData.lines.length - 1 || 
+        if (i === this.karaokeData.lines.length - 1 ||
             currentTime < this.karaokeData.lines[i + 1].time) {
           highlightIndex = i;
         }
       }
     }
-    
+
     const allLines = this.els.fullscreenLyrics.querySelectorAll('.lyric-line');
     allLines.forEach(line => line.classList.remove('active'));
-    
+
     if (highlightIndex !== -1) {
       const currentLine = document.getElementById(`fullscreen-lyric-${highlightIndex}`);
       if (currentLine) {
@@ -571,98 +554,93 @@ class KaraokePlayer {
       }
     }
   }
-  
+
   copyURL() {
     this.els.shareURL.select();
     document.execCommand('copy');
-    
+
     const originalText = this.els.copyURLBtn.innerHTML;
     this.els.copyURLBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
     this.els.copyURLBtn.classList.add('copied');
-    
+
     setTimeout(() => {
       this.els.copyURLBtn.innerHTML = originalText;
       this.els.copyURLBtn.classList.remove('copied');
     }, 2000);
   }
-  
+
   updateTitle() {
     if (this.karaokeData && this.karaokeData.lines && this.karaokeData.lines.length > 0) {
       document.title = `${this.karaokeData.lines[0].text.substring(0, 30)}... - Karaoke`;
     }
   }
-  
-  // Save to SweetEscape library
+
   async saveToLibrary() {
     if (!this.karaokeData) {
       this.showToast('No karaoke data to save', 'error');
       return;
     }
-    
+
     try {
       const db = await this.openDatabase();
-      
-      // Check if song already exists
+
       const existingSong = await this.findSongByVideoId(db, this.karaokeData.videoId);
-      
+
       if (existingSong) {
-        // Update existing song with lyrics
         const lyrics = KaraokeEncoder.convertToSweetescapeLyrics(this.karaokeData.lines);
         await this.updateSongLyrics(db, existingSong.id, lyrics);
         this.showToast('Lyrics updated in library!');
       } else {
-        // Add new song
         await this.addNewSong(db);
         this.showToast('Saved to library!');
       }
-      
+
       db.close();
     } catch (error) {
       console.error('Error saving to library:', error);
       this.showToast('Failed to save. Please try again.', 'error');
     }
   }
-  
+
   findSongByVideoId(db, videoId) {
     return new Promise((resolve, reject) => {
       const transaction = db.transaction(['songLibrary'], 'readonly');
       const store = transaction.objectStore('songLibrary');
       const request = store.getAll();
-      
+
       request.onsuccess = () => {
         const songs = request.result || [];
         const found = songs.find(song => song.videoId === videoId);
         resolve(found || null);
       };
-      
+
       request.onerror = () => reject(request.error);
     });
   }
-  
+
   updateSongLyrics(db, songId, lyrics) {
     return new Promise((resolve, reject) => {
       const transaction = db.transaction(['songLibrary'], 'readwrite');
       const store = transaction.objectStore('songLibrary');
       const getRequest = store.get(songId);
-      
+
       getRequest.onsuccess = () => {
         const song = getRequest.result;
         song.lyrics = lyrics;
-        
+
         const updateRequest = store.put(song);
         updateRequest.onsuccess = () => resolve();
         updateRequest.onerror = () => reject(updateRequest.error);
       };
-      
+
       getRequest.onerror = () => reject(getRequest.error);
     });
   }
-  
+
   async addNewSong(db) {
-    // Fetch video title from YouTube API (we'll use the first lyric line as fallback)
     const songName = this.karaokeData.lines[0].text.substring(0, 50);
     const lyrics = KaraokeEncoder.convertToSweetescapeLyrics(this.karaokeData.lines);
-    
+
     const newSong = {
       id: Date.now(),
       name: songName,
@@ -671,22 +649,22 @@ class KaraokePlayer {
       favorite: false,
       lyrics: lyrics
     };
-    
+
     return new Promise((resolve, reject) => {
       const transaction = db.transaction(['songLibrary'], 'readwrite');
       const store = transaction.objectStore('songLibrary');
       const request = store.add(newSong);
-      
+
       request.onsuccess = () => resolve();
       request.onerror = () => reject(request.error);
     });
   }
-  
+
   showToast(message, type = 'success') {
     this.els.toastMessage.textContent = message;
     this.els.successToast.classList.remove('hidden');
     this.els.successToast.classList.toggle('error', type === 'error');
-    
+
     setTimeout(() => {
       this.els.successToast.classList.add('hidden');
       this.els.successToast.classList.remove('error');
@@ -694,7 +672,6 @@ class KaraokePlayer {
   }
 }
 
-// Initialize player when DOM is ready
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
     new KaraokePlayer();

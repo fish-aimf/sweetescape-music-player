@@ -10,7 +10,10 @@ This document explains the structure and main components of **SweetEscape Music 
   Main HTML layout for the player. Contains the player UI, playlist, lyric section, control buttons, and discovery system.
 
 - **style.css**  
-  Central stylesheet for all UI components. Handles layout, colors, typography, and responsive design.
+  Feature stylesheet: layout, per-component styling, and responsive rules.
+
+- **ui-system.css**  
+  The UI design system. Loaded after `style.css` so it is authoritative for shared chrome. See "UI Design System" below.
 
 - **script.js**  
   Contains the **single class** `AdvancedMusicPlayer`, which controls all functionality (see below).
@@ -26,6 +29,58 @@ This document explains the structure and main components of **SweetEscape Music 
 
 - **captures/**  
   Directory where logs are stored as `.txt` files.
+
+---
+
+## 🎨 UI Design System (`public/ui-system.css`)
+
+Every dialog in the app renders through one system. `ui-system.css` loads after
+`style.css`, so where the two disagree the system wins.
+
+The file has four layers, in order:
+
+1. **Tokens** — `:root` custom properties (`--ui-*`): radii, spacing, type scale,
+   surfaces, shadows, overlay, modal padding and widths, control heights, motion,
+   z-index. Change a value here and every dialog follows.
+2. **Primitives** — the canonical classes. Build new UI out of these:
+   - `.ui-overlay` + `.ui-modal` (`--sm` 420 / `--md` 560 / `--lg` 720 / `--xl` 900 / `--2xl` 1080 / `--full`)
+   - `.ui-modal__header` > `.ui-modal__title` (+ `.ui-modal__subtitle`, `.ui-modal__header-actions`) + `.ui-modal__close`
+   - `.ui-modal__body` (`--stack` for a vertical gap), `.ui-modal__footer`
+   - `.ui-btn` (`--primary` / `--ghost` / `--danger` / `--sm` / `--block`), `.ui-icon-btn`
+   - `.ui-input`, `.ui-select`, `.ui-textarea`, `.ui-field`, `.ui-label`
+   - `.ui-card`, `.ui-chip`, `.ui-tabs` / `.ui-tab`, `.ui-section-label`, `.ui-empty`, `.ui-scroll`
+3. **Adoption map** — maps the older per-feature class names (`.settings-modal-*`,
+   `.dl-*`, `.sz-*`, `.ls-*`, `.discord-modal-*`, `.subtitles-import-*`, …) onto the
+   same declarations, so legacy markup looks identical without being rewritten. To
+   retire a legacy prefix, add the primitive classes to its markup and delete its
+   entry here.
+4. **Responsive + reduced motion** — one breakpoint at 768px that retunes the tokens.
+
+### Conventions
+
+- Overlays are shown with `display: flex` (inline style, or an existing `.active` /
+  `.subtitles-import-modal-show` class). Never `display: block` — the overlay centres
+  its modal with flex.
+- Icons are Font Awesome 6 with an explicit style prefix (`fas` / `far` / `fab`).
+  Close buttons are `<i class="fas fa-times">`; titles take one accent-coloured icon.
+- JS-built dialogs use the `UI` factory at the top of `script.js`:
+  `UI.modal({ title, icon, size, className, bodyClassName })` returns
+  `{ overlay, shell, header, heading, body, footer, close, addFooter, open }`, and
+  `UI.button(label, { variant, size, icon, block, onClick })` builds a `.ui-btn`.
+  Prefer these over hand-rolling `document.createElement` chains and inline styles.
+- No comments in source files; naming and this document carry the intent.
+
+### Adding a new dialog
+
+```js
+const dialog = UI.modal({ title: 'My Dialog', icon: 'fa-star', size: 'md' });
+dialog.body.append(/* content */);
+dialog.addFooter(UI.button('Save', { variant: 'primary', onClick: save }));
+dialog.open();
+```
+
+Nothing else is needed — chrome, motion, scrollbars, theming and the mobile
+breakpoint all come from the system.
 
 ---
 

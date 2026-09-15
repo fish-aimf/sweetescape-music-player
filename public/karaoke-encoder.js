@@ -1,4 +1,3 @@
-// karaoke-encoder.js - URL encoding/decoding for karaoke data
 const KaraokeEncoder = {
   encode(videoId, lines) {
     const sorted = [...lines].sort((a, b) => a.time - b.time);
@@ -31,7 +30,7 @@ const KaraokeEncoder = {
     });
     return this._toBase64URL(compressed);
   },
-  
+
   decode(encoded) {
     try {
       const compressed = this._fromBase64URL(encoded);
@@ -61,7 +60,7 @@ const KaraokeEncoder = {
       throw new Error('Invalid karaoke URL - corrupted or malformed data');
     }
   },
-  
+
   _encodeVarInt(num) {
     if (num === 0) return '0';
     const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
@@ -73,7 +72,7 @@ const KaraokeEncoder = {
     }
     return result;
   },
-  
+
   _decodeVarInt(str) {
     const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
     let result = 0;
@@ -83,7 +82,7 @@ const KaraokeEncoder = {
     }
     return result;
   },
-  
+
   _toBase64URL(bytes) {
     let binary = '';
     for (let i = 0; i < bytes.length; i++) {
@@ -94,7 +93,7 @@ const KaraokeEncoder = {
       .replace(/\//g, '_')
       .replace(/=/g, '');
   },
-  
+
   _fromBase64URL(str) {
     let base64 = str.replace(/-/g, '+').replace(/_/g, '/');
     while (base64.length % 4) base64 += '=';
@@ -105,12 +104,12 @@ const KaraokeEncoder = {
     }
     return bytes;
   },
-  
+
   generateURL(videoId, lines) {
     const encoded = this.encode(videoId, lines);
     return `${window.location.origin}/karaoke/${encoded}`;
   },
-  
+
   getFromURL() {
     const path = window.location.pathname;
     const karaokeMatch = path.match(/^\/karaoke\/(.+)$/);
@@ -118,7 +117,7 @@ const KaraokeEncoder = {
     const encoded = karaokeMatch[1];
     return this.decode(encoded);
   },
-  
+
   estimateSize(videoId, lines) {
     const encoded = this.encode(videoId, lines);
     return {
@@ -128,14 +127,13 @@ const KaraokeEncoder = {
       urlLength: `${window.location.origin}/karaoke/${encoded}`.length
     };
   },
-  
-  // Convert karaoke lines to sweetescape lyrics format
+
   convertToSweetescapeLyrics(lines) {
     return lines
       .map(line => `${line.text} [${this._formatTime(line.time)}]`)
       .join('\n');
   },
-  
+
   _formatTime(seconds) {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);

@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Karaoke Player - SweetEscape</title>
   <link rel="stylesheet" href="/karaoke-styles.css">
+  <link rel="stylesheet" href="/ui-system.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
   <div class="player-container">
-    <!-- Header -->
     <div class="player-header">
       <h1 class="app-title">Karaoke Player</h1>
       <div class="header-actions">
@@ -22,12 +22,10 @@
       </div>
     </div>
 
-    <!-- YouTube Player -->
     <div class="video-section">
       <div id="ytPlayer"></div>
     </div>
 
-    <!-- Controls -->
     <div class="controls-section">
       <div class="progress-container">
         <input type="range" id="progressBar" class="progress-bar" min="0" max="100" value="0">
@@ -55,7 +53,6 @@
     </div>
     </div>
 
-    <!-- Lyrics Display -->
     <div class="lyrics-section">
       <div class="lyrics-header">
         <h2>Lyrics</h2>
@@ -66,7 +63,6 @@
       <div id="lyricsDisplay" class="lyrics-display"></div>
     </div>
 
-    <!-- Share Section -->
     <div class="share-section">
       <h3>Share This Karaoke</h3>
       <div class="share-controls">
@@ -78,7 +74,6 @@
     </div>
   </div>
 
-  <!-- Fullscreen Lyrics Modal -->
   <div id="fullscreenModal" class="fullscreen-modal">
     <button id="exitFullscreenBtn" class="exit-fullscreen">
       <i class="fas fa-times"></i>
@@ -86,22 +81,25 @@
     <div id="fullscreenLyrics" class="fullscreen-lyrics"></div>
   </div>
 
-  <!-- Error Modal -->
-  <div id="errorModal" class="error-modal hidden">
-    <div class="error-content">
-      <h2>No Karaoke Data Found</h2>
-      <p>This URL doesn't contain any karaoke data.</p>
-      <a href="/" class="create-btn">Go to SweetEscape</a>
+  <div id="errorModal" class="error-modal hidden ui-overlay">
+    <div class="error-content ui-modal ui-modal--sm">
+      <div class="ui-modal__header">
+        <h2 class="ui-modal__title"><i class="fas fa-triangle-exclamation"></i> No Karaoke Data Found</h2>
+      </div>
+      <div class="ui-modal__body">
+        <p>This URL doesn't contain any karaoke data.</p>
+      </div>
+      <div class="ui-modal__footer">
+        <a href="/" class="create-btn ui-btn ui-btn--primary"><i class="fas fa-house"></i> Go to SweetEscape</a>
+      </div>
     </div>
   </div>
 
-  <!-- Success Toast -->
   <div id="successToast" class="toast hidden">
     <i class="fas fa-check-circle"></i>
     <span id="toastMessage">Saved to library!</span>
   </div>
 
-  <!-- Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
   <script src="https://www.youtube.com/iframe_api"></script>
   <script src="/karaoke-encoder.js"></script>

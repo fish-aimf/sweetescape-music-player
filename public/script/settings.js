@@ -1,9 +1,4 @@
-
-// Lazy loaded — fetched only when user clicks to open settings.
-
 export const settingsMethods = {
-
-  // ── Modal ─────────────────────────────────────────────────────────────────
 
   handleCloseSettings() {
     this.elements.settingsModal.style.display = "none";
@@ -28,8 +23,6 @@ export const settingsMethods = {
     console.log("Settings modal opened - all settings loaded");
   },
 
-  // ── Tabs ──────────────────────────────────────────────────────────────────
-
   setupTabs() {
     const firstTab = document.querySelector('.settings-tab-btn');
     const firstPanel = document.querySelector('.tab-panel');
@@ -46,8 +39,6 @@ export const settingsMethods = {
     event.target.closest('.settings-tab-btn').classList.add('active');
     document.getElementById(targetTab + 'Panel').classList.add('active');
   },
-
-  // ── Theme (modal interactions only) ──────────────────────────────────────
 
   loadThemeMode() {
     if (!this.db) return;
@@ -72,8 +63,6 @@ export const settingsMethods = {
       this.loadCustomTheme();
     }
   },
-
-  // ── Custom theme (modal interactions only) ────────────────────────────────
 
   loadCustomThemeColors() {
     if (!this.db) return;
@@ -279,8 +268,6 @@ export const settingsMethods = {
     return `rgba(0, 0, 0, ${opacity})`;
   },
 
-  // ── Advertisements (modal toggle only) ───────────────────────────────────
-
   loadAdvertisementSettingsInModal() {
     if (this.elements.adsToggle) this.elements.adsToggle.checked = this.adsEnabled;
   },
@@ -290,8 +277,6 @@ export const settingsMethods = {
     this.updateAdvertisementDisplay();
     this.saveAdvertisementSettings();
   },
-
-  // ── Visualizer (modal toggle only) ───────────────────────────────────────
 
   handleVisualizerToggle(event) {
     const isEnabled = event.target.checked;
@@ -306,8 +291,6 @@ export const settingsMethods = {
     }
     this.saveSetting("visualizerEnabled", isEnabled);
   },
-
-  // ── Library sort / reverse (modal toggles only) ───────────────────────────
 
   handleLibrarySortToggle(event) {
     this.librarySortAlphabetically = event.target.checked;
@@ -353,8 +336,6 @@ export const settingsMethods = {
     };
   },
 
-  // ── Discord (modal save only) ─────────────────────────────────────────────
-
   async saveDiscordSettings() {
     try {
       this.db.transaction(["settings"], "readwrite")
@@ -364,8 +345,6 @@ export const settingsMethods = {
       console.error("Error saving Discord settings:", error);
     }
   },
-
-  // ── Keybinds (modal only) ─────────────────────────────────────────────────
 
   saveKeybinds() {
     return new Promise((resolve, reject) => {
@@ -501,8 +480,6 @@ export const settingsMethods = {
       this.saveKeybinds().then(() => this.loadKeybindsSettings()).catch(console.error);
     }
   },
-
-  // ── Discover More (modal only) ────────────────────────────────────────────
 
   async loadDiscoverMoreSettings() {
     try {

@@ -1,32 +1,27 @@
-/* karaoke-styles.css - Themed Karaoke Player with Polish Grey aesthetic */
-
 :root {
     --bg-primary: #f4f4f4;
     --bg-secondary: #ffffff;
     --text-primary: #333;
     --text-secondary: #666;
-    --accent-color: #5D9C59; 
-    --hover-color: #4A7C59; 
+    --accent-color: #5D9C59;
+    --hover-color: #4A7C59;
     --border-color: #ddd;
     --button-text-color: #ffffff;
     --shadow-color: rgba(0,0,0,0.1);
     --error-color: #dc3545;
     --error-hover: #c82333;
     --youtube-red: #FF0000;
-    
-    /* Spacing - Compact */
+
     --space-xs: 2px;
     --space-sm: 4px;
     --space-md: 6px;
     --space-lg: 10px;
     --space-xl: 14px;
-    
-    /* Border Radius - Sharp */
+
     --radius-sm: 2px;
     --radius-md: 3px;
     --radius-lg: 4px;
-    
-    /* Font Sizes */
+
     --font-xs: 0.7rem;
     --font-sm: 0.8rem;
     --font-md: 0.9rem;
@@ -40,8 +35,8 @@
     --bg-secondary: #1e1e1e;
     --text-primary: #e0e0e0;
     --text-secondary: #b0b0b0;
-    --accent-color: #3A6B35; 
-    --hover-color: #4D7C46; 
+    --accent-color: #3A6B35;
+    --hover-color: #4D7C46;
     --border-color: #444;
 }
 
@@ -83,7 +78,6 @@ body {
   padding: var(--space-lg);
 }
 
-/* Header */
 .player-header {
   display: flex;
   justify-content: space-between;
@@ -148,7 +142,6 @@ body {
   transform: translateY(-1px);
 }
 
-/* Video Section */
 .video-section {
   margin-bottom: var(--space-lg);
   border-radius: var(--radius-md);
@@ -163,7 +156,6 @@ body {
   height: 100%;
 }
 
-/* Controls */
 .controls-section {
   background: var(--bg-secondary);
   padding: var(--space-lg);
@@ -316,7 +308,6 @@ body {
   font-size: var(--font-xs);
 }
 
-/* Lyrics */
 .lyrics-section {
   background: var(--bg-secondary);
   border-radius: var(--radius-md);
@@ -396,7 +387,6 @@ body {
   box-shadow: 0 1px 4px var(--shadow-color);
 }
 
-/* Share Section */
 .share-section {
   background: var(--bg-secondary);
   border-radius: var(--radius-md);
@@ -455,7 +445,6 @@ body {
   opacity: 0.8;
 }
 
-/* Fullscreen Modal */
 .fullscreen-modal {
   position: fixed;
   top: 0;
@@ -528,7 +517,6 @@ body {
   color: var(--button-text-color);
 }
 
-/* Error Modal */
 .error-modal {
   position: fixed;
   top: 0;
@@ -585,7 +573,6 @@ body {
   transform: translateY(-1px);
 }
 
-/* Toast Notification */
 .toast {
   position: fixed;
   top: var(--space-lg);
@@ -622,7 +609,6 @@ body {
   }
 }
 
-/* Responsive */
 @media (max-width: 1024px) {
   .player-container {
     padding: var(--space-md);
@@ -633,46 +619,46 @@ body {
   .player-container {
     padding: var(--space-sm);
   }
-  
+
   .app-title {
     font-size: var(--font-lg);
   }
-  
+
   .player-header {
     flex-direction: column;
     gap: var(--space-md);
     align-items: flex-start;
   }
-  
+
   .header-actions {
     flex-direction: column;
     width: 100%;
   }
-  
+
   .save-library-btn,
   .back-link {
     width: 100%;
     justify-content: center;
   }
-  
+
   .share-controls {
     flex-direction: column;
   }
-  
+
   .playback-controls {
     flex-direction: column;
     width: 100%;
   }
-  
+
   .speed-control {
     width: 100%;
     justify-content: space-between;
   }
-  
+
   .fullscreen-lyrics .lyric-line {
     font-size: var(--font-md);
   }
-  
+
   .fullscreen-lyrics .lyric-line.active {
     font-size: var(--font-xl);
   }
@@ -687,13 +673,13 @@ body {
     --font-xl: 1.2rem;
     --font-2xl: 1.5rem;
   }
-  
+
   .control-btn {
     width: 32px;
     height: 32px;
     font-size: var(--font-md);
   }
-  
+
   .lyrics-section,
   .controls-section,
   .share-section {
@@ -701,7 +687,6 @@ body {
   }
 }
 
-/* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -721,13 +706,11 @@ body {
   background: var(--accent-color);
 }
 
-/* Selection */
 ::selection {
   background: var(--accent-color);
   color: var(--button-text-color);
 }
 
-/* Focus Styles */
 button:focus-visible,
 input:focus-visible,
 textarea:focus-visible {
