@@ -733,3 +733,4 @@
 -  made glass cards as transparent as the tab bar and search field v72.6.0
 -  gave the library and playlist search controls the same glass blur as the tab bar, and stopped opening settings from collapsing the compact library view v72.7.0
 -  condensed the v72 changelog entries v72.8.0
+-  listening timer no longer keeps ticking after you pause, which stops it inflating your listening stats and saves a wakeup every second; trimmed per-frame work in the visualizer v72.9.0

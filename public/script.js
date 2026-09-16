@@ -4966,6 +4966,7 @@ class AdvancedMusicPlayer {
         }
         this.isPlaying = false;
         this.updatePlayerUI();
+        this.stopListeningTimeTracking();
         if (this.titleScrollInterval) {
           clearInterval(this.titleScrollInterval);
           this.titleScrollInterval = null;
@@ -5251,6 +5252,7 @@ class AdvancedMusicPlayer {
     } else if (event.data === YT.PlayerState.PAUSED) {
       this.isPlaying = false;
       this.updatePlayerUI();
+      this.stopListeningTimeTracking();
       if (this.titleScrollInterval) {
         clearInterval(this.titleScrollInterval);
         this.titleScrollInterval = null;
@@ -10455,16 +10457,15 @@ class AdvancedMusicPlayer {
     }
   }
   animateBars() {
+    const now = Date.now();
+    const playing = this.isPlaying;
+    const intensity = playing ? 1.5 : 0.15;
+    const swayRate = playing ? 0.005 : 0.002;
+    const swayAmount = playing ? 30 : 5;
     this.visualizer.bars.forEach((bar, index) => {
-      let intensity = this.isPlaying ? 1.5 : 0.15;
-      let baseHeight = Math.random() * 100 * intensity;
-      let rhythmMultiplier = Math.sin(Date.now() * 0.01 + index * 0.3) * 0.5 + 0.5;
-      let height = baseHeight * rhythmMultiplier + 4;
-      if (this.isPlaying) {
-        height += Math.sin(Date.now() * 0.005 + index * 0.1) * 30;
-      } else {
-        height += Math.sin(Date.now() * 0.002 + index * 0.1) * 5;
-      }
+      const baseHeight = Math.random() * 100 * intensity;
+      const rhythmMultiplier = Math.sin(now * 0.01 + index * 0.3) * 0.5 + 0.5;
+      const height = baseHeight * rhythmMultiplier + 4 + Math.sin(now * swayRate + index * 0.1) * swayAmount;
       bar.style.height = Math.max(4, height) + 'px';
     });
   }
@@ -10478,24 +10479,28 @@ class AdvancedMusicPlayer {
       this.createParticle();
     }
     const accentColor = this._cachedAccentColor || this._readAccentColor();
-    this.visualizer.particles = this.visualizer.particles.filter(particle => {
-      let speedMultiplier = this.isPlaying ? 1 : 0.3;
+    const speedMultiplier = this.isPlaying ? 1 : 0.3;
+    const alphaScale = this.isPlaying ? 0.6 : 0.3;
+    const particles = this.visualizer.particles;
+    let alive = 0;
+    ctx.fillStyle = accentColor;
+    for (let i = 0; i < particles.length; i++) {
+      const particle = particles[i];
       particle.x += particle.vx * speedMultiplier;
       particle.y += particle.vy * speedMultiplier;
       particle.life -= 0.01;
       particle.opacity = particle.life;
       if (particle.life <= 0) {
-        return false;
+        continue;
       }
-      ctx.save();
-      ctx.globalAlpha = particle.opacity * (this.isPlaying ? 0.6 : 0.3);
-      ctx.fillStyle = accentColor;
+      ctx.globalAlpha = particle.opacity * alphaScale;
       ctx.beginPath();
       ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
       ctx.fill();
-      ctx.restore();
-      return true;
-    });
+      particles[alive++] = particle;
+    }
+    particles.length = alive;
+    ctx.globalAlpha = 1;
   }
   createParticle() {
     this.visualizer.particles.push({
@@ -13183,6 +13188,16 @@ class AdvancedMusicPlayer {
     if (this.elements.listeningTimeDisplay.textContent !== newText) {
       this.elements.listeningTimeDisplay.textContent = newText;
     }
+  }
+  stopListeningTimeTracking() {
+    if (!this.listeningTimeInterval) {
+      return;
+    }
+    clearInterval(this.listeningTimeInterval);
+    this.listeningTimeInterval = null;
+    this._flush30DayTime();
+    this.updateListeningTimeDisplay();
+    this.saveListeningTime();
   }
   startListeningTimeTracking() {
     if (this.listeningTimeInterval) {
