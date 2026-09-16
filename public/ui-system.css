@@ -1451,6 +1451,7 @@ a.ui-btn--block {
   --glass-blur: 18px;
   --glass-sat: 160%;
   --glass-sunken-ratio: 0.55;
+  --glass-control-floor: 26%;
   --glass-float-ratio: 1.12;
   --glass-radius: var(--ui-radius-md);
   --app-bg-image: none;
@@ -1499,7 +1500,7 @@ a.ui-btn--block {
 
 [data-surface="glass"] {
   --bg-secondary: color-mix(in srgb, var(--bg-secondary-base) calc(var(--glass-tint) * 1%), transparent);
-  --bg-primary: color-mix(in srgb, var(--bg-secondary-base) calc(var(--glass-tint) * var(--glass-sunken-ratio) * 1%), transparent);
+  --bg-primary: color-mix(in srgb, var(--bg-secondary-base) max(calc(var(--glass-tint) * var(--glass-sunken-ratio) * 1%), var(--glass-control-floor)), transparent);
   --border-color: color-mix(in srgb, var(--border-color-base) 60%, transparent);
   --ui-surface: var(--bg-secondary);
   --ui-surface-sunken: var(--bg-primary);
@@ -1515,8 +1516,7 @@ a.ui-btn--block {
 [data-surface="glass"] .music-visualizer,
 [data-surface="glass"] .tab-content,
 [data-surface="glass"] .np-view,
-[data-surface="glass"] .np-right,
-[data-surface="glass"] .current-song-section {
+[data-surface="glass"] .np-right {
   background: none;
   border-color: transparent;
   box-shadow: none;
@@ -1548,9 +1548,9 @@ a.ui-btn--block {
 [data-surface="glass"] .ls-card-hero,
 [data-surface="glass"] .discord-status-card,
 [data-surface="glass"] .dl-current-card,
-[data-surface="glass"] .qv2-row,
 [data-surface="glass"] .ui-card,
 [data-surface="glass"] .np-left,
+[data-surface="glass"] .current-song-section,
 [data-surface="glass"] #additionalDetails,
 [data-surface="glass"] .playlist-sidebar,
 [data-surface="glass"] .now-playing,
@@ -1570,6 +1570,13 @@ a.ui-btn--block {
   box-shadow:
     inset 0 1px 0 var(--glass-sheen),
     0 6px 22px var(--glass-shade);
+}
+
+[data-surface="glass"] :is(.song-item, .playlist-card, .search-song-item, .playlist-song-item, .sidebar-song-item, .sidebar-song-card, .details-item, .setting-group, .keybind-category, .discovery-card, .favorites-card, .playlists-shelf, .ls-card-large, .ls-card-small, .ls-card-hero, .discord-status-card, .dl-current-card, .ui-card, .np-left, .current-song-section, #additionalDetails, .playlist-sidebar, .now-playing, .music-player, .current-playlist-songs, .recommendations-panel, .favorites-panel, .settings-tabs, .lyrics-navbar, .lyrics-header, .find-songs-content, .ui-modal, .modal-content, .settings-modal-content, .timer-modal-content, .recently-played-modal, .changelog-modal-content, .subtitles-import-modal-content, .discord-rpc-modal, .billboard-modal-content, .qv2-panel, .dl-modal, .sz-modal, .ls-modal-content, .lyrics-maker-content, .temp-song-modal-content, .lyrics-fullscreen-modal, .search-results, .speed-options, .np-speed-options, .qv2-dropdown, .dl-search-results, .lib-filter-panel, .global-library-search-suggestions-dropdown, .youtube-search-suggestion, .transport-preview-popup, .drag-link-toast) :is(.song-item, .playlist-card, .search-song-item, .playlist-song-item, .sidebar-song-item, .sidebar-song-card, .details-item, .setting-group, .keybind-category, .discovery-card, .favorites-card, .playlists-shelf, .ls-card-large, .ls-card-small, .ls-card-hero, .discord-status-card, .dl-current-card, .ui-card, .np-left, .current-song-section, #additionalDetails, .playlist-sidebar, .now-playing, .music-player, .current-playlist-songs, .recommendations-panel, .favorites-panel, .settings-tabs, .lyrics-navbar, .lyrics-header, .find-songs-content):not(:hover) {
+  background-color: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: inset 0 0 0 1px var(--glass-sheen);
 }
 
 [data-surface="glass"] .ui-modal,

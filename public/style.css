@@ -898,7 +898,7 @@ body {
   padding: 8px;
   border: 1px solid var(--border-color);
   border-radius: 4px;
-  background: var(--input-bg);
+  background: var(--bg-primary);
   color: var(--text-primary);
 }
 .custom-timer input::-webkit-inner-spin-button,
@@ -1157,7 +1157,7 @@ body {
   border: currentcolor;
   border-image: initial;
   background-color: var(--accent-color);
-  color: var(--text-color);
+  color: var(--text-primary);
   box-shadow: rgba(0, 0, 0, 0.2) 0 2px 5px;
   cursor: pointer;
   display: flex;
@@ -3211,7 +3211,7 @@ body:has(#ytPlayer.fullscreen-video) {
 .playlist-name {
   font-size: 16px;
   font-weight: 700;
-  color: var(--text-color);
+  color: var(--text-primary);
   margin-bottom: 4px;
 }
 .playlist-actions {
@@ -3633,8 +3633,8 @@ body:has(#ytPlayer.fullscreen-video) {
 #playlistSearch,
 .create-playlist input {
   padding: 8px 12px;
-  background: var(--input-bg);
-  color: var(--text-color);
+  background: var(--bg-primary);
+  color: var(--text-primary);
 }
 #importSongsTextarea::placeholder {
   color: var(--text-secondary);

@@ -9551,12 +9551,13 @@ class AdvancedMusicPlayer {
     if (els.glassControls) {
       els.glassControls.style.display = state.surfaceStyle === 'glass' ? 'flex' : 'none';
     }
-    [ [ 'glassTint', 'glassTintValue', '%' ], [ 'glassBlur', 'glassBlurValue', 'px' ], [ 'glassSat', 'glassSatValue', '%' ], [ 'backgroundDim', 'backgroundDimValue', '%' ], [ 'backgroundBlur', 'backgroundBlurValue', 'px' ] ].forEach(([key, labelKey, suffix]) => {
+    [ [ 'glassTint', 'glassTintValue', '%', true ], [ 'glassBlur', 'glassBlurValue', 'px' ], [ 'glassSat', 'glassSatValue', '%' ], [ 'backgroundDim', 'backgroundDimValue', '%' ], [ 'backgroundBlur', 'backgroundBlurValue', 'px' ] ].forEach(([key, labelKey, suffix, invert]) => {
+      const shown = invert ? 100 - state[key] : state[key];
       if (els[key]) {
-        els[key].value = state[key];
+        els[key].value = shown;
       }
       if (els[labelKey]) {
-        els[labelKey].textContent = state[key] + suffix;
+        els[labelKey].textContent = shown + suffix;
       }
     });
     if (els.backgroundFit) {
@@ -9627,13 +9628,14 @@ class AdvancedMusicPlayer {
       this.updateAppearance(Object.assign({}, preset));
     }
   }
-  handleAppearanceSliderInput(key, suffix, labelKey) {
+  handleAppearanceSliderInput(key, suffix, labelKey, invert) {
     return event => {
-      const value = Number(event.target.value);
+      const shown = Number(event.target.value);
+      const value = invert ? 100 - shown : shown;
       this.appearance[key] = value;
       this.applyAppearance();
       if (this.elements[labelKey]) {
-        this.elements[labelKey].textContent = value + suffix;
+        this.elements[labelKey].textContent = shown + suffix;
       }
       if (key.indexOf('glass') === 0) {
         this.renderAppearancePresets();
@@ -9698,7 +9700,7 @@ class AdvancedMusicPlayer {
   }
   setupAppearanceListeners() {
     const els = this.elements;
-    const bindings = [ [ els.surfaceStyle, 'change', this.handleSurfaceStyleChange.bind(this) ], [ els.appearancePresets, 'click', this.handleGlassPresetClick.bind(this) ], [ els.glassTint, 'input', this.handleAppearanceSliderInput('glassTint', '%', 'glassTintValue') ], [ els.glassBlur, 'input', this.handleAppearanceSliderInput('glassBlur', 'px', 'glassBlurValue') ], [ els.glassSat, 'input', this.handleAppearanceSliderInput('glassSat', '%', 'glassSatValue') ], [ els.backgroundDim, 'input', this.handleAppearanceSliderInput('backgroundDim', '%', 'backgroundDimValue') ], [ els.backgroundBlur, 'input', this.handleAppearanceSliderInput('backgroundBlur', 'px', 'backgroundBlurValue') ], [ els.backgroundFit, 'change', this.handleBackgroundFitChange.bind(this) ], [ els.backgroundGradients, 'click', this.handleBackgroundGradientClick.bind(this) ], [ els.backgroundChooseBtn, 'click', () => els.backgroundFileInput?.click() ], [ els.backgroundFileInput, 'change', this.handleBackgroundFileChange.bind(this) ], [ els.backgroundRemoveBtn, 'click', this.handleBackgroundRemove.bind(this) ] ];
+    const bindings = [ [ els.surfaceStyle, 'change', this.handleSurfaceStyleChange.bind(this) ], [ els.appearancePresets, 'click', this.handleGlassPresetClick.bind(this) ], [ els.glassTint, 'input', this.handleAppearanceSliderInput('glassTint', '%', 'glassTintValue', true) ], [ els.glassBlur, 'input', this.handleAppearanceSliderInput('glassBlur', 'px', 'glassBlurValue') ], [ els.glassSat, 'input', this.handleAppearanceSliderInput('glassSat', '%', 'glassSatValue') ], [ els.backgroundDim, 'input', this.handleAppearanceSliderInput('backgroundDim', '%', 'backgroundDimValue') ], [ els.backgroundBlur, 'input', this.handleAppearanceSliderInput('backgroundBlur', 'px', 'backgroundBlurValue') ], [ els.backgroundFit, 'change', this.handleBackgroundFitChange.bind(this) ], [ els.backgroundGradients, 'click', this.handleBackgroundGradientClick.bind(this) ], [ els.backgroundChooseBtn, 'click', () => els.backgroundFileInput?.click() ], [ els.backgroundFileInput, 'change', this.handleBackgroundFileChange.bind(this) ], [ els.backgroundRemoveBtn, 'click', this.handleBackgroundRemove.bind(this) ] ];
     bindings.forEach(([element, event, handler]) => {
       if (element) {
         element.addEventListener(event, handler);
