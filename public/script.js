@@ -202,6 +202,7 @@ class AdvancedMusicPlayer {
     this.youtubeLibrarySearchResults = [];
     this.YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3/search';
     this.topicKeywordEnabled = true;
+    this.replaceTargetSongId = null;
     this.supabase = null;
     this.supadataApiKey = 'sd_b3095aebbee9e4a7e6333bca9027b4cc';
     this.currentSongForSubtitlesImport = null;
@@ -632,6 +633,7 @@ class AdvancedMusicPlayer {
       toggleTopicKeyword: this.toggleTopicKeyword.bind(this),
       librarySearchKeydown: async e => {
         if (e.key === 'Enter') {
+          this.replaceTargetSongId = null;
           const searchTerm = this.elements.librarySearch.value.trim();
           const videoId = this.extractYouTubeId(searchTerm);
           if (videoId && this.elements.youtubeSearchSuggestion.style.display !== 'none') {
@@ -1973,6 +1975,7 @@ class AdvancedMusicPlayer {
     }
   }
   handleLibrarySearchInput() {
+    this.replaceTargetSongId = null;
     this.resetLibrarySearchTimeout();
     const searchTerm = this.elements.librarySearch.value.trim();
     const videoId = this.extractYouTubeId(searchTerm);
@@ -2858,7 +2861,7 @@ class AdvancedMusicPlayer {
     const modal = document.createElement('div');
     modal.className = 'modal ui-overlay';
     modal.style.display = 'flex';
-    modal.innerHTML = `\n\t        <div class="modal-content song-edit-modal-content ui-modal ui-modal--md">\n\t            <div class="song-edit-modal-header ui-modal__header">\n\t                <h3 class="ui-modal__title"><i class="fas fa-pen"></i> Edit Song Details</h3>\n\t                <span class="close-btn song-edit-close-btn ui-modal__close" role="button" title="Close"><i class="fas fa-times"></i></span>\n\t            </div>\n\t            <form class="song-edit-form ui-modal__body ui-modal__body--stack">\n\t                <div class="song-edit-form-grid">\n\t                    <label class="song-edit-form-label">Song Name:</label>\n\t                    <input class="song-edit-form-input" data-field="name" type="text" required>\n\t\n\t                    <label class="song-edit-form-label">Author:</label>\n\t                    <input class="song-edit-form-input" data-field="author" type="text" placeholder="Author name (optional)">\n\t\n\t                    <label class="song-edit-form-label">YouTube URL:</label>\n\t                    <input class="song-edit-form-input" data-field="url" type="text" required>\n\t\n\t                    <label class="song-edit-form-label">Local file:</label>\n\t                    <div class="song-edit-local-file-wrapper">\n\t                        <button type="button" class="song-edit-local-file-btn" data-field="localFileBtn"></button>\n\t                        <button type="button" class="song-edit-unlink-btn" data-field="unlinkBtn" title="Remove local file">&#x2715;</button>\n\t                    </div>\n\t                </div>\n\t\n\t                <div class="song-edit-thumbnail-container">\n\t                    <img class="song-edit-thumbnail" data-field="thumbnail" alt="Video thumbnail">\n\t                </div>\n\t\n\t                <div class="song-edit-lyrics-container">\n\t                    <label class="song-edit-lyrics-label">Lyrics (Format: "Lyric line [MM:SS]" - one per line):</label>\n\t                    <textarea class="song-edit-lyrics-input" data-field="lyrics"\n\t                        placeholder="Enter lyrics with timestamps like:&#10;This is the end [0:33]&#10;Hold your breath and count to ten [0:38]"></textarea>\n\t                </div>\n\t\n\t                <button type="submit" class="song-edit-save-btn ui-btn ui-btn--primary ui-btn--block"><i class="fas fa-floppy-disk"></i> Save Changes</button>\n\t            </form>\n\t        </div>\n\t    `;
+    modal.innerHTML = `\n\t        <div class="modal-content song-edit-modal-content ui-modal ui-modal--md">\n\t            <div class="song-edit-modal-header ui-modal__header">\n\t                <h3 class="ui-modal__title"><i class="fas fa-pen"></i> Edit Song Details</h3>\n\t                <span class="close-btn song-edit-close-btn ui-modal__close" role="button" title="Close"><i class="fas fa-times"></i></span>\n\t            </div>\n\t            <form class="song-edit-form ui-modal__body ui-modal__body--stack">\n\t                <div class="song-edit-form-grid">\n\t                    <label class="song-edit-form-label">Song Name:</label>\n\t                    <input class="song-edit-form-input" data-field="name" type="text" required>\n\t\n\t                    <label class="song-edit-form-label">Author:</label>\n\t                    <input class="song-edit-form-input" data-field="author" type="text" placeholder="Author name (optional)">\n\t\n\t                    <label class="song-edit-form-label">YouTube URL:</label>\n\t                    <div class="song-edit-url-wrapper">\n\t                        <input class="song-edit-form-input" data-field="url" type="text" required>\n\t                        <button type="button" class="song-edit-regenerate-btn" data-field="regenerateBtn" title="Find a different video for this song"><i class="fas fa-arrows-rotate"></i></button>\n\t                    </div>\n\t\n\t                    <label class="song-edit-form-label">Local file:</label>\n\t                    <div class="song-edit-local-file-wrapper">\n\t                        <button type="button" class="song-edit-local-file-btn" data-field="localFileBtn"></button>\n\t                        <button type="button" class="song-edit-unlink-btn" data-field="unlinkBtn" title="Remove local file">&#x2715;</button>\n\t                    </div>\n\t                </div>\n\t\n\t                <div class="song-edit-thumbnail-container">\n\t                    <img class="song-edit-thumbnail" data-field="thumbnail" alt="Video thumbnail">\n\t                </div>\n\t\n\t                <div class="song-edit-lyrics-container">\n\t                    <label class="song-edit-lyrics-label">Lyrics (Format: "Lyric line [MM:SS]" - one per line):</label>\n\t                    <textarea class="song-edit-lyrics-input" data-field="lyrics"\n\t                        placeholder="Enter lyrics with timestamps like:&#10;This is the end [0:33]&#10;Hold your breath and count to ten [0:38]"></textarea>\n\t                </div>\n\t\n\t                <button type="submit" class="song-edit-save-btn ui-btn ui-btn--primary ui-btn--block"><i class="fas fa-floppy-disk"></i> Save Changes</button>\n\t            </form>\n\t        </div>\n\t    `;
     const nameInput = modal.querySelector('[data-field="name"]');
     const authorInput = modal.querySelector('[data-field="author"]');
     const urlInput = modal.querySelector('[data-field="url"]');
@@ -2868,6 +2871,7 @@ class AdvancedMusicPlayer {
     const lyricsInput = modal.querySelector('[data-field="lyrics"]');
     const form = modal.querySelector('.song-edit-form');
     const closeBtn = modal.querySelector('.song-edit-close-btn');
+    const regenerateBtn = modal.querySelector('[data-field="regenerateBtn"]');
     nameInput.value = song.name;
     authorInput.value = song.author || '';
     urlInput.value = `https://www.youtube.com/watch?v=${song.videoId}`;
@@ -2913,6 +2917,15 @@ class AdvancedMusicPlayer {
           console.warn('File picker error:', error);
         }
       }
+    });
+    regenerateBtn.addEventListener('click', () => {
+      const searchName = nameInput.value.trim();
+      if (!searchName) {
+        this.showNotification('Enter a song name before searching for a replacement.', 'error');
+        return;
+      }
+      modal.remove();
+      this.startSongVideoReplacement(song.id, searchName, authorInput.value.trim());
     });
     unlinkBtn.addEventListener('click', () => {
       pendingLocalHandle = null;
@@ -10941,7 +10954,15 @@ class AdvancedMusicPlayer {
   renderYouTubeLibrarySearchResults(results, searchTerm, nextPageToken = null) {
     this.currentLibrarySearchTerm = searchTerm;
     this.currentLibraryNextPageToken = nextPageToken;
+    this.elements.songLibrary.classList.remove('is-compact-view');
     const fragment = document.createDocumentFragment();
+    const replaceTarget = this.getReplaceTargetSong();
+    if (replaceTarget) {
+      const banner = document.createElement('div');
+      banner.className = 'youtube-replace-banner';
+      banner.innerHTML = `\n        <i class="fas fa-arrows-rotate"></i>\n        <span>Pick the correct video for <strong>${this.escapeHtml(replaceTarget.name)}</strong></span>\n        <button type="button" class="youtube-replace-cancel-btn"><i class="fas fa-times"></i> Cancel</button>\n    `;
+      fragment.appendChild(banner);
+    }
     const youtubeResultsContainer = document.createElement('div');
     youtubeResultsContainer.classList.add('youtube-library-results');
     results.forEach(video => {
@@ -11001,9 +11022,10 @@ class AdvancedMusicPlayer {
     const uploadDate = this.formatYouTubeUploadDate(publishedAt);
     const viewCount = video.statistics?.viewCount ? this.formatYouTubeViewCount(parseInt(video.statistics.viewCount)) : null;
     const meta = viewCount ? `${viewCount} • ${uploadDate}` : uploadDate;
+    const actionButton = this.getReplaceTargetSong() ? `<button class="youtube-result-replace-btn" data-video-id="${videoId}" title="Use this video for the song">\n                <i class="fas fa-arrows-rotate"></i> Replace\n            </button>` : `<button class="youtube-result-add-btn" data-video-id="${videoId}" data-title="${this.escapeHtml(title)}" data-channel="${this.escapeHtml(channel)}">\n                <i class="fas fa-plus"></i> Add\n            </button>`;
     const card = document.createElement('div');
     card.classList.add('youtube-library-result-card');
-    card.innerHTML = `\n        <img src="${thumbnail}" alt="${this.escapeHtml(title)}" class="youtube-result-thumbnail">\n        <div class="youtube-result-info">\n            <div class="youtube-result-title">${this.decodeHtmlEntities(title)}</div>\n            <div class="youtube-result-channel">${this.decodeHtmlEntities(channel)}</div>\n            <div class="youtube-result-meta">${meta}</div>\n        </div>\n        <div class="youtube-result-actions">\n            <button class="youtube-result-preview-btn" data-video-id="${videoId}" title="Preview">\n                <i class="fas fa-play"></i> Preview\n            </button>\n            <button class="youtube-result-add-btn" data-video-id="${videoId}" data-title="${this.escapeHtml(title)}" data-channel="${this.escapeHtml(channel)}">\n                <i class="fas fa-plus"></i> Add\n            </button>\n        </div>\n    `;
+    card.innerHTML = `\n        <img src="${thumbnail}" alt="${this.escapeHtml(title)}" class="youtube-result-thumbnail">\n        <div class="youtube-result-info">\n            <div class="youtube-result-title">${this.decodeHtmlEntities(title)}</div>\n            <div class="youtube-result-channel">${this.decodeHtmlEntities(channel)}</div>\n            <div class="youtube-result-meta">${meta}</div>\n        </div>\n        <div class="youtube-result-actions">\n            <button class="youtube-result-preview-btn" data-video-id="${videoId}" title="Preview">\n                <i class="fas fa-play"></i> Preview\n            </button>\n            ${actionButton}\n        </div>\n    `;
     return card;
   }
   setupYouTubeLibraryResultsDelegation() {
@@ -11015,6 +11037,15 @@ class AdvancedMusicPlayer {
         this.samplePlayTemporarySong(youtubeUrl);
         return;
       }
+      const replaceBtn = e.target.closest('.youtube-result-replace-btn');
+      if (replaceBtn) {
+        this.replaceSongVideoFromSearch(replaceBtn.dataset.videoId);
+        return;
+      }
+      if (e.target.closest('.youtube-replace-cancel-btn')) {
+        this.cancelSongVideoReplacement();
+        return;
+      }
       const addBtn = e.target.closest('.youtube-result-add-btn');
       if (!addBtn) {
         return;
@@ -11024,6 +11055,68 @@ class AdvancedMusicPlayer {
       const channel = addBtn.dataset.channel;
       this.autofillYouTubeVideoFromSearch(videoId, title, channel);
     });
+  }
+  getReplaceTargetSong() {
+    if (this.replaceTargetSongId === null) {
+      return null;
+    }
+    return this.songLibrary.find(song => song.id === this.replaceTargetSongId) || null;
+  }
+  async startSongVideoReplacement(songId, songName, songAuthor) {
+    this.replaceTargetSongId = songId;
+    const searchTerm = [ songName, songAuthor ].filter(Boolean).join(' ').trim();
+    if (this.elements.librarySearch) {
+      this.elements.librarySearch.value = searchTerm;
+    }
+    this.elements.songLibrary.classList.remove('is-compact-view');
+    this.elements.songLibrary.innerHTML = '<div class="empty-library-message"><i class="fas fa-circle-notch fa-spin"></i> Searching YouTube for a replacement…</div>';
+    try {
+      const {items: items, nextPageToken: nextPageToken} = await this.searchYouTubeForLibraryMatches(searchTerm);
+      if (items.length > 0) {
+        this.renderYouTubeLibrarySearchResults(items, searchTerm, nextPageToken);
+      } else {
+        this.cancelSongVideoReplacement();
+        this.showNotification('No videos found for that search.', 'error');
+      }
+    } catch (error) {
+      console.error('Replacement search failed:', error);
+      this.cancelSongVideoReplacement();
+      this.showNotification('YouTube search failed. Please try again.', 'error');
+    }
+  }
+  cancelSongVideoReplacement() {
+    this.replaceTargetSongId = null;
+    if (this.elements.librarySearch) {
+      this.elements.librarySearch.value = '';
+    }
+    this.hideYouTubeSearchSuggestion();
+    this.renderLibraryView();
+  }
+  async replaceSongVideoFromSearch(videoId) {
+    const song = this.getReplaceTargetSong();
+    if (!song) {
+      this.cancelSongVideoReplacement();
+      this.showNotification('That song is no longer in your library.', 'error');
+      return;
+    }
+    if (song.videoId === videoId) {
+      this.showNotification('That video is already linked to this song.', 'error');
+      return;
+    }
+    const duplicate = this.songLibrary.find(other => other.videoId === videoId && other.id !== song.id);
+    if (duplicate) {
+      this.showNotification(`"${duplicate.name}" already uses that video.`, 'error');
+      return;
+    }
+    const songName = song.name;
+    try {
+      await this.updateSongDetails(song.id, song.name, song.author || '', videoId, song.lyrics || '');
+      this.cancelSongVideoReplacement();
+      this.showNotification(`Replaced the video for "${songName}".`, 'success');
+    } catch (error) {
+      console.error('Error replacing song video:', error);
+      this.showNotification('Failed to replace the video.', 'error');
+    }
   }
   formatYouTubeViewCount(count) {
     if (count >= 1e9) {
