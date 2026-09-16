@@ -115,6 +115,22 @@ fifth or hand-tune a single component — that is what made it look incoherent b
 Regions are transparent so **cards are the thing you see**. A card never sits on another
 card's material.
 
+Two hard rules keep this from degrading:
+
+1. **Never give a surface to something that paints nothing in solid mode.** Plenty of
+   wrappers are invisible by design (`#songLibrary`, `.qv2-row` at rest). Turning glass on
+   must not conjure a box around them - that is added opacity carrying no information.
+2. **A card never sits on another card's material.** Translucent tints multiply, so a card
+   inside a card inside a panel reads as opaque wherever the slider sits. One mechanical
+   rule de-escalates it: `:is(<cards+floats>) :is(<cards>):not(:hover)` drops the fill and
+   blur of any nested card and keeps only its edge ring. `:hover` is excluded so hover
+   feedback still works. Add a selector to the card list and nesting is handled; there is
+   nothing per-component to tune.
+
+Controls have a legibility floor (`--glass-control-floor`, 26%) so inputs and buttons stay
+readable with the transparency slider at its limit. The slider stores `--glass-tint`
+(opacity) but is presented inverted as **Transparency**, which is how people read it.
+
 `style.css` assigns `--bg-primary` and `--bg-secondary` to peer components more or less
 arbitrarily (`#additionalDetails` and `.song-item` take primary; `.playlist-sidebar` and
 `.playlists-shelf` take secondary). Solid mode hides that because the two colours are
