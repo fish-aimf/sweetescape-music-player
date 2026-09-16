@@ -1604,6 +1604,33 @@ a.ui-btn--block {
     inset 0 1px 0 var(--glass-sheen);
 }
 
+[data-surface="glass"] .tabs {
+  gap: 4px;
+}
+
+[data-surface="glass"] .tab {
+  backdrop-filter: blur(10px) saturate(var(--glass-sat));
+  -webkit-backdrop-filter: blur(10px) saturate(var(--glass-sat));
+  border-radius: var(--ui-radius-md) var(--ui-radius-md) 0 0;
+}
+
+[data-surface="glass"] .tab:hover:not(.active) {
+  background-color: color-mix(in srgb, var(--bg-secondary-base) calc(var(--glass-tint) * 1%), transparent);
+}
+
+[data-surface="glass"] .tab.active {
+  background-color: color-mix(in srgb, var(--accent-color) 58%, transparent);
+  border-color: color-mix(in srgb, var(--accent-color) 82%, transparent);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--accent-color) 70%, transparent),
+    inset 0 1px 0 var(--glass-sheen),
+    0 4px 16px var(--glass-shade);
+}
+
+[data-surface="glass"] .tab-content {
+  border-radius: 0 var(--ui-radius-md) var(--ui-radius-md) var(--ui-radius-md);
+}
+
 [data-surface="glass"] .ui-btn,
 [data-surface="glass"] button.ui-btn,
 [data-surface="glass"] a.ui-btn,
