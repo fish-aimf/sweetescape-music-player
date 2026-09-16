@@ -723,12 +723,13 @@
 -  removed unused css (148 dead rules, 2 dead keyframes, 12 unused design tokens) from style.css and ui-system.css v71.8.1
 -  added a regenerate button next to the youtube url in the edit song modal that re-searches the song and swaps in the right video from the results v71.9.0
 -  increased the expanded song list height in the library tab by 50%, leaving the initial compact view height unchanged v71.9.1
--  fixed the toggle switches in settings and listening statistics: the track stretched to 150px from a settings label rule and the knob slid 120px, pushing the head outside the pill; the track is now pinned to the switch and the knob travels the correct 16px v71.9.2
--  new appearance system: a surface style setting (solid or glass) that works on top of any theme, making every modal, panel, container, card, button and input translucent over a blurred, saturated backdrop; glass material controls for opacity, blur and vibrancy plus frost/smoke/vivid/subtle presets; custom background images stored on-device with fit, dim and background-blur controls, and six built-in gradients; solid stays the default so nothing changes until you opt in v72.0.0
--  reverted the tab restyling from v72.1.0 and v72.2.0; in glass mode the tab content pane and the now playing tab are now fully transparent instead of being their own panel, and the music explorer panel is more transparent v72.3.0
--  reworked glass mode into one consistent surface scale: regions like the tab pane and now playing view are fully transparent so the cards are what you see, and every card and panel now shares the exact same tint, border and blur; the music explorer, playlist sidebar and song library no longer differ in shade, and the now playing thumbnail and panel borders are back v72.4.0
--  glass mode now stays transparent all the way down: nested cards no longer stack their tints, so the music explorer and its cards, the playlist sidebar, favourites, shelves, search results and playlist cards all sit at exactly the level you pick; the opacity slider is now a transparency slider that runs the way you expect and reaches much further; restored the missing border on the now playing card in the music explorer; song library and other invisible containers stay invisible; and fixed the playlist search and timer inputs referencing an undefined --input-bg variable that left them with no background at all v72.5.0
--  documented the two glass surface rules in ARCHITECTURE.md: never give a surface to something invisible in solid mode, and never let a card sit on another card v72.5.1
--  actually wrote the glass surface rules into ARCHITECTURE.md; the v72.5.1 entry claimed this but the edit had silently failed on the mixed line endings that v72.4.0 introduced into that file v72.5.2
--  glass surfaces are far lighter and finally uniform: the slider value is now the card opacity itself rather than a denser tier, so shelves, discovery and playlist cards, song cards, the music explorer and the player bar all sit at the same level as the tab bar and search field; thumbnail wells no longer double the tint v72.6.0
--  glass mode: the global library, modify library, search songs and search playlists controls were missing the blur and vibrancy the tab bar has, which made them read as a different colour; 44 surface-painting controls now share it. also fixed the compact library view being replaced by the flat song list every time the settings modal was opened v72.7.0
+-  fixed toggle switch knobs sliding outside the switch track v71.9.2
+-  added glass mode: translucent panels, buttons and modals over a custom background image or gradient, with transparency, blur and vibrancy controls v72.0.0
+-  made the tab pane and now playing tab fully transparent in glass mode v72.3.0
+-  standardised glass surfaces so every card and panel shares the same tint, border and blur v72.4.0
+-  stopped nested cards stacking their tints in glass mode, and turned the opacity slider into a transparency slider v72.5.0
+-  documented the glass surface rules in ARCHITECTURE.md v72.5.1
+-  fixed the ARCHITECTURE.md edit silently failing on mixed line endings v72.5.2
+-  made glass cards as transparent as the tab bar and search field v72.6.0
+-  gave the library and playlist search controls the same glass blur as the tab bar, and stopped opening settings from collapsing the compact library view v72.7.0
+-  condensed the v72 changelog entries v72.8.0
