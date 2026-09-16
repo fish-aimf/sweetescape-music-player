@@ -131,7 +131,14 @@ Two hard rules keep this from degrading:
 with no per-tier multiplier. Controls share it and only clamp up to
 `--glass-control-floor` (24%); floats scale up by `--glass-float-ratio` and cap at
 `--glass-float-cap` so modals stay readable over arbitrary content. Thumbnail frames
-inside a card de-escalate like nested cards do, so an image well never doubles the tint. The slider stores `--glass-tint`
+inside a card de-escalate like nested cards do, so an image well never doubles the tint.
+
+A control that paints a surface must also carry the control blur. Without
+`backdrop-filter` it loses the `saturate()` too, so it reads as a different colour
+beside its neighbours even at an identical tint - that is what set the library
+toolbar apart from the tab bar. Controls that paint *nothing* must not get the blur:
+`backdrop-filter` on a transparent element still blurs, which turns an invisible
+wrapper into a visible smudge. The slider stores `--glass-tint`
 (opacity) but is presented inverted as **Transparency**, which is how people read it.
 
 `style.css` assigns `--bg-primary` and `--bg-secondary` to peer components more or less

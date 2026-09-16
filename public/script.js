@@ -1511,7 +1511,7 @@ class AdvancedMusicPlayer {
         this.elements.librarySortToggle.checked = this.librarySortAlphabetically;
       }
       if (this.elements.songLibrary) {
-        this.renderSongLibrary();
+        this.renderLibraryView();
       }
     };
     request.onerror = () => {
@@ -1534,7 +1534,7 @@ class AdvancedMusicPlayer {
         this.elements.libraryReverseToggle.checked = this.libraryReverseOrder;
       }
       if (this.elements.songLibrary) {
-        this.renderSongLibrary();
+        this.renderLibraryView();
       }
     };
     request.onerror = () => {
@@ -1546,12 +1546,12 @@ class AdvancedMusicPlayer {
   }
   handleLibrarySortToggle(event) {
     this.librarySortAlphabetically = event.target.checked;
-    this.renderSongLibrary();
+    this.renderLibraryView();
     this.saveSetting('librarySortAlphabetically', this.librarySortAlphabetically);
   }
   handleLibraryReverseToggle(event) {
     this.libraryReverseOrder = event.target.checked;
-    this.renderSongLibrary();
+    this.renderLibraryView();
     this.saveSetting('libraryReverseOrder', this.libraryReverseOrder);
   }
   addSongToLibrary() {
