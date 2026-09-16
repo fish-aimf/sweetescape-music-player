@@ -102,14 +102,26 @@ in `ui-system.css` re-derives the same three tokens through `color-mix()` at
 `--glass-tint`, which makes all ~180 rules that paint a surface translucent at once —
 no per-rule edits.
 
-Blur is *not* token-driven; it is applied to a curated list of real surfaces in three
-tiers, because `backdrop-filter` is expensive and creates a containing block:
+Glass has exactly **four levels**, and every surface belongs to one. Do not invent a
+fifth or hand-tune a single component — that is what made it look incoherent before.
 
-| Tier | Examples | Treatment |
+| Level | What | Treatment |
 |---|---|---|
-| Floating | `.ui-modal`, dropdowns, popovers | full `--glass-blur`, sheen gradient, elevated shadow |
-| Chrome | `.now-playing`, `.playlist-sidebar`, `.tab-content` | 0.7× blur, lighter shadow |
-| Cards / controls | `.song-item`, `.setting-group`, `.ui-btn`, `.ui-input` | tint + edge only (buttons get a 10px blur) |
+| Region | `body`, `.app-container`, `.tab-content`, `.np-view` | fully transparent: no background, border, ring or blur |
+| Card | song items, `#additionalDetails`, `.playlist-sidebar`, `.np-left`, `.now-playing`, shelves, `.setting-group` | **the** material: `--bg-secondary` + `--glass-blur` + 1px `--glass-edge` + radius |
+| Control | `.ui-btn`, `.ui-input`, `.tab`, transport buttons | `--bg-primary` chip + 10px blur + edge |
+| Float | modals, dropdowns, popovers | `--glass-float-ratio` denser tint, 1.4x blur, sheen, deep shadow |
+
+Regions are transparent so **cards are the thing you see**. A card never sits on another
+card's material.
+
+`style.css` assigns `--bg-primary` and `--bg-secondary` to peer components more or less
+arbitrarily (`#additionalDetails` and `.song-item` take primary; `.playlist-sidebar` and
+`.playlists-shelf` take secondary). Solid mode hides that because the two colours are
+close; glass exposed it as random shades. So in glass mode **both tokens derive from
+`--bg-secondary-base`**, and `--bg-primary` becomes *lighter* (`--glass-sunken-ratio`),
+never darker — nested glass lifts, it does not dig a hole. Whichever token a component
+happened to pick, peers now land in the same hue family.
 
 `.app-container` and `body` go fully transparent in glass mode and `<html>` carries the
 solid ground colour, so text never sits on nothing. Edges use
