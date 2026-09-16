@@ -127,8 +127,11 @@ Two hard rules keep this from degrading:
    feedback still works. Add a selector to the card list and nesting is handled; there is
    nothing per-component to tune.
 
-Controls have a legibility floor (`--glass-control-floor`, 26%) so inputs and buttons stay
-readable with the transparency slider at its limit. The slider stores `--glass-tint`
+`--glass-tint` is the card opacity directly: the slider value is what a card renders at,
+with no per-tier multiplier. Controls share it and only clamp up to
+`--glass-control-floor` (24%); floats scale up by `--glass-float-ratio` and cap at
+`--glass-float-cap` so modals stay readable over arbitrary content. Thumbnail frames
+inside a card de-escalate like nested cards do, so an image well never doubles the tint. The slider stores `--glass-tint`
 (opacity) but is presented inverted as **Transparency**, which is how people read it.
 
 `style.css` assigns `--bg-primary` and `--bg-secondary` to peer components more or less

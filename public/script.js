@@ -9428,7 +9428,7 @@ class AdvancedMusicPlayer {
   getAppearanceDefaults() {
     return {
       surfaceStyle: 'solid',
-      glassTint: 62,
+      glassTint: 34,
       glassBlur: 18,
       glassSat: 160,
       backgroundKind: 'none',
@@ -9441,22 +9441,22 @@ class AdvancedMusicPlayer {
   getGlassPresets() {
     return {
       frost: {
-        glassTint: 45,
+        glassTint: 26,
         glassBlur: 28,
         glassSat: 180
       },
       smoke: {
-        glassTint: 70,
+        glassTint: 42,
         glassBlur: 20,
         glassSat: 140
       },
       vivid: {
-        glassTint: 38,
+        glassTint: 20,
         glassBlur: 16,
         glassSat: 210
       },
       subtle: {
-        glassTint: 88,
+        glassTint: 58,
         glassBlur: 8,
         glassSat: 115
       }
