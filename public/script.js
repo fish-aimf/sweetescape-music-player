@@ -315,6 +315,8 @@ class AdvancedMusicPlayer {
     this.setupEventListeners();
     this.setupPlaylistSidebarModeListeners();
     this.initializeTheme();
+    this.initializeAppearance();
+    this.setupAppearanceListeners();
     this.initializeAutoplay();
     this.setupKeyboardControls();
     this.renderInitialState();
@@ -480,6 +482,25 @@ class AdvancedMusicPlayer {
       settingsCloseBtn: document.getElementById('settingsCloseBtn'),
       settingsContent: document.getElementById('settingsContent'),
       themeMode: document.getElementById('themeMode'),
+      surfaceStyle: document.getElementById('surfaceStyle'),
+      glassControls: document.getElementById('glassControls'),
+      appearancePresets: document.getElementById('appearancePresets'),
+      glassTint: document.getElementById('glassTint'),
+      glassTintValue: document.getElementById('glassTintValue'),
+      glassBlur: document.getElementById('glassBlur'),
+      glassBlurValue: document.getElementById('glassBlurValue'),
+      glassSat: document.getElementById('glassSat'),
+      glassSatValue: document.getElementById('glassSatValue'),
+      backgroundPreview: document.getElementById('backgroundPreview'),
+      backgroundChooseBtn: document.getElementById('backgroundChooseBtn'),
+      backgroundRemoveBtn: document.getElementById('backgroundRemoveBtn'),
+      backgroundFileInput: document.getElementById('backgroundFileInput'),
+      backgroundGradients: document.getElementById('backgroundGradients'),
+      backgroundFit: document.getElementById('backgroundFit'),
+      backgroundDim: document.getElementById('backgroundDim'),
+      backgroundDimValue: document.getElementById('backgroundDimValue'),
+      backgroundBlur: document.getElementById('backgroundBlur'),
+      backgroundBlurValue: document.getElementById('backgroundBlurValue'),
       customThemeSection: document.getElementById('customThemeSection'),
       primaryColorPicker: document.getElementById('primaryColorPicker'),
       backgroundColorPicker: document.getElementById('backgroundColorPicker'),
@@ -9403,6 +9424,286 @@ class AdvancedMusicPlayer {
       this.elements.themeMode.value = savedMode;
       this.elements.customThemeSection.style.display = savedMode === 'custom' ? 'block' : 'none';
     };
+  }
+  getAppearanceDefaults() {
+    return {
+      surfaceStyle: 'solid',
+      glassTint: 62,
+      glassBlur: 18,
+      glassSat: 160,
+      backgroundKind: 'none',
+      backgroundGradient: '',
+      backgroundFit: 'cover',
+      backgroundDim: 40,
+      backgroundBlur: 0
+    };
+  }
+  getGlassPresets() {
+    return {
+      frost: {
+        glassTint: 45,
+        glassBlur: 28,
+        glassSat: 180
+      },
+      smoke: {
+        glassTint: 70,
+        glassBlur: 20,
+        glassSat: 140
+      },
+      vivid: {
+        glassTint: 38,
+        glassBlur: 16,
+        glassSat: 210
+      },
+      subtle: {
+        glassTint: 88,
+        glassBlur: 8,
+        glassSat: 115
+      }
+    };
+  }
+  getBackgroundGradients() {
+    return [ {
+      id: 'Aurora',
+      css: 'linear-gradient(135deg, #1e3a5f 0%, #2d1b4e 45%, #0f2027 100%)'
+    }, {
+      id: 'Ember',
+      css: 'linear-gradient(135deg, #2d1b2e 0%, #6b2737 50%, #1a1015 100%)'
+    }, {
+      id: 'Mint',
+      css: 'linear-gradient(135deg, #0f3d3e 0%, #1c6b5a 50%, #0a2622 100%)'
+    }, {
+      id: 'Dusk',
+      css: 'linear-gradient(135deg, #24243e 0%, #302b63 50%, #0f0c29 100%)'
+    }, {
+      id: 'Sand',
+      css: 'linear-gradient(135deg, #e8d5b7 0%, #c9ada7 50%, #9a8c98 100%)'
+    }, {
+      id: 'Frost',
+      css: 'linear-gradient(135deg, #e0eafc 0%, #cfdef3 50%, #b8c6db 100%)'
+    } ];
+  }
+  getSetting(key) {
+    if (!this.db) {
+      return Promise.resolve(undefined);
+    }
+    return new Promise(resolve => {
+      const request = this.db.transaction([ 'settings' ], 'readonly').objectStore('settings').get(key);
+      request.onsuccess = () => resolve(request.result?.value);
+      request.onerror = () => resolve(undefined);
+    });
+  }
+  async initializeAppearance() {
+    const defaults = this.getAppearanceDefaults();
+    const keys = Object.keys(defaults);
+    const values = await Promise.all(keys.map(key => this.getSetting(key)));
+    this.appearance = {};
+    keys.forEach((key, index) => {
+      this.appearance[key] = values[index] ?? defaults[key];
+    });
+    const blob = await this.getSetting('backgroundBlob');
+    if (blob instanceof Blob) {
+      this.setAppearanceBackgroundBlob(blob);
+    } else if (this.appearance.backgroundKind === 'image') {
+      this.appearance.backgroundKind = 'none';
+    }
+    this.applyAppearance();
+    this.renderAppearanceControls();
+  }
+  setAppearanceBackgroundBlob(blob) {
+    if (this.backgroundObjectUrl) {
+      URL.revokeObjectURL(this.backgroundObjectUrl);
+    }
+    this.backgroundObjectUrl = blob ? URL.createObjectURL(blob) : null;
+  }
+  applyAppearance() {
+    const state = this.appearance || this.getAppearanceDefaults();
+    const root = document.documentElement;
+    root.setAttribute('data-surface', state.surfaceStyle === 'glass' ? 'glass' : 'solid');
+    root.style.setProperty('--glass-tint', String(state.glassTint));
+    root.style.setProperty('--glass-blur', state.glassBlur + 'px');
+    root.style.setProperty('--glass-sat', state.glassSat + '%');
+    root.style.setProperty('--app-bg-dim', String(state.backgroundDim / 100));
+    root.style.setProperty('--app-bg-blur', state.backgroundBlur + 'px');
+    root.style.setProperty('--app-bg-size', state.backgroundFit === 'tile' ? 'auto' : state.backgroundFit);
+    root.style.setProperty('--app-bg-repeat', state.backgroundFit === 'tile' ? 'repeat' : 'no-repeat');
+    const image = this.getAppearanceBackgroundValue();
+    root.style.setProperty('--app-bg-image', image || 'none');
+    root.setAttribute('data-app-bg', image ? 'on' : 'off');
+  }
+  getAppearanceBackgroundValue() {
+    const state = this.appearance || this.getAppearanceDefaults();
+    if (state.backgroundKind === 'image' && this.backgroundObjectUrl) {
+      return 'url("' + this.backgroundObjectUrl + '")';
+    }
+    if (state.backgroundKind === 'gradient' && state.backgroundGradient) {
+      return state.backgroundGradient;
+    }
+    return '';
+  }
+  renderAppearanceControls() {
+    const state = this.appearance;
+    const els = this.elements;
+    if (!state || !els.surfaceStyle) {
+      return;
+    }
+    els.surfaceStyle.value = state.surfaceStyle;
+    if (els.glassControls) {
+      els.glassControls.style.display = state.surfaceStyle === 'glass' ? 'flex' : 'none';
+    }
+    [ [ 'glassTint', 'glassTintValue', '%' ], [ 'glassBlur', 'glassBlurValue', 'px' ], [ 'glassSat', 'glassSatValue', '%' ], [ 'backgroundDim', 'backgroundDimValue', '%' ], [ 'backgroundBlur', 'backgroundBlurValue', 'px' ] ].forEach(([key, labelKey, suffix]) => {
+      if (els[key]) {
+        els[key].value = state[key];
+      }
+      if (els[labelKey]) {
+        els[labelKey].textContent = state[key] + suffix;
+      }
+    });
+    if (els.backgroundFit) {
+      els.backgroundFit.value = state.backgroundFit;
+    }
+    this.renderAppearancePresets();
+    this.renderBackgroundGradients();
+    this.renderBackgroundPreview();
+  }
+  renderAppearancePresets() {
+    if (!this.elements.appearancePresets) {
+      return;
+    }
+    const presets = this.getGlassPresets();
+    this.elements.appearancePresets.querySelectorAll('.appearance-preset').forEach(button => {
+      const preset = presets[button.dataset.preset];
+      const matches = preset && Object.keys(preset).every(key => Number(this.appearance[key]) === preset[key]);
+      button.classList.toggle('active', Boolean(matches));
+    });
+  }
+  renderBackgroundGradients() {
+    const host = this.elements.backgroundGradients;
+    if (!host) {
+      return;
+    }
+    if (!host.children.length) {
+      this.getBackgroundGradients().forEach(gradient => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'background-swatch';
+        button.dataset.gradient = gradient.css;
+        button.title = gradient.id;
+        button.style.backgroundImage = gradient.css;
+        host.appendChild(button);
+      });
+    }
+    host.querySelectorAll('.background-swatch').forEach(button => {
+      button.classList.toggle('active', this.appearance.backgroundKind === 'gradient' && this.appearance.backgroundGradient === button.dataset.gradient);
+    });
+  }
+  renderBackgroundPreview() {
+    const preview = this.elements.backgroundPreview;
+    if (!preview) {
+      return;
+    }
+    const image = this.getAppearanceBackgroundValue();
+    preview.style.backgroundImage = image || 'none';
+    preview.classList.toggle('has-image', Boolean(image));
+  }
+  async updateAppearance(changes) {
+    Object.assign(this.appearance, changes);
+    this.applyAppearance();
+    this.renderAppearanceControls();
+    await Promise.all(Object.entries(changes).map(([key, value]) => this.saveSetting(key, value)));
+  }
+  handleSurfaceStyleChange(event) {
+    this.updateAppearance({
+      surfaceStyle: event.target.value
+    });
+  }
+  handleGlassPresetClick(event) {
+    const button = event.target.closest('.appearance-preset');
+    if (!button) {
+      return;
+    }
+    const preset = this.getGlassPresets()[button.dataset.preset];
+    if (preset) {
+      this.updateAppearance(Object.assign({}, preset));
+    }
+  }
+  handleAppearanceSliderInput(key, suffix, labelKey) {
+    return event => {
+      const value = Number(event.target.value);
+      this.appearance[key] = value;
+      this.applyAppearance();
+      if (this.elements[labelKey]) {
+        this.elements[labelKey].textContent = value + suffix;
+      }
+      if (key.indexOf('glass') === 0) {
+        this.renderAppearancePresets();
+      }
+      this.appearanceSaveTimers = this.appearanceSaveTimers || {};
+      clearTimeout(this.appearanceSaveTimers[key]);
+      this.appearanceSaveTimers[key] = setTimeout(() => this.saveSetting(key, value), 250);
+    };
+  }
+  handleBackgroundFitChange(event) {
+    this.updateAppearance({
+      backgroundFit: event.target.value
+    });
+  }
+  handleBackgroundGradientClick(event) {
+    const button = event.target.closest('.background-swatch');
+    if (!button) {
+      return;
+    }
+    const isActive = this.appearance.backgroundKind === 'gradient' && this.appearance.backgroundGradient === button.dataset.gradient;
+    this.updateAppearance(isActive ? {
+      backgroundKind: 'none',
+      backgroundGradient: ''
+    } : {
+      backgroundKind: 'gradient',
+      backgroundGradient: button.dataset.gradient
+    });
+  }
+  async handleBackgroundFileChange(event) {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) {
+      return;
+    }
+    if (!file.type.startsWith('image/')) {
+      this.showNotification('Please choose an image file', 'error');
+      return;
+    }
+    if (file.size > 12 * 1024 * 1024) {
+      this.showNotification('Image is larger than 12MB - try a smaller one', 'error');
+      return;
+    }
+    try {
+      await this.saveSetting('backgroundBlob', file);
+      this.setAppearanceBackgroundBlob(file);
+      await this.updateAppearance({
+        backgroundKind: 'image'
+      });
+      this.showNotification('Background updated', 'success');
+    } catch (error) {
+      console.error('Failed to save background image:', error);
+      this.showNotification('Could not save that image', 'error');
+    }
+  }
+  async handleBackgroundRemove() {
+    await this.saveSetting('backgroundBlob', null);
+    this.setAppearanceBackgroundBlob(null);
+    await this.updateAppearance({
+      backgroundKind: 'none',
+      backgroundGradient: ''
+    });
+  }
+  setupAppearanceListeners() {
+    const els = this.elements;
+    const bindings = [ [ els.surfaceStyle, 'change', this.handleSurfaceStyleChange.bind(this) ], [ els.appearancePresets, 'click', this.handleGlassPresetClick.bind(this) ], [ els.glassTint, 'input', this.handleAppearanceSliderInput('glassTint', '%', 'glassTintValue') ], [ els.glassBlur, 'input', this.handleAppearanceSliderInput('glassBlur', 'px', 'glassBlurValue') ], [ els.glassSat, 'input', this.handleAppearanceSliderInput('glassSat', '%', 'glassSatValue') ], [ els.backgroundDim, 'input', this.handleAppearanceSliderInput('backgroundDim', '%', 'backgroundDimValue') ], [ els.backgroundBlur, 'input', this.handleAppearanceSliderInput('backgroundBlur', 'px', 'backgroundBlurValue') ], [ els.backgroundFit, 'change', this.handleBackgroundFitChange.bind(this) ], [ els.backgroundGradients, 'click', this.handleBackgroundGradientClick.bind(this) ], [ els.backgroundChooseBtn, 'click', () => els.backgroundFileInput?.click() ], [ els.backgroundFileInput, 'change', this.handleBackgroundFileChange.bind(this) ], [ els.backgroundRemoveBtn, 'click', this.handleBackgroundRemove.bind(this) ] ];
+    bindings.forEach(([element, event, handler]) => {
+      if (element) {
+        element.addEventListener(event, handler);
+      }
+    });
   }
   initializeTheme() {
     if (!this.db) {

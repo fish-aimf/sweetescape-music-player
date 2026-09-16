@@ -1445,3 +1445,210 @@ a.ui-btn--block {
   height: 5px;
   cursor: pointer;
 }
+
+:root {
+  --glass-tint: 62;
+  --glass-blur: 18px;
+  --glass-sat: 160%;
+  --glass-panel-blur: var(--glass-blur);
+  --glass-chrome-blur: calc(var(--glass-blur) * 0.7);
+  --app-bg-image: none;
+  --app-bg-size: cover;
+  --app-bg-repeat: no-repeat;
+  --app-bg-dim: 0.4;
+  --app-bg-blur: 0px;
+}
+
+#appBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -3;
+  overflow: hidden;
+  pointer-events: none;
+  background-color: var(--bg-primary-base);
+}
+
+.app-backdrop__image {
+  position: absolute;
+  inset: calc(var(--app-bg-blur) * -3);
+  background-image: var(--app-bg-image);
+  background-size: var(--app-bg-size);
+  background-position: center center;
+  background-repeat: var(--app-bg-repeat);
+  filter: blur(var(--app-bg-blur));
+  transform: scale(1.02);
+}
+
+.app-backdrop__scrim {
+  position: absolute;
+  inset: 0;
+  background-color: var(--bg-primary-base);
+  opacity: var(--app-bg-dim);
+}
+
+[data-app-bg="off"] .app-backdrop__image,
+[data-app-bg="off"] .app-backdrop__scrim {
+  display: none;
+}
+
+[data-app-bg="on"] body,
+[data-app-bg="on"] .music-visualizer {
+  background: none;
+}
+
+[data-surface="glass"] {
+  --bg-primary: color-mix(in srgb, var(--bg-primary-base) calc(var(--glass-tint) * 1%), transparent);
+  --bg-secondary: color-mix(in srgb, var(--bg-secondary-base) calc(var(--glass-tint) * 1%), transparent);
+  --border-color: color-mix(in srgb, var(--border-color-base) 60%, transparent);
+  --ui-shadow-lg: 0 24px 64px var(--glass-shade);
+  --ui-overlay-bg: color-mix(in srgb, var(--bg-primary-base) 35%, transparent);
+  --ui-overlay-blur: 4px;
+  background-color: var(--bg-primary-base);
+}
+
+[data-surface="glass"] body,
+[data-surface="glass"] .app-container,
+[data-surface="glass"] .music-visualizer {
+  background: none;
+}
+
+[data-surface="glass"] #appBackdrop {
+  background-image:
+    radial-gradient(1200px 820px at 10% -12%, color-mix(in srgb, var(--accent-color) 48%, transparent), transparent 62%),
+    radial-gradient(1000px 720px at 102% 2%, color-mix(in srgb, var(--hover-color) 34%, transparent), transparent 58%),
+    radial-gradient(900px 900px at 48% 118%, color-mix(in srgb, var(--accent-color) 24%, transparent), transparent 60%);
+}
+
+[data-surface="glass"] .ui-modal,
+[data-surface="glass"] .modal-content,
+[data-surface="glass"] .settings-modal-content,
+[data-surface="glass"] .timer-modal-content,
+[data-surface="glass"] .recently-played-modal,
+[data-surface="glass"] .changelog-modal-content,
+[data-surface="glass"] .subtitles-import-modal-content,
+[data-surface="glass"] .discord-rpc-modal,
+[data-surface="glass"] .billboard-modal-content,
+[data-surface="glass"] .qv2-panel,
+[data-surface="glass"] .dl-modal,
+[data-surface="glass"] .sz-modal,
+[data-surface="glass"] .ls-modal-content,
+[data-surface="glass"] .lyrics-maker-content,
+[data-surface="glass"] .temp-song-modal-content,
+[data-surface="glass"] .lyrics-fullscreen-modal,
+[data-surface="glass"] .search-results,
+[data-surface="glass"] .speed-options,
+[data-surface="glass"] .np-speed-options,
+[data-surface="glass"] .qv2-dropdown,
+[data-surface="glass"] .dl-search-results,
+[data-surface="glass"] .lib-filter-panel,
+[data-surface="glass"] .global-library-search-suggestions-dropdown,
+[data-surface="glass"] .youtube-search-suggestion,
+[data-surface="glass"] .transport-preview-popup,
+[data-surface="glass"] .drag-link-toast,
+[data-surface="glass"] .recommendations-panel,
+[data-surface="glass"] .favorites-panel {
+  backdrop-filter: blur(var(--glass-panel-blur)) saturate(var(--glass-sat));
+  -webkit-backdrop-filter: blur(var(--glass-panel-blur)) saturate(var(--glass-sat));
+  background-image: linear-gradient(to bottom, var(--glass-sheen), transparent 42%);
+  border-color: var(--glass-edge);
+  box-shadow:
+    inset 0 0 0 1px var(--glass-edge),
+    inset 0 1px 0 var(--glass-sheen),
+    0 24px 64px var(--glass-shade);
+}
+
+[data-surface="glass"] .now-playing,
+[data-surface="glass"] .music-player,
+[data-surface="glass"] .playlist-sidebar,
+[data-surface="glass"] #additionalDetails,
+[data-surface="glass"] .tab-content,
+[data-surface="glass"] .settings-tabs,
+[data-surface="glass"] .np-view,
+[data-surface="glass"] .np-left,
+[data-surface="glass"] .current-playlist-songs,
+[data-surface="glass"] .lyrics-navbar,
+[data-surface="glass"] .lyrics-header,
+[data-surface="glass"] .find-songs-content {
+  backdrop-filter: blur(var(--glass-chrome-blur)) saturate(var(--glass-sat));
+  -webkit-backdrop-filter: blur(var(--glass-chrome-blur)) saturate(var(--glass-sat));
+  border-color: var(--glass-edge);
+  box-shadow:
+    inset 0 0 0 1px var(--glass-edge),
+    inset 0 1px 0 var(--glass-sheen),
+    0 8px 28px var(--glass-shade);
+}
+
+[data-surface="glass"] .song-item,
+[data-surface="glass"] .playlist-card,
+[data-surface="glass"] .search-song-item,
+[data-surface="glass"] .playlist-song-item,
+[data-surface="glass"] .sidebar-song-item,
+[data-surface="glass"] .sidebar-song-card,
+[data-surface="glass"] .details-item,
+[data-surface="glass"] .setting-group,
+[data-surface="glass"] .keybind-category,
+[data-surface="glass"] .discovery-card,
+[data-surface="glass"] .favorites-card,
+[data-surface="glass"] .playlists-shelf,
+[data-surface="glass"] .ls-card-large,
+[data-surface="glass"] .ls-card-small,
+[data-surface="glass"] .ls-card-hero,
+[data-surface="glass"] .discord-status-card,
+[data-surface="glass"] .dl-current-card,
+[data-surface="glass"] .qv2-row,
+[data-surface="glass"] .ui-card,
+[data-surface="glass"] .tab {
+  border-color: var(--glass-edge);
+  box-shadow:
+    inset 0 0 0 1px var(--glass-edge),
+    inset 0 1px 0 var(--glass-sheen);
+}
+
+[data-surface="glass"] .ui-btn,
+[data-surface="glass"] button.ui-btn,
+[data-surface="glass"] a.ui-btn,
+[data-surface="glass"] .ui-input,
+[data-surface="glass"] .ui-select,
+[data-surface="glass"] .ui-textarea,
+[data-surface="glass"] .ui-chip,
+[data-surface="glass"] .modal button:where(:not(.ui-modal__close)):where(:not(.ui-btn)) {
+  backdrop-filter: blur(10px) saturate(var(--glass-sat));
+  -webkit-backdrop-filter: blur(10px) saturate(var(--glass-sat));
+  border-color: var(--glass-edge);
+}
+
+[data-surface="glass"] .ui-btn--primary,
+[data-surface="glass"] button.ui-btn--primary,
+[data-surface="glass"] a.ui-btn--primary {
+  background: color-mix(in srgb, var(--accent-color) 78%, transparent);
+  border-color: color-mix(in srgb, var(--accent-color) 90%, transparent);
+}
+
+[data-surface="glass"] .ui-btn--ghost,
+[data-surface="glass"] button.ui-btn--ghost,
+[data-surface="glass"] a.ui-btn--ghost {
+  background: none;
+  border-color: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+[data-surface="glass"] .ui-btn:hover,
+[data-surface="glass"] button.ui-btn:hover,
+[data-surface="glass"] .modal button:where(:not(.ui-modal__close)):where(:not(.ui-btn)):hover {
+  border-color: color-mix(in srgb, var(--accent-color) 75%, transparent);
+  box-shadow: 0 4px 14px var(--glass-shade);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  [data-surface="glass"] {
+    --glass-tint: 94;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  [data-surface="glass"] {
+    --glass-tint: 97;
+    --glass-blur: 0px;
+  }
+}

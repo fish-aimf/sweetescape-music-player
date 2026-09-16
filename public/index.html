@@ -68,6 +68,10 @@
 
 
 
+      <div id="appBackdrop" aria-hidden="true">
+         <div class="app-backdrop__image"></div>
+         <div class="app-backdrop__scrim"></div>
+      </div>
       <div class="music-visualizer" id="musicVisualizer">
          <canvas class="visualizer-canvas" id="visualizerCanvas"></canvas>
          <div class="visualizer-bars" id="visualizerBars"></div>
@@ -782,6 +786,73 @@ Another Playlist{
                            <option value="dark">Dark</option>
                            <option value="custom">Custom</option>
                         </select>
+                     </div>
+                     <div class="setting-group">
+                        <label for="surfaceStyle">Surface Style:</label>
+                        <select id="surfaceStyle">
+                           <option value="solid">Solid</option>
+                           <option value="glass">Glass</option>
+                        </select>
+                        <p class="setting-description">Glass makes panels, buttons and modals translucent over a blurred backdrop. Solid keeps the classic opaque look.</p>
+                     </div>
+                     <div class="setting-group appearance-section" id="glassControls">
+                        <label>Glass Material:</label>
+                        <div class="appearance-presets" id="appearancePresets">
+                           <button type="button" class="appearance-preset" data-preset="frost"><span class="appearance-preset-swatch appearance-preset-swatch--frost"></span>Frost</button>
+                           <button type="button" class="appearance-preset" data-preset="smoke"><span class="appearance-preset-swatch appearance-preset-swatch--smoke"></span>Smoke</button>
+                           <button type="button" class="appearance-preset" data-preset="vivid"><span class="appearance-preset-swatch appearance-preset-swatch--vivid"></span>Vivid</button>
+                           <button type="button" class="appearance-preset" data-preset="subtle"><span class="appearance-preset-swatch appearance-preset-swatch--subtle"></span>Subtle</button>
+                        </div>
+                        <div class="appearance-row">
+                           <label for="glassTint">Opacity</label>
+                           <input type="range" id="glassTint" min="20" max="95" step="1" value="62">
+                           <span class="appearance-value" id="glassTintValue">62%</span>
+                        </div>
+                        <div class="appearance-row">
+                           <label for="glassBlur">Blur</label>
+                           <input type="range" id="glassBlur" min="0" max="40" step="1" value="18">
+                           <span class="appearance-value" id="glassBlurValue">18px</span>
+                        </div>
+                        <div class="appearance-row">
+                           <label for="glassSat">Vibrancy</label>
+                           <input type="range" id="glassSat" min="100" max="220" step="5" value="160">
+                           <span class="appearance-value" id="glassSatValue">160%</span>
+                        </div>
+                        <p class="setting-description">Lower opacity and higher blur read as frosted glass. Vibrancy boosts the colour coming through from behind.</p>
+                     </div>
+                     <div class="setting-group appearance-section">
+                        <label>Background:</label>
+                        <div class="background-picker">
+                           <div class="background-preview" id="backgroundPreview">
+                              <span class="background-preview-empty"><i class="fas fa-image"></i> Theme default</span>
+                           </div>
+                           <div class="background-actions">
+                              <button type="button" class="ui-btn ui-btn--primary ui-btn--sm" id="backgroundChooseBtn"><i class="fas fa-upload"></i> Choose image</button>
+                              <button type="button" class="ui-btn ui-btn--danger ui-btn--sm" id="backgroundRemoveBtn"><i class="fas fa-trash"></i> Clear</button>
+                              <input type="file" id="backgroundFileInput" accept="image/*" hidden>
+                           </div>
+                        </div>
+                        <div class="background-gradients" id="backgroundGradients"></div>
+                        <div class="appearance-row">
+                           <label for="backgroundFit">Fit</label>
+                           <select id="backgroundFit">
+                              <option value="cover">Fill screen</option>
+                              <option value="contain">Fit inside</option>
+                              <option value="tile">Tile</option>
+                           </select>
+                           <span class="appearance-value"></span>
+                        </div>
+                        <div class="appearance-row">
+                           <label for="backgroundDim">Dim</label>
+                           <input type="range" id="backgroundDim" min="0" max="90" step="1" value="40">
+                           <span class="appearance-value" id="backgroundDimValue">40%</span>
+                        </div>
+                        <div class="appearance-row">
+                           <label for="backgroundBlur">Background blur</label>
+                           <input type="range" id="backgroundBlur" min="0" max="40" step="1" value="0">
+                           <span class="appearance-value" id="backgroundBlurValue">0px</span>
+                        </div>
+                        <p class="setting-description">Raise Dim if text is hard to read over a busy photo. Images are stored on this device only.</p>
                      </div>
                      <div class="custom-theme-section" id="customThemeSection">
                         <h3>Customize Colors</h3>

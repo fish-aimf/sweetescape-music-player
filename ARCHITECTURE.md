@@ -84,6 +84,56 @@ breakpoint all come from the system.
 
 ---
 
+## 🪟 Appearance System (surface style + backdrop)
+
+Colour theme and *surface style* are two independent axes on `<html>`:
+
+| Attribute | Values | Set by |
+|---|---|---|
+| `data-theme` | `light` / `dark` / `custom` | the existing theme code |
+| `data-surface` | `solid` / `glass` | `applyAppearance()` |
+| `data-app-bg` | `on` / `off` | `applyAppearance()` |
+
+Every theme block defines `--bg-primary-base`, `--bg-secondary-base` and
+`--border-color-base` as raw colours, then `:root` derives `--bg-primary`,
+`--bg-secondary` and `--border-color` from them. In solid mode the derived token
+equals its base, so the app looks exactly as it did before. `[data-surface="glass"]`
+in `ui-system.css` re-derives the same three tokens through `color-mix()` at
+`--glass-tint`, which makes all ~180 rules that paint a surface translucent at once —
+no per-rule edits.
+
+Blur is *not* token-driven; it is applied to a curated list of real surfaces in three
+tiers, because `backdrop-filter` is expensive and creates a containing block:
+
+| Tier | Examples | Treatment |
+|---|---|---|
+| Floating | `.ui-modal`, dropdowns, popovers | full `--glass-blur`, sheen gradient, elevated shadow |
+| Chrome | `.now-playing`, `.playlist-sidebar`, `.tab-content` | 0.7× blur, lighter shadow |
+| Cards / controls | `.song-item`, `.setting-group`, `.ui-btn`, `.ui-input` | tint + edge only (buttons get a 10px blur) |
+
+`.app-container` and `body` go fully transparent in glass mode and `<html>` carries the
+solid ground colour, so text never sits on nothing. Edges use
+`box-shadow: inset 0 0 0 1px` rather than a real `border` so turning glass on never
+shifts layout.
+
+The backdrop is `#appBackdrop` (z-index `-3`, below the visualizer at `-1`) with an
+`.app-backdrop__image` layer (user image or built-in gradient, inset by the blur radius
+so blurred edges don't bleed) and an `.app-backdrop__scrim` layer (theme colour at
+`--app-bg-dim`). With no user background, glass mode paints an accent-derived radial
+mesh on `#appBackdrop`.
+
+State lives in `this.appearance` and one IndexedDB `settings` row per key
+(`surfaceStyle`, `glassTint`, `glassBlur`, `glassSat`, `backgroundKind`,
+`backgroundGradient`, `backgroundFit`, `backgroundDim`, `backgroundBlur`, plus the
+uploaded image as a `Blob` under `backgroundBlob`). `initializeAppearance()` restores it
+on boot; `updateAppearance(changes)` applies, re-renders and persists. Slider drags apply
+live and debounce the write by 250ms.
+
+Fallbacks: `@supports not (backdrop-filter)` and `prefers-reduced-transparency: reduce`
+both raise `--glass-tint` to near-opaque so the app stays readable.
+
+---
+
 ## 🧩 Core Architecture
 
 **The entire project revolves around a single class: `AdvancedMusicPlayer`.**  
