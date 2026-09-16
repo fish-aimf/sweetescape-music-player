@@ -722,4 +722,4 @@
 -  standardized every modal and symbol onto one design system (ui-system.css): shared tokens, one modal shell (header / body / footer), one close button, one button and input set, consistent font awesome icons; removed all code comments v71.8.0
 -  removed unused css (148 dead rules, 2 dead keyframes, 12 unused design tokens) from style.css and ui-system.css v71.8.1
 -  added a regenerate button next to the youtube url in the edit song modal that re-searches the song and swaps in the right video from the results v71.9.0
--  increased the library list height in the library tab by 50% v71.9.1
+-  increased the expanded song list height in the library tab by 50%, leaving the initial compact view height unchanged v71.9.1
