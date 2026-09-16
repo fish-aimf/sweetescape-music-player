@@ -243,11 +243,11 @@ body {
   overflow-y: auto;
 }
 .song-list {
-  max-height: clamp(340px, calc(100vh - 320px), 820px);
+  max-height: clamp(510px, calc((100vh - 320px) * 1.5), 1230px);
   overflow-y: auto;
 }
 .song-list.is-compact-view {
-  height: clamp(340px, calc(100vh - 320px), 820px);
+  height: clamp(510px, calc((100vh - 320px) * 1.5), 1230px);
   max-height: none;
   display: flex;
 }
