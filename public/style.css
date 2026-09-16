@@ -2828,10 +2828,12 @@ body:has(#ytPlayer.fullscreen-video) {
   width: 44px;
   height: 28px;
 }
-.toggle-label {
+.toggle-switch .toggle-label {
   display: block;
   width: 100%;
+  min-width: 0;
   height: 100%;
+  margin: 0;
   background-color: var(--bg-primary);
   border-radius: 14px;
   cursor: pointer;
@@ -2839,7 +2841,7 @@ body:has(#ytPlayer.fullscreen-video) {
   position: relative;
   border: 2px solid var(--border-color);
 }
-.toggle-slider {
+.toggle-switch .toggle-slider {
   position: absolute;
   top: 2px;
   left: 2px;
@@ -2849,8 +2851,8 @@ body:has(#ytPlayer.fullscreen-video) {
   border-radius: 50%;
   transition: transform 0.3s;
 }
-.toggle-input:checked + .toggle-label .toggle-slider {
-  transform: translateX(120px);
+.toggle-switch .toggle-input:checked + .toggle-label .toggle-slider {
+  transform: translateX(16px);
 }
 @media (max-width: 1080px) {
   .left-advertisement-banner,

@@ -723,3 +723,4 @@
 -  removed unused css (148 dead rules, 2 dead keyframes, 12 unused design tokens) from style.css and ui-system.css v71.8.1
 -  added a regenerate button next to the youtube url in the edit song modal that re-searches the song and swaps in the right video from the results v71.9.0
 -  increased the expanded song list height in the library tab by 50%, leaving the initial compact view height unchanged v71.9.1
+-  fixed the toggle switches in settings and listening statistics: the track stretched to 150px from a settings label rule and the knob slid 120px, pushing the head outside the pill; the track is now pinned to the switch and the knob travels the correct 16px v71.9.2
