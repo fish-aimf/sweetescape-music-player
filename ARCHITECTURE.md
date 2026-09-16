@@ -111,6 +111,12 @@ tiers, because `backdrop-filter` is expensive and creates a containing block:
 | Chrome | `.now-playing`, `.playlist-sidebar`, `.tab-content` | 0.7× blur, lighter shadow |
 | Cards / controls | `.song-item`, `.setting-group`, `.ui-btn`, `.ui-input` | tint + edge only (buttons get a 10px blur) |
 
+**One material per pane.** Translucent tints multiply when nested — two 62% layers read
+as 86% opaque, which is how the Now Playing tab ended up looking solid. A full-bleed
+child of an already-glass parent (`.np-view` inside `.tab-content`) must set
+`background: none` rather than carry its own tint; only genuinely separate objects
+inside it (a thumbnail frame, a control chip) get their own, much lighter, tint.
+
 `.app-container` and `body` go fully transparent in glass mode and `<html>` carries the
 solid ground colour, so text never sits on nothing. Edges use
 `box-shadow: inset 0 0 0 1px` rather than a real `border` so turning glass on never
