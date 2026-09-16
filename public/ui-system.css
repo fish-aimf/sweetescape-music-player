@@ -1561,7 +1561,6 @@ a.ui-btn--block {
 [data-surface="glass"] .music-player,
 [data-surface="glass"] .playlist-sidebar,
 [data-surface="glass"] #additionalDetails,
-[data-surface="glass"] .tab-content,
 [data-surface="glass"] .settings-tabs,
 [data-surface="glass"] .current-playlist-songs,
 [data-surface="glass"] .lyrics-navbar,
@@ -1602,71 +1601,19 @@ a.ui-btn--block {
     inset 0 1px 0 var(--glass-sheen);
 }
 
-[data-surface="glass"] .tabs {
-  gap: 4px;
-}
-
-[data-surface="glass"] .tab {
-  backdrop-filter: blur(10px) saturate(var(--glass-sat));
-  -webkit-backdrop-filter: blur(10px) saturate(var(--glass-sat));
-  border-radius: var(--ui-radius-md) var(--ui-radius-md) 0 0;
-}
-
-[data-surface="glass"] .tab:hover:not(.active) {
-  background-color: color-mix(in srgb, var(--bg-secondary-base) calc(var(--glass-tint) * 1%), transparent);
-}
-
-[data-surface="glass"] .tab.active {
-  background-color: color-mix(in srgb, var(--accent-color) 58%, transparent);
-  border-color: color-mix(in srgb, var(--accent-color) 82%, transparent);
-  box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--accent-color) 70%, transparent),
-    inset 0 1px 0 var(--glass-sheen),
-    0 4px 16px var(--glass-shade);
-}
-
-[data-surface="glass"] .tab-content {
-  border-radius: 0 var(--ui-radius-md) var(--ui-radius-md) var(--ui-radius-md);
-}
-
+[data-surface="glass"] .tab-content,
 [data-surface="glass"] .np-view,
+[data-surface="glass"] .np-left,
 [data-surface="glass"] .current-song-section {
   background: none;
   border-color: transparent;
   box-shadow: none;
-}
-
-[data-surface="glass"] .np-left {
-  background-color: color-mix(in srgb, var(--bg-primary-base) 28%, transparent);
-  box-shadow:
-    inset 0 0 0 1px var(--glass-edge),
-    0 8px 24px var(--glass-shade);
-}
-
-[data-surface="glass"] .np-controls button,
-[data-surface="glass"] #npSpeedBtn {
-  backdrop-filter: blur(10px) saturate(var(--glass-sat));
-  -webkit-backdrop-filter: blur(10px) saturate(var(--glass-sat));
-  background-color: color-mix(in srgb, var(--bg-primary-base) 34%, transparent);
-  border-color: var(--glass-edge);
-}
-
-[data-surface="glass"] #npPlayPauseBtn {
-  background-color: color-mix(in srgb, var(--accent-color) 72%, transparent);
-  border-color: color-mix(in srgb, var(--accent-color) 88%, transparent);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 [data-surface="glass"] #additionalDetails {
   background-color: color-mix(in srgb, var(--bg-secondary-base) calc(var(--glass-tint) * 0.6%), transparent);
-}
-
-[data-surface="glass"] .details-item {
-  background-color: color-mix(in srgb, var(--bg-primary-base) 26%, transparent);
-  box-shadow: inset 0 0 0 1px var(--glass-sheen);
-}
-
-[data-surface="glass"] .details-item:hover {
-  background-color: color-mix(in srgb, var(--accent-color) 42%, transparent);
 }
 
 [data-surface="glass"] .ui-btn,
