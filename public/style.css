@@ -8461,6 +8461,57 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 .appearance-preset-swatch--subtle {
   background: linear-gradient(135deg, rgba(160, 165, 175, 0.95), rgba(120, 125, 135, 0.95));
 }
+.vis-style-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-content: start;
+  gap: 8px;
+  min-width: 0;
+  max-width: 620px;
+}
+@media (min-width: 720px) {
+  .vis-style-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+.vis-style-grid .vis-style {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  align-self: start;
+  gap: 7px;
+  padding: 11px 6px 9px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--ui-radius-md);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-size: var(--ui-font-sm);
+  font-weight: var(--ui-weight-semibold);
+  cursor: pointer;
+  transition:
+    border-color var(--ui-motion-fast),
+    color var(--ui-motion-fast),
+    background-color var(--ui-motion-fast);
+}
+.vis-style-grid .vis-style:hover {
+  border-color: var(--accent-color);
+  color: var(--text-primary);
+}
+.vis-style-grid .vis-style.active {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  background: var(--bg-secondary);
+}
+.vis-style__glyph {
+  display: block;
+  width: 40px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
 .appearance-row {
   display: grid;
   grid-template-columns: 116px 1fr 52px;

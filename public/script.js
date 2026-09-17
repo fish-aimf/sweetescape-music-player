@@ -84,6 +84,7 @@ const UI = {
   }
 };
 class AdvancedMusicPlayer {
+  static VISUALIZER_STYLES = new Set([ 'bars', 'levels', 'wave', 'ribbon', 'radial', 'glow' ]);
   constructor() {
     this.playlists = [];
     this.songLibrary = [];
@@ -190,11 +191,13 @@ class AdvancedMusicPlayer {
     this.ghostScrollHandler = null;
     this.ghostResizeHandler = null;
     this.ghostInteractionHandler = null;
+    this.visualizerStyle = 'bars';
     this.visualizer = {
       canvas: null,
       ctx: null,
       animationId: null,
       isActive: false,
+      style: 'bars',
       width: 0,
       height: 0,
       maxRenderWidth: 960,
@@ -206,10 +209,25 @@ class AdvancedMusicPlayer {
       phases: null,
       envelope: null,
       tilt: null,
+      cos: null,
+      sin: null,
+      wavePoints: null,
+      ribbonTop: null,
+      ribbonBottom: null,
+      timeDomain: null,
       bands: null,
       freq: null,
       gradient: null,
+      glowSprites: null,
+      accent: '',
+      hover: '',
       paletteKey: '',
+      energy: 0,
+      lowEnergy: 0,
+      highEnergy: 0,
+      amp: 0,
+      wavePeak: 0.3,
+      now: 0,
       roundedBars: false,
       reducedMotion: null,
       audioCtx: null,
@@ -546,6 +564,7 @@ class AdvancedMusicPlayer {
       saveDiscoverMoreSettings: document.getElementById('saveDiscoverMoreSettings'),
       discordButton: document.getElementById('discordButton'),
       visualizerToggle: document.getElementById('visualizerToggle'),
+      visualizerStyleGrid: document.getElementById('visualizerStyleGrid'),
       findSongsBtn: document.getElementById('findSongsBtn'),
       closeFindSongs: document.getElementById('closeFindSongs'),
       findSongsDiv: document.getElementById('findSongsDiv'),
@@ -722,7 +741,7 @@ class AdvancedMusicPlayer {
       refreshRandomRecommendations: () => this.refreshRandomRecommendations(),
       visualizerToggle: e => this.handleVisualizerToggle(e)
     };
-    const simpleBindings = [ [ this.elements.addSongBtn, 'click', handlers.addSong ], [ this.elements.createPlaylistBtn, 'click', handlers.createPlaylist ], [ this.elements.closePlaylistModalBtn, 'click', handlers.closePlaylistModal ], [ this.elements.addSongToPlaylistBtn, 'click', handlers.addSongToPlaylist ], [ this.elements.playPauseBtn, 'click', handlers.togglePlayPause ], [ this.elements.prevBtn, 'click', handlers.playPrevious ], [ this.elements.nextBtn, 'click', handlers.playNext ], [ this.elements.loopBtn, 'click', handlers.toggleLoop ], [ this.elements.showPlaylistBtn, 'click', handlers.toggleSidebar ], [ this.elements.closeSidebarBtn, 'click', handlers.toggleSidebar ], [ this.elements.themeToggle, 'click', handlers.toggleTheme ], [ this.elements.autoplayBtn, 'click', handlers.toggleAutoplay ], [ this.elements.speedBtn, 'click', handlers.toggleSpeedOptions ], [ this.elements.volumeSlider, 'input', handlers.volumeChange ], [ this.elements.progressBar, 'click', handlers.seekMusic ], [ this.elements.currentSongName, 'contextmenu', handlers.songNameRightClick ], [ this.elements.toggleControlBarBtn, 'click', handlers.toggleControlBar ], [ this.elements.modifyLibraryBtn, 'click', handlers.openLibraryModal ], [ this.elements.closeLibraryModalBtn, 'click', handlers.closeLibraryModal ], [ this.elements.importLibraryBtn, 'click', handlers.importLibrary ], [ this.elements.exportLibraryBtn, 'click', handlers.exportLibrary ], [ this.elements.libraryModificationTabAddSong, 'click', handlers.libraryModificationTabAddSongClick ], [ this.elements.libraryModificationTabImportExport, 'click', handlers.libraryModificationTabImportExportClick ], [ this.elements.loopPlaylistBtn, 'click', handlers.togglePlaylistLoop ], [ this.elements.discordButton, 'click', handlers.discordClick ], [ this.elements.librarySortToggle, 'change', handlers.librarySortToggle ], [ this.elements.libraryReverseToggle, 'change', handlers.libraryReverseToggle ], [ this.elements.closeImportModalBtn, 'click', handlers.closeImportModal ], [ this.elements.importSongsBtn, 'click', handlers.importSongs ], [ this.elements.playlistSearch, 'input', handlers.filterPlaylists ], [ this.elements.playlistSearch, 'keypress', handlers.playlistSearchEnter ], [ this.elements.toggleCreatePlaylistBtn, 'click', handlers.toggleCreatePlaylistDiv ], [ this.elements.togglePlaylistEditModeBtn, 'click', handlers.togglePlaylistEditMode ], [ this.elements.settingsButton, 'click', handlers.openSettings ], [ this.elements.settingsCloseBtn, 'click', handlers.closeSettings ], [ this.elements.settingsModal, 'click', handlers.settingsModalClick ], [ this.elements.themeMode, 'change', handlers.themeModeChange ], [ this.elements.saveCustomTheme, 'click', handlers.saveCustomTheme ], [ this.elements.adsToggle, 'change', handlers.adsToggle ], [ this.elements.saveDiscoverMoreSettings, 'click', handlers.saveDiscoverMoreSettings ], [ this.elements.visualizerToggle, 'change', handlers.visualizerToggle ], [ this.elements.findSongsBtn, 'click', handlers.findSongsOpen ], [ this.elements.closeFindSongs, 'click', handlers.findSongsClose ], [ this.elements.searchSongsToAdd, 'input', handlers.searchSongsToAdd ], [ this.elements.statsButton, 'click', this.openStatsModal.bind(this) ], [ this.elements.lsPanel, 'click', this._handleStatsShowAllClick.bind(this) ], [ this.elements.lsPanel, 'input', this._handleStatsSearchInput.bind(this) ], [ document.getElementById('lsCloseBtn'), 'click', this.closeStatsModal.bind(this) ], [ this.elements.lsRangeToggle, 'change', this._handleStatsRangeToggle.bind(this) ], [ this.elements.listeningStatsToggle, 'change', this.handleListeningStatsToggle.bind(this) ], [ this.elements.libTopicBtn, 'click', handlers.toggleTopicKeyword ] ];
+    const simpleBindings = [ [ this.elements.addSongBtn, 'click', handlers.addSong ], [ this.elements.createPlaylistBtn, 'click', handlers.createPlaylist ], [ this.elements.closePlaylistModalBtn, 'click', handlers.closePlaylistModal ], [ this.elements.addSongToPlaylistBtn, 'click', handlers.addSongToPlaylist ], [ this.elements.playPauseBtn, 'click', handlers.togglePlayPause ], [ this.elements.prevBtn, 'click', handlers.playPrevious ], [ this.elements.nextBtn, 'click', handlers.playNext ], [ this.elements.loopBtn, 'click', handlers.toggleLoop ], [ this.elements.showPlaylistBtn, 'click', handlers.toggleSidebar ], [ this.elements.closeSidebarBtn, 'click', handlers.toggleSidebar ], [ this.elements.themeToggle, 'click', handlers.toggleTheme ], [ this.elements.autoplayBtn, 'click', handlers.toggleAutoplay ], [ this.elements.speedBtn, 'click', handlers.toggleSpeedOptions ], [ this.elements.volumeSlider, 'input', handlers.volumeChange ], [ this.elements.progressBar, 'click', handlers.seekMusic ], [ this.elements.currentSongName, 'contextmenu', handlers.songNameRightClick ], [ this.elements.toggleControlBarBtn, 'click', handlers.toggleControlBar ], [ this.elements.modifyLibraryBtn, 'click', handlers.openLibraryModal ], [ this.elements.closeLibraryModalBtn, 'click', handlers.closeLibraryModal ], [ this.elements.importLibraryBtn, 'click', handlers.importLibrary ], [ this.elements.exportLibraryBtn, 'click', handlers.exportLibrary ], [ this.elements.libraryModificationTabAddSong, 'click', handlers.libraryModificationTabAddSongClick ], [ this.elements.libraryModificationTabImportExport, 'click', handlers.libraryModificationTabImportExportClick ], [ this.elements.loopPlaylistBtn, 'click', handlers.togglePlaylistLoop ], [ this.elements.discordButton, 'click', handlers.discordClick ], [ this.elements.librarySortToggle, 'change', handlers.librarySortToggle ], [ this.elements.libraryReverseToggle, 'change', handlers.libraryReverseToggle ], [ this.elements.closeImportModalBtn, 'click', handlers.closeImportModal ], [ this.elements.importSongsBtn, 'click', handlers.importSongs ], [ this.elements.playlistSearch, 'input', handlers.filterPlaylists ], [ this.elements.playlistSearch, 'keypress', handlers.playlistSearchEnter ], [ this.elements.toggleCreatePlaylistBtn, 'click', handlers.toggleCreatePlaylistDiv ], [ this.elements.togglePlaylistEditModeBtn, 'click', handlers.togglePlaylistEditMode ], [ this.elements.settingsButton, 'click', handlers.openSettings ], [ this.elements.settingsCloseBtn, 'click', handlers.closeSettings ], [ this.elements.settingsModal, 'click', handlers.settingsModalClick ], [ this.elements.themeMode, 'change', handlers.themeModeChange ], [ this.elements.saveCustomTheme, 'click', handlers.saveCustomTheme ], [ this.elements.adsToggle, 'change', handlers.adsToggle ], [ this.elements.saveDiscoverMoreSettings, 'click', handlers.saveDiscoverMoreSettings ], [ this.elements.visualizerToggle, 'change', handlers.visualizerToggle ], [ this.elements.visualizerStyleGrid, 'click', this.handleVisualizerStyleClick.bind(this) ], [ this.elements.findSongsBtn, 'click', handlers.findSongsOpen ], [ this.elements.closeFindSongs, 'click', handlers.findSongsClose ], [ this.elements.searchSongsToAdd, 'input', handlers.searchSongsToAdd ], [ this.elements.statsButton, 'click', this.openStatsModal.bind(this) ], [ this.elements.lsPanel, 'click', this._handleStatsShowAllClick.bind(this) ], [ this.elements.lsPanel, 'input', this._handleStatsSearchInput.bind(this) ], [ document.getElementById('lsCloseBtn'), 'click', this.closeStatsModal.bind(this) ], [ this.elements.lsRangeToggle, 'change', this._handleStatsRangeToggle.bind(this) ], [ this.elements.listeningStatsToggle, 'change', this.handleListeningStatsToggle.bind(this) ], [ this.elements.libTopicBtn, 'click', handlers.toggleTopicKeyword ] ];
     simpleBindings.forEach(([element, event, handler]) => {
       if (element) {
         element.addEventListener(event, handler);
@@ -1507,12 +1526,20 @@ class AdvancedMusicPlayer {
       const transaction = this.db.transaction([ 'settings' ], 'readonly');
       const store = transaction.objectStore('settings');
       const request = store.get('visualizerEnabled');
+      const styleRequest = store.get('visualizerStyle');
       request.onsuccess = () => {
         this.visualizerEnabled = request.result ? request.result.value : true;
-        resolve();
       };
       request.onerror = () => {
         this.visualizerEnabled = true;
+      };
+      styleRequest.onsuccess = () => {
+        const saved = styleRequest.result ? styleRequest.result.value : null;
+        this.visualizerStyle = AdvancedMusicPlayer.VISUALIZER_STYLES.has(saved) ? saved : 'bars';
+        resolve();
+      };
+      styleRequest.onerror = () => {
+        this.visualizerStyle = 'bars';
         resolve();
       };
     });
@@ -10457,6 +10484,7 @@ class AdvancedMusicPlayer {
       v.canvas.width = width;
       v.canvas.height = height;
       v.gradient = null;
+      v.glowSprites = null;
     }
     v.width = width;
     v.height = height;
@@ -10473,12 +10501,20 @@ class AdvancedMusicPlayer {
     v.phases = new Float32Array(barCount);
     v.envelope = new Float32Array(barCount);
     v.tilt = new Float32Array(barCount);
+    v.cos = new Float32Array(barCount);
+    v.sin = new Float32Array(barCount);
     for (let i = 0; i < barCount; i++) {
       const position = barCount > 1 ? i / (barCount - 1) : 0.5;
+      const angle = i / barCount * Math.PI * 2 - Math.PI / 2;
       v.phases[i] = position * 7.4 + Math.sin(position * 11.3) * 1.7;
       v.envelope[i] = 0.34 + 0.66 * Math.pow(Math.sin(Math.PI * Math.pow(position, 0.78)), 1.35);
-      v.tilt[i] = 1 + 1.85 * Math.pow(position, 1.1);
+      v.tilt[i] = 1 + 1.5 * Math.pow(position, 1.1);
+      v.cos[i] = Math.cos(angle);
+      v.sin[i] = Math.sin(angle);
     }
+    v.wavePoints = new Float32Array(Math.max(32, Math.min(128, barCount * 3)));
+    v.ribbonTop = new Float32Array(barCount);
+    v.ribbonBottom = new Float32Array(barCount);
     this.buildVisualizerBands();
   }
   buildVisualizerBands() {
@@ -10523,16 +10559,18 @@ class AdvancedMusicPlayer {
       const analyser = v.audioCtx.createAnalyser();
       analyser.fftSize = 512;
       analyser.smoothingTimeConstant = 0.68;
-      analyser.minDecibels = -76;
-      analyser.maxDecibels = -22;
+      analyser.minDecibels = -88;
+      analyser.maxDecibels = -18;
       source.connect(analyser);
       analyser.connect(v.audioCtx.destination);
       v.analyser = analyser;
       v.freq = new Uint8Array(analyser.frequencyBinCount);
+      v.timeDomain = new Uint8Array(analyser.fftSize);
       this.buildVisualizerBands();
     } catch (error) {
       v.analyser = null;
       v.freq = null;
+      v.timeDomain = null;
       v.bands = null;
       v.audioGraphFailed = true;
       if (source && v.audioCtx) {
@@ -10575,6 +10613,7 @@ class AdvancedMusicPlayer {
     }
     const delta = v.lastFrame ? Math.min((timestamp - v.lastFrame) / 1000, 0.12) : 1 / 30;
     v.lastFrame = timestamp;
+    v.now = timestamp;
     if (timestamp - v.lastPalette > 1000) {
       v.lastPalette = timestamp;
       this.refreshVisualizerPalette();
@@ -10595,7 +10634,8 @@ class AdvancedMusicPlayer {
       return false;
     }
     const barCount = levels.length;
-    if (playing && this.isLocalPlayback && v.analyser && v.bands) {
+    const live = playing && this.isLocalPlayback && v.analyser && v.bands;
+    if (live) {
       v.analyser.getByteFrequencyData(v.freq);
       const freq = v.freq;
       const bands = v.bands;
@@ -10609,7 +10649,7 @@ class AdvancedMusicPlayer {
             peak = freq[j];
           }
         }
-        const normalized = (peak / 255) * v.tilt[i];
+        const normalized = peak / 255 * v.tilt[i];
         const shaped = normalized > 1 ? 1 : normalized;
         targets[i] = shaped * shaped * (1.6 - 0.6 * shaped);
       }
@@ -10626,16 +10666,71 @@ class AdvancedMusicPlayer {
     const attack = 1 - Math.exp(-delta * 26);
     const release = 1 - Math.exp(-delta * 8);
     let settling = false;
+    let sum = 0;
+    let low = 0;
+    let high = 0;
+    const third = Math.max(1, Math.round(barCount / 3));
     for (let i = 0; i < barCount; i++) {
       const target = targets[i];
       const current = levels[i];
       const next = current + (target - current) * (target > current ? attack : release);
       levels[i] = next;
+      sum += next;
+      if (i < third) {
+        low += next;
+      } else if (i >= barCount - third) {
+        high += next;
+      }
       if (!settling && Math.abs(next - target) > 0.002) {
         settling = true;
       }
     }
+    v.energy = sum / barCount;
+    v.lowEnergy = low / third;
+    v.highEnergy = high / third;
+    const ampTarget = playing ? 1 : 0;
+    v.amp += (ampTarget - v.amp) * (ampTarget > v.amp ? attack : release);
+    if (Math.abs(v.amp - ampTarget) > 0.002) {
+      settling = true;
+    }
+    if (v.style === 'wave') {
+      this.sampleVisualizerWave(live, playing, timestamp);
+    }
     return settling;
+  }
+  sampleVisualizerWave(live, playing, timestamp) {
+    const v = this.visualizer;
+    const points = v.wavePoints;
+    const count = points.length;
+    if (live && v.timeDomain) {
+      v.analyser.getByteTimeDomainData(v.timeDomain);
+      const data = v.timeDomain;
+      const stride = data.length / count;
+      for (let i = 0; i < count; i++) {
+        const from = Math.floor(i * stride);
+        const to = Math.min(data.length, Math.floor((i + 1) * stride));
+        let sum = 0;
+        for (let j = from; j < to; j++) {
+          sum += data[j];
+        }
+        const mean = to > from ? sum / (to - from) : 128;
+        points[i] += ((mean - 128) / 128 - points[i]) * 0.55;
+      }
+    } else if (playing) {
+      const seconds = timestamp * 0.001;
+      for (let i = 0; i < count; i++) {
+        const position = i / count;
+        points[i] = (Math.sin(position * 18 + seconds * 4.1) * 0.5 + Math.sin(position * 7 - seconds * 2.3) * 0.3 + Math.sin(position * 31 + seconds * 6.7) * 0.2) * (0.35 + v.energy);
+      }
+    }
+    let peak = 0;
+    for (let i = 0; i < count; i++) {
+      const magnitude = points[i] < 0 ? -points[i] : points[i];
+      if (magnitude > peak) {
+        peak = magnitude;
+      }
+    }
+    v.wavePeak = peak > v.wavePeak ? peak : Math.max(0.06, v.wavePeak * 0.985);
   }
   refreshVisualizerPalette() {
     const v = this.visualizer;
@@ -10650,11 +10745,38 @@ class AdvancedMusicPlayer {
       return;
     }
     v.paletteKey = key;
+    v.accent = accent;
+    v.hover = hover;
     const gradient = v.ctx.createLinearGradient(0, 0, 0, v.height);
     gradient.addColorStop(0, hover);
     gradient.addColorStop(0.5, accent);
     gradient.addColorStop(1, hover);
     v.gradient = gradient;
+    v.glowSprites = null;
+  }
+  buildVisualizerGlowSprites() {
+    const v = this.visualizer;
+    const size = 192;
+    const sprites = [ v.accent, v.hover ].map(color => {
+      const sprite = document.createElement('canvas');
+      sprite.width = size;
+      sprite.height = size;
+      const ctx = sprite.getContext('2d');
+      const half = size / 2;
+      const gradient = ctx.createRadialGradient(half, half, 0, half, half, half);
+      gradient.addColorStop(0, 'rgba(255,255,255,0.95)');
+      gradient.addColorStop(0.16, 'rgba(255,255,255,0.62)');
+      gradient.addColorStop(0.36, 'rgba(255,255,255,0.28)');
+      gradient.addColorStop(0.62, 'rgba(255,255,255,0.08)');
+      gradient.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, size, size);
+      ctx.globalCompositeOperation = 'source-in';
+      ctx.fillStyle = color;
+      ctx.fillRect(0, 0, size, size);
+      return sprite;
+    });
+    v.glowSprites = sprites;
   }
   drawVisualizerFrame() {
     const v = this.visualizer;
@@ -10665,16 +10787,42 @@ class AdvancedMusicPlayer {
     if (!v.gradient) {
       this.refreshVisualizerPalette();
     }
-    const width = v.width;
-    const height = v.height;
-    ctx.clearRect(0, 0, width, height);
+    ctx.clearRect(0, 0, v.width, v.height);
+    switch (v.style) {
+     case 'levels':
+      this.drawVisualizerLevels();
+      break;
+
+     case 'wave':
+      this.drawVisualizerWave();
+      break;
+
+     case 'ribbon':
+      this.drawVisualizerRibbon();
+      break;
+
+     case 'radial':
+      this.drawVisualizerRadial();
+      break;
+
+     case 'glow':
+      this.drawVisualizerGlow();
+      break;
+
+     default:
+      this.drawVisualizerBars();
+    }
+  }
+  drawVisualizerBars() {
+    const v = this.visualizer;
+    const ctx = v.ctx;
     const levels = v.levels;
     const barCount = levels.length;
-    const slot = width / barCount;
+    const slot = v.width / barCount;
     const barWidth = Math.max(2, slot * 0.46);
     const radius = barWidth * 0.5;
-    const middle = height * 0.5;
-    const reach = height * 0.42;
+    const middle = v.height * 0.5;
+    const reach = v.height * 0.42;
     const rounded = v.roundedBars;
     ctx.beginPath();
     for (let i = 0; i < barCount; i++) {
@@ -10688,6 +10836,164 @@ class AdvancedMusicPlayer {
     }
     ctx.fillStyle = v.gradient;
     ctx.fill();
+  }
+  drawVisualizerLevels() {
+    const v = this.visualizer;
+    const ctx = v.ctx;
+    const levels = v.levels;
+    const barCount = levels.length;
+    const slot = v.width / barCount;
+    const barWidth = Math.max(3, slot * 0.62);
+    const middle = v.height * 0.5;
+    const reach = v.height * 0.42;
+    const cell = Math.max(8, v.height / 26);
+    const segment = cell * 0.66;
+    const split = (cell - segment) * 0.5;
+    const steps = Math.max(1, Math.floor(reach / cell));
+    ctx.beginPath();
+    for (let i = 0; i < barCount; i++) {
+      const lit = Math.max(1, Math.round(levels[i] * steps));
+      const x = slot * (i + 0.5) - barWidth * 0.5;
+      for (let s = 0; s < lit; s++) {
+        const offset = s * cell;
+        ctx.rect(x, middle - split - offset - segment, barWidth, segment);
+        ctx.rect(x, middle + split + offset, barWidth, segment);
+      }
+    }
+    ctx.fillStyle = v.gradient;
+    ctx.fill();
+  }
+  drawVisualizerWave() {
+    const v = this.visualizer;
+    const ctx = v.ctx;
+    const points = v.wavePoints;
+    const count = points.length;
+    const middle = v.height * 0.5;
+    const reach = v.height * 0.36 * v.amp * Math.min(3.2, 0.92 / Math.max(v.wavePeak, 0.06));
+    const step = v.width / (count - 1);
+    ctx.lineWidth = Math.max(2, v.height / 190);
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = v.gradient;
+    ctx.beginPath();
+    for (let i = 0; i < count; i++) {
+      const y = middle + points[i] * reach;
+      if (i === 0) {
+        ctx.moveTo(0, y);
+      } else {
+        ctx.lineTo(i * step, y);
+      }
+    }
+    ctx.stroke();
+    ctx.globalAlpha = 0.3;
+    ctx.beginPath();
+    for (let i = 0; i < count; i++) {
+      const y = middle - points[i] * reach;
+      if (i === 0) {
+        ctx.moveTo(0, y);
+      } else {
+        ctx.lineTo(i * step, y);
+      }
+    }
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+  drawVisualizerRibbon() {
+    const v = this.visualizer;
+    const ctx = v.ctx;
+    const levels = v.levels;
+    const barCount = levels.length;
+    const slot = v.width / barCount;
+    const middle = v.height * 0.5;
+    const sway = v.height * 0.16;
+    const flow = v.now * 0.0009;
+    const base = v.height * 0.035;
+    const reach = v.height * 0.2;
+    const top = v.ribbonTop;
+    const bottom = v.ribbonBottom;
+    for (let i = 0; i < barCount; i++) {
+      const center = middle + Math.sin(i * 0.36 + flow) * sway + Math.sin(i * 0.11 - flow * 1.7) * sway * 0.45;
+      const half = base + levels[i] * reach;
+      top[i] = center - half;
+      bottom[i] = center + half;
+    }
+    ctx.beginPath();
+    ctx.moveTo(0, top[0]);
+    for (let i = 0; i < barCount - 1; i++) {
+      const x = slot * (i + 0.5);
+      ctx.quadraticCurveTo(x, top[i], (x + slot * (i + 1.5)) * 0.5, (top[i] + top[i + 1]) * 0.5);
+    }
+    ctx.quadraticCurveTo(slot * (barCount - 0.5), top[barCount - 1], v.width, top[barCount - 1]);
+    ctx.lineTo(v.width, bottom[barCount - 1]);
+    for (let i = barCount - 1; i > 0; i--) {
+      const x = slot * (i + 0.5);
+      ctx.quadraticCurveTo(x, bottom[i], (x + slot * (i - 0.5)) * 0.5, (bottom[i] + bottom[i - 1]) * 0.5);
+    }
+    ctx.quadraticCurveTo(slot * 0.5, bottom[0], 0, bottom[0]);
+    ctx.closePath();
+    ctx.globalAlpha = 0.32;
+    ctx.fillStyle = v.gradient;
+    ctx.fill();
+    ctx.globalAlpha = 0.85;
+    ctx.lineWidth = Math.max(2, v.height / 210);
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = v.gradient;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+  drawVisualizerRadial() {
+    const v = this.visualizer;
+    const ctx = v.ctx;
+    const levels = v.levels;
+    const barCount = levels.length;
+    const centerX = v.width * 0.5;
+    const centerY = v.height * 0.5;
+    const base = Math.min(v.width, v.height) * 0.17;
+    const reach = Math.min(v.width, v.height) * 0.3;
+    const inner = base * (1 + v.lowEnergy * 0.22);
+    ctx.lineWidth = Math.max(2, Math.min(v.width, v.height) / 110);
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = v.gradient;
+    ctx.beginPath();
+    for (let i = 0; i < barCount; i++) {
+      const outer = inner + Math.max(1, levels[i] * reach);
+      const cos = v.cos[i];
+      const sin = v.sin[i];
+      ctx.moveTo(centerX + cos * inner, centerY + sin * inner);
+      ctx.lineTo(centerX + cos * outer, centerY + sin * outer);
+    }
+    ctx.stroke();
+    ctx.globalAlpha = 0.4;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, inner * 0.82, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+  drawVisualizerGlow() {
+    const v = this.visualizer;
+    const ctx = v.ctx;
+    if (!v.glowSprites) {
+      this.buildVisualizerGlowSprites();
+    }
+    const sprites = v.glowSprites;
+    const centerX = v.width * 0.5;
+    const centerY = v.height * 0.5;
+    const span = Math.min(v.width, v.height);
+    const spreadX = v.width * 0.3;
+    const spreadY = v.height * 0.26;
+    const drift = v.now * 0.00013;
+    const blobs = [ [ 0, span * (0.36 + v.lowEnergy * 0.4), 0.85, 0, 0.18 ], [ 2.1, span * (0.3 + v.energy * 0.34), 0.6, 1, 1 ], [ 4.2, span * (0.26 + v.highEnergy * 0.3), 0.5, 1, 1.15 ], [ 1.1, span * (0.22 + v.highEnergy * 0.26), 0.45, 0, 0.9 ] ];
+    ctx.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < blobs.length; i++) {
+      const [ phase, size, weight, sprite, reach ] = blobs[i];
+      const angle = drift * (1 + i * 0.4) + phase;
+      const x = centerX + Math.cos(angle) * spreadX * reach - size * 0.5;
+      const y = centerY + Math.sin(angle * 1.3) * spreadY * reach - size * 0.5;
+      ctx.globalAlpha = Math.min(1, (0.16 + v.energy * 0.8) * weight);
+      ctx.drawImage(sprites[sprite], x, y, size, size);
+    }
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = 'source-over';
   }
   destroyVisualizer() {
     const v = this.visualizer;
@@ -10723,7 +11029,38 @@ class AdvancedMusicPlayer {
     if (this.elements.visualizerToggle) {
       this.elements.visualizerToggle.checked = this.visualizerEnabled;
     }
+    this.visualizer.style = this.visualizerStyle;
+    this.renderVisualizerStyleOptions();
     this.refreshVisualizerPower();
+  }
+  renderVisualizerStyleOptions() {
+    const host = this.elements.visualizerStyleGrid;
+    if (!host) {
+      return;
+    }
+    host.querySelectorAll('.vis-style').forEach(button => {
+      button.classList.toggle('active', button.dataset.visStyle === this.visualizerStyle);
+    });
+  }
+  handleVisualizerStyleClick(event) {
+    const button = event.target.closest('.vis-style');
+    if (!button || !AdvancedMusicPlayer.VISUALIZER_STYLES.has(button.dataset.visStyle)) {
+      return;
+    }
+    this.setVisualizerStyle(button.dataset.visStyle);
+  }
+  setVisualizerStyle(style) {
+    if (!AdvancedMusicPlayer.VISUALIZER_STYLES.has(style)) {
+      return;
+    }
+    this.visualizerStyle = style;
+    this.visualizer.style = style;
+    this.renderVisualizerStyleOptions();
+    if (this.visualizer.ctx) {
+      this.drawVisualizerFrame();
+    }
+    this.startVisualizer();
+    this.saveSetting('visualizerStyle', style);
   }
   handleVisualizerToggle(event) {
     this.visualizerEnabled = event.target.checked;
@@ -13743,10 +14080,15 @@ class AdvancedMusicPlayer {
         v.analyser = null;
         v.source = null;
         v.freq = null;
+        v.timeDomain = null;
         v.bands = null;
         v.levels = null;
         v.targets = null;
+        v.wavePoints = null;
+        v.ribbonTop = null;
+        v.ribbonBottom = null;
         v.gradient = null;
+        v.glowSprites = null;
         v.ctx = null;
         v.canvas = null;
       }
