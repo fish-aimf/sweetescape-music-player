@@ -200,6 +200,7 @@ class AdvancedMusicPlayer {
       isActive: false,
       style: 'bars',
       scale: 1 / 3,
+      headroom: 0.5,
       width: 0,
       height: 0,
       maxRenderWidth: 960,
@@ -223,6 +224,7 @@ class AdvancedMusicPlayer {
       glowSprites: null,
       accent: '',
       hover: '',
+      crest: '',
       paletteKey: '',
       energy: 0,
       lowEnergy: 0,
@@ -10670,21 +10672,24 @@ class AdvancedMusicPlayer {
           }
         }
         const normalized = peak / 255 * v.tilt[i];
-        const shaped = normalized > 1 ? 1 : normalized;
-        targets[i] = shaped * shaped * (1.6 - 0.6 * shaped);
+        const core = normalized > 1 ? 1 : normalized;
+        const expanded = core * core * (0.72 + 0.28 * core);
+        const excess = normalized - 1;
+        targets[i] = excess > 0 ? expanded + v.headroom * (1 - Math.exp(-excess * 1.5)) : expanded;
       }
     } else if (playing) {
       const seconds = timestamp * 0.001;
       for (let i = 0; i < barCount; i++) {
         const phase = v.phases[i];
         const wave = Math.sin(seconds * 2.3 + phase) * 0.5 + Math.sin(seconds * 0.87 + phase * 2.1) * 0.32 + Math.sin(seconds * 3.9 + phase * 0.6) * 0.18;
-        targets[i] = Math.max(0.05, (wave * 0.5 + 0.5) * v.envelope[i]);
+        const swing = wave * 0.5 + 0.5;
+        targets[i] = Math.max(0.02, swing * swing * (0.76 + 0.46 * swing) * v.envelope[i]);
       }
     } else {
       targets.fill(0);
     }
-    const attack = 1 - Math.exp(-delta * 26);
-    const release = 1 - Math.exp(-delta * 8);
+    const attack = 1 - Math.exp(-delta * 30);
+    const release = 1 - Math.exp(-delta * 12);
     let settling = false;
     let sum = 0;
     let low = 0;
@@ -10750,7 +10755,39 @@ class AdvancedMusicPlayer {
         peak = magnitude;
       }
     }
-    v.wavePeak = peak > v.wavePeak ? peak : Math.max(0.06, v.wavePeak * 0.985);
+    v.wavePeak = peak > v.wavePeak ? peak : Math.max(0.05, v.wavePeak * 0.972);
+  }
+  readVisualizerColor(value) {
+    const ctx = this.visualizer.ctx;
+    ctx.fillStyle = '#000000';
+    ctx.fillStyle = value;
+    const resolved = String(ctx.fillStyle);
+    if (resolved.charAt(0) === '#') {
+      const raw = resolved.length === 4 ? resolved.charAt(1) + resolved.charAt(1) + resolved.charAt(2) + resolved.charAt(2) + resolved.charAt(3) + resolved.charAt(3) : resolved.slice(1, 7);
+      const packed = parseInt(raw, 16);
+      return [ packed >> 16 & 255, packed >> 8 & 255, packed & 255 ];
+    }
+    const parts = resolved.match(/[0-9.]+/g);
+    return parts && parts.length >= 3 ? [ Number(parts[0]), Number(parts[1]), Number(parts[2]) ] : [ 74, 158, 255 ];
+  }
+  vividVisualizerColor(rgb, saturation, lift, whiten) {
+    const luma = rgb[0] * 0.2126 + rgb[1] * 0.7152 + rgb[2] * 0.0722;
+    const raw = [ 0, 0, 0 ];
+    let peak = 0;
+    for (let i = 0; i < 3; i++) {
+      const boosted = (luma + (rgb[i] - luma) * saturation) * lift;
+      raw[i] = boosted < 0 ? 0 : boosted;
+      if (raw[i] > peak) {
+        peak = raw[i];
+      }
+    }
+    const normalise = peak > 255 ? 255 / peak : 1;
+    const veil = whiten || 0;
+    const out = [ 0, 0, 0 ];
+    for (let i = 0; i < 3; i++) {
+      out[i] = Math.round(raw[i] * normalise * (1 - veil) + 255 * veil);
+    }
+    return `rgb(${out[0]},${out[1]},${out[2]})`;
   }
   refreshVisualizerPalette() {
     const v = this.visualizer;
@@ -10760,34 +10797,42 @@ class AdvancedMusicPlayer {
     const styles = getComputedStyle(document.documentElement);
     const accent = (styles.getPropertyValue('--accent-color') || '#4a9eff').trim();
     const hover = (styles.getPropertyValue('--hover-color') || accent).trim();
-    const key = accent + '|' + hover + '|' + v.height;
+    const key = accent + '|' + hover + '|' + v.height + '|' + v.scale.toFixed(3);
     if (key === v.paletteKey && v.gradient) {
       return;
     }
     v.paletteKey = key;
-    v.accent = accent;
-    v.hover = hover;
-    const gradient = v.ctx.createLinearGradient(0, 0, 0, v.height);
-    gradient.addColorStop(0, hover);
-    gradient.addColorStop(0.5, accent);
-    gradient.addColorStop(1, hover);
+    const accentRgb = this.readVisualizerColor(accent);
+    const hoverRgb = this.readVisualizerColor(hover);
+    v.accent = this.vividVisualizerColor(accentRgb, 1.55, 1.34);
+    v.hover = this.vividVisualizerColor(hoverRgb, 1.55, 1.16);
+    const crest = this.vividVisualizerColor(accentRgb, 1.8, 1.9, 0.2);
+    v.crest = crest;
+    const band = Math.max(6, v.height * 0.46 * v.scale * (1 + v.headroom));
+    const gradient = v.ctx.createLinearGradient(0, v.height * 0.5 - band, 0, v.height * 0.5 + band);
+    gradient.addColorStop(0, v.hover);
+    gradient.addColorStop(0.3, v.accent);
+    gradient.addColorStop(0.46, crest);
+    gradient.addColorStop(0.54, crest);
+    gradient.addColorStop(0.7, v.accent);
+    gradient.addColorStop(1, v.hover);
     v.gradient = gradient;
     v.glowSprites = null;
   }
   buildVisualizerGlowSprites() {
     const v = this.visualizer;
     const size = 192;
-    const sprites = [ v.accent, v.hover ].map(color => {
+    const sprites = [ v.crest || v.accent, v.accent ].map(color => {
       const sprite = document.createElement('canvas');
       sprite.width = size;
       sprite.height = size;
       const ctx = sprite.getContext('2d');
       const half = size / 2;
       const gradient = ctx.createRadialGradient(half, half, 0, half, half, half);
-      gradient.addColorStop(0, 'rgba(255,255,255,0.95)');
-      gradient.addColorStop(0.16, 'rgba(255,255,255,0.62)');
-      gradient.addColorStop(0.36, 'rgba(255,255,255,0.28)');
-      gradient.addColorStop(0.62, 'rgba(255,255,255,0.08)');
+      gradient.addColorStop(0, 'rgba(255,255,255,1)');
+      gradient.addColorStop(0.2, 'rgba(255,255,255,0.8)');
+      gradient.addColorStop(0.42, 'rgba(255,255,255,0.44)');
+      gradient.addColorStop(0.68, 'rgba(255,255,255,0.16)');
       gradient.addColorStop(1, 'rgba(255,255,255,0)');
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, size, size);
@@ -10842,7 +10887,7 @@ class AdvancedMusicPlayer {
     const barWidth = Math.max(2, slot * 0.46);
     const radius = barWidth * 0.5;
     const middle = v.height * 0.5;
-    const reach = v.height * 0.42 * v.scale;
+    const reach = v.height * 0.46 * v.scale;
     const rounded = v.roundedBars;
     ctx.beginPath();
     for (let i = 0; i < barCount; i++) {
@@ -10865,8 +10910,8 @@ class AdvancedMusicPlayer {
     const slot = v.width / barCount;
     const barWidth = Math.max(3, slot * 0.62);
     const middle = v.height * 0.5;
-    const reach = v.height * 0.42 * v.scale;
-    const cell = Math.max(4, v.height / 26 * v.scale);
+    const reach = v.height * 0.46 * v.scale;
+    const cell = Math.max(4, v.height / 30 * v.scale);
     const segment = cell * 0.66;
     const split = (cell - segment) * 0.5;
     const steps = Math.max(1, Math.floor(reach / cell));
@@ -10889,9 +10934,9 @@ class AdvancedMusicPlayer {
     const points = v.wavePoints;
     const count = points.length;
     const middle = v.height * 0.5;
-    const reach = v.height * 0.36 * v.amp * v.scale * Math.min(3.2, 0.92 / Math.max(v.wavePeak, 0.06));
+    const reach = v.height * 0.44 * v.amp * v.scale * Math.min(4.2, 0.98 / Math.max(v.wavePeak, 0.05));
     const step = v.width / (count - 1);
-    ctx.lineWidth = Math.max(2, v.height / 190);
+    ctx.lineWidth = Math.max(2.5, v.height / 140);
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
     ctx.strokeStyle = v.gradient;
@@ -10905,7 +10950,7 @@ class AdvancedMusicPlayer {
       }
     }
     ctx.stroke();
-    ctx.globalAlpha = 0.3;
+    ctx.globalAlpha = 0.45;
     ctx.beginPath();
     for (let i = 0; i < count; i++) {
       const y = middle - points[i] * reach;
@@ -10925,10 +10970,10 @@ class AdvancedMusicPlayer {
     const barCount = levels.length;
     const slot = v.width / barCount;
     const middle = v.height * 0.5;
-    const sway = v.height * 0.16 * v.scale;
+    const sway = v.height * 0.18 * v.scale;
     const flow = v.now * 0.0009;
-    const base = v.height * 0.035 * v.scale;
-    const reach = v.height * 0.2 * v.scale;
+    const base = v.height * 0.022 * v.scale;
+    const reach = v.height * 0.27 * v.scale;
     const top = v.ribbonTop;
     const bottom = v.ribbonBottom;
     for (let i = 0; i < barCount; i++) {
@@ -10951,10 +10996,10 @@ class AdvancedMusicPlayer {
     }
     ctx.quadraticCurveTo(slot * 0.5, bottom[0], 0, bottom[0]);
     ctx.closePath();
-    ctx.globalAlpha = 0.32;
+    ctx.globalAlpha = 0.4;
     ctx.fillStyle = v.gradient;
     ctx.fill();
-    ctx.globalAlpha = 0.85;
+    ctx.globalAlpha = 0.95;
     ctx.lineWidth = Math.max(2, v.height / 210);
     ctx.lineJoin = 'round';
     ctx.strokeStyle = v.gradient;
@@ -10968,9 +11013,9 @@ class AdvancedMusicPlayer {
     const barCount = levels.length;
     const centerX = v.width * 0.5;
     const centerY = v.height * 0.5;
-    const base = Math.min(v.width, v.height) * 0.17 * v.scale;
-    const reach = Math.min(v.width, v.height) * 0.3 * v.scale;
-    const inner = base * (1 + v.lowEnergy * 0.22);
+    const base = Math.min(v.width, v.height) * 0.15 * v.scale;
+    const reach = Math.min(v.width, v.height) * 0.38 * v.scale;
+    const inner = base * (1 + v.lowEnergy * 0.34);
     ctx.lineWidth = Math.max(2, Math.min(v.width, v.height) / 110);
     ctx.lineCap = 'round';
     ctx.strokeStyle = v.gradient;
@@ -11003,14 +11048,14 @@ class AdvancedMusicPlayer {
     const spreadY = v.height * 0.26;
     const drift = v.now * 0.00013;
     const scaled = span * v.scale;
-    const blobs = [ [ 0, scaled * (0.36 + v.lowEnergy * 0.4), 0.85, 0, 0.18 ], [ 2.1, scaled * (0.3 + v.energy * 0.34), 0.6, 1, 1 ], [ 4.2, scaled * (0.26 + v.highEnergy * 0.3), 0.5, 1, 1.15 ], [ 1.1, scaled * (0.22 + v.highEnergy * 0.26), 0.45, 0, 0.9 ] ];
+    const blobs = [ [ 0, scaled * (0.3 + v.lowEnergy * 0.62), 0.9, 0, 0.18 ], [ 2.1, scaled * (0.24 + v.energy * 0.54), 0.68, 1, 1 ], [ 4.2, scaled * (0.2 + v.highEnergy * 0.48), 0.58, 1, 1.15 ], [ 1.1, scaled * (0.16 + v.highEnergy * 0.42), 0.52, 0, 0.9 ] ];
     ctx.globalCompositeOperation = 'lighter';
     for (let i = 0; i < blobs.length; i++) {
       const [ phase, size, weight, sprite, reach ] = blobs[i];
       const angle = drift * (1 + i * 0.4) + phase;
       const x = centerX + Math.cos(angle) * spreadX * reach - size * 0.5;
       const y = centerY + Math.sin(angle * 1.3) * spreadY * reach - size * 0.5;
-      ctx.globalAlpha = Math.min(1, (0.16 + v.energy * 0.8) * weight);
+      ctx.globalAlpha = Math.min(1, (0.1 + v.energy * 1.25) * weight);
       ctx.drawImage(sprites[sprite], x, y, size, size);
     }
     ctx.globalAlpha = 1;
@@ -11093,7 +11138,7 @@ class AdvancedMusicPlayer {
     if (!isFinite(gain)) {
       return 1;
     }
-    return Math.min(4, Math.max(0.2, gain));
+    return Math.min(6, Math.max(0.2, gain));
   }
   renderVisualizerGainLabel() {
     if (this.elements.visualizerGainValue) {
