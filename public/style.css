@@ -8474,6 +8474,9 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 }
+.vis-style-row {
+  max-width: 620px;
+}
 .vis-style-grid .vis-style {
   display: flex;
   flex-direction: column;

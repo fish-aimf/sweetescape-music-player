@@ -192,12 +192,14 @@ class AdvancedMusicPlayer {
     this.ghostResizeHandler = null;
     this.ghostInteractionHandler = null;
     this.visualizerStyle = 'bars';
+    this.visualizerGain = 1;
     this.visualizer = {
       canvas: null,
       ctx: null,
       animationId: null,
       isActive: false,
       style: 'bars',
+      scale: 1 / 3,
       width: 0,
       height: 0,
       maxRenderWidth: 960,
@@ -565,6 +567,8 @@ class AdvancedMusicPlayer {
       discordButton: document.getElementById('discordButton'),
       visualizerToggle: document.getElementById('visualizerToggle'),
       visualizerStyleGrid: document.getElementById('visualizerStyleGrid'),
+      visualizerGain: document.getElementById('visualizerGain'),
+      visualizerGainValue: document.getElementById('visualizerGainValue'),
       findSongsBtn: document.getElementById('findSongsBtn'),
       closeFindSongs: document.getElementById('closeFindSongs'),
       findSongsDiv: document.getElementById('findSongsDiv'),
@@ -741,7 +745,7 @@ class AdvancedMusicPlayer {
       refreshRandomRecommendations: () => this.refreshRandomRecommendations(),
       visualizerToggle: e => this.handleVisualizerToggle(e)
     };
-    const simpleBindings = [ [ this.elements.addSongBtn, 'click', handlers.addSong ], [ this.elements.createPlaylistBtn, 'click', handlers.createPlaylist ], [ this.elements.closePlaylistModalBtn, 'click', handlers.closePlaylistModal ], [ this.elements.addSongToPlaylistBtn, 'click', handlers.addSongToPlaylist ], [ this.elements.playPauseBtn, 'click', handlers.togglePlayPause ], [ this.elements.prevBtn, 'click', handlers.playPrevious ], [ this.elements.nextBtn, 'click', handlers.playNext ], [ this.elements.loopBtn, 'click', handlers.toggleLoop ], [ this.elements.showPlaylistBtn, 'click', handlers.toggleSidebar ], [ this.elements.closeSidebarBtn, 'click', handlers.toggleSidebar ], [ this.elements.themeToggle, 'click', handlers.toggleTheme ], [ this.elements.autoplayBtn, 'click', handlers.toggleAutoplay ], [ this.elements.speedBtn, 'click', handlers.toggleSpeedOptions ], [ this.elements.volumeSlider, 'input', handlers.volumeChange ], [ this.elements.progressBar, 'click', handlers.seekMusic ], [ this.elements.currentSongName, 'contextmenu', handlers.songNameRightClick ], [ this.elements.toggleControlBarBtn, 'click', handlers.toggleControlBar ], [ this.elements.modifyLibraryBtn, 'click', handlers.openLibraryModal ], [ this.elements.closeLibraryModalBtn, 'click', handlers.closeLibraryModal ], [ this.elements.importLibraryBtn, 'click', handlers.importLibrary ], [ this.elements.exportLibraryBtn, 'click', handlers.exportLibrary ], [ this.elements.libraryModificationTabAddSong, 'click', handlers.libraryModificationTabAddSongClick ], [ this.elements.libraryModificationTabImportExport, 'click', handlers.libraryModificationTabImportExportClick ], [ this.elements.loopPlaylistBtn, 'click', handlers.togglePlaylistLoop ], [ this.elements.discordButton, 'click', handlers.discordClick ], [ this.elements.librarySortToggle, 'change', handlers.librarySortToggle ], [ this.elements.libraryReverseToggle, 'change', handlers.libraryReverseToggle ], [ this.elements.closeImportModalBtn, 'click', handlers.closeImportModal ], [ this.elements.importSongsBtn, 'click', handlers.importSongs ], [ this.elements.playlistSearch, 'input', handlers.filterPlaylists ], [ this.elements.playlistSearch, 'keypress', handlers.playlistSearchEnter ], [ this.elements.toggleCreatePlaylistBtn, 'click', handlers.toggleCreatePlaylistDiv ], [ this.elements.togglePlaylistEditModeBtn, 'click', handlers.togglePlaylistEditMode ], [ this.elements.settingsButton, 'click', handlers.openSettings ], [ this.elements.settingsCloseBtn, 'click', handlers.closeSettings ], [ this.elements.settingsModal, 'click', handlers.settingsModalClick ], [ this.elements.themeMode, 'change', handlers.themeModeChange ], [ this.elements.saveCustomTheme, 'click', handlers.saveCustomTheme ], [ this.elements.adsToggle, 'change', handlers.adsToggle ], [ this.elements.saveDiscoverMoreSettings, 'click', handlers.saveDiscoverMoreSettings ], [ this.elements.visualizerToggle, 'change', handlers.visualizerToggle ], [ this.elements.visualizerStyleGrid, 'click', this.handleVisualizerStyleClick.bind(this) ], [ this.elements.findSongsBtn, 'click', handlers.findSongsOpen ], [ this.elements.closeFindSongs, 'click', handlers.findSongsClose ], [ this.elements.searchSongsToAdd, 'input', handlers.searchSongsToAdd ], [ this.elements.statsButton, 'click', this.openStatsModal.bind(this) ], [ this.elements.lsPanel, 'click', this._handleStatsShowAllClick.bind(this) ], [ this.elements.lsPanel, 'input', this._handleStatsSearchInput.bind(this) ], [ document.getElementById('lsCloseBtn'), 'click', this.closeStatsModal.bind(this) ], [ this.elements.lsRangeToggle, 'change', this._handleStatsRangeToggle.bind(this) ], [ this.elements.listeningStatsToggle, 'change', this.handleListeningStatsToggle.bind(this) ], [ this.elements.libTopicBtn, 'click', handlers.toggleTopicKeyword ] ];
+    const simpleBindings = [ [ this.elements.addSongBtn, 'click', handlers.addSong ], [ this.elements.createPlaylistBtn, 'click', handlers.createPlaylist ], [ this.elements.closePlaylistModalBtn, 'click', handlers.closePlaylistModal ], [ this.elements.addSongToPlaylistBtn, 'click', handlers.addSongToPlaylist ], [ this.elements.playPauseBtn, 'click', handlers.togglePlayPause ], [ this.elements.prevBtn, 'click', handlers.playPrevious ], [ this.elements.nextBtn, 'click', handlers.playNext ], [ this.elements.loopBtn, 'click', handlers.toggleLoop ], [ this.elements.showPlaylistBtn, 'click', handlers.toggleSidebar ], [ this.elements.closeSidebarBtn, 'click', handlers.toggleSidebar ], [ this.elements.themeToggle, 'click', handlers.toggleTheme ], [ this.elements.autoplayBtn, 'click', handlers.toggleAutoplay ], [ this.elements.speedBtn, 'click', handlers.toggleSpeedOptions ], [ this.elements.volumeSlider, 'input', handlers.volumeChange ], [ this.elements.progressBar, 'click', handlers.seekMusic ], [ this.elements.currentSongName, 'contextmenu', handlers.songNameRightClick ], [ this.elements.toggleControlBarBtn, 'click', handlers.toggleControlBar ], [ this.elements.modifyLibraryBtn, 'click', handlers.openLibraryModal ], [ this.elements.closeLibraryModalBtn, 'click', handlers.closeLibraryModal ], [ this.elements.importLibraryBtn, 'click', handlers.importLibrary ], [ this.elements.exportLibraryBtn, 'click', handlers.exportLibrary ], [ this.elements.libraryModificationTabAddSong, 'click', handlers.libraryModificationTabAddSongClick ], [ this.elements.libraryModificationTabImportExport, 'click', handlers.libraryModificationTabImportExportClick ], [ this.elements.loopPlaylistBtn, 'click', handlers.togglePlaylistLoop ], [ this.elements.discordButton, 'click', handlers.discordClick ], [ this.elements.librarySortToggle, 'change', handlers.librarySortToggle ], [ this.elements.libraryReverseToggle, 'change', handlers.libraryReverseToggle ], [ this.elements.closeImportModalBtn, 'click', handlers.closeImportModal ], [ this.elements.importSongsBtn, 'click', handlers.importSongs ], [ this.elements.playlistSearch, 'input', handlers.filterPlaylists ], [ this.elements.playlistSearch, 'keypress', handlers.playlistSearchEnter ], [ this.elements.toggleCreatePlaylistBtn, 'click', handlers.toggleCreatePlaylistDiv ], [ this.elements.togglePlaylistEditModeBtn, 'click', handlers.togglePlaylistEditMode ], [ this.elements.settingsButton, 'click', handlers.openSettings ], [ this.elements.settingsCloseBtn, 'click', handlers.closeSettings ], [ this.elements.settingsModal, 'click', handlers.settingsModalClick ], [ this.elements.themeMode, 'change', handlers.themeModeChange ], [ this.elements.saveCustomTheme, 'click', handlers.saveCustomTheme ], [ this.elements.adsToggle, 'change', handlers.adsToggle ], [ this.elements.saveDiscoverMoreSettings, 'click', handlers.saveDiscoverMoreSettings ], [ this.elements.visualizerToggle, 'change', handlers.visualizerToggle ], [ this.elements.visualizerStyleGrid, 'click', this.handleVisualizerStyleClick.bind(this) ], [ this.elements.visualizerGain, 'input', this.handleVisualizerGainInput.bind(this) ], [ this.elements.findSongsBtn, 'click', handlers.findSongsOpen ], [ this.elements.closeFindSongs, 'click', handlers.findSongsClose ], [ this.elements.searchSongsToAdd, 'input', handlers.searchSongsToAdd ], [ this.elements.statsButton, 'click', this.openStatsModal.bind(this) ], [ this.elements.lsPanel, 'click', this._handleStatsShowAllClick.bind(this) ], [ this.elements.lsPanel, 'input', this._handleStatsSearchInput.bind(this) ], [ document.getElementById('lsCloseBtn'), 'click', this.closeStatsModal.bind(this) ], [ this.elements.lsRangeToggle, 'change', this._handleStatsRangeToggle.bind(this) ], [ this.elements.listeningStatsToggle, 'change', this.handleListeningStatsToggle.bind(this) ], [ this.elements.libTopicBtn, 'click', handlers.toggleTopicKeyword ] ];
     simpleBindings.forEach(([element, event, handler]) => {
       if (element) {
         element.addEventListener(event, handler);
@@ -1527,6 +1531,7 @@ class AdvancedMusicPlayer {
       const store = transaction.objectStore('settings');
       const request = store.get('visualizerEnabled');
       const styleRequest = store.get('visualizerStyle');
+      const gainRequest = store.get('visualizerGain');
       request.onsuccess = () => {
         this.visualizerEnabled = request.result ? request.result.value : true;
       };
@@ -1536,10 +1541,16 @@ class AdvancedMusicPlayer {
       styleRequest.onsuccess = () => {
         const saved = styleRequest.result ? styleRequest.result.value : null;
         this.visualizerStyle = AdvancedMusicPlayer.VISUALIZER_STYLES.has(saved) ? saved : 'bars';
-        resolve();
       };
       styleRequest.onerror = () => {
         this.visualizerStyle = 'bars';
+      };
+      gainRequest.onsuccess = () => {
+        this.visualizerGain = this.clampVisualizerGain(gainRequest.result ? gainRequest.result.value : 1);
+        resolve();
+      };
+      gainRequest.onerror = () => {
+        this.visualizerGain = 1;
         resolve();
       };
     });
@@ -10822,7 +10833,7 @@ class AdvancedMusicPlayer {
     const barWidth = Math.max(2, slot * 0.46);
     const radius = barWidth * 0.5;
     const middle = v.height * 0.5;
-    const reach = v.height * 0.42;
+    const reach = v.height * 0.42 * v.scale;
     const rounded = v.roundedBars;
     ctx.beginPath();
     for (let i = 0; i < barCount; i++) {
@@ -10845,8 +10856,8 @@ class AdvancedMusicPlayer {
     const slot = v.width / barCount;
     const barWidth = Math.max(3, slot * 0.62);
     const middle = v.height * 0.5;
-    const reach = v.height * 0.42;
-    const cell = Math.max(8, v.height / 26);
+    const reach = v.height * 0.42 * v.scale;
+    const cell = Math.max(4, v.height / 26 * v.scale);
     const segment = cell * 0.66;
     const split = (cell - segment) * 0.5;
     const steps = Math.max(1, Math.floor(reach / cell));
@@ -10869,7 +10880,7 @@ class AdvancedMusicPlayer {
     const points = v.wavePoints;
     const count = points.length;
     const middle = v.height * 0.5;
-    const reach = v.height * 0.36 * v.amp * Math.min(3.2, 0.92 / Math.max(v.wavePeak, 0.06));
+    const reach = v.height * 0.36 * v.amp * v.scale * Math.min(3.2, 0.92 / Math.max(v.wavePeak, 0.06));
     const step = v.width / (count - 1);
     ctx.lineWidth = Math.max(2, v.height / 190);
     ctx.lineJoin = 'round';
@@ -10905,10 +10916,10 @@ class AdvancedMusicPlayer {
     const barCount = levels.length;
     const slot = v.width / barCount;
     const middle = v.height * 0.5;
-    const sway = v.height * 0.16;
+    const sway = v.height * 0.16 * v.scale;
     const flow = v.now * 0.0009;
-    const base = v.height * 0.035;
-    const reach = v.height * 0.2;
+    const base = v.height * 0.035 * v.scale;
+    const reach = v.height * 0.2 * v.scale;
     const top = v.ribbonTop;
     const bottom = v.ribbonBottom;
     for (let i = 0; i < barCount; i++) {
@@ -10948,8 +10959,8 @@ class AdvancedMusicPlayer {
     const barCount = levels.length;
     const centerX = v.width * 0.5;
     const centerY = v.height * 0.5;
-    const base = Math.min(v.width, v.height) * 0.17;
-    const reach = Math.min(v.width, v.height) * 0.3;
+    const base = Math.min(v.width, v.height) * 0.17 * v.scale;
+    const reach = Math.min(v.width, v.height) * 0.3 * v.scale;
     const inner = base * (1 + v.lowEnergy * 0.22);
     ctx.lineWidth = Math.max(2, Math.min(v.width, v.height) / 110);
     ctx.lineCap = 'round';
@@ -10982,7 +10993,8 @@ class AdvancedMusicPlayer {
     const spreadX = v.width * 0.3;
     const spreadY = v.height * 0.26;
     const drift = v.now * 0.00013;
-    const blobs = [ [ 0, span * (0.36 + v.lowEnergy * 0.4), 0.85, 0, 0.18 ], [ 2.1, span * (0.3 + v.energy * 0.34), 0.6, 1, 1 ], [ 4.2, span * (0.26 + v.highEnergy * 0.3), 0.5, 1, 1.15 ], [ 1.1, span * (0.22 + v.highEnergy * 0.26), 0.45, 0, 0.9 ] ];
+    const scaled = span * v.scale;
+    const blobs = [ [ 0, scaled * (0.36 + v.lowEnergy * 0.4), 0.85, 0, 0.18 ], [ 2.1, scaled * (0.3 + v.energy * 0.34), 0.6, 1, 1 ], [ 4.2, scaled * (0.26 + v.highEnergy * 0.3), 0.5, 1, 1.15 ], [ 1.1, scaled * (0.22 + v.highEnergy * 0.26), 0.45, 0, 0.9 ] ];
     ctx.globalCompositeOperation = 'lighter';
     for (let i = 0; i < blobs.length; i++) {
       const [ phase, size, weight, sprite, reach ] = blobs[i];
@@ -11030,6 +11042,11 @@ class AdvancedMusicPlayer {
       this.elements.visualizerToggle.checked = this.visualizerEnabled;
     }
     this.visualizer.style = this.visualizerStyle;
+    this.visualizer.scale = this.visualizerGain / 3;
+    if (this.elements.visualizerGain) {
+      this.elements.visualizerGain.value = this.visualizerGain;
+    }
+    this.renderVisualizerGainLabel();
     this.renderVisualizerStyleOptions();
     this.refreshVisualizerPower();
   }
@@ -11061,6 +11078,29 @@ class AdvancedMusicPlayer {
     }
     this.startVisualizer();
     this.saveSetting('visualizerStyle', style);
+  }
+  clampVisualizerGain(value) {
+    const gain = Number(value);
+    if (!isFinite(gain)) {
+      return 1;
+    }
+    return Math.min(4, Math.max(0.2, gain));
+  }
+  renderVisualizerGainLabel() {
+    if (this.elements.visualizerGainValue) {
+      this.elements.visualizerGainValue.textContent = this.visualizerGain.toFixed(1) + 'x';
+    }
+  }
+  handleVisualizerGainInput(event) {
+    this.visualizerGain = this.clampVisualizerGain(event.target.value);
+    this.visualizer.scale = this.visualizerGain / 3;
+    this.renderVisualizerGainLabel();
+    if (this.visualizer.ctx) {
+      this.drawVisualizerFrame();
+    }
+    this.startVisualizer();
+    clearTimeout(this._visualizerGainSaveTimer);
+    this._visualizerGainSaveTimer = setTimeout(() => this.saveSetting('visualizerGain', this.visualizerGain), 250);
   }
   handleVisualizerToggle(event) {
     this.visualizerEnabled = event.target.checked;
@@ -14054,6 +14094,7 @@ class AdvancedMusicPlayer {
   cleanupVisualizer() {
     try {
       this.destroyVisualizer();
+      clearTimeout(this._visualizerGainSaveTimer);
       if (this._visualizerResizeHandler) {
         window.removeEventListener('resize', this._visualizerResizeHandler);
         this._visualizerResizeHandler = null;
