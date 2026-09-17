@@ -204,7 +204,7 @@ class AdvancedMusicPlayer {
       width: 0,
       height: 0,
       maxRenderWidth: 960,
-      frameInterval: 1000 / 36,
+      frameInterval: 1000 / 48,
       lastFrame: 0,
       lastPalette: 0,
       levels: null,
@@ -229,6 +229,8 @@ class AdvancedMusicPlayer {
       energy: 0,
       lowEnergy: 0,
       highEnergy: 0,
+      energySlow: 0,
+      punch: 0,
       amp: 0,
       wavePeak: 0.3,
       now: 0,
@@ -245,6 +247,7 @@ class AdvancedMusicPlayer {
     this.topicKeywordEnabled = true;
     this.replaceTargetSongId = null;
     this.supabase = null;
+    this.supabaseReadyPromise = null;
     this.supadataApiKey = 'sd_b3095aebbee9e4a7e6333bca9027b4cc';
     this.currentSongForSubtitlesImport = null;
     this.searchTimeout = null;
@@ -1871,10 +1874,11 @@ class AdvancedMusicPlayer {
         img.alt = '';
         img.loading = 'lazy';
         img.decoding = 'async';
-        img.src = song.thumbnailUrl || `https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg`;
+        img.decoding = 'async';
+        img.src = song.thumbnailUrl || `https://i.ytimg.com/vi/${song.videoId}/mqdefault.jpg`;
         img.onerror = () => {
           img.onerror = null;
-          img.src = `https://img.youtube.com/vi/${song.videoId}/default.jpg`;
+          img.src = `https://i.ytimg.com/vi/${song.videoId}/default.jpg`;
         };
         thumb.appendChild(img);
       });
@@ -2214,10 +2218,11 @@ class AdvancedMusicPlayer {
     img.alt = song.name;
     img.loading = 'lazy';
     img.decoding = 'async';
-    img.src = song.thumbnailUrl || `https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg`;
+    img.decoding = 'async';
+    img.src = song.thumbnailUrl || `https://i.ytimg.com/vi/${song.videoId}/mqdefault.jpg`;
     img.onerror = () => {
       img.onerror = null;
-      img.src = `https://img.youtube.com/vi/${song.videoId}/default.jpg`;
+      img.src = `https://i.ytimg.com/vi/${song.videoId}/default.jpg`;
     };
     const label = document.createElement('div');
     label.className = 'fav-thumb-label';
@@ -2411,13 +2416,14 @@ class AdvancedMusicPlayer {
     const wrap = document.createElement('div');
     wrap.className = 'discovery-thumb-wrap';
     const img = document.createElement('img');
-    img.src = song.thumbnailUrl || `https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg`;
+    img.src = song.thumbnailUrl || `https://i.ytimg.com/vi/${song.videoId}/mqdefault.jpg`;
     img.alt = song.name;
     img.loading = 'lazy';
     img.decoding = 'async';
+    img.decoding = 'async';
     img.onerror = () => {
       img.onerror = null;
-      img.src = `https://img.youtube.com/vi/${song.videoId}/default.jpg`;
+      img.src = `https://i.ytimg.com/vi/${song.videoId}/default.jpg`;
     };
     const overlay = document.createElement('div');
     overlay.className = 'discovery-play-overlay';
@@ -2601,7 +2607,7 @@ class AdvancedMusicPlayer {
     previewContainer.id = 'thumbnailPreview';
     previewContainer.classList.add('thumbnail-preview');
     const thumbnail = document.createElement('img');
-    thumbnail.src = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+    thumbnail.src = `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`;
     thumbnail.alt = 'Video thumbnail';
     const videoTitle = document.createElement('div');
     videoTitle.classList.add('video-title');
@@ -2956,7 +2962,7 @@ class AdvancedMusicPlayer {
     authorInput.value = song.author || '';
     urlInput.value = `https://www.youtube.com/watch?v=${song.videoId}`;
     lyricsInput.value = song.lyrics || '';
-    thumbnail.src = `https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg`;
+    thumbnail.src = `https://i.ytimg.com/vi/${song.videoId}/mqdefault.jpg`;
     localFileBtn.textContent = song.localFileName ? `📁 ${song.localFileName}` : 'Link local file';
     if (song.localFileName) {
       unlinkBtn.classList.add('active');
@@ -2971,7 +2977,7 @@ class AdvancedMusicPlayer {
       const videoId = this.extractYouTubeId(urlInput.value);
       thumbnail.style.display = videoId ? '' : 'none';
       if (videoId) {
-        thumbnail.src = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+        thumbnail.src = `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`;
       }
     });
     localFileBtn.addEventListener('click', async () => {
@@ -3079,11 +3085,11 @@ class AdvancedMusicPlayer {
           if (newVideoId !== song.videoId) {
             const favThumb = document.querySelector(`.fav-thumb[data-song-id="${song.id}"] img`);
             if (favThumb) {
-              favThumb.src = `https://img.youtube.com/vi/${newVideoId}/mqdefault.jpg`;
+              favThumb.src = `https://i.ytimg.com/vi/${newVideoId}/mqdefault.jpg`;
             }
             const discThumb = document.querySelector(`.discovery-song-item[data-song-id="${song.id}"] img`);
             if (discThumb) {
-              discThumb.src = `https://img.youtube.com/vi/${newVideoId}/mqdefault.jpg`;
+              discThumb.src = `https://i.ytimg.com/vi/${newVideoId}/mqdefault.jpg`;
             }
           }
         }
@@ -4543,7 +4549,7 @@ class AdvancedMusicPlayer {
       name: song.name || 'Unknown',
       author: song.author || '',
       videoId: song.videoId,
-      thumbnailUrl: song.thumbnailUrl || `https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg`
+      thumbnailUrl: song.thumbnailUrl || `https://i.ytimg.com/vi/${song.videoId}/mqdefault.jpg`
     };
   }
   getUpcomingSongsPreview(count = 3) {
@@ -5421,7 +5427,7 @@ class AdvancedMusicPlayer {
       if (this.temporarilySkippedSongs.has(entryId)) {
         songCard.classList.add('temporarily-skipped');
       }
-      const thumbnailUrl = song.thumbnailUrl || `https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg`;
+      const thumbnailUrl = song.thumbnailUrl || `https://i.ytimg.com/vi/${song.videoId}/mqdefault.jpg`;
       songCard.innerHTML = `\n\t\t\t<img src="${thumbnailUrl}" alt="${song.name}" class="song-card-thumbnail" loading="lazy">\n\t\t\t<div class="song-card-info">\n\t\t\t\t<div class="song-card-index">#${index + 1}</div>\n\t\t\t\t<div class="song-card-title">${song.name}</div>\n\t\t\t</div>\n\t\t\t<div class="song-card-actions">\n\t\t\t\t<button class="song-card-btn play-btn" title="Play this song">\n\t\t\t\t\t<i class="fas fa-play"></i>\n\t\t\t\t</button>\n\t\t\t\t<button class="song-card-btn skip-btn ${this.temporarilySkippedSongs.has(entryId) ? 'active' : ''}" title="Temporarily skip">\n\t\t\t\t\t<i class="fas fa-ban"></i>\n\t\t\t\t</button>\n\t\t\t</div>\n\t\t`;
       const playBtn = songCard.querySelector('.play-btn');
       playBtn.addEventListener('click', e => {
@@ -5724,17 +5730,17 @@ class AdvancedMusicPlayer {
     const loopBtn = document.getElementById('npLoopBtn');
     const autoBtn = document.getElementById('npAutoplayBtn');
     if (thumb) {
-      thumb.src = `https://img.youtube.com/vi/${song.videoId}/maxresdefault.jpg`;
+      thumb.src = `https://i.ytimg.com/vi/${song.videoId}/maxresdefault.jpg`;
       thumb.onload = function() {
         if (thumb.naturalHeight <= 90) {
           thumb.onload = null;
-          thumb.src = `https://img.youtube.com/vi/${song.videoId}/hqdefault.jpg`;
+          thumb.src = `https://i.ytimg.com/vi/${song.videoId}/hqdefault.jpg`;
         }
       };
       thumb.onerror = () => {
         thumb.onerror = null;
         thumb.onload = null;
-        thumb.src = `https://img.youtube.com/vi/${song.videoId}/hqdefault.jpg`;
+        thumb.src = `https://i.ytimg.com/vi/${song.videoId}/hqdefault.jpg`;
       };
     }
     if (name) {
@@ -5779,7 +5785,7 @@ class AdvancedMusicPlayer {
     const nameElement = document.getElementById('currentSongName');
     const authorElement = document.getElementById('currentSongAuthor');
     if (thumbnailElement) {
-      thumbnailElement.src = displaySong.thumbnailUrl || `https://img.youtube.com/vi/${displaySong.videoId}/default.jpg`;
+      thumbnailElement.src = displaySong.thumbnailUrl || `https://i.ytimg.com/vi/${displaySong.videoId}/default.jpg`;
       thumbnailElement.alt = displaySong.name || 'Current Song';
     }
     if (nameElement) {
@@ -5959,8 +5965,10 @@ class AdvancedMusicPlayer {
       thumbnail.classList.add('details-item-thumbnail');
       if (actualType === 'song') {
         const thumbnailImg = document.createElement('img');
-        thumbnailImg.src = item.thumbnailUrl || `https://img.youtube.com/vi/${item.videoId}/default.jpg`;
+        thumbnailImg.src = item.thumbnailUrl || `https://i.ytimg.com/vi/${item.videoId}/default.jpg`;
         thumbnailImg.alt = item.name;
+        thumbnailImg.loading = 'lazy';
+        thumbnailImg.decoding = 'async';
         thumbnailImg.onerror = function() {
           this.onerror = null;
           this.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='90'%3E%3Crect width='120' height='90' fill='%23333'/%3E%3Ctext x='60' y='50' text-anchor='middle' font-size='11' fill='%23fff' font-family='sans-serif'%3ENo Image%3C/text%3E%3C/svg%3E";
@@ -6059,8 +6067,10 @@ class AdvancedMusicPlayer {
       thumbnail.classList.add('details-item-thumbnail');
       if (type === 'song') {
         const thumbnailImg = document.createElement('img');
-        thumbnailImg.src = item.thumbnailUrl || `https://img.youtube.com/vi/${item.videoId}/default.jpg`;
+        thumbnailImg.src = item.thumbnailUrl || `https://i.ytimg.com/vi/${item.videoId}/default.jpg`;
         thumbnailImg.alt = item.name;
+        thumbnailImg.loading = 'lazy';
+        thumbnailImg.decoding = 'async';
         thumbnailImg.onerror = function() {
           this.onerror = null;
           this.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='90'%3E%3Crect width='120' height='90' fill='%23333'/%3E%3Ctext x='60' y='50' text-anchor='middle' font-size='11' fill='%23fff' font-family='sans-serif'%3ENo Image%3C/text%3E%3C/svg%3E";
@@ -6177,8 +6187,10 @@ class AdvancedMusicPlayer {
       const songItem = document.createElement('div');
       songItem.classList.add('recently-played-item');
       const thumbnail = document.createElement('img');
-      thumbnail.src = song.thumbnailUrl || `https://img.youtube.com/vi/${song.videoId}/default.jpg`;
+      thumbnail.src = song.thumbnailUrl || `https://i.ytimg.com/vi/${song.videoId}/default.jpg`;
       thumbnail.alt = song.name;
+      thumbnail.loading = 'lazy';
+      thumbnail.decoding = 'async';
       thumbnail.classList.add('recently-played-thumbnail');
       thumbnail.onerror = function() {
         this.onerror = null;
@@ -6287,7 +6299,7 @@ class AdvancedMusicPlayer {
       id: song.id,
       name: song.name,
       videoId: song.videoId,
-      thumbnailUrl: song.thumbnailUrl || `https://img.youtube.com/vi/${song.videoId}/default.jpg`,
+      thumbnailUrl: song.thumbnailUrl || `https://i.ytimg.com/vi/${song.videoId}/default.jpg`,
       timestamp: Date.now()
     };
     const transaction = this.db.transaction([ 'recentlyPlayed' ], 'readwrite');
@@ -6325,7 +6337,7 @@ class AdvancedMusicPlayer {
       name: playlist.name,
       timestamp: Date.now(),
       currentSongName: currentSong ? currentSong.name : '',
-      thumbnailUrl: currentSong ? currentSong.thumbnailUrl || `https://img.youtube.com/vi/${currentSong.videoId}/default.jpg` : ''
+      thumbnailUrl: currentSong ? currentSong.thumbnailUrl || `https://i.ytimg.com/vi/${currentSong.videoId}/default.jpg` : ''
     };
     try {
       const transaction = this.db.transaction([ 'recentlyPlayed' ], 'readwrite');
@@ -10530,7 +10542,7 @@ class AdvancedMusicPlayer {
       const angle = i / barCount * Math.PI * 2 - Math.PI / 2;
       v.phases[i] = position * 7.4 + Math.sin(position * 11.3) * 1.7;
       v.envelope[i] = 0.34 + 0.66 * Math.pow(Math.sin(Math.PI * Math.pow(position, 0.78)), 1.35);
-      v.tilt[i] = 1 + 1.5 * Math.pow(position, 1.1);
+      v.tilt[i] = 1.28 + 1.5 * Math.pow(position, 1.1);
       v.cos[i] = Math.cos(angle);
       v.sin[i] = Math.sin(angle);
     }
@@ -10579,10 +10591,10 @@ class AdvancedMusicPlayer {
       source = v.audioCtx.createMediaElementSource(this.localAudio);
       v.source = source;
       const analyser = v.audioCtx.createAnalyser();
-      analyser.fftSize = 512;
-      analyser.smoothingTimeConstant = 0.68;
-      analyser.minDecibels = -88;
-      analyser.maxDecibels = -18;
+      analyser.fftSize = 2048;
+      analyser.smoothingTimeConstant = 0.45;
+      analyser.minDecibels = -84;
+      analyser.maxDecibels = -20;
       source.connect(analyser);
       analyser.connect(v.audioCtx.destination);
       v.analyser = analyser;
@@ -10688,15 +10700,25 @@ class AdvancedMusicPlayer {
     } else {
       targets.fill(0);
     }
-    const attack = 1 - Math.exp(-delta * 30);
-    const release = 1 - Math.exp(-delta * 12);
+    const attack = 1 - Math.exp(-delta * 62);
+    const release = 1 - Math.exp(-delta * 17);
+    let raw = 0;
+    for (let i = 0; i < barCount; i++) {
+      raw += targets[i];
+    }
+    raw /= barCount;
+    v.energySlow += (raw - v.energySlow) * (playing ? 0.075 : 0.25);
+    const surge = raw - v.energySlow;
+    const punchTarget = surge > 0 ? Math.min(0.62, surge * 2.9) : 0;
+    v.punch += (punchTarget - v.punch) * (punchTarget > v.punch ? 0.72 : Math.min(1, delta * 7));
+    const drive = 1 + v.punch;
     let settling = false;
     let sum = 0;
     let low = 0;
     let high = 0;
     const third = Math.max(1, Math.round(barCount / 3));
     for (let i = 0; i < barCount; i++) {
-      const target = targets[i];
+      const target = targets[i] * drive;
       const current = levels[i];
       const next = current + (target - current) * (target > current ? attack : release);
       levels[i] = next;
@@ -10734,12 +10756,17 @@ class AdvancedMusicPlayer {
       for (let i = 0; i < count; i++) {
         const from = Math.floor(i * stride);
         const to = Math.min(data.length, Math.floor((i + 1) * stride));
-        let sum = 0;
+        let crest = 128;
+        let swing = 0;
         for (let j = from; j < to; j++) {
-          sum += data[j];
+          const offset = data[j] - 128;
+          const size = offset < 0 ? -offset : offset;
+          if (size > swing) {
+            swing = size;
+            crest = data[j];
+          }
         }
-        const mean = to > from ? sum / (to - from) : 128;
-        points[i] += ((mean - 128) / 128 - points[i]) * 0.55;
+        points[i] += ((crest - 128) / 128 - points[i]) * 0.78;
       }
     } else if (playing) {
       const seconds = timestamp * 0.001;
@@ -10884,14 +10911,14 @@ class AdvancedMusicPlayer {
     const levels = v.levels;
     const barCount = levels.length;
     const slot = v.width / barCount;
-    const barWidth = Math.max(2, slot * 0.46);
-    const radius = barWidth * 0.5;
+    const barWidth = Math.max(2, slot * 0.5);
+    const radius = barWidth * 0.3;
     const middle = v.height * 0.5;
     const reach = v.height * 0.46 * v.scale;
     const rounded = v.roundedBars;
     ctx.beginPath();
     for (let i = 0; i < barCount; i++) {
-      const half = Math.max(radius, levels[i] * reach);
+      const half = Math.max(radius * 0.7, levels[i] * reach);
       const x = slot * (i + 0.5) - radius;
       if (rounded) {
         ctx.roundRect(x, middle - half, barWidth, half * 2, radius);
@@ -11313,14 +11340,23 @@ class AdvancedMusicPlayer {
     }
   }
   initSupabaseForFindSongs() {
-    if (!this.supabase) {
-      const supabaseUrl = 'https://cwhxanbpymkngzpbsshh.supabase.co';
-      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3aHhhbmJweW1rbmd6cGJzc2hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4NTQzMTksImV4cCI6MjA2OTQzMDMxOX0.6K3eM1XoWaPmyMHsLYgw0mAnSxYjME4clflL4PxQalQ';
-      this.supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+    if (this.supabase) {
+      return Promise.resolve(this.supabase);
     }
+    if (!this.supabaseReadyPromise) {
+      this.supabaseReadyPromise = loadScriptOnce('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2').then(() => {
+        const supabaseUrl = 'https://cwhxanbpymkngzpbsshh.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3aHhhbmJweW1rbmd6cGJzc2hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4NTQzMTksImV4cCI6MjA2OTQzMDMxOX0.6K3eM1XoWaPmyMHsLYgw0mAnSxYjME4clflL4PxQalQ';
+        this.supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        return this.supabase;
+      }).catch(error => {
+        this.supabaseReadyPromise = null;
+        throw error;
+      });
+    }
+    return this.supabaseReadyPromise;
   }
   initGlobalLibraryDebouncedSearch() {
-    this.initSupabaseForFindSongs();
     this.globalLibrarySearchDebounceTimer = null;
     this.globalLibrarySearchAbortController = null;
     this.globalLibraryCurrentArtistContext = null;
@@ -11392,9 +11428,7 @@ class AdvancedMusicPlayer {
     }
   }
   async searchPremadePlaylistsSupabase(query) {
-    if (!this.supabase) {
-      this.initSupabaseForFindSongs();
-    }
+    await this.initSupabaseForFindSongs();
     const {data: data, error: error} = await this.supabase.from('premade_playlists').select('id, name').ilike('name', `%${query}%`).limit(3);
     if (error) {
       throw error;
@@ -11591,9 +11625,7 @@ class AdvancedMusicPlayer {
     return `${name.trim().toLowerCase()}::${(artist || '').trim().toLowerCase()}`;
   }
   async resolveGlobalLibrarySongYouTubeId(songName, artistName) {
-    if (!this.supabase) {
-      this.initSupabaseForFindSongs();
-    }
+    await this.initSupabaseForFindSongs();
     const searchKey = this.normalizeGlobalLibrarySearchKey(songName, artistName);
     const cached = await this.checkGlobalSongCacheSupabase(searchKey);
     if (cached) {
@@ -11611,6 +11643,7 @@ class AdvancedMusicPlayer {
     return saved;
   }
   async checkGlobalSongCacheSupabase(searchKey) {
+    await this.initSupabaseForFindSongs();
     const {data: data, error: error} = await this.supabase.from('global_song_cache').select('*').eq('search_key', searchKey).maybeSingle();
     if (error) {
       throw error;
@@ -11618,6 +11651,7 @@ class AdvancedMusicPlayer {
     return data || null;
   }
   async insertGlobalSongCacheSupabase(payload) {
+    await this.initSupabaseForFindSongs();
     const {data: data, error: error} = await this.supabase.from('global_song_cache').upsert([ payload ], {
       onConflict: 'search_key',
       ignoreDuplicates: false
@@ -11684,6 +11718,7 @@ class AdvancedMusicPlayer {
   }
   async addPremadePlaylistToLocalLibrary(playlistId, playlistName) {
     try {
+      await this.initSupabaseForFindSongs();
       const {data: data, error: error} = await this.supabase.from('premade_playlist_songs').select(`position, global_song_cache(name, artist, yt_id)`).eq('playlist_id', playlistId).order('position', {
         ascending: true
       });
@@ -11700,9 +11735,7 @@ class AdvancedMusicPlayer {
     }
   }
   async openFindSongs() {
-    if (!this.supabase) {
-      this.initSupabaseForFindSongs();
-    }
+    await this.initSupabaseForFindSongs();
     this.elements.findSongsDiv.style.display = 'flex';
     document.getElementById('globalLibraryDebouncedSearchBar')?.focus();
     await this.loadRecommendations();
@@ -11720,6 +11753,7 @@ class AdvancedMusicPlayer {
   }
   async loadRandomRecommendations() {
     try {
+      await this.initSupabaseForFindSongs();
       const {data: randomSongs, error: error} = await this.supabase.from('songs').select('id, name, artist, yt_id').limit(100);
       if (error) {
         throw error;
@@ -11740,12 +11774,13 @@ class AdvancedMusicPlayer {
     }
     container.innerHTML = songs.map(song => {
       const youtubeUrl = `https://www.youtube.com/watch?v=${song.yt_id}`;
-      const thumbnailUrl = `https://img.youtube.com/vi/${song.yt_id}/mqdefault.jpg`;
+      const thumbnailUrl = `https://i.ytimg.com/vi/${song.yt_id}/mqdefault.jpg`;
       return `\n\t            <div class="recommendation-song-item" onclick="musicPlayer.samplePlayTemporarySong('${youtubeUrl}')" style="cursor: pointer;" title="Click to preview">\n\t                <img src="${thumbnailUrl}" \n\t                     alt="Thumbnail" \n\t                     class="song-thumbnail" \n\t                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='30' viewBox='0 0 40 30'%3E%3Crect fill='%23ddd' width='40' height='30'/%3E%3Ctext x='20' y='18' text-anchor='middle' font-size='8' fill='%23666'%3E♪%3C/text%3E%3C/svg%3E'">\n\t                <div class="recommendation-song-info">\n\t                    <div class="recommendation-song-name">${song.name}</div>\n\t                    <div class="recommendation-song-author">by ${song.artist || 'Unknown'}</div>\n\t                </div>\n\t            </div>\n\t        `;
     }).join('');
   }
   async loadBillboardHot100Top3() {
     try {
+      await this.initSupabaseForFindSongs();
       const {data: top3Songs, error: error} = await this.supabase.from('billboard_top_3').select('*').order('position');
       if (error) {
         throw error;
@@ -11798,6 +11833,7 @@ class AdvancedMusicPlayer {
   }
   async openBillboardHot100Modal() {
     try {
+      await this.initSupabaseForFindSongs();
       const {data: allSongs, error: error} = await this.supabase.from('billboard_hot_100').select('*').order('this_week');
       if (error) {
         throw error;
@@ -11882,7 +11918,7 @@ class AdvancedMusicPlayer {
   }
   getYouTubeThumbnail(youtubeUrl) {
     const videoId = this.extractYouTubeId(youtubeUrl);
-    return videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : '';
+    return videoId ? `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg` : '';
   }
   async refreshRandomRecommendations() {
     await this.loadRandomRecommendations();
@@ -12804,12 +12840,13 @@ class AdvancedMusicPlayer {
     const v = s?.videoId || '';
     let thumbnail = '';
     if (v) {
-      const maxres = `https://img.youtube.com/vi/${v}/maxresdefault.jpg`;
-      const hq = `https://img.youtube.com/vi/${v}/hqdefault.jpg`;
+      const maxres = `https://i.ytimg.com/vi/${v}/maxresdefault.jpg`;
+      const hq = `https://i.ytimg.com/vi/${v}/hqdefault.jpg`;
       try {
-        const res = await fetch(maxres);
-        const blob = await res.blob();
-        thumbnail = blob.size > 5e3 ? maxres : hq;
+        const res = await fetch(maxres, {
+          method: 'HEAD'
+        });
+        thumbnail = res.ok && Number(res.headers.get('content-length')) > 5e3 ? maxres : hq;
       } catch {
         thumbnail = hq;
       }
@@ -12955,7 +12992,7 @@ class AdvancedMusicPlayer {
       document.getElementById('dlCurrentAuthor').textContent = song.author || '';
       const thumb = document.getElementById('dlCurrentThumb');
       if (song.videoId) {
-        thumb.style.backgroundImage = `url(https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg)`;
+        thumb.style.backgroundImage = `url(https://i.ytimg.com/vi/${song.videoId}/mqdefault.jpg)`;
       }
       const addBtn = document.getElementById('dlCurrentAddBtn');
       const alreadyQueued = this.dlQueue.some(q => q.videoId === song.videoId);
@@ -13086,7 +13123,7 @@ class AdvancedMusicPlayer {
         downloadAllLabel.textContent = `Download all (${totalDone}/${this.dlQueue.length})`;
       }
       downloadAllBtn.disabled = notOpened === 0;
-      queueList.innerHTML = this.dlQueue.map((item, i) => `\n      <div class="dl-queue-item${item.opened ? ' dl-qi-opened' : ''}" data-idx="${i}">\n        <div class="dl-qi-thumb" style="${item.videoId ? `background-image:url(https://img.youtube.com/vi/${item.videoId}/mqdefault.jpg)` : ''}"></div>\n        <div class="dl-qi-info">\n          <div class="dl-qi-name">${escHtml(item.name)}</div>\n          <div class="dl-qi-status ${item.status}">\n            ${item.status === 'idle' ? 'Waiting…' : item.status === 'converting' ? '<span class="dl-spinner"></span> Converting…' : item.status === 'done' && item.opened ? '<i class="fas fa-check"></i> Downloaded' : item.status === 'done' ? 'Ready' : item._quotaExceeded ? 'API limit reached' : 'Failed — tap retry'}\n          </div>\n        </div>\n        <div class="dl-qi-actions">\n          ${item.status === 'done' && item.opened ? `<span class="dl-qi-tick" style="color:#5D9C59"><i class="fas fa-check-circle"></i></span>` : item.status === 'done' ? `<button class="dl-qi-download" title="Download"><i class="fas fa-download"></i></button>` : item.status === 'error' ? `<button class="dl-qi-download" title="Retry"><i class="fas fa-redo"></i></button>` : ''}\n          <button class="dl-qi-remove" title="Remove"><i class="fas fa-times"></i></button>\n        </div>\n      </div>`).join('');
+      queueList.innerHTML = this.dlQueue.map((item, i) => `\n      <div class="dl-queue-item${item.opened ? ' dl-qi-opened' : ''}" data-idx="${i}">\n        <div class="dl-qi-thumb" style="${item.videoId ? `background-image:url(https://i.ytimg.com/vi/${item.videoId}/mqdefault.jpg)` : ''}"></div>\n        <div class="dl-qi-info">\n          <div class="dl-qi-name">${escHtml(item.name)}</div>\n          <div class="dl-qi-status ${item.status}">\n            ${item.status === 'idle' ? 'Waiting…' : item.status === 'converting' ? '<span class="dl-spinner"></span> Converting…' : item.status === 'done' && item.opened ? '<i class="fas fa-check"></i> Downloaded' : item.status === 'done' ? 'Ready' : item._quotaExceeded ? 'API limit reached' : 'Failed — tap retry'}\n          </div>\n        </div>\n        <div class="dl-qi-actions">\n          ${item.status === 'done' && item.opened ? `<span class="dl-qi-tick" style="color:#5D9C59"><i class="fas fa-check-circle"></i></span>` : item.status === 'done' ? `<button class="dl-qi-download" title="Download"><i class="fas fa-download"></i></button>` : item.status === 'error' ? `<button class="dl-qi-download" title="Retry"><i class="fas fa-redo"></i></button>` : ''}\n          <button class="dl-qi-remove" title="Remove"><i class="fas fa-times"></i></button>\n        </div>\n      </div>`).join('');
       queueList.querySelectorAll('.dl-queue-item').forEach((el, i) => {
         const item = this.dlQueue[i];
         el.querySelector('.dl-qi-remove')?.addEventListener('click', () => {
@@ -13749,7 +13786,7 @@ class AdvancedMusicPlayer {
   }
   _songThumbHtml(song, sizeClass) {
     if (song.videoId) {
-      return `<div class="ls-thumb-square ${sizeClass}" style="background-image:url(https://img.youtube.com/vi/${song.videoId}/mqdefault.jpg)"></div>`;
+      return `<div class="ls-thumb-square ${sizeClass}" style="background-image:url(https://i.ytimg.com/vi/${song.videoId}/mqdefault.jpg)"></div>`;
     }
     return `<div class="ls-thumb-square ${sizeClass} ls-thumb-fallback"><i class="fas fa-music"></i></div>`;
   }
