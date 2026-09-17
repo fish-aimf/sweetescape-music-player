@@ -193,10 +193,29 @@ class AdvancedMusicPlayer {
     this.visualizer = {
       canvas: null,
       ctx: null,
-      bars: [],
-      particles: [],
       animationId: null,
-      isActive: false
+      isActive: false,
+      width: 0,
+      height: 0,
+      maxRenderWidth: 960,
+      frameInterval: 1000 / 36,
+      lastFrame: 0,
+      lastPalette: 0,
+      levels: null,
+      targets: null,
+      phases: null,
+      envelope: null,
+      tilt: null,
+      bands: null,
+      freq: null,
+      gradient: null,
+      paletteKey: '',
+      roundedBars: false,
+      reducedMotion: null,
+      audioCtx: null,
+      analyser: null,
+      source: null,
+      audioGraphFailed: false
     };
     this.YOUTUBE_API_KEYS_COUNT = 20;
     this.youtubeLibrarySearchResults = [];
@@ -4980,6 +4999,8 @@ class AdvancedMusicPlayer {
         this.isPlaying = true;
         this.updatePlayerUI();
         this.startListeningTimeTracking();
+        this.resumeVisualizerAudio();
+        this.startVisualizer();
       });
     }
     if (this.localAudio.src?.startsWith('blob:')) {
@@ -4995,6 +5016,10 @@ class AdvancedMusicPlayer {
     }
     if (this.elements.timeDisplay) {
       this.elements.timeDisplay.textContent = '0:00/0:00';
+    }
+    if (this.visualizerEnabled) {
+      this.attachVisualizerAnalyser();
+      this.resumeVisualizerAudio();
     }
     this.localAudio.play().catch(e => console.error('Local audio play failed:', e));
     this.updatePlayerUI();
@@ -5290,10 +5315,7 @@ class AdvancedMusicPlayer {
       }
     }
     if (event.data === YT.PlayerState.PLAYING) {
-      this.visualizer.isActive = true;
-      if (this.isTabVisible) {
-        this.animateVisualizer();
-      }
+      this.startVisualizer();
     }
   }
   togglePlaylistSidebar() {
@@ -10401,160 +10423,316 @@ class AdvancedMusicPlayer {
     });
   }
   initializeVisualizer() {
-    this.visualizer.canvas = document.getElementById('visualizerCanvas');
-    if (!this.visualizer.canvas) {
+    const v = this.visualizer;
+    v.canvas = document.getElementById('visualizerCanvas');
+    if (!v.canvas) {
       return;
     }
-    this.visualizer.ctx = this.visualizer.canvas.getContext('2d');
+    v.ctx = v.canvas.getContext('2d', {
+      alpha: true,
+      desynchronized: true
+    });
+    if (!v.ctx) {
+      return;
+    }
+    v.roundedBars = typeof v.ctx.roundRect === 'function';
+    v.reducedMotion = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+    this._visualizerTick = timestamp => this.renderVisualizerFrame(timestamp);
+    this._visualizerResizeHandler = this.debounce(() => this.resizeCanvas(), 200);
+    window.addEventListener('resize', this._visualizerResizeHandler);
     this.resizeCanvas();
-    this.createVisualizerBars();
-    this._cachedAccentColor = this._readAccentColor();
-    window.addEventListener('resize', this.debounce(() => this.resizeCanvas(), 150));
-  }
-  _readAccentColor() {
-    return getComputedStyle(document.documentElement).getPropertyValue('--accent-color');
+    this.refreshVisualizerPower();
   }
   resizeCanvas() {
-    if (!this.visualizer.canvas) {
+    const v = this.visualizer;
+    if (!v.canvas || !v.ctx) {
       return;
     }
-    this.visualizer.canvas.width = window.innerWidth;
-    this.visualizer.canvas.height = window.innerHeight;
+    const cssWidth = Math.max(1, v.canvas.clientWidth || window.innerWidth);
+    const cssHeight = Math.max(1, v.canvas.clientHeight || window.innerHeight);
+    const scale = Math.min(1, v.maxRenderWidth / cssWidth);
+    const width = Math.max(1, Math.round(cssWidth * scale));
+    const height = Math.max(1, Math.round(cssHeight * scale));
+    if (v.canvas.width !== width || v.canvas.height !== height) {
+      v.canvas.width = width;
+      v.canvas.height = height;
+      v.gradient = null;
+    }
+    v.width = width;
+    v.height = height;
+    const barCount = Math.max(20, Math.min(56, Math.round(cssWidth / 26)));
+    if (barCount !== (v.levels ? v.levels.length : 0)) {
+      this.buildVisualizerBars(barCount);
+    }
+    this.drawVisualizerFrame();
   }
-  createVisualizerBars() {
-    const barsContainer = document.getElementById('visualizerBars');
-    if (!barsContainer) {
+  buildVisualizerBars(barCount) {
+    const v = this.visualizer;
+    v.levels = new Float32Array(barCount);
+    v.targets = new Float32Array(barCount);
+    v.phases = new Float32Array(barCount);
+    v.envelope = new Float32Array(barCount);
+    v.tilt = new Float32Array(barCount);
+    for (let i = 0; i < barCount; i++) {
+      const position = barCount > 1 ? i / (barCount - 1) : 0.5;
+      v.phases[i] = position * 7.4 + Math.sin(position * 11.3) * 1.7;
+      v.envelope[i] = 0.34 + 0.66 * Math.pow(Math.sin(Math.PI * Math.pow(position, 0.78)), 1.35);
+      v.tilt[i] = 1 + 1.85 * Math.pow(position, 1.1);
+    }
+    this.buildVisualizerBands();
+  }
+  buildVisualizerBands() {
+    const v = this.visualizer;
+    if (!v.analyser || !v.levels) {
+      v.bands = null;
       return;
     }
-    for (let i = 0; i < 50; i++) {
-      const bar = document.createElement('div');
-      bar.className = 'bar';
-      bar.style.height = '4px';
-      barsContainer.appendChild(bar);
-      this.visualizer.bars.push(bar);
+    const barCount = v.levels.length;
+    const bins = v.analyser.frequencyBinCount;
+    const nyquist = (v.audioCtx ? v.audioCtx.sampleRate : 44100) / 2;
+    const minHz = 30;
+    const maxHz = Math.min(16000, nyquist);
+    const span = Math.log(maxHz / minHz);
+    const edges = new Int32Array(barCount + 1);
+    for (let i = 0; i <= barCount; i++) {
+      const hz = minHz * Math.exp(span * (i / barCount));
+      edges[i] = Math.max(0, Math.min(bins, Math.round(hz / nyquist * bins)));
+    }
+    for (let i = 1; i <= barCount; i++) {
+      if (edges[i] <= edges[i - 1]) {
+        edges[i] = Math.min(bins, edges[i - 1] + 1);
+      }
+    }
+    v.bands = edges;
+  }
+  attachVisualizerAnalyser() {
+    const v = this.visualizer;
+    if (v.source || v.audioGraphFailed || !this.localAudio) {
+      return;
+    }
+    const AudioCtor = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtor) {
+      v.audioGraphFailed = true;
+      return;
+    }
+    let source = null;
+    try {
+      v.audioCtx = new AudioCtor();
+      source = v.audioCtx.createMediaElementSource(this.localAudio);
+      v.source = source;
+      const analyser = v.audioCtx.createAnalyser();
+      analyser.fftSize = 512;
+      analyser.smoothingTimeConstant = 0.68;
+      analyser.minDecibels = -76;
+      analyser.maxDecibels = -22;
+      source.connect(analyser);
+      analyser.connect(v.audioCtx.destination);
+      v.analyser = analyser;
+      v.freq = new Uint8Array(analyser.frequencyBinCount);
+      this.buildVisualizerBands();
+    } catch (error) {
+      v.analyser = null;
+      v.freq = null;
+      v.bands = null;
+      v.audioGraphFailed = true;
+      if (source && v.audioCtx) {
+        try {
+          source.disconnect();
+          source.connect(v.audioCtx.destination);
+        } catch (reconnectError) {
+          console.warn('Visualizer could not restore audio routing:', reconnectError.message);
+        }
+      } else if (v.audioCtx) {
+        v.audioCtx.close().catch(() => {});
+        v.audioCtx = null;
+      }
+      console.warn('Visualizer audio graph unavailable:', error.message);
+    }
+  }
+  resumeVisualizerAudio() {
+    const ctx = this.visualizer.audioCtx;
+    if (ctx && ctx.state === 'suspended') {
+      ctx.resume().catch(error => console.warn('Visualizer audio resume failed:', error.message));
     }
   }
   startVisualizer() {
-    this.visualizer.isActive = true;
-    this._visualizerFrameCount = 0;
-    this.animateVisualizer();
-  }
-  animateVisualizer() {
-    if (!this.visualizer.isActive || !this.isTabVisible) {
+    const v = this.visualizer;
+    if (!v.isActive || !v.ctx || v.animationId !== null) {
       return;
     }
-    this._visualizerFrameCount = (this._visualizerFrameCount || 0) + 1;
-    if (this._visualizerFrameCount % 60 === 0) {
-      this._cachedAccentColor = this._readAccentColor();
-    }
-    const idleSkipFrames = this.isPlaying ? 1 : 3;
-    if (this._visualizerFrameCount % idleSkipFrames === 0) {
-      this.animateBars();
-      this.animateParticles();
-    }
-    if (this.isTabVisible && this.visualizer.isActive) {
-      this.visualizer.animationId = requestAnimationFrame(() => this.animateVisualizer());
-    }
+    v.lastFrame = 0;
+    v.animationId = requestAnimationFrame(this._visualizerTick);
   }
-  animateBars() {
-    const now = Date.now();
-    const playing = this.isPlaying;
-    const intensity = playing ? 1.5 : 0.15;
-    const swayRate = playing ? 0.005 : 0.002;
-    const swayAmount = playing ? 30 : 5;
-    this.visualizer.bars.forEach((bar, index) => {
-      const baseHeight = Math.random() * 100 * intensity;
-      const rhythmMultiplier = Math.sin(now * 0.01 + index * 0.3) * 0.5 + 0.5;
-      const height = baseHeight * rhythmMultiplier + 4 + Math.sin(now * swayRate + index * 0.1) * swayAmount;
-      bar.style.height = Math.max(4, height) + 'px';
-    });
-  }
-  animateParticles() {
-    const ctx = this.visualizer.ctx;
-    if (!ctx) {
+  renderVisualizerFrame(timestamp) {
+    const v = this.visualizer;
+    v.animationId = null;
+    if (!v.isActive || !v.ctx) {
       return;
     }
-    ctx.clearRect(0, 0, this.visualizer.canvas.width, this.visualizer.canvas.height);
-    if (Math.random() < (this.isPlaying ? 0.3 : 0.05)) {
-      this.createParticle();
+    if (v.lastFrame && timestamp - v.lastFrame < v.frameInterval) {
+      v.animationId = requestAnimationFrame(this._visualizerTick);
+      return;
     }
-    const accentColor = this._cachedAccentColor || this._readAccentColor();
-    const speedMultiplier = this.isPlaying ? 1 : 0.3;
-    const alphaScale = this.isPlaying ? 0.6 : 0.3;
-    const particles = this.visualizer.particles;
-    let alive = 0;
-    ctx.fillStyle = accentColor;
-    for (let i = 0; i < particles.length; i++) {
-      const particle = particles[i];
-      particle.x += particle.vx * speedMultiplier;
-      particle.y += particle.vy * speedMultiplier;
-      particle.life -= 0.01;
-      particle.opacity = particle.life;
-      if (particle.life <= 0) {
-        continue;
+    const delta = v.lastFrame ? Math.min((timestamp - v.lastFrame) / 1000, 0.12) : 1 / 30;
+    v.lastFrame = timestamp;
+    if (timestamp - v.lastPalette > 1000) {
+      v.lastPalette = timestamp;
+      this.refreshVisualizerPalette();
+    }
+    const still = v.reducedMotion ? v.reducedMotion.matches : false;
+    const playing = !still && this.isPlaying && this.isTabVisible;
+    const settling = this.sampleVisualizerLevels(playing, timestamp, delta);
+    this.drawVisualizerFrame();
+    if (playing || settling) {
+      v.animationId = requestAnimationFrame(this._visualizerTick);
+    }
+  }
+  sampleVisualizerLevels(playing, timestamp, delta) {
+    const v = this.visualizer;
+    const levels = v.levels;
+    const targets = v.targets;
+    if (!levels) {
+      return false;
+    }
+    const barCount = levels.length;
+    if (playing && this.isLocalPlayback && v.analyser && v.bands) {
+      v.analyser.getByteFrequencyData(v.freq);
+      const freq = v.freq;
+      const bands = v.bands;
+      const limit = freq.length;
+      for (let i = 0; i < barCount; i++) {
+        const from = Math.min(bands[i], limit - 1);
+        const to = Math.max(from + 1, Math.min(bands[i + 1], limit));
+        let peak = 0;
+        for (let j = from; j < to; j++) {
+          if (freq[j] > peak) {
+            peak = freq[j];
+          }
+        }
+        const normalized = (peak / 255) * v.tilt[i];
+        const shaped = normalized > 1 ? 1 : normalized;
+        targets[i] = shaped * shaped * (1.6 - 0.6 * shaped);
       }
-      ctx.globalAlpha = particle.opacity * alphaScale;
-      ctx.beginPath();
-      ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-      ctx.fill();
-      particles[alive++] = particle;
+    } else if (playing) {
+      const seconds = timestamp * 0.001;
+      for (let i = 0; i < barCount; i++) {
+        const phase = v.phases[i];
+        const wave = Math.sin(seconds * 2.3 + phase) * 0.5 + Math.sin(seconds * 0.87 + phase * 2.1) * 0.32 + Math.sin(seconds * 3.9 + phase * 0.6) * 0.18;
+        targets[i] = Math.max(0.05, (wave * 0.5 + 0.5) * v.envelope[i]);
+      }
+    } else {
+      targets.fill(0);
     }
-    particles.length = alive;
-    ctx.globalAlpha = 1;
+    const attack = 1 - Math.exp(-delta * 26);
+    const release = 1 - Math.exp(-delta * 8);
+    let settling = false;
+    for (let i = 0; i < barCount; i++) {
+      const target = targets[i];
+      const current = levels[i];
+      const next = current + (target - current) * (target > current ? attack : release);
+      levels[i] = next;
+      if (!settling && Math.abs(next - target) > 0.002) {
+        settling = true;
+      }
+    }
+    return settling;
   }
-  createParticle() {
-    this.visualizer.particles.push({
-      x: Math.random() * this.visualizer.canvas.width,
-      y: Math.random() * this.visualizer.canvas.height,
-      vx: (Math.random() - 0.5) * 2,
-      vy: (Math.random() - 0.5) * 2,
-      size: Math.random() * 3 + 1,
-      life: 1,
-      opacity: 1
-    });
+  refreshVisualizerPalette() {
+    const v = this.visualizer;
+    if (!v.ctx) {
+      return;
+    }
+    const styles = getComputedStyle(document.documentElement);
+    const accent = (styles.getPropertyValue('--accent-color') || '#4a9eff').trim();
+    const hover = (styles.getPropertyValue('--hover-color') || accent).trim();
+    const key = accent + '|' + hover + '|' + v.height;
+    if (key === v.paletteKey && v.gradient) {
+      return;
+    }
+    v.paletteKey = key;
+    const gradient = v.ctx.createLinearGradient(0, 0, 0, v.height);
+    gradient.addColorStop(0, hover);
+    gradient.addColorStop(0.5, accent);
+    gradient.addColorStop(1, hover);
+    v.gradient = gradient;
+  }
+  drawVisualizerFrame() {
+    const v = this.visualizer;
+    const ctx = v.ctx;
+    if (!ctx || !v.levels) {
+      return;
+    }
+    if (!v.gradient) {
+      this.refreshVisualizerPalette();
+    }
+    const width = v.width;
+    const height = v.height;
+    ctx.clearRect(0, 0, width, height);
+    const levels = v.levels;
+    const barCount = levels.length;
+    const slot = width / barCount;
+    const barWidth = Math.max(2, slot * 0.46);
+    const radius = barWidth * 0.5;
+    const middle = height * 0.5;
+    const reach = height * 0.42;
+    const rounded = v.roundedBars;
+    ctx.beginPath();
+    for (let i = 0; i < barCount; i++) {
+      const half = Math.max(radius, levels[i] * reach);
+      const x = slot * (i + 0.5) - radius;
+      if (rounded) {
+        ctx.roundRect(x, middle - half, barWidth, half * 2, radius);
+      } else {
+        ctx.rect(x, middle - half, barWidth, half * 2);
+      }
+    }
+    ctx.fillStyle = v.gradient;
+    ctx.fill();
   }
   destroyVisualizer() {
-    this.visualizer.isActive = false;
-    if (this.visualizer.animationId) {
-      cancelAnimationFrame(this.visualizer.animationId);
+    const v = this.visualizer;
+    v.isActive = false;
+    if (v.animationId !== null) {
+      cancelAnimationFrame(v.animationId);
+      v.animationId = null;
     }
+  }
+  refreshVisualizerPower() {
+    const v = this.visualizer;
+    const host = document.getElementById('musicVisualizer');
+    if (host) {
+      host.style.display = this.visualizerEnabled ? 'block' : 'none';
+    }
+    v.isActive = !!this.visualizerEnabled;
+    if (!v.isActive) {
+      if (v.animationId !== null) {
+        cancelAnimationFrame(v.animationId);
+        v.animationId = null;
+      }
+      if (v.ctx) {
+        v.ctx.clearRect(0, 0, v.width, v.height);
+      }
+      return;
+    }
+    if (v.canvas && !v.width) {
+      this.resizeCanvas();
+    }
+    this.startVisualizer();
   }
   syncVisualizerUI() {
     if (this.elements.visualizerToggle) {
       this.elements.visualizerToggle.checked = this.visualizerEnabled;
     }
-    if (this.visualizerEnabled) {
-      document.getElementById('musicVisualizer').style.display = 'block';
-      this.visualizer.isActive = true;
-      if (!this.visualizer.animationId) {
-        this.startVisualizer();
-      }
-    } else {
-      document.getElementById('musicVisualizer').style.display = 'none';
-      this.visualizer.isActive = false;
-      if (this.visualizer.animationId) {
-        cancelAnimationFrame(this.visualizer.animationId);
-        this.visualizer.animationId = null;
-      }
-    }
+    this.refreshVisualizerPower();
   }
   handleVisualizerToggle(event) {
-    const isEnabled = event.target.checked;
-    if (isEnabled) {
-      this.visualizer.isActive = true;
-      document.getElementById('musicVisualizer').style.display = 'block';
-      if (!this.visualizer.animationId) {
-        this.startVisualizer();
-      }
-    } else {
-      this.visualizer.isActive = false;
-      document.getElementById('musicVisualizer').style.display = 'none';
-      if (this.visualizer.animationId) {
-        cancelAnimationFrame(this.visualizer.animationId);
-        this.visualizer.animationId = null;
-      }
+    this.visualizerEnabled = event.target.checked;
+    if (this.visualizerEnabled && this.isLocalPlayback) {
+      this.attachVisualizerAnalyser();
+      this.resumeVisualizerAudio();
     }
-    this.saveSetting('visualizerEnabled', isEnabled);
+    this.refreshVisualizerPower();
+    this.saveSetting('visualizerEnabled', this.visualizerEnabled);
   }
   toggleMiniplayer() {
     if (this.miniplayerWindow) {
@@ -13267,9 +13445,7 @@ class AdvancedMusicPlayer {
         console.log('Tab visible - resuming DOM updates');
         if (this.isPlaying) {
           this.updateProgressBar();
-          if (this.visualizer.isActive) {
-            this.animateVisualizer();
-          }
+          this.startVisualizer();
           this.syncUIWithCurrentState();
         }
       } else if (wasVisible && !this.isTabVisible) {
@@ -13541,14 +13717,38 @@ class AdvancedMusicPlayer {
   cleanupVisualizer() {
     try {
       this.destroyVisualizer();
-      if (this.visualizer) {
-        this.visualizer.bars = [];
-        this.visualizer.particles = [];
-        if (this.visualizer.ctx && this.visualizer.canvas) {
-          this.visualizer.ctx.clearRect(0, 0, this.visualizer.canvas.width, this.visualizer.canvas.height);
+      if (this._visualizerResizeHandler) {
+        window.removeEventListener('resize', this._visualizerResizeHandler);
+        this._visualizerResizeHandler = null;
+      }
+      const v = this.visualizer;
+      if (v) {
+        if (v.ctx) {
+          v.ctx.clearRect(0, 0, v.width, v.height);
         }
-        this.visualizer.ctx = null;
-        this.visualizer.canvas = null;
+        if (v.source) {
+          try {
+            v.source.disconnect();
+          } catch (error) {}
+        }
+        if (v.analyser) {
+          try {
+            v.analyser.disconnect();
+          } catch (error) {}
+        }
+        if (v.audioCtx && v.audioCtx.state !== 'closed') {
+          v.audioCtx.close().catch(() => {});
+        }
+        v.audioCtx = null;
+        v.analyser = null;
+        v.source = null;
+        v.freq = null;
+        v.bands = null;
+        v.levels = null;
+        v.targets = null;
+        v.gradient = null;
+        v.ctx = null;
+        v.canvas = null;
       }
       console.log('Visualizer cleaned up');
     } catch (error) {
