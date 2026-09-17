@@ -6540,6 +6540,9 @@ class AdvancedMusicPlayer {
     }
     if (hasTimestamps && this.ytPlayer) {
       this.lyricsInterval = setInterval(() => {
+        if (!this.isTabVisible) {
+          return;
+        }
         if (this.ytPlayer && this.ytPlayer.getCurrentTime && this.ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
           const currentTime = this.ytPlayer.getCurrentTime();
           this.updateHighlightedLyric(currentTime, this.currentLyrics, this.currentTimings);
@@ -6826,6 +6829,9 @@ class AdvancedMusicPlayer {
             if (event.data === YT.PlayerState.PLAYING) {
               clearInterval(state.timeUpdateInterval);
               state.timeUpdateInterval = setInterval(() => {
+                if (document.hidden) {
+                  return;
+                }
                 if (player.ytPlayer && player.ytPlayer.getCurrentTime) {
                   document.getElementById('currentTime').textContent = formatTime(player.ytPlayer.getCurrentTime());
                   updateLyricMakerVisualTimeline();
@@ -7424,6 +7430,9 @@ class AdvancedMusicPlayer {
     this.currentFullscreenHighlightedLyricIndex = -1;
     if (hasTimestamps && this.ytPlayer && this.isPlaying && this.ytPlayer.getCurrentTime) {
       this.fullscreenLyricsInterval = setInterval(() => {
+        if (!this.isTabVisible) {
+          return;
+        }
         if (this.ytPlayer && this.ytPlayer.getCurrentTime && this.isPlaying && this.isLyricsFullscreen) {
           try {
             const currentTime = this.ytPlayer.getCurrentTime();
@@ -11219,23 +11228,44 @@ class AdvancedMusicPlayer {
       thumb: doc.getElementById('mpThumb'),
       name: doc.getElementById('mpName'),
       artist: doc.getElementById('mpArtist'),
-      playPauseIcon: doc.getElementById('mpPlayPauseIcon')
+      playPauseIcon: doc.getElementById('mpPlayPauseIcon'),
+      last: {
+        thumb: '',
+        name: '',
+        artist: '',
+        isPlaying: null
+      }
     };
   }
   updateMiniplayerUI() {
-    if (!this._miniplayerEls) {
+    const els = this._miniplayerEls;
+    if (!els) {
       return;
     }
+    const last = els.last;
     const thumb = document.getElementById('currentSongThumbnail');
     const name = document.getElementById('currentSongName');
     const author = document.getElementById('currentSongAuthor');
-    if (thumb && thumb.src) {
-      this._miniplayerEls.thumb.src = thumb.src;
-    }
-    this._miniplayerEls.name.textContent = name?.textContent || 'No Song Playing';
-    this._miniplayerEls.artist.textContent = author?.textContent || '';
+    const thumbSrc = thumb && thumb.src || '';
+    const nameText = name?.textContent || 'No Song Playing';
+    const artistText = author?.textContent || '';
     const isPlaying = this.isLocalPlayback && this.localAudio ? !this.localAudio.paused : this.isPlaying;
-    this._miniplayerEls.playPauseIcon.className = `fas ${isPlaying ? 'fa-pause' : 'fa-play'}`;
+    if (thumbSrc && thumbSrc !== last.thumb) {
+      last.thumb = thumbSrc;
+      els.thumb.src = thumbSrc;
+    }
+    if (nameText !== last.name) {
+      last.name = nameText;
+      els.name.textContent = nameText;
+    }
+    if (artistText !== last.artist) {
+      last.artist = artistText;
+      els.artist.textContent = artistText;
+    }
+    if (isPlaying !== last.isPlaying) {
+      last.isPlaying = isPlaying;
+      els.playPauseIcon.className = `fas ${isPlaying ? 'fa-pause' : 'fa-play'}`;
+    }
   }
   initSupabaseForFindSongs() {
     if (!this.supabase) {
@@ -13819,17 +13849,27 @@ class AdvancedMusicPlayer {
       const wasVisible = this.isTabVisible;
       this.isTabVisible = !document.hidden;
       if (!wasVisible && this.isTabVisible) {
-        console.log('Tab visible - resuming DOM updates');
+        this.startVisualizer();
         if (this.isPlaying) {
           this.updateProgressBar();
-          this.startVisualizer();
           this.syncUIWithCurrentState();
         }
       } else if (wasVisible && !this.isTabVisible) {
-        console.log('Tab hidden - pausing DOM updates');
+        this.suspendHiddenTabWork();
       }
     };
     document.addEventListener('visibilitychange', this.handleVisibilityChange);
+  }
+  suspendHiddenTabWork() {
+    if (this.progressInterval) {
+      clearInterval(this.progressInterval);
+      this.progressInterval = null;
+    }
+    const v = this.visualizer;
+    if (v && v.animationId !== null) {
+      cancelAnimationFrame(v.animationId);
+      v.animationId = null;
+    }
   }
   syncUIWithCurrentState() {
     if (this.isLocalPlayback && this.localAudio) {
