@@ -734,3 +734,4 @@
 -  gave the library and playlist search controls the same glass blur as the tab bar, and stopped opening settings from collapsing the compact library view v72.7.0
 -  condensed the v72 changelog entries v72.8.0
 -  listening timer no longer keeps ticking after you pause, which stops it inflating your listening stats and saves a wakeup every second; trimmed per-frame work in the visualizer v72.9.0
+-  rebuilt the settings tab bar as a segmented control that stays on one row and scrolls sideways on narrow screens instead of stacking; gave selects a proper chevron, toggles a visible on state, compact rows for the colour pickers and toggle settings, and a settings dialog that no longer jumps height between tabs; fixed the miniplayer rendering with no background in glass mode and gave it the app glass treatment v72.10.0

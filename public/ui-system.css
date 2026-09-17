@@ -45,9 +45,19 @@
   --ui-control-h-sm: 28px;
   --ui-icon-btn: 30px;
 
+  --ui-tabs-pad: 3px;
+  --ui-tabs-gap: 2px;
+
   --ui-motion-fast: 0.15s ease;
   --ui-motion-enter: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
   --ui-z-modal: 9999;
+
+  --ui-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23707988' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+[data-theme="dark"],
+[data-theme="custom"] {
+  --ui-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23a4adbb' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
 @keyframes uiOverlayIn {
@@ -427,6 +437,35 @@ a.ui-btn--block {
   color: var(--text-secondary);
 }
 
+.ui-select,
+.modal select,
+.setting-group select,
+.appearance-row select,
+.subtitles-import-lang-select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 1.9rem;
+  background-image: var(--ui-chevron);
+  background-repeat: no-repeat;
+  background-position: right 0.65rem center;
+  background-size: 10px 6px;
+  cursor: pointer;
+}
+
+.ui-select::-ms-expand,
+.modal select::-ms-expand,
+.setting-group select::-ms-expand {
+  display: none;
+}
+
+.ui-select option,
+.modal select option,
+.setting-group select option,
+.subtitles-import-lang-select option {
+  background: var(--bg-secondary-base);
+  color: var(--text-primary);
+}
+
 .ui-card {
   display: flex;
   align-items: center;
@@ -453,41 +492,66 @@ a.ui-btn--block {
 
 .ui-tabs {
   display: flex;
-  gap: var(--ui-space-2);
-  padding: var(--ui-space-3) var(--ui-modal-pad-x);
-  border-bottom: var(--ui-border);
+  align-items: stretch;
+  gap: var(--ui-tabs-gap);
+  padding: var(--ui-tabs-pad);
+  border: var(--ui-border);
+  border-radius: var(--ui-radius-md);
+  background: var(--ui-surface-sunken);
   flex-shrink: 0;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.ui-tabs::-webkit-scrollbar {
+  height: 0;
+  width: 0;
 }
 
 .ui-tab {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: var(--ui-space-2);
-  padding: 0.4rem 0.8rem;
-  border: var(--ui-border);
-  border-radius: var(--ui-radius-md);
+  flex: 1 1 auto;
+  min-width: max-content;
+  min-height: var(--ui-control-h-sm);
+  padding: 0.35rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: var(--ui-radius-sm);
   background: none;
   color: var(--text-secondary);
   font-family: inherit;
   font-size: var(--ui-font-sm);
   font-weight: var(--ui-weight-semibold);
+  white-space: nowrap;
   cursor: pointer;
   transition:
-    border-color var(--ui-motion-fast),
     color var(--ui-motion-fast),
     background-color var(--ui-motion-fast);
 }
 
-.ui-tab:hover {
-  border-color: var(--accent-color);
+.ui-tab i {
+  font-size: 0.95em;
+  opacity: 0.85;
+}
+
+.ui-tab:hover:not(.active) {
   color: var(--text-primary);
+  background: var(--ui-surface);
 }
 
 .ui-tab.active {
   background: var(--accent-color);
   border-color: var(--accent-color);
   color: var(--button-text-color);
+}
+
+.ui-tab.active i {
+  opacity: 1;
 }
 
 .ui-empty {
@@ -830,6 +894,10 @@ a.ui-btn--block {
 .dl-add-url-btn,
 .sz-btn,
 .action-btn,
+.theme-buttons button,
+.import-export-group button,
+.save-theme-row button,
+.save-settings-btn,
 .import-btn {
   display: inline-flex;
   align-items: center;
@@ -873,6 +941,7 @@ a.ui-btn--block {
 .subtitles-import-switch-lang-btn:hover,
 .welcome-skip-btn:hover,
 .sz-btn:hover:not(:disabled),
+.import-export-group button:hover,
 .action-btn:hover {
   border-color: var(--accent-color);
   transform: none;
@@ -899,6 +968,9 @@ a.ui-btn--block {
 .sz-btn-primary,
 .action-btn.active,
 .import-btn,
+.theme-buttons button#saveCustomTheme,
+.save-theme-row button,
+.save-settings-btn,
 #addSongBtn,
 #importSongsBtn {
   background: var(--accent-color);
@@ -914,6 +986,9 @@ a.ui-btn--block {
 .dl-add-url-btn:hover,
 .sz-btn-primary:hover:not(:disabled),
 .import-btn:hover,
+.theme-buttons button#saveCustomTheme:hover,
+.save-theme-row button:hover,
+.save-settings-btn:hover,
 #addSongBtn:hover,
 #importSongsBtn:hover {
   background: var(--hover-color);
@@ -1051,29 +1126,45 @@ a.ui-btn--block {
   align-items: center;
   justify-content: center;
   gap: var(--ui-space-2);
-  padding: 0.45rem 0.8rem;
-  border: var(--ui-border);
-  border-radius: var(--ui-radius-md);
+  flex: 1 1 auto;
+  min-width: max-content;
+  min-height: var(--ui-control-h-sm);
+  padding: 0.35rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: var(--ui-radius-sm);
   background: none;
   color: var(--text-secondary);
   font-family: inherit;
   font-size: var(--ui-font-sm);
   font-weight: var(--ui-weight-semibold);
   line-height: 1.2;
+  white-space: nowrap;
   cursor: pointer;
   transition:
-    border-color var(--ui-motion-fast),
     color var(--ui-motion-fast),
     background-color var(--ui-motion-fast);
 }
 
+.settings-tab-btn i,
+.library-modification-tab-btn i,
+.lyrics-nav-item i {
+  font-size: 0.95em;
+  opacity: 0.85;
+}
+
 .dl-mode-btn,
 .sz-source-btn {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0;
   flex-direction: column;
   gap: var(--ui-space-1);
   padding: 0.55rem 0.35rem;
   font-size: var(--ui-font-xs);
+}
+
+.sz-source-btn {
+  border: var(--ui-border);
+  border-radius: var(--ui-radius-md);
 }
 
 .dl-mode-btn i,
@@ -1081,14 +1172,18 @@ a.ui-btn--block {
   font-size: var(--ui-font-lg);
 }
 
-.dl-mode-btn:hover,
-.sz-source-btn:hover,
-.settings-tab-btn:hover,
-.library-modification-tab-btn:hover,
-.lyrics-nav-item:hover {
+.sz-source-btn:hover {
   border-color: var(--accent-color);
   color: var(--text-primary);
   background: none;
+}
+
+.dl-mode-btn:hover:not(.active),
+.settings-tab-btn:hover:not(.active),
+.library-modification-tab-btn:hover:not(.active),
+.lyrics-nav-item:hover:not(.active) {
+  color: var(--text-primary);
+  background: var(--ui-surface);
 }
 
 .dl-mode-btn.active,
@@ -1106,10 +1201,49 @@ a.ui-btn--block {
   color: #fff;
 }
 
+.settings-modal-content.settings-modal-content {
+  height: min(var(--ui-modal-max-h), 760px);
+}
+
+.settings-modal-body.settings-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-4);
+  flex: 1 1 auto;
+}
+
+.settings-modal-body .settings-tab-content {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
 .settings-tabs,
 .library-modification-tab-navigation,
 .lyrics-navbar,
-.dl-modes,
+.dl-modes {
+  display: flex;
+  align-items: stretch;
+  gap: var(--ui-tabs-gap);
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  margin: 0;
+  padding: var(--ui-tabs-pad);
+  border: var(--ui-border);
+  border-radius: var(--ui-radius-md);
+  background: var(--ui-surface-sunken);
+}
+
+.settings-tabs::-webkit-scrollbar,
+.library-modification-tab-navigation::-webkit-scrollbar,
+.lyrics-navbar::-webkit-scrollbar,
+.dl-modes::-webkit-scrollbar {
+  height: 0;
+  width: 0;
+}
+
 .sz-source-row {
   display: flex;
   align-items: center;
@@ -1122,8 +1256,7 @@ a.ui-btn--block {
 
 .dl-modes,
 .lyrics-navbar {
-  padding: var(--ui-space-3) var(--ui-modal-pad-x);
-  border-bottom: var(--ui-border);
+  margin: var(--ui-space-3) var(--ui-modal-pad-x);
 }
 
 .dl-queue-section {

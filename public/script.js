@@ -10609,20 +10609,53 @@ class AdvancedMusicPlayer {
   }
   buildMiniplayerDOM(pipWindow) {
     const doc = pipWindow.document;
-    const cs = getComputedStyle(document.documentElement);
-    const varNames = [ '--bg-primary', '--bg-secondary', '--text-primary', '--text-secondary', '--accent-color', '--hover-color', '--border-color' ];
-    const varsCss = varNames.map(name => `${name}:${cs.getPropertyValue(name).trim()}`).join(';');
+    const root = document.documentElement;
+    const cs = getComputedStyle(root);
+    const varNames = [ '--bg-primary-base', '--bg-secondary-base', '--border-color-base', '--bg-primary', '--bg-secondary', '--text-primary', '--text-secondary', '--accent-color', '--hover-color', '--border-color', '--button-text-color', '--glass-blur', '--glass-sat', '--glass-sheen', '--glass-edge', '--glass-shade' ];
+    const varsCss = varNames.map(name => `${name}:${cs.getPropertyValue(name).trim()}`).filter(pair => !pair.endsWith(':')).join(';');
     doc.documentElement.setAttribute('style', varsCss);
+    doc.documentElement.setAttribute('data-theme', root.getAttribute('data-theme') || 'dark');
+    doc.documentElement.setAttribute('data-surface', root.getAttribute('data-surface') || 'solid');
     const iconLink = doc.createElement('link');
     iconLink.rel = 'stylesheet';
     iconLink.href = '/all.min.css';
     doc.head.appendChild(iconLink);
     const style = doc.createElement('style');
-    style.textContent = `\n\t        * { margin:0; padding:0; box-sizing:border-box; }\n\t        html, body { width:100%; height:100%; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg-secondary); color: var(--text-primary); overflow:hidden; display:flex; justify-content:center; }\n\t        .mp-body { display:flex; align-items:center; gap:10px; height:100%; width:100%; max-width:320px; padding:10px; }\n\t        .mp-thumb { width:50px; height:50px; border-radius:6px; object-fit:cover; flex-shrink:0; background:var(--bg-primary); }\n\t        .mp-info { flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:2px; }\n\t        .mp-name { font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }\n\t        .mp-artist { font-size:11px; color:var(--text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }\n\t        .mp-controls { display:flex; align-items:center; gap:6px; flex-shrink:0; }\n\t        .mp-btn { border:none; background:transparent; color:var(--text-primary); cursor:pointer; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; transition:background .15s; }\n\t        .mp-btn:hover { background:var(--border-color); }\n\t        .mp-play { width:38px; height:38px; background:var(--accent-color); color:#fff; font-size:15px; }\n\t        .mp-play:hover { background:var(--hover-color); }\n\t    `;
+    style.textContent = `
+	        * { margin:0; padding:0; box-sizing:border-box; }
+	        html { width:100%; height:100%; background:var(--bg-primary-base); }
+	        html[data-surface="glass"] { background-image: radial-gradient(420px 300px at 8% -20%, color-mix(in srgb, var(--accent-color) 46%, transparent), transparent 62%), radial-gradient(380px 280px at 104% 4%, color-mix(in srgb, var(--hover-color) 32%, transparent), transparent 58%); }
+	        body { width:100%; height:100%; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color:var(--text-primary); overflow:hidden; display:flex; align-items:stretch; justify-content:center; background:none; }
+	        .mp-body { display:flex; align-items:center; gap:10px; height:100%; width:100%; padding:10px 12px; background:var(--bg-secondary); }
+	        html[data-surface="glass"] .mp-body { background-color:color-mix(in srgb, var(--bg-secondary-base) 62%, transparent); background-image:linear-gradient(to bottom, var(--glass-sheen), transparent 46%); backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat)); -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat)); box-shadow:inset 0 1px 0 var(--glass-sheen); }
+	        .mp-thumb { width:52px; height:52px; border-radius:6px; object-fit:cover; flex-shrink:0; background:var(--bg-primary); border:1px solid var(--border-color); }
+	        .mp-info { flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:2px; }
+	        .mp-name { font-size:13px; font-weight:600; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+	        .mp-artist { font-size:11px; color:var(--text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+	        .mp-controls { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+	        .mp-btn { border:1px solid transparent; background:transparent; color:var(--text-secondary); cursor:pointer; width:30px; height:30px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:13px; transition:background-color .15s, color .15s; }
+	        .mp-btn:hover { background:var(--bg-primary); color:var(--text-primary); }
+	        .mp-play { width:34px; height:34px; background:var(--accent-color); border-color:var(--accent-color); color:var(--button-text-color); font-size:14px; }
+	        .mp-play:hover { background:var(--hover-color); border-color:var(--hover-color); color:var(--button-text-color); }
+	        html[data-surface="glass"] .mp-btn { backdrop-filter:blur(8px) saturate(var(--glass-sat)); -webkit-backdrop-filter:blur(8px) saturate(var(--glass-sat)); }
+	        html[data-surface="glass"] .mp-play { background-color:color-mix(in srgb, var(--accent-color) 82%, transparent); border-color:color-mix(in srgb, var(--accent-color) 92%, transparent); box-shadow:inset 0 1px 0 var(--glass-sheen); }
+	        @media (prefers-reduced-motion: reduce) { .mp-btn { transition:none; } }
+	    `;
     doc.head.appendChild(style);
     const body = doc.createElement('div');
     body.className = 'mp-body';
-    body.innerHTML = `\n\t        <img class="mp-thumb" id="mpThumb" alt="">\n\t        <div class="mp-info">\n\t            <div class="mp-name" id="mpName">No Song Playing</div>\n\t            <div class="mp-artist" id="mpArtist"></div>\n\t        </div>\n\t        <div class="mp-controls">\n\t            <button class="mp-btn" id="mpPrev" title="Previous" aria-label="Previous"><i class="fas fa-step-backward"></i></button>\n\t            <button class="mp-btn mp-play" id="mpPlayPause" title="Play/Pause" aria-label="Play/Pause"><i class="fas fa-play" id="mpPlayPauseIcon"></i></button>\n\t            <button class="mp-btn" id="mpNext" title="Next" aria-label="Next"><i class="fas fa-step-forward"></i></button>\n\t        </div>\n\t    `;
+    body.innerHTML = `
+	        <img class="mp-thumb" id="mpThumb" alt="">
+	        <div class="mp-info">
+	            <div class="mp-name" id="mpName">No Song Playing</div>
+	            <div class="mp-artist" id="mpArtist"></div>
+	        </div>
+	        <div class="mp-controls">
+	            <button class="mp-btn" id="mpPrev" title="Previous" aria-label="Previous"><i class="fas fa-step-backward"></i></button>
+	            <button class="mp-btn mp-play" id="mpPlayPause" title="Play/Pause" aria-label="Play/Pause"><i class="fas fa-play" id="mpPlayPauseIcon"></i></button>
+	            <button class="mp-btn" id="mpNext" title="Next" aria-label="Next"><i class="fas fa-step-forward"></i></button>
+	        </div>
+	    `;
     doc.body.appendChild(body);
     doc.getElementById('mpPrev').addEventListener('click', () => this.playPreviousSong());
     doc.getElementById('mpPlayPause').addEventListener('click', () => this.togglePlayPause());
