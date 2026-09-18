@@ -186,6 +186,7 @@ class AdvancedMusicPlayer {
     this._miniplayerEls = null;
     this._miniplayerInterval = null;
     this.isAutofillButtonHovered = false;
+    this.autofillUndoValues = null;
     this.ghostPreviewAbortController = null;
     this.currentGhostRequestId = null;
     this.ghostScrollHandler = null;
@@ -521,6 +522,7 @@ class AdvancedMusicPlayer {
       lyricsTab: document.querySelector('.tab[data-tab="lyrics"]'),
       lyricsPane: document.getElementById('lyrics'),
       autofillBtn: document.getElementById('autofillBtn'),
+      autofillUndoBtn: document.getElementById('autofillUndoBtn'),
       settingsButton: document.getElementById('settingsButton'),
       settingsModal: document.getElementById('settingsModal'),
       settingsCloseBtn: document.getElementById('settingsCloseBtn'),
@@ -743,6 +745,7 @@ class AdvancedMusicPlayer {
       autofillClick: this.handleAutofill.bind(this),
       autofillMouseenter: this.showGhostPreview.bind(this),
       autofillMouseleave: this.removeGhostPreview.bind(this),
+      autofillUndoClick: this.undoAutofill.bind(this),
       findSongsOpen: this.openFindSongs.bind(this),
       findSongsClose: this.closeFindSongs.bind(this),
       librarySearchInput: this.handleLibrarySearchInput.bind(this),
@@ -784,6 +787,9 @@ class AdvancedMusicPlayer {
         this.isAutofillButtonHovered = false;
         handlers.autofillMouseleave();
       });
+    }
+    if (this.elements.autofillUndoBtn) {
+      this.elements.autofillUndoBtn.addEventListener('click', handlers.autofillUndoClick);
     }
     this.elements.additionalDetails.addEventListener('click', e => {
       if (e.target.closest('#currentSongSection') && !window.getSelection().toString()) {
@@ -2781,14 +2787,34 @@ class AdvancedMusicPlayer {
     }
     Promise.all([ this.fetchYouTubeTitle(videoId), this.fetchYouTubeChannel(videoId) ]).then(([title, channelName]) => {
       if (title) {
+        const previousName = this.elements.songNameInput.value;
+        const previousAuthor = this.elements.songAuthorInput.value;
         const {author: author, songName: songName} = this.parseVideoTitle(title);
         this.elements.songNameInput.value = songName;
         this.elements.songAuthorInput.value = author || channelName;
+        this.autofillUndoValues = {
+          name: previousName,
+          author: previousAuthor
+        };
+        if (this.elements.autofillUndoBtn) {
+          this.elements.autofillUndoBtn.style.display = 'inline-flex';
+        }
       }
     }).catch(error => {
       console.error('Error fetching video title for autofill:', error);
       alert('Could not fetch video information for autofill');
     });
+  }
+  undoAutofill() {
+    if (!this.autofillUndoValues) {
+      return;
+    }
+    this.elements.songNameInput.value = this.autofillUndoValues.name;
+    this.elements.songAuthorInput.value = this.autofillUndoValues.author;
+    this.autofillUndoValues = null;
+    if (this.elements.autofillUndoBtn) {
+      this.elements.autofillUndoBtn.style.display = 'none';
+    }
   }
   showGhostPreview(event) {
     const songUrl = this.elements.songUrlInput.value.trim();
@@ -3179,6 +3205,12 @@ class AdvancedMusicPlayer {
       });
     });
   }
+  stripYouTubeTopicSuffix(channelName) {
+    if (!channelName) {
+      return channelName;
+    }
+    return channelName.replace(/\s*-\s*Topic\s*$/i, '').replace(/^Topic\s*-\s*/i, '').replace(/^\[Topic\]\s*/i, '').replace(/\s*\[Topic\]$/i, '').replace(/^\(Topic\)\s*/i, '').replace(/\s*\(Topic\)$/i, '').replace(/^Topic\s+/i, '').replace(/\s+Topic$/i, '').replace(/\s*\|\s*Topic\s*$/i, '').replace(/^Topic\s*\|\s*/i, '').replace(/\s*\.\s*Topic\s*$/i, '').replace(/^Topic\s*\.\s*/i, '').replace(/\s*:\s*Topic\s*$/i, '').replace(/^Topic\s*:\s*/i, '').trim();
+  }
   fetchYouTubeChannel(videoId) {
     return new Promise((resolve, reject) => {
       const url = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`;
@@ -3188,9 +3220,7 @@ class AdvancedMusicPlayer {
         }
         return response.json();
       }).then(data => {
-        let channelName = data.author_name;
-        channelName = channelName.replace(/\s*-\s*Topic\s*$/i, '').replace(/^Topic\s*-\s*/i, '').replace(/^\[Topic\]\s*/i, '').replace(/\s*\[Topic\]$/i, '').replace(/^\(Topic\)\s*/i, '').replace(/\s*\(Topic\)$/i, '').replace(/^Topic\s+/i, '').replace(/\s+Topic$/i, '').replace(/\s*\|\s*Topic\s*$/i, '').replace(/^Topic\s*\|\s*/i, '').replace(/\s*\.\s*Topic\s*$/i, '').replace(/^Topic\s*\.\s*/i, '').replace(/\s*:\s*Topic\s*$/i, '').replace(/^Topic\s*:\s*/i, '').trim();
-        resolve(channelName);
+        resolve(this.stripYouTubeTopicSuffix(data.author_name));
       }).catch(error => {
         console.error('Error fetching YouTube channel:', error);
         reject(error);
@@ -3229,6 +3259,10 @@ class AdvancedMusicPlayer {
   closeLibraryModal() {
     this.elements.libraryModificationModal.style.display = 'none';
     this.removeGhostPreview();
+    this.autofillUndoValues = null;
+    if (this.elements.autofillUndoBtn) {
+      this.elements.autofillUndoBtn.style.display = 'none';
+    }
     if (typeof this.onLibraryModalCloseCallback === 'function') {
       const callback = this.onLibraryModalCloseCallback;
       this.onLibraryModalCloseCallback = null;
@@ -12141,7 +12175,7 @@ class AdvancedMusicPlayer {
     this.openLibraryModal();
     this.elements.songUrlInput.value = youtubeUrl;
     this.elements.songNameInput.value = title;
-    this.elements.songAuthorInput.value = channel;
+    this.elements.songAuthorInput.value = this.stripYouTubeTopicSuffix(channel);
     this.handleUrlPaste();
     this.elements.librarySearch.value = '';
     this.hideYouTubeSearchSuggestion();
