@@ -7,6 +7,10 @@
     {
       "source": "/song/:videoId",
       "destination": "/api/song/:videoId"
+    },
+    {
+      "source": "/download",
+      "destination": "/download.html"
     }
   ],
   "functions": {

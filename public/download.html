@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Download - SweetEscape</title>
+<meta name="description" content="Search and download any song as MP3">
+<link rel="icon" href="/favicon.svg">
+<style>
+:root {
+  --bg-primary: #f4f4f4;
+  --bg-secondary: #ffffff;
+  --text-primary: #333;
+  --text-secondary: #666;
+  --accent-color: #5D9C59;
+  --hover-color: #4A7C59;
+  --border-color: #ddd;
+  --button-text-color: #ffffff;
+  --error-color: #dc3545;
+}
+[data-theme='dark'] {
+  --bg-primary: #121212;
+  --bg-secondary: #1e1e1e;
+  --text-primary: #e0e0e0;
+  --text-secondary: #b0b0b0;
+  --accent-color: #3A6B35;
+  --hover-color: #4D7C46;
+  --border-color: #444;
+}
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  padding: 1.5rem 1rem 3rem;
+}
+.container {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.page-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  text-align: center;
+}
+.page-subtitle {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  text-align: center;
+}
+.search-bar {
+  display: flex;
+  gap: 0.5rem;
+}
+.search-bar input {
+  flex: 1;
+  padding: 0.85rem 1rem;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  font-size: 1rem;
+  outline: none;
+}
+.search-bar input:focus {
+  border-color: var(--accent-color);
+}
+.search-bar button {
+  padding: 0.85rem 1.25rem;
+  background-color: var(--accent-color);
+  color: var(--button-text-color);
+  border: none;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+.search-bar button:hover {
+  background-color: var(--hover-color);
+}
+.search-bar button:disabled {
+  background-color: var(--text-secondary);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.message {
+  padding: 0.85rem 1rem;
+  background-color: var(--accent-color);
+  color: var(--button-text-color);
+  text-align: center;
+  font-weight: 500;
+  display: none;
+}
+.message.error {
+  background-color: var(--error-color);
+}
+.message.show {
+  display: block;
+}
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.result-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.6rem;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+.result-thumb {
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+  background-color: var(--bg-primary);
+  background-size: cover;
+  background-position: center;
+}
+.result-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.result-name {
+  font-size: 0.95rem;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.result-author {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.result-status {
+  font-size: 0.8rem;
+  color: var(--accent-color);
+}
+.result-status.error {
+  color: var(--error-color);
+}
+.result-action {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border: none;
+  background-color: var(--accent-color);
+  color: var(--button-text-color);
+  cursor: pointer;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.result-action:hover {
+  background-color: var(--hover-color);
+}
+.result-action:disabled {
+  background-color: var(--text-secondary);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.result-action.done {
+  background-color: var(--accent-color);
+}
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.empty-state {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  padding: 1.5rem 0;
+}
+.back-link {
+  display: block;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  text-decoration: none;
+  margin-top: 0.5rem;
+}
+.back-link:hover {
+  color: var(--text-primary);
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="page-title">Download a Song</div>
+  <div class="page-subtitle">Search for a song, then tap a result to download it as MP3</div>
+
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Song name or artist" autocomplete="off" autocapitalize="off" enterkeyhint="search">
+    <button id="searchBtn">Search</button>
+  </div>
+
+  <div class="message" id="message"></div>
+
+  <div class="results" id="results"></div>
+
+  <a class="back-link" href="/">Back to SweetEscape</a>
+</div>
+
+<script>
+class DownloadPage {
+  constructor() {
+    this.elements = {
+      searchInput: document.getElementById('searchInput'),
+      searchBtn: document.getElementById('searchBtn'),
+      message: document.getElementById('message'),
+      results: document.getElementById('results')
+    };
+    this.results = [];
+    this.setupEventListeners();
+    this.elements.results.innerHTML = '<div class="empty-state">Search above to find a song</div>';
+  }
+
+  setupEventListeners() {
+    this.elements.searchBtn.addEventListener('click', () => this.search());
+    this.elements.searchInput.addEventListener('keypress', e => {
+      if (e.key === 'Enter') this.search();
+    });
+  }
+
+  showMessage(text, type = 'success') {
+    this.elements.message.textContent = text;
+    this.elements.message.className = `message ${type} show`;
+    setTimeout(() => this.elements.message.classList.remove('show'), 5000);
+  }
+
+  async search() {
+    const query = this.elements.searchInput.value.trim();
+    if (!query) {
+      this.elements.searchInput.focus();
+      return;
+    }
+    this.elements.searchBtn.disabled = true;
+    this.elements.searchBtn.textContent = 'Searching…';
+    this.elements.results.innerHTML = '<div class="empty-state">Searching…</div>';
+
+    const keyIndex = Math.floor(Math.random() * 5);
+    try {
+      const res = await fetch(`/api/youtube?query=${encodeURIComponent(query)}&maxResults=6&type=combined&keyIndex=${keyIndex}`);
+      const result = await res.json();
+      if (result.status !== 200) {
+        throw new Error('search_failed');
+      }
+      const items = (result.data && result.data.items) || [];
+      this.results = items.map(item => ({
+        videoId: item.id.videoId,
+        name: item.snippet.title,
+        author: item.snippet.channelTitle,
+        thumb: (item.snippet.thumbnails && (item.snippet.thumbnails.medium || item.snippet.thumbnails.default) || {}).url || '',
+        status: 'idle',
+        link: null
+      }));
+      if (!this.results.length) {
+        this.elements.results.innerHTML = '<div class="empty-state">No results found</div>';
+      } else {
+        this.renderResults();
+      }
+    } catch (err) {
+      this.elements.results.innerHTML = '';
+      this.showMessage('Search failed. Please try again.', 'error');
+    } finally {
+      this.elements.searchBtn.disabled = false;
+      this.elements.searchBtn.textContent = 'Search';
+    }
+  }
+
+  renderResults() {
+    this.elements.results.innerHTML = this.results.map((item, i) => `
+      <div class="result-item" data-idx="${i}">
+        <div class="result-thumb" style="${item.thumb ? `background-image:url(${item.thumb})` : ''}"></div>
+        <div class="result-info">
+          <div class="result-name"></div>
+          <div class="result-author"></div>
+          <div class="result-status" style="display:none"></div>
+        </div>
+        <button class="result-action" title="Download">&#8681;</button>
+      </div>
+    `).join('');
+
+    this.elements.results.querySelectorAll('.result-item').forEach((el, i) => {
+      const item = this.results[i];
+      el.querySelector('.result-name').textContent = item.name;
+      el.querySelector('.result-author').textContent = item.author;
+      el.querySelector('.result-action').addEventListener('click', () => this.downloadItem(item, el));
+    });
+  }
+
+  setItemStatus(el, item, status, text) {
+    item.status = status;
+    const statusEl = el.querySelector('.result-status');
+    const btn = el.querySelector('.result-action');
+    if (text) {
+      statusEl.style.display = '';
+      statusEl.textContent = text;
+      statusEl.className = `result-status${status === 'error' ? ' error' : ''}`;
+    } else {
+      statusEl.style.display = 'none';
+    }
+    if (status === 'converting') {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span>';
+    } else if (status === 'done') {
+      btn.disabled = false;
+      btn.classList.add('done');
+      btn.innerHTML = '&#8681;';
+    } else if (status === 'error') {
+      btn.disabled = false;
+      btn.innerHTML = '&#8635;';
+    } else {
+      btn.disabled = false;
+      btn.innerHTML = '&#8681;';
+    }
+  }
+
+  downloadItem(item, el) {
+    if (item.status === 'done' && item.link) {
+      window.open(item.link, '_blank');
+      return;
+    }
+    if (item.status === 'converting') return;
+    this.convertItem(item, el, 0);
+  }
+
+  async convertItem(item, el, retries) {
+    this.setItemStatus(el, item, 'converting', 'Converting…');
+    try {
+      const res = await fetch(`/api/download?videoId=${item.videoId}`);
+      const data = await res.json();
+      if (data.status === 'ok' && data.link) {
+        item.link = data.link;
+        this.setItemStatus(el, item, 'done', 'Ready — tap to download');
+        window.open(item.link, '_blank');
+      } else if (data.progress !== undefined && data.progress < 100) {
+        if (retries >= 5) {
+          this.setItemStatus(el, item, 'error', 'Failed — tap to retry');
+        } else {
+          setTimeout(() => this.convertItem(item, el, retries + 1), 8000);
+        }
+      } else if (data.error === 'quota_exceeded') {
+        this.setItemStatus(el, item, 'error', 'API limit reached — tap to retry');
+      } else {
+        this.setItemStatus(el, item, 'error', 'Failed — tap to retry');
+      }
+    } catch (err) {
+      this.setItemStatus(el, item, 'error', 'Failed — tap to retry');
+    }
+  }
+}
+
+new DownloadPage();
+</script>
+</body>
+</html>
