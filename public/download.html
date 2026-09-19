@@ -218,6 +218,29 @@ body {
   font-size: 0.9rem;
   padding: 1.5rem 0;
 }
+.show-more-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+.show-more-btn.visible {
+  display: flex;
+}
+.show-more-btn:hover {
+  background-color: var(--bg-primary);
+}
+.show-more-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
 .back-link {
   display: block;
   text-align: center;
@@ -248,6 +271,8 @@ body {
 
   <div class="results" id="results"></div>
 
+  <button class="show-more-btn" id="showMoreBtn"><i class="fas fa-chevron-down"></i> Show 3 more</button>
+
   <a class="back-link" href="/">Back to SweetEscape</a>
 </div>
 
@@ -258,11 +283,15 @@ class DownloadPage {
       searchInput: document.getElementById('searchInput'),
       searchBtn: document.getElementById('searchBtn'),
       topicToggleBtn: document.getElementById('topicToggleBtn'),
+      showMoreBtn: document.getElementById('showMoreBtn'),
       message: document.getElementById('message'),
       results: document.getElementById('results')
     };
     this.results = [];
     this.topicKeywordEnabled = true;
+    this.effectiveQuery = '';
+    this.keyIndex = 0;
+    this.nextPageToken = null;
     this.setupEventListeners();
     this.elements.results.innerHTML = '<div class="empty-state">Search above to find a song</div>';
   }
@@ -273,6 +302,7 @@ class DownloadPage {
       if (e.key === 'Enter') this.search();
     });
     this.elements.topicToggleBtn.addEventListener('click', () => this.toggleTopicKeyword());
+    this.elements.showMoreBtn.addEventListener('click', () => this.showMore());
   }
 
   toggleTopicKeyword() {
@@ -292,32 +322,25 @@ class DownloadPage {
       this.elements.searchInput.focus();
       return;
     }
+    this.results = [];
+    this.nextPageToken = null;
+    this.effectiveQuery = this.topicKeywordEnabled ? `${query} "topic"` : query;
+    this.keyIndex = Math.floor(Math.random() * 5);
+    this.elements.showMoreBtn.classList.remove('visible');
     this.elements.searchBtn.disabled = true;
     this.elements.searchBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Searching…';
     this.elements.results.innerHTML = '<div class="empty-state">Searching…</div>';
 
-    const effectiveQuery = this.topicKeywordEnabled ? `${query} "topic"` : query;
-    const keyIndex = Math.floor(Math.random() * 5);
     try {
-      const res = await fetch(`/api/youtube?query=${encodeURIComponent(effectiveQuery)}&maxResults=6&type=combined&keyIndex=${keyIndex}`);
-      const result = await res.json();
-      if (result.status !== 200) {
-        throw new Error('search_failed');
-      }
-      const items = (result.data && result.data.items) || [];
-      this.results = items.map(item => ({
-        videoId: item.id.videoId,
-        name: item.snippet.title,
-        author: item.snippet.channelTitle,
-        thumb: (item.snippet.thumbnails && (item.snippet.thumbnails.medium || item.snippet.thumbnails.default) || {}).url || '',
-        status: 'idle',
-        link: null
-      }));
-      if (!this.results.length) {
+      const { items, nextPageToken } = await this.fetchResults(null);
+      this.nextPageToken = nextPageToken;
+      if (!items.length) {
         this.elements.results.innerHTML = '<div class="empty-state">No results found</div>';
       } else {
-        this.renderResults();
+        this.elements.results.innerHTML = '';
+        this.appendResults(items);
       }
+      this.elements.showMoreBtn.classList.toggle('visible', !!this.nextPageToken);
     } catch (err) {
       this.elements.results.innerHTML = '';
       this.showMessage('Search failed. Please try again.', 'error');
@@ -327,9 +350,48 @@ class DownloadPage {
     }
   }
 
-  renderResults() {
-    this.elements.results.innerHTML = this.results.map((item, i) => `
-      <div class="result-item" data-idx="${i}">
+  async showMore() {
+    if (!this.nextPageToken) return;
+    this.elements.showMoreBtn.disabled = true;
+    this.elements.showMoreBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Loading…';
+    try {
+      const { items, nextPageToken } = await this.fetchResults(this.nextPageToken);
+      this.nextPageToken = nextPageToken;
+      this.appendResults(items);
+      this.elements.showMoreBtn.classList.toggle('visible', !!this.nextPageToken);
+    } catch (err) {
+      this.showMessage('Failed to load more results.', 'error');
+    } finally {
+      this.elements.showMoreBtn.disabled = false;
+      this.elements.showMoreBtn.innerHTML = '<i class="fas fa-chevron-down"></i> Show 3 more';
+    }
+  }
+
+  async fetchResults(pageToken) {
+    let url = `/api/youtube?query=${encodeURIComponent(this.effectiveQuery)}&maxResults=3&type=combined&keyIndex=${this.keyIndex}`;
+    if (pageToken) url += `&pageToken=${encodeURIComponent(pageToken)}`;
+    const res = await fetch(url);
+    const result = await res.json();
+    if (result.status !== 200) {
+      throw new Error('search_failed');
+    }
+    const items = ((result.data && result.data.items) || []).map(item => ({
+      videoId: item.id.videoId,
+      name: item.snippet.title,
+      author: item.snippet.channelTitle,
+      thumb: (item.snippet.thumbnails && (item.snippet.thumbnails.medium || item.snippet.thumbnails.default) || {}).url || '',
+      status: 'idle',
+      link: null
+    }));
+    return { items, nextPageToken: (result.data && result.data.nextPageToken) || null };
+  }
+
+  appendResults(items) {
+    items.forEach(item => {
+      this.results.push(item);
+      const el = document.createElement('div');
+      el.className = 'result-item';
+      el.innerHTML = `
         <div class="result-thumb" style="${item.thumb ? `background-image:url(${item.thumb})` : ''}"></div>
         <div class="result-info">
           <div class="result-name"></div>
@@ -337,14 +399,11 @@ class DownloadPage {
           <div class="result-status" style="display:none"></div>
         </div>
         <button class="result-action" title="Download"><i class="fas fa-download"></i></button>
-      </div>
-    `).join('');
-
-    this.elements.results.querySelectorAll('.result-item').forEach((el, i) => {
-      const item = this.results[i];
+      `;
       el.querySelector('.result-name').textContent = item.name;
       el.querySelector('.result-author').textContent = item.author;
       el.querySelector('.result-action').addEventListener('click', () => this.downloadItem(item, el));
+      this.elements.results.appendChild(el);
     });
   }
 
