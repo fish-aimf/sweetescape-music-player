@@ -6,6 +6,7 @@
 <title>Download - SweetEscape</title>
 <meta name="description" content="Search and download any song as MP3">
 <link rel="icon" href="/favicon.svg">
+<link rel="stylesheet" href="/all.min.css">
 <style>
 :root {
   --bg-primary: #f4f4f4;
@@ -61,19 +62,53 @@ body {
   display: flex;
   gap: 0.5rem;
 }
-.search-bar input {
+.search-input-wrap {
   flex: 1;
-  padding: 0.85rem 1rem;
+  display: flex;
+  align-items: stretch;
   background-color: var(--bg-secondary);
-  color: var(--text-primary);
   border: 1px solid var(--border-color);
+  min-width: 0;
+}
+.search-input-wrap:focus-within {
+  border-color: var(--accent-color);
+}
+.search-input-wrap input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.85rem 1rem;
+  background-color: transparent;
+  color: var(--text-primary);
+  border: none;
   font-size: 1rem;
   outline: none;
 }
-.search-bar input:focus {
-  border-color: var(--accent-color);
+.topic-toggle-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 0.75rem;
+  border: none;
+  border-left: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--accent-color);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.15s, opacity 0.15s;
 }
-.search-bar button {
+.topic-toggle-btn.is-off {
+  color: var(--text-secondary);
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+.search-bar button.search-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   padding: 0.85rem 1.25rem;
   background-color: var(--accent-color);
   color: var(--button-text-color);
@@ -82,10 +117,10 @@ body {
   font-weight: 500;
   cursor: pointer;
 }
-.search-bar button:hover {
+.search-bar button.search-btn:hover {
   background-color: var(--hover-color);
 }
-.search-bar button:disabled {
+.search-bar button.search-btn:disabled {
   background-color: var(--text-secondary);
   cursor: not-allowed;
   opacity: 0.6;
@@ -177,17 +212,6 @@ body {
 .result-action.done {
   background-color: var(--accent-color);
 }
-.spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-}
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
 .empty-state {
   text-align: center;
   color: var(--text-secondary);
@@ -213,8 +237,11 @@ body {
   <div class="page-subtitle">Search for a song, then tap a result to download it as MP3</div>
 
   <div class="search-bar">
-    <input type="text" id="searchInput" placeholder="Song name or artist" autocomplete="off" autocapitalize="off" enterkeyhint="search">
-    <button id="searchBtn">Search</button>
+    <div class="search-input-wrap">
+      <input type="text" id="searchInput" placeholder="Song name or artist" autocomplete="off" autocapitalize="off" enterkeyhint="search">
+      <button class="topic-toggle-btn" id="topicToggleBtn" title='Appends "topic" to the search — topic videos are usually the cleanest audio-only upload' aria-label='Toggle "topic" keyword'>"topic"</button>
+    </div>
+    <button class="search-btn" id="searchBtn"><i class="fas fa-search"></i> Search</button>
   </div>
 
   <div class="message" id="message"></div>
@@ -230,10 +257,12 @@ class DownloadPage {
     this.elements = {
       searchInput: document.getElementById('searchInput'),
       searchBtn: document.getElementById('searchBtn'),
+      topicToggleBtn: document.getElementById('topicToggleBtn'),
       message: document.getElementById('message'),
       results: document.getElementById('results')
     };
     this.results = [];
+    this.topicKeywordEnabled = true;
     this.setupEventListeners();
     this.elements.results.innerHTML = '<div class="empty-state">Search above to find a song</div>';
   }
@@ -243,6 +272,12 @@ class DownloadPage {
     this.elements.searchInput.addEventListener('keypress', e => {
       if (e.key === 'Enter') this.search();
     });
+    this.elements.topicToggleBtn.addEventListener('click', () => this.toggleTopicKeyword());
+  }
+
+  toggleTopicKeyword() {
+    this.topicKeywordEnabled = !this.topicKeywordEnabled;
+    this.elements.topicToggleBtn.classList.toggle('is-off', !this.topicKeywordEnabled);
   }
 
   showMessage(text, type = 'success') {
@@ -258,12 +293,13 @@ class DownloadPage {
       return;
     }
     this.elements.searchBtn.disabled = true;
-    this.elements.searchBtn.textContent = 'Searching…';
+    this.elements.searchBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Searching…';
     this.elements.results.innerHTML = '<div class="empty-state">Searching…</div>';
 
+    const effectiveQuery = this.topicKeywordEnabled ? `${query} "topic"` : query;
     const keyIndex = Math.floor(Math.random() * 5);
     try {
-      const res = await fetch(`/api/youtube?query=${encodeURIComponent(query)}&maxResults=6&type=combined&keyIndex=${keyIndex}`);
+      const res = await fetch(`/api/youtube?query=${encodeURIComponent(effectiveQuery)}&maxResults=6&type=combined&keyIndex=${keyIndex}`);
       const result = await res.json();
       if (result.status !== 200) {
         throw new Error('search_failed');
@@ -287,7 +323,7 @@ class DownloadPage {
       this.showMessage('Search failed. Please try again.', 'error');
     } finally {
       this.elements.searchBtn.disabled = false;
-      this.elements.searchBtn.textContent = 'Search';
+      this.elements.searchBtn.innerHTML = '<i class="fas fa-search"></i> Search';
     }
   }
 
@@ -300,7 +336,7 @@ class DownloadPage {
           <div class="result-author"></div>
           <div class="result-status" style="display:none"></div>
         </div>
-        <button class="result-action" title="Download">&#8681;</button>
+        <button class="result-action" title="Download"><i class="fas fa-download"></i></button>
       </div>
     `).join('');
 
@@ -325,17 +361,17 @@ class DownloadPage {
     }
     if (status === 'converting') {
       btn.disabled = true;
-      btn.innerHTML = '<span class="spinner"></span>';
+      btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
     } else if (status === 'done') {
       btn.disabled = false;
       btn.classList.add('done');
-      btn.innerHTML = '&#8681;';
+      btn.innerHTML = '<i class="fas fa-download"></i>';
     } else if (status === 'error') {
       btn.disabled = false;
-      btn.innerHTML = '&#8635;';
+      btn.innerHTML = '<i class="fas fa-redo"></i>';
     } else {
       btn.disabled = false;
-      btn.innerHTML = '&#8681;';
+      btn.innerHTML = '<i class="fas fa-download"></i>';
     }
   }
 
