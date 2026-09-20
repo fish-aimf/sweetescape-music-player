@@ -6978,7 +6978,8 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   width: 100%;
   min-width: 0;
 }
-.song-edit-regenerate-btn {
+.song-edit-regenerate-btn,
+.song-edit-share-btn {
   flex-shrink: 0;
 }
 .song-edit-local-file-btn {

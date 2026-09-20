@@ -2973,7 +2973,7 @@ class AdvancedMusicPlayer {
     const modal = document.createElement('div');
     modal.className = 'modal ui-overlay';
     modal.style.display = 'flex';
-    modal.innerHTML = `\n\t        <div class="modal-content song-edit-modal-content ui-modal ui-modal--md">\n\t            <div class="song-edit-modal-header ui-modal__header">\n\t                <h3 class="ui-modal__title"><i class="fas fa-pen"></i> Edit Song Details</h3>\n\t                <span class="close-btn song-edit-close-btn ui-modal__close" role="button" title="Close"><i class="fas fa-times"></i></span>\n\t            </div>\n\t            <form class="song-edit-form ui-modal__body ui-modal__body--stack">\n\t                <div class="song-edit-form-grid">\n\t                    <label class="song-edit-form-label">Song Name:</label>\n\t                    <input class="song-edit-form-input" data-field="name" type="text" required>\n\t\n\t                    <label class="song-edit-form-label">Author:</label>\n\t                    <input class="song-edit-form-input" data-field="author" type="text" placeholder="Author name (optional)">\n\t\n\t                    <label class="song-edit-form-label">YouTube URL:</label>\n\t                    <div class="song-edit-url-wrapper">\n\t                        <input class="song-edit-form-input" data-field="url" type="text" required>\n\t                        <button type="button" class="song-edit-regenerate-btn" data-field="regenerateBtn" title="Find a different video for this song"><i class="fas fa-arrows-rotate"></i></button>\n\t                    </div>\n\t\n\t                    <label class="song-edit-form-label">Local file:</label>\n\t                    <div class="song-edit-local-file-wrapper">\n\t                        <button type="button" class="song-edit-local-file-btn" data-field="localFileBtn"></button>\n\t                        <button type="button" class="song-edit-unlink-btn" data-field="unlinkBtn" title="Remove local file">&#x2715;</button>\n\t                    </div>\n\t                </div>\n\t\n\t                <div class="song-edit-thumbnail-container">\n\t                    <img class="song-edit-thumbnail" data-field="thumbnail" alt="Video thumbnail">\n\t                </div>\n\t\n\t                <div class="song-edit-lyrics-container">\n\t                    <label class="song-edit-lyrics-label">Lyrics (Format: "Lyric line [MM:SS]" - one per line):</label>\n\t                    <textarea class="song-edit-lyrics-input" data-field="lyrics"\n\t                        placeholder="Enter lyrics with timestamps like:&#10;This is the end [0:33]&#10;Hold your breath and count to ten [0:38]"></textarea>\n\t                </div>\n\t\n\t                <button type="submit" class="song-edit-save-btn ui-btn ui-btn--primary ui-btn--block"><i class="fas fa-floppy-disk"></i> Save Changes</button>\n\t            </form>\n\t        </div>\n\t    `;
+    modal.innerHTML = `\n\t        <div class="modal-content song-edit-modal-content ui-modal ui-modal--md">\n\t            <div class="song-edit-modal-header ui-modal__header">\n\t                <h3 class="ui-modal__title"><i class="fas fa-pen"></i> Edit Song Details</h3>\n\t                <span class="close-btn song-edit-close-btn ui-modal__close" role="button" title="Close"><i class="fas fa-times"></i></span>\n\t            </div>\n\t            <form class="song-edit-form ui-modal__body ui-modal__body--stack">\n\t                <div class="song-edit-form-grid">\n\t                    <label class="song-edit-form-label">Song Name:</label>\n\t                    <input class="song-edit-form-input" data-field="name" type="text" required>\n\t\n\t                    <label class="song-edit-form-label">Author:</label>\n\t                    <input class="song-edit-form-input" data-field="author" type="text" placeholder="Author name (optional)">\n\t\n\t                    <label class="song-edit-form-label">YouTube URL:</label>\n\t                    <div class="song-edit-url-wrapper">\n\t                        <input class="song-edit-form-input" data-field="url" type="text" required>\n\t                        <button type="button" class="song-edit-regenerate-btn" data-field="regenerateBtn" title="Find a different video for this song"><i class="fas fa-arrows-rotate"></i></button>\n\t                        <button type="button" class="song-edit-share-btn" data-field="shareBtn" title="Copy share link"><i class="fas fa-share-nodes"></i></button>\n\t                    </div>\n\t\n\t                    <label class="song-edit-form-label">Local file:</label>\n\t                    <div class="song-edit-local-file-wrapper">\n\t                        <button type="button" class="song-edit-local-file-btn" data-field="localFileBtn"></button>\n\t                        <button type="button" class="song-edit-unlink-btn" data-field="unlinkBtn" title="Remove local file">&#x2715;</button>\n\t                    </div>\n\t                </div>\n\t\n\t                <div class="song-edit-thumbnail-container">\n\t                    <img class="song-edit-thumbnail" data-field="thumbnail" alt="Video thumbnail">\n\t                </div>\n\t\n\t                <div class="song-edit-lyrics-container">\n\t                    <label class="song-edit-lyrics-label">Lyrics (Format: "Lyric line [MM:SS]" - one per line):</label>\n\t                    <textarea class="song-edit-lyrics-input" data-field="lyrics"\n\t                        placeholder="Enter lyrics with timestamps like:&#10;This is the end [0:33]&#10;Hold your breath and count to ten [0:38]"></textarea>\n\t                </div>\n\t\n\t                <button type="submit" class="song-edit-save-btn ui-btn ui-btn--primary ui-btn--block"><i class="fas fa-floppy-disk"></i> Save Changes</button>\n\t            </form>\n\t        </div>\n\t    `;
     const nameInput = modal.querySelector('[data-field="name"]');
     const authorInput = modal.querySelector('[data-field="author"]');
     const urlInput = modal.querySelector('[data-field="url"]');
@@ -2984,6 +2984,7 @@ class AdvancedMusicPlayer {
     const form = modal.querySelector('.song-edit-form');
     const closeBtn = modal.querySelector('.song-edit-close-btn');
     const regenerateBtn = modal.querySelector('[data-field="regenerateBtn"]');
+    const shareBtn = modal.querySelector('[data-field="shareBtn"]');
     nameInput.value = song.name;
     authorInput.value = song.author || '';
     urlInput.value = `https://www.youtube.com/watch?v=${song.videoId}`;
@@ -3028,6 +3029,19 @@ class AdvancedMusicPlayer {
         if (error.name !== 'AbortError') {
           console.warn('File picker error:', error);
         }
+      }
+    });
+    shareBtn.addEventListener('click', async () => {
+      const videoId = this.extractYouTubeId(urlInput.value) || song.videoId;
+      if (!videoId) {
+        this.showNotification('No video linked to this song yet.', 'error');
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(`${location.origin}/song/${videoId}`);
+        this.showNotification('Share link copied to clipboard!', 'success');
+      } catch {
+        this.showNotification('Could not copy the share link.', 'error');
       }
     });
     regenerateBtn.addEventListener('click', () => {

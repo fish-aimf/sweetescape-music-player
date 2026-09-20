@@ -745,3 +745,4 @@
 - added a standalone /download page: a mobile-friendly search bar that looks up YouTube results and lets you tap one to convert and download it as MP3, reusing the same search and conversion endpoints as the in-app download modal v73.6.0
 - gave the /download page the same "topic" search toggle as the library search bar (on by default, strikethrough when off), and switched its buttons over to the local Font Awesome icon set to match the rest of the app v73.7.0
 - the /download page now only fetches 3 results per search to save YouTube API quota, with a "Show 3 more" button that pages through further results as many times as you tap it v73.8.0
+- added a share button next to the regenerate button in the Edit Song modal that copies the song's /song/:id link to the clipboard, so it can be pasted straight into Discord and other chats for a rich preview v73.9.0
