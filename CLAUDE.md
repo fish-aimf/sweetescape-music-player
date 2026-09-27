@@ -7,15 +7,31 @@ There is no bundler, no package.json, no test suite. Edit the file, reload the p
 
 | Path | What it is |
 |---|---|
-| `public/index.html` | The whole app's markup, including every modal (~1370 lines) |
-| `public/script.js` | One class, `AdvancedMusicPlayer`, plus a module-level `UI` factory (~13.4k lines) |
+| `public/index.html` | The whole app's markup, including every modal (~1.5k lines) |
+| `public/script.js` | One class, `AdvancedMusicPlayer`, plus a module-level `UI` factory (~15k lines, 600 KB) |
 | `public/style.css` | Feature styles. Machine-formatted: selectors are merged into shared groups, so one class's rules are scattered across many blocks |
 | `public/ui-system.css` | Design system. Loads **after** style.css and is authoritative for shared chrome |
 | `public/script/settings.js` | Settings modal behaviour, lazy-fetched on first open |
 | `public/karaoke.html` + `karaoke-styles.css` + `karaoke-player.js` + `karaoke-encoder.js` | Standalone karaoke share page |
 | `public/sw.js` | Service worker. `STATIC_ASSETS` must list any new top-level asset |
+| `api/` | Vercel serverless functions (`youtube`, `deezer`, `genius`, `shazam`, `download`, `count`, `gemini`, `song/[videoId]`) |
 | `vercel.json` | Rewrites + the immutable `Cache-Control` regex for hashed-forever assets |
+| `CODEMAP.md` | **Generated** index of every method, element alias and dialog — read this before searching `script.js` |
 | `ARCHITECTURE.md` | Class overview and the full UI design system reference |
+| `scripts/` | Dev tooling (below) + `update-billboard.js`, run by a GitHub Action |
+
+## Finding things without burning tokens
+
+`public/script.js` is 600 KB across ~15k lines, and 54 of those lines are longer than
+300 characters (the machine-formatted `innerHTML` template literals — the longest is
+3.9 KB). **A single `grep -n` that hits a few of them dumps tens of kilobytes.**
+
+- Start from `CODEMAP.md`: 567 methods grouped by topic, the `this.elements` keys whose
+  names differ from their DOM id, and every dialog id with its line in `index.html`.
+  Regenerate with `node scripts/codemap.js` (<1s) if it looks stale.
+- Search with `grep -o`, or pipe through `cut -c1-200`, and only widen once you know
+  which line you want.
+- Read by range — `sed -n '1200,1260p'` — rather than opening the whole file.
 
 ## House rules
 
@@ -26,6 +42,22 @@ There is no bundler, no package.json, no test suite. Edit the file, reload the p
   the `Update Version File` workflow from the last version in the changelog — matching it
   by hand is fine but not required.
 - Commit on `main`. Attribution trailer per the session reminder.
+- Regenerate `CODEMAP.md` when you add, remove or rename a method.
+
+## Editing: the files are CRLF
+
+Every tracked text file uses CRLF. A patch script that searches for a multi-line string
+built with `\n` will silently match nothing — convert the needle and the replacement to
+`\r\n` first:
+
+```js
+const cr = t => t.split('\r\n').join('\n').split('\n').join('\r\n');
+```
+
+The same applies to heredocs and `printf` when appending to `changelog.md`.
+Note that a `\n` inside a template literal in `script.js` is a **literal two-character
+`\n`** in the file, not a newline — those single-line `innerHTML` strings are full of
+`\n\t` sequences that must be matched verbatim.
 
 ## UI work
 
@@ -53,28 +85,35 @@ keeps that selector at (0,1,1) so modifiers still win. If a new style "doesn't a
 check specificity against `style.css` before adding `!important` (there are almost none
 in the codebase; keep it that way).
 
+### Text from external APIs
+
+The YouTube Data API returns `snippet.title` / `channelTitle` HTML-escaped. Anything from
+an API goes through `decodeHtmlEntities()` **at the ingest point**, then `escapeHtml()`
+on the way into markup — never hand-rolled quote replacement, and never `escapeHtml` on
+text headed for `textContent` or an input `value`.
+
 ## Verifying a change
 
 No test suite. Do this instead:
 
 ```bash
-node --check public/script.js          # and settings.js, sw.js, karaoke-*.js
+node --check public/script.js public/script/settings.js public/sw.js public/karaoke-player.js public/karaoke-encoder.js
+node scripts/audit-css.js      # unused selectors + orphan @keyframes; clean baseline is 0/0
+node scripts/codemap.js        # refresh CODEMAP.md
+node scripts/dev-server.js     # serves public/ on http://localhost:4173
 ```
 
-Then serve `public/` and drive it with Playwright — this is the only way to catch
-cascade regressions:
+Then drive the page with Playwright — the only way to catch cascade regressions.
+Install it **into the scratchpad**, not the repo (the repo has no package.json):
 
 ```bash
-node -e "const http=require('http'),fs=require('fs'),path=require('path');\
-const root=path.join(process.cwd(),'public');\
-const t={'.html':'text/html','.css':'text/css','.js':'text/javascript','.svg':'image/svg+xml','.json':'application/json','.txt':'text/plain','.png':'image/png','.woff2':'font/woff2','.ttf':'font/ttf','.md':'text/markdown'};\
-http.createServer((q,s)=>{let u=decodeURIComponent(q.url.split('?')[0]);if(u==='/')u='/index.html';\
-const f=path.join(root,u);if(!f.startsWith(root)||!fs.existsSync(f)||fs.statSync(f).isDirectory()){s.writeHead(404);return s.end('nf');}\
-s.writeHead(200,{'Content-Type':t[path.extname(f)]||'application/octet-stream'});fs.createReadStream(f).pipe(s);}).listen(4173);" &
+npm install --prefix "$SCRATCHPAD" playwright@1.63.0
+node "$SCRATCHPAD/node_modules/playwright-core/cli.js" install chromium
 ```
 
-Install Playwright into the scratchpad (not the repo — it has no package.json):
-`npm install playwright@1.63.0` there, then `npx playwright install chromium`.
+Write the driver script inside the scratchpad and run it from there — `node -e` from the
+repo root cannot resolve `playwright`, and `cd`-ing into the scratchpad in a Bash call
+gets reset.
 
 Notes when driving the page:
 
@@ -82,22 +121,20 @@ Notes when driving the page:
   `document.querySelectorAll('.welcome-modal').forEach(m => m.remove())`
 - `musicPlayer` and `UI` are top-level `const`s, so `typeof window.musicPlayer` is
   `undefined` but `page.evaluate(() => musicPlayer.foo())` works.
-- A `/api/count` 404 and its `"nf" is not valid JSON` page error are expected locally.
+- A `/api/count` 404 and its `"not found" is not valid JSON` page error are expected
+  locally — the serverless functions in `api/` do not run under the static dev server.
 - Check both `data-theme="dark"` (default) and `"light"`, and 400px width for overflow.
+- `page.route('**/youtube.com/oembed**', …)` stubs the metadata fetches, so the add-song
+  and autofill paths can be tested without network or API keys.
 
 ## Auditing CSS
 
-Reusable scripts live in the scratchpad from the v71.8.x work; rebuild them if gone.
-The approach that works:
-
-- Collect every `[A-Za-z0-9_-]+` token from `index.html`, `script.js`, `settings.js`,
-  `sw.js`, `register-sw.js`, `karaoke-encoder.js` — **not** from any `.css` file, or
-  CSS-only classes look "used".
-- Also collect *dynamic prefixes*: quoted string literals ending in `-` and
-  `` `foo-${…}` `` patterns. `state-`, `has-`, `step-` are built this way and are live
-  despite never appearing whole.
-- A comma-group is live if **any** part is live.
-- Never delete `@keyframes` by this rule; check animation-name references separately.
+`node scripts/audit-css.js` reports only; it never edits. It collects identifier tokens
+from the HTML/JS (**not** from any `.css` file, or CSS-only classes look "used"), treats
+a comma-group as live if any part is live, and honours *dynamic prefixes* — string
+literals ending in `-`, so `'discord-badge state-' + state` keeps `.state-connected`
+alive. `@keyframes` are checked against `animation-name` separately. Verify every hit by
+hand before deleting.
 
 ## Known pre-existing issues (not yours to fix unless asked)
 

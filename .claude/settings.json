@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node --check:*)",
+      "Bash(node scripts/codemap.js:*)",
+      "Bash(node scripts/audit-css.js:*)",
+      "Bash(node scripts/dev-server.js:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(wc:*)",
+      "Bash(sed -n:*)",
+      "Bash(awk:*)",
+      "Bash(file:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)"
+    ]
+  }
+}

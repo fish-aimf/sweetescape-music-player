@@ -24,11 +24,17 @@ This document explains the structure and main components of **SweetEscape Music 
 - **favicon.svg**  
   Icon displayed in the browser tab.
 
-- **billboard.html**  
-  Loaded daily by a bot to update the Supabase billboard automatically.
+- **script/settings.js**  
+  Settings modal behaviour, fetched lazily the first time the modal opens.
 
-- **captures/**  
-  Directory where logs are stored as `.txt` files.
+- **scripts/**  
+  Repo tooling, not shipped to the browser: `codemap.js` regenerates `CODEMAP.md`,
+  `audit-css.js` reports unused selectors, `dev-server.js` serves `public/` locally, and
+  `update-billboard.js` is run by a GitHub Action to refresh the Supabase Hot 100 table.
+
+- **api/**  
+  Vercel serverless functions: `youtube`, `deezer`, `genius`, `shazam`, `download`,
+  `count`, `gemini` and `song/[videoId]` (which renders the Open Graph share page).
 
 ---
 
@@ -205,8 +211,7 @@ To add features, fix bugs, or improve performance, you only need to work within 
 | YouTube Player              | Embedded video playback, search results, discovery system                     |
 | Event Listeners             | Keyboard shortcuts, click events, playlist interactions                        |
 | Visualizer                  | Animations synced with song playback                                           |
-| Logs / Captures             | Text logs stored in `captures/` for debugging                                  |
-| Billboard                   | Updates external Supabase billboard daily via `billboard.html`                 |
+| Billboard                   | Supabase Hot 100 table, refreshed by the `update-billboard` GitHub Action       |
 
 ---
 
@@ -249,4 +254,5 @@ To add features, fix bugs, or improve performance, you only need to work within 
 - Use `initializeElements()` and `_setupComponents()` to add new UI features.  
 - IndexedDB-related methods handle all persistent storage; check `initDatabase()`.  
 - For performance-sensitive changes, review methods that load libraries or playlists in parallel.  
-- See `[public/changelog.md]` for roadmap, `[jobs.md]` for contributor tasks, and `[issues-and-updates.md]` for known issues.
+- See `CODEMAP.md` for the generated method index, `public/changelog.md` for version
+  history, and `CLAUDE.md` for the house rules and the verification workflow.
