@@ -83,6 +83,91 @@ const UI = {
     };
   }
 };
+const HTML_ENTITIES = {
+  amp: '&',
+  lt: '<',
+  gt: '>',
+  quot: '"',
+  apos: "'",
+  nbsp: '\xa0',
+  ensp: '\u2002',
+  emsp: '\u2003',
+  thinsp: '\u2009',
+  hellip: '…',
+  mdash: '—',
+  ndash: '–',
+  lsquo: '‘',
+  rsquo: '’',
+  sbquo: '‚',
+  ldquo: '“',
+  rdquo: '”',
+  bdquo: '„',
+  laquo: '«',
+  raquo: '»',
+  lsaquo: '‹',
+  rsaquo: '›',
+  prime: '′',
+  Prime: '″',
+  bull: '•',
+  middot: '·',
+  sect: '§',
+  para: '¶',
+  dagger: '†',
+  Dagger: '‡',
+  deg: '°',
+  plusmn: '±',
+  times: '×',
+  divide: '÷',
+  frac12: '½',
+  frac14: '¼',
+  frac34: '¾',
+  sup2: '²',
+  sup3: '³',
+  micro: 'µ',
+  copy: '©',
+  reg: '®',
+  trade: '™',
+  euro: '€',
+  pound: '£',
+  yen: '¥',
+  cent: '¢',
+  iexcl: '¡',
+  iquest: '¿',
+  szlig: 'ß',
+  aring: 'å',
+  aelig: 'æ',
+  oslash: 'ø',
+  ntilde: 'ñ',
+  ccedil: 'ç',
+  eacute: 'é',
+  egrave: 'è',
+  ecirc: 'ê',
+  euml: 'ë',
+  aacute: 'á',
+  agrave: 'à',
+  acirc: 'â',
+  auml: 'ä',
+  atilde: 'ã',
+  iacute: 'í',
+  igrave: 'ì',
+  icirc: 'î',
+  iuml: 'ï',
+  oacute: 'ó',
+  ograve: 'ò',
+  ocirc: 'ô',
+  ouml: 'ö',
+  otilde: 'õ',
+  uacute: 'ú',
+  ugrave: 'ù',
+  ucirc: 'û',
+  uuml: 'ü',
+  yacute: 'ý',
+  yuml: 'ÿ',
+  hearts: '♥',
+  star: '☆',
+  music: '♪'
+};
+const HTML_ENTITY_PATTERN = /&(#\d{1,7}|#[xX][0-9a-fA-F]{1,6}|[a-zA-Z][a-zA-Z0-9]{1,30});/g;
 class AdvancedMusicPlayer {
   static VISUALIZER_STYLES = new Set([ 'bars', 'levels', 'wave', 'ribbon', 'radial', 'glow' ]);
   constructor() {
@@ -324,6 +409,7 @@ class AdvancedMusicPlayer {
     try {
       await this.initDatabase();
       await Promise.all([ this.loadSongLibrary(), this.loadPlaylists(), this.loadSettings(), this.loadRecentlyPlayed(), this.loadDiscoverMoreSettingsOnStartup(), this.loadKeybinds(), this.loadDiscordSettings(), this.loadLibrarySortValue(), this.loadLibraryReverseValue(), this.loadVisualizerValue() ]);
+      await this.repairEncodedStoredText();
       const shouldShowWelcome = this.songLibrary.length === 0;
       this.initializeElements();
       this._syncInitialUI();
@@ -2029,13 +2115,117 @@ class AdvancedMusicPlayer {
     });
     this._setupSongItemDragDrop();
   }
+  escapeJsStringForAttribute(text) {
+    return this.escapeHtml((text === null || text === undefined ? '' : String(text)).replace(/\\/g, '\\\\').replace(/'/g, "\\'"));
+  }
   escapeHtml(text) {
-    return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    return (text === null || text === undefined ? '' : String(text)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
   }
   decodeHtmlEntities(text) {
-    const textarea = document.createElement('textarea');
-    textarea.innerHTML = text;
-    return textarea.value;
+    if (typeof text !== 'string' || text.indexOf('&') === -1) {
+      return text;
+    }
+    let decoded = text;
+    for (let pass = 0; pass < 4; pass++) {
+      const next = decoded.replace(HTML_ENTITY_PATTERN, (match, entity) => {
+        if (entity.charAt(0) === '#') {
+          const isHex = entity.charAt(1) === 'x' || entity.charAt(1) === 'X';
+          const code = parseInt(isHex ? entity.slice(2) : entity.slice(1), isHex ? 16 : 10);
+          if (!Number.isFinite(code) || code <= 0 || code > 1114111 || code >= 55296 && code <= 57343) {
+            return match;
+          }
+          return String.fromCodePoint(code);
+        }
+        const named = HTML_ENTITIES[entity] !== undefined ? HTML_ENTITIES[entity] : HTML_ENTITIES[entity.toLowerCase()];
+        return named === undefined ? match : named;
+      });
+      if (next === decoded) {
+        break;
+      }
+      decoded = next;
+    }
+    return decoded;
+  }
+  repairEncodedFields(target, fields) {
+    let changed = false;
+    if (!target) {
+      return changed;
+    }
+    fields.forEach(field => {
+      const value = target[field];
+      if (typeof value !== 'string') {
+        return;
+      }
+      const repaired = this.decodeHtmlEntities(value);
+      if (repaired !== value) {
+        target[field] = repaired;
+        changed = true;
+      }
+    });
+    return changed;
+  }
+  async repairEncodedStoredText() {
+    const songFields = [ 'name', 'author', 'lyrics' ];
+    let libraryChanged = false;
+    this.songLibrary.forEach(song => {
+      if (this.repairEncodedFields(song, songFields)) {
+        libraryChanged = true;
+      }
+    });
+    let playlistsChanged = false;
+    this.playlists.forEach(playlist => {
+      if (this.repairEncodedFields(playlist, [ 'name' ])) {
+        playlistsChanged = true;
+      }
+      if (Array.isArray(playlist.songs)) {
+        playlist.songs.forEach(song => {
+          if (this.repairEncodedFields(song, songFields)) {
+            playlistsChanged = true;
+          }
+        });
+      }
+    });
+    let recentChanged = false;
+    this.recentlyPlayedSongs.forEach(song => {
+      if (this.repairEncodedFields(song, songFields)) {
+        recentChanged = true;
+      }
+    });
+    this.recentlyPlayedPlaylists.forEach(playlist => {
+      if (this.repairEncodedFields(playlist, [ 'name' ])) {
+        recentChanged = true;
+      }
+      if (Array.isArray(playlist.songs)) {
+        playlist.songs.forEach(song => {
+          if (this.repairEncodedFields(song, songFields)) {
+            recentChanged = true;
+          }
+        });
+      }
+    });
+    try {
+      if (libraryChanged) {
+        await this.saveSongLibrary();
+      }
+      if (playlistsChanged) {
+        this.filteredPlaylists = [ ...this.playlists ];
+        await this.savePlaylists();
+      }
+      if (recentChanged && this.db) {
+        const transaction = this.db.transaction([ 'recentlyPlayed' ], 'readwrite');
+        const store = transaction.objectStore('recentlyPlayed');
+        store.put({
+          type: 'songs',
+          items: this.recentlyPlayedSongs
+        });
+        store.put({
+          type: 'playlists',
+          items: this.recentlyPlayedPlaylists
+        });
+      }
+    } catch (error) {
+      console.warn('Could not persist decoded text repairs:', error);
+    }
   }
   filterLibrarySongs() {
     const searchTerm = this.elements.librarySearch.value.toLowerCase().trim();
@@ -3212,7 +3402,7 @@ class AdvancedMusicPlayer {
         }
         return response.json();
       }).then(data => {
-        resolve(data.title);
+        resolve(this.decodeHtmlEntities(data.title));
       }).catch(error => {
         console.error('Error fetching YouTube title:', error);
         reject(error);
@@ -3234,7 +3424,7 @@ class AdvancedMusicPlayer {
         }
         return response.json();
       }).then(data => {
-        resolve(this.stripYouTubeTopicSuffix(data.author_name));
+        resolve(this.stripYouTubeTopicSuffix(this.decodeHtmlEntities(data.author_name)));
       }).catch(error => {
         console.error('Error fetching YouTube channel:', error);
         reject(error);
@@ -6960,7 +7150,7 @@ class AdvancedMusicPlayer {
           throw new Error(data.error || 'No lyrics found');
         }
         if (lyricsInput) {
-          lyricsInput.value = data.lyrics;
+          lyricsInput.value = this.decodeHtmlEntities(data.lyrics);
         }
         this.showNotification('Lyrics fetched from Genius!', 'success');
       } catch (error) {
@@ -11511,15 +11701,15 @@ class AdvancedMusicPlayer {
     let html = '';
     if (artists.length > 0) {
       html += `<div class="global-library-suggestions-section-label">Artists</div>`;
-      html += artists.map(a => `\n\t            <div class="global-library-suggestion-artist-card" data-artist-id="${a.id}" data-artist-name="${a.name.replace(/"/g, '&quot;')}">\n\t                <img src="${a.picture_medium || a.picture}" alt="" class="global-library-suggestion-artist-thumb" loading="lazy">\n\t                <div class="global-library-suggestion-artist-name">${a.name}</div>\n\t            </div>\n\t        `).join('');
+      html += artists.map(a => `\n\t            <div class="global-library-suggestion-artist-card" data-artist-id="${a.id}" data-artist-name="${this.escapeHtml(a.name)}">\n\t                <img src="${a.picture_medium || a.picture}" alt="" class="global-library-suggestion-artist-thumb" loading="lazy">\n\t                <div class="global-library-suggestion-artist-name">${this.escapeHtml(a.name)}</div>\n\t            </div>\n\t        `).join('');
     }
     if (tracks.length > 0) {
       html += `<div class="global-library-suggestions-section-label">Songs</div>`;
-      html += tracks.map(t => `\n\t            <div class="global-library-suggestion-track-card"\n\t                 data-song-name="${t.title.replace(/"/g, '&quot;')}"\n\t                 data-artist-name="${t.artist.name.replace(/"/g, '&quot;')}"\n\t                 data-album-cover="${t.album?.cover_medium || ''}"\n\t                 data-deezer-track-id="${t.id}">\n\t                <img src="${t.album?.cover_medium || ''}" alt="" class="global-library-suggestion-track-thumb" loading="lazy">\n\t                <div class="global-library-suggestion-track-meta">\n\t                    <div class="global-library-suggestion-track-title">${t.title}</div>\n\t                    <div class="global-library-suggestion-track-artist">${t.artist.name}</div>\n\t                </div>\n\t            </div>\n\t        `).join('');
+      html += tracks.map(t => `\n\t            <div class="global-library-suggestion-track-card"\n\t                 data-song-name="${this.escapeHtml(t.title)}"\n\t                 data-artist-name="${this.escapeHtml(t.artist.name)}"\n\t                 data-album-cover="${t.album?.cover_medium || ''}"\n\t                 data-deezer-track-id="${t.id}">\n\t                <img src="${t.album?.cover_medium || ''}" alt="" class="global-library-suggestion-track-thumb" loading="lazy">\n\t                <div class="global-library-suggestion-track-meta">\n\t                    <div class="global-library-suggestion-track-title">${this.escapeHtml(t.title)}</div>\n\t                    <div class="global-library-suggestion-track-artist">${this.escapeHtml(t.artist.name)}</div>\n\t                </div>\n\t            </div>\n\t        `).join('');
     }
     if (playlists.length > 0) {
       html += `<div class="global-library-suggestions-section-label">Playlists</div>`;
-      html += playlists.map(p => `\n\t            <div class="global-library-suggestion-playlist-card" data-playlist-id="${p.id}" data-playlist-name="${p.name.replace(/"/g, '&quot;')}">\n\t                <div class="global-library-suggestion-playlist-icon">🎶</div>\n\t                <div class="global-library-suggestion-track-title">${p.name}</div>\n\t            </div>\n\t        `).join('');
+      html += playlists.map(p => `\n\t            <div class="global-library-suggestion-playlist-card" data-playlist-id="${p.id}" data-playlist-name="${this.escapeHtml(p.name)}">\n\t                <div class="global-library-suggestion-playlist-icon">🎶</div>\n\t                <div class="global-library-suggestion-track-title">${this.escapeHtml(p.name)}</div>\n\t            </div>\n\t        `).join('');
     }
     dropdown.innerHTML = html;
     dropdown.classList.add('visible');
@@ -11582,7 +11772,7 @@ class AdvancedMusicPlayer {
       document.getElementById('globalLibraryArtistGridSpinner')?.remove();
       const tracks = result.data && result.data.data || [];
       ctx.songs.push(...tracks);
-      listEl.insertAdjacentHTML('beforeend', tracks.map(t => `\n\t            <div class="global-library-artist-grid-song-row"\n\t                 data-song-name="${t.title.replace(/"/g, '&quot;')}"\n\t                 data-artist-name="${ctx.name.replace(/"/g, '&quot;')}"\n\t                 data-album-cover="${t.album?.cover_medium || ''}">\n\t                <img src="${t.album?.cover_medium || ''}" alt="" class="global-library-artist-grid-song-thumb" loading="lazy">\n\t                <div class="global-library-artist-grid-song-title">${t.title}</div>\n\t            </div>\n\t        `).join(''));
+      listEl.insertAdjacentHTML('beforeend', tracks.map(t => `\n\t            <div class="global-library-artist-grid-song-row"\n\t                 data-song-name="${this.escapeHtml(t.title)}"\n\t                 data-artist-name="${this.escapeHtml(ctx.name)}"\n\t                 data-album-cover="${t.album?.cover_medium || ''}">\n\t                <img src="${t.album?.cover_medium || ''}" alt="" class="global-library-artist-grid-song-thumb" loading="lazy">\n\t                <div class="global-library-artist-grid-song-title">${this.escapeHtml(t.title)}</div>\n\t            </div>\n\t        `).join(''));
       listEl.querySelectorAll('.global-library-artist-grid-song-row:not([data-bound])').forEach(el => {
         el.setAttribute('data-bound', 'true');
         el.addEventListener('click', () => this.handleGlobalLibrarySongCardClick({
@@ -11928,7 +12118,7 @@ class AdvancedMusicPlayer {
       movementClass = 'billboard-steady-item';
     }
     const thumbnailUrl = this.getYouTubeThumbnail(song.youtube_url);
-    return `\n        <div class="billboard-song-item ${movementClass}">\n            <div class="billboard-position-badge ${isPeakPosition ? 'billboard-peak' : ''}">#${song.this_week}</div>\n            <img src="${thumbnailUrl}" \n                 alt="${song.song}" \n                 class="billboard-song-thumbnail"\n                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'60\\' height=\\'60\\' viewBox=\\'0 0 60 60\\'%3E%3Crect fill=\\'%23ddd\\' width=\\'60\\' height=\\'60\\'/%3E%3Ctext x=\\'30\\' y=\\'35\\' text-anchor=\\'middle\\' font-size=\\'14\\' fill=\\'%23666\\'%3E♪%3C/text%3E%3C/svg%3E'">\n            <div class="billboard-song-details">\n                <div class="billboard-song-title">${song.song}</div>\n                <div class="billboard-song-artist">${song.artist}</div>\n                <div class="billboard-song-stats">\n                    <span class="billboard-stat">Peak: #${song.peak_position}</span>\n                    <span class="billboard-stat">Weeks: ${song.weeks_on_chart}</span>\n                    ${song.last_week ? `<span class="billboard-stat">Last: #${song.last_week}</span>` : ''}\n                </div>\n            </div>\n            <div class="billboard-song-actions">\n                ${movementIndicator}\n                <button class="billboard-add-btn" \n                        onclick="musicPlayer.addBillboardSongToLibrary('${song.song.replace(/'/g, "\\'")}', '${song.artist.replace(/'/g, "\\'")}', '${song.youtube_url}')"\n                        title="Add to Library">+ Add</button>\n                <button class="billboard-play-btn" \n\t\t\t\t        onclick="musicPlayer.samplePlayTemporarySong('${song.youtube_url}')"\n\t\t\t\t        title="Preview song">▶</button>\n            </div>\n        </div>\n    `;
+    return `\n        <div class="billboard-song-item ${movementClass}">\n            <div class="billboard-position-badge ${isPeakPosition ? 'billboard-peak' : ''}">#${song.this_week}</div>\n            <img src="${thumbnailUrl}" \n                 alt="${this.escapeHtml(song.song)}" \n                 class="billboard-song-thumbnail"\n                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'60\\' height=\\'60\\' viewBox=\\'0 0 60 60\\'%3E%3Crect fill=\\'%23ddd\\' width=\\'60\\' height=\\'60\\'/%3E%3Ctext x=\\'30\\' y=\\'35\\' text-anchor=\\'middle\\' font-size=\\'14\\' fill=\\'%23666\\'%3E♪%3C/text%3E%3C/svg%3E'">\n            <div class="billboard-song-details">\n                <div class="billboard-song-title">${this.escapeHtml(song.song)}</div>\n                <div class="billboard-song-artist">${this.escapeHtml(song.artist)}</div>\n                <div class="billboard-song-stats">\n                    <span class="billboard-stat">Peak: #${song.peak_position}</span>\n                    <span class="billboard-stat">Weeks: ${song.weeks_on_chart}</span>\n                    ${song.last_week ? `<span class="billboard-stat">Last: #${song.last_week}</span>` : ''}\n                </div>\n            </div>\n            <div class="billboard-song-actions">\n                ${movementIndicator}\n                <button class="billboard-add-btn" \n                        onclick="musicPlayer.addBillboardSongToLibrary('${this.escapeJsStringForAttribute(song.song)}', '${this.escapeJsStringForAttribute(song.artist)}', '${song.youtube_url}')"\n                        title="Add to Library">+ Add</button>\n                <button class="billboard-play-btn" \n\t\t\t\t        onclick="musicPlayer.samplePlayTemporarySong('${song.youtube_url}')"\n\t\t\t\t        title="Preview song">▶</button>\n            </div>\n        </div>\n    `;
   }
   async addBillboardSongToLibrary(songName, artist, youtubeUrl) {
     const videoId = this.extractYouTubeId(youtubeUrl);
@@ -12070,8 +12260,8 @@ class AdvancedMusicPlayer {
   }
   createYouTubeLibraryResultCard(video) {
     const videoId = video.id.videoId;
-    const title = video.snippet.title;
-    const channel = video.snippet.channelTitle;
+    const title = this.decodeHtmlEntities(video.snippet.title);
+    const channel = this.decodeHtmlEntities(video.snippet.channelTitle);
     const publishedAt = new Date(video.snippet.publishedAt);
     const thumbnail = video.snippet.thumbnails.high?.url || video.snippet.thumbnails.medium.url;
     const uploadDate = this.formatYouTubeUploadDate(publishedAt);
@@ -12080,7 +12270,7 @@ class AdvancedMusicPlayer {
     const actionButton = this.getReplaceTargetSong() ? `<button class="youtube-result-replace-btn" data-video-id="${videoId}" title="Use this video for the song">\n                <i class="fas fa-arrows-rotate"></i> Replace\n            </button>` : `<button class="youtube-result-add-btn" data-video-id="${videoId}" data-title="${this.escapeHtml(title)}" data-channel="${this.escapeHtml(channel)}">\n                <i class="fas fa-plus"></i> Add\n            </button>`;
     const card = document.createElement('div');
     card.classList.add('youtube-library-result-card');
-    card.innerHTML = `\n        <img src="${thumbnail}" alt="${this.escapeHtml(title)}" class="youtube-result-thumbnail">\n        <div class="youtube-result-info">\n            <div class="youtube-result-title">${this.decodeHtmlEntities(title)}</div>\n            <div class="youtube-result-channel">${this.decodeHtmlEntities(channel)}</div>\n            <div class="youtube-result-meta">${meta}</div>\n        </div>\n        <div class="youtube-result-actions">\n            <button class="youtube-result-preview-btn" data-video-id="${videoId}" title="Preview">\n                <i class="fas fa-play"></i> Preview\n            </button>\n            ${actionButton}\n        </div>\n    `;
+    card.innerHTML = `\n        <img src="${thumbnail}" alt="${this.escapeHtml(title)}" class="youtube-result-thumbnail">\n        <div class="youtube-result-info">\n            <div class="youtube-result-title">${this.escapeHtml(title)}</div>\n            <div class="youtube-result-channel">${this.escapeHtml(channel)}</div>\n            <div class="youtube-result-meta">${meta}</div>\n        </div>\n        <div class="youtube-result-actions">\n            <button class="youtube-result-preview-btn" data-video-id="${videoId}" title="Preview">\n                <i class="fas fa-play"></i> Preview\n            </button>\n            ${actionButton}\n        </div>\n    `;
     return card;
   }
   setupYouTubeLibraryResultsDelegation() {
@@ -13130,7 +13320,7 @@ class AdvancedMusicPlayer {
         if (m) {
           const item = this.dlQueue.find(q => q.videoId === id);
           if (item) {
-            item.name = m[1].replace(/ - .*/, '').trim();
+            item.name = this.decodeHtmlEntities(m[1].replace(/ - .*/, '').trim());
             renderQueue();
           }
         }
@@ -13212,7 +13402,7 @@ class AdvancedMusicPlayer {
           item.status = 'done';
           item.link = data.link;
           if (data.title && item.name === item.videoId) {
-            item.name = data.title;
+            item.name = this.decodeHtmlEntities(data.title);
           }
         } else if (data.progress !== undefined && data.progress < 100) {
           item._retries = (item._retries || 0) + 1;
