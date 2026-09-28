@@ -7085,6 +7085,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 }
 .library-search-wrap {
   position: relative;
+  z-index: 2;
   display: flex;
   align-items: center;
   flex: 1 1 0%;
