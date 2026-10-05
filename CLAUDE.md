@@ -85,6 +85,16 @@ keeps that selector at (0,1,1) so modifiers still win. If a new style "doesn't a
 check specificity against `style.css` before adding `!important` (there are almost none
 in the codebase; keep it that way).
 
+### Glass mode (`data-surface="glass"` on `<html>`)
+
+An element with `backdrop-filter` (or `filter`, `opacity < 1`, `mask`) becomes a *backdrop root*:
+a glass popover nested inside it can only blur what is inside that ancestor, so page content
+behind the popover shows through sharp. If a glass wrapper contains a dropdown, put the
+wrapper's blur on a `::before` (`position: absolute; inset: 0; z-index: -1`) instead, as
+`.library-search-wrap` does in `ui-system.css`. Test glass by setting
+`musicPlayer.appearance.surfaceStyle = 'glass'` then `musicPlayer.applyAppearance()`, and walk the
+popover's ancestors for those properties rather than trusting a screenshot.
+
 ### Text from external APIs
 
 The YouTube Data API returns `snippet.title` / `channelTitle` HTML-escaped. Anything from

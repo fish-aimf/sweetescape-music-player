@@ -1807,7 +1807,6 @@ a.ui-btn--block {
 [data-surface="glass"] .song-edit-form-input,
 [data-surface="glass"] .song-edit-local-file-btn,
 [data-surface="glass"] .song-edit-lyrics-input,
-[data-surface="glass"] .library-search-wrap,
 [data-surface="glass"] .sz-wave-wrap,
 [data-surface="glass"] .sz-btn,
 [data-surface="glass"] .ls-search-input,
@@ -1817,6 +1816,21 @@ a.ui-btn--block {
   backdrop-filter: blur(10px) saturate(var(--glass-sat));
   -webkit-backdrop-filter: blur(10px) saturate(var(--glass-sat));
   border-color: var(--glass-edge);
+}
+
+[data-surface="glass"] .library-search-wrap {
+  border-color: var(--glass-edge);
+}
+
+[data-surface="glass"] .library-search-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  backdrop-filter: blur(10px) saturate(var(--glass-sat));
+  -webkit-backdrop-filter: blur(10px) saturate(var(--glass-sat));
+  pointer-events: none;
 }
 
 [data-surface="glass"] .ui-btn--primary,
