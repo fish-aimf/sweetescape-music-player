@@ -7161,7 +7161,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 }
 .lib-filter-label {
   font-size: 0.82em;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 5px;
@@ -7178,7 +7178,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   font-size: 0.78em;
   border: none;
   background: transparent;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   cursor: pointer;
   transition:
     background 0.1s,
@@ -7226,7 +7226,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   border: 1px solid var(--border-color);
   border-radius: 4px;
   background: transparent;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   cursor: pointer;
   transition:
     background 0.1s,
@@ -7235,7 +7235,6 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 .lib-filter-lang-list button small {
   font-size: 0.82em;
   font-weight: 400;
-  opacity: 0.75;
 }
 .lib-filter-lang-list button:hover:not(.active) {
   background: var(--bg-primary);

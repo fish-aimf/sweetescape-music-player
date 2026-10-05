@@ -1820,17 +1820,28 @@ a.ui-btn--block {
 
 [data-surface="glass"] .library-search-wrap {
   border-color: var(--glass-edge);
+  background: transparent;
 }
 
 [data-surface="glass"] .library-search-wrap::before {
   content: '';
   position: absolute;
-  inset: 0;
+  inset: -1px;
   z-index: -1;
+  box-sizing: border-box;
+  border: 1px solid;
+  border-color: inherit;
   border-radius: inherit;
+  background: var(--bg-primary);
   backdrop-filter: blur(10px) saturate(var(--glass-sat));
   -webkit-backdrop-filter: blur(10px) saturate(var(--glass-sat));
   pointer-events: none;
+}
+
+[data-surface="glass"] #librarySearch {
+  background: var(--bg-primary);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 [data-surface="glass"] .ui-btn--primary,

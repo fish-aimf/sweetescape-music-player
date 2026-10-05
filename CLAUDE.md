@@ -91,7 +91,11 @@ An element with `backdrop-filter` (or `filter`, `opacity < 1`, `mask`) becomes a
 a glass popover nested inside it can only blur what is inside that ancestor, so page content
 behind the popover shows through sharp. If a glass wrapper contains a dropdown, put the
 wrapper's blur on a `::before` (`position: absolute; inset: 0; z-index: -1`) instead, as
-`.library-search-wrap` does in `ui-system.css`. Test glass by setting
+`.library-search-wrap` does in `ui-system.css`. Beware that this changes how glass children
+look: a child with its own `backdrop-filter` used to sample only the wrapper's tint and now
+samples the whole page, so the search input needed an explicit background and no blur to keep
+its old colour. Pixel-diff the before/after (serve the old CSS with `page.route`) instead of
+eyeballing it. Test glass by setting
 `musicPlayer.appearance.surfaceStyle = 'glass'` then `musicPlayer.applyAppearance()`, and walk the
 popover's ancestors for those properties rather than trusting a screenshot.
 
