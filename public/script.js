@@ -190,7 +190,8 @@ class AdvancedMusicPlayer {
     this._libFilters = {
       favorite: null,
       lyrics: null,
-      downloaded: null
+      downloaded: null,
+      language: null
     };
     this.ytPlayer = null;
     this.ytPlayerReady = false;
@@ -1878,7 +1879,7 @@ class AdvancedMusicPlayer {
       і: 'i', ї: 'i', є: 'e', ґ: 'g'
     };
     key = String(text).toLowerCase().replace(/[а-яёіїєґ]/g, c => CYR[c]).replace(/['`’ʼ]/g, '').replace(/shch|sch/g, 'sh').replace(/tch/g, 'ch').replace(/kh|x/g, 'h').replace(/tz|ts/g, 'c').replace(/ph/g, 'f').replace(/w/g, 'v').replace(/q/g, 'k').replace(/[yj]/g, 'i').replace(/i([eo])/g, 'e').replace(/(.)\1+/g, '$1').trim();
-    if (cache.size > 5000) {
+    if (cache.size > 20000) {
       cache.clear();
     }
     cache.set(text, key);
@@ -3475,7 +3476,8 @@ class AdvancedMusicPlayer {
     this._libFilters = {
       favorite: null,
       lyrics: null,
-      downloaded: null
+      downloaded: null,
+      language: null
     };
     const btn = document.getElementById('libFilterBtn');
     const panel = document.getElementById('libFilterPanel');
@@ -3495,7 +3497,30 @@ class AdvancedMusicPlayer {
     btn.addEventListener('mouseleave', hidePanel);
     panel.addEventListener('mouseenter', showPanel);
     panel.addEventListener('mouseleave', hidePanel);
+    const langBtn = document.getElementById('libFilterLangBtn');
+    const langList = document.getElementById('libFilterLangList');
     panel.addEventListener('click', e => {
+      if (langBtn && e.target.closest('#libFilterLangBtn')) {
+        const opening = langList.hidden;
+        if (opening) {
+          this._renderLanguageFilterList(langList);
+        }
+        langList.hidden = !opening;
+        langBtn.setAttribute('aria-expanded', String(opening));
+        return;
+      }
+      const langChip = e.target.closest('.lib-filter-lang-list button');
+      if (langChip) {
+        const code = langChip.dataset.lang || null;
+        this._libFilters.language = code;
+        langBtn.firstElementChild.textContent = code ? langChip.firstChild.textContent : 'Any';
+        langBtn.classList.toggle('active', !!code);
+        langList.hidden = true;
+        langBtn.setAttribute('aria-expanded', 'false');
+        btn.classList.toggle('is-active', Object.values(this._libFilters).some(v => v !== null));
+        this._applyLibraryFiltersAndRender();
+        return;
+      }
       const toggleBtn = e.target.closest('.lib-filter-toggle button');
       if (!toggleBtn) {
         return;
@@ -3524,8 +3549,134 @@ class AdvancedMusicPlayer {
       if (f.downloaded !== null && !!song.localFileHandle !== f.downloaded) {
         return false;
       }
+      if (f.language && this._detectSongLanguage(song) !== f.language) {
+        return false;
+      }
       return true;
     });
+  }
+  _renderLanguageFilterList(list) {
+    const counts = new Map();
+    this.songLibrary.forEach(song => {
+      const code = this._detectSongLanguage(song);
+      counts.set(code, (counts.get(code) || 0) + 1);
+    });
+    let names = null;
+    try {
+      names = new Intl.DisplayNames([ 'en' ], {
+        type: 'language'
+      });
+    } catch (e) {}
+    const current = this._libFilters.language || '';
+    const chip = (code, label, title, count) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.dataset.lang = code;
+      b.title = title;
+      b.setAttribute('aria-label', title);
+      b.classList.toggle('active', code === current);
+      b.textContent = label;
+      if (count !== undefined) {
+        const small = document.createElement('small');
+        small.textContent = count;
+        b.appendChild(small);
+      }
+      return b;
+    };
+    const frag = document.createDocumentFragment();
+    frag.appendChild(chip('', 'Any', 'Any language'));
+    [ ...counts ].sort((a, b) => b[1] - a[1]).forEach(([code, count]) => {
+      let name = code === 'xx' ? 'Unknown' : code.toUpperCase();
+      try {
+        name = code === 'xx' ? name : names?.of(code) || name;
+      } catch (e) {}
+      frag.appendChild(chip(code, code === 'xx' ? '?' : code.toUpperCase(), `${name} · ${count} song${count === 1 ? '' : 's'}`, count));
+    });
+    list.replaceChildren(frag);
+  }
+  _detectSongLanguage(song) {
+    const cache = this._songLangCache || (this._songLangCache = new Map());
+    const id = `${song.name}\n${song.author || ''}`;
+    let code = cache.get(id);
+    if (code === undefined) {
+      code = this._detectTextLanguage(song.name);
+      if (code === 'xx' || code === 'en') {
+        const byAuthor = this._detectTextLanguage(song.author || '');
+        if (code === 'xx' || /^(ru|uk|be|kk|sr|ko|ja|zh|ar|he|th|hi|el)$/.test(byAuthor)) {
+          code = byAuthor;
+        }
+      }
+      if (cache.size > 20000) {
+        cache.clear();
+      }
+      cache.set(id, code);
+    }
+    return code;
+  }
+  _detectTextLanguage(text) {
+    const lower = String(text).toLowerCase();
+    const stripped = lower.replace(/\([^)]*\)|\[[^\]]*\]/g, ' ');
+    const s = /\p{L}/u.test(stripped) ? stripped : lower;
+    const n = re => (s.match(re) || []).length;
+    const han = n(/[\u4e00-\u9fff]/g);
+    const kana = n(/[\u3040-\u30ff]/g);
+    const scores = {
+      ko: n(/[\uac00-\ud7af\u1100-\u11ff\u3130-\u318f]/g),
+      ja: kana ? kana + han : 0,
+      zh: kana ? 0 : han,
+      cyr: n(/[\u0400-\u04ff]/g),
+      ar: n(/[\u0600-\u06ff]/g),
+      he: n(/[\u0590-\u05ff]/g),
+      th: n(/[\u0e00-\u0e7f]/g),
+      hi: n(/[\u0900-\u097f]/g),
+      el: n(/[\u0370-\u03ff]/g)
+    };
+    const latin = n(/[a-z\u00c0-\u024f\u1e00-\u1eff]/g);
+    let best = 'xx';
+    let top = 0;
+    for (const k in scores) {
+      if (scores[k] > top) {
+        top = scores[k];
+        best = k;
+      }
+    }
+    if (top < 2 && top < latin) {
+      best = 'latin';
+    }
+    if (best === 'cyr') {
+      return /ў/.test(s) ? 'be' : /[әғқңөұүһ]/.test(s) ? 'kk' : /[ђћџљњ]/.test(s) ? 'sr' : /[іїєґ]/.test(s) ? 'uk' : 'ru';
+    }
+    if (best !== 'latin') {
+      return best;
+    }
+    const marks = [ [ 'vi', /[ơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]/ ], [ 'ro', /[ășț]/ ], [ 'tr', /[ğış]/ ], [ 'pl', /[ąęłśźżń]/ ], [ 'cs', /[ěřů]/ ], [ 'hu', /[őű]/ ], [ 'de', /[ßäöü]/ ], [ 'sv', /å/ ], [ 'es', /[ñ¿¡]/ ], [ 'pt', /[ãõ]/ ], [ 'it', /[ìò]/ ], [ 'fr', /[œçèêëàâîïûù]/ ], [ 'es', /[áéíóú]/ ] ];
+    const marked = marks.find(([, re]) => re.test(s));
+    if (marked) {
+      return marked[0];
+    }
+    if (!this._langStopwords) {
+      const lists = {
+        en: 'the you your my me i love and of in on to it is we baby don know never just what this all',
+        es: 'el los las corazon quiero eres pero cuando noche soy muy hasta donde contigo amigo',
+        fr: 'le les je et est une mon moi toi avec dans pour qui ne suis tout sur des au oui',
+        de: 'der das und ich nicht du ist mein dein liebe ein eine mit auf nur wir dich mich dir nacht',
+        it: 'che sono mio mia della nel cuore sei questo ancora amore',
+        pt: 'eu voce meu minha com nao sem uma saudade coracao vai',
+        id: 'aku kamu dan yang cinta tak ini itu dia untuk dari'
+      };
+      this._langStopwords = Object.entries(lists).map(([code, words]) => [ code, new Set(words.split(' ')) ]);
+    }
+    const words = s.match(/[a-z]+/g) || [];
+    let lang = 'en';
+    let hits = 0;
+    this._langStopwords.forEach(([code, set]) => {
+      const count = words.reduce((sum, w) => sum + (set.has(w) ? 1 : 0), 0);
+      if (count > hits) {
+        hits = count;
+        lang = code;
+      }
+    });
+    return lang;
   }
   _applyLibraryFiltersAndRender() {
     const searchTerm = this.elements.librarySearch?.value.toLowerCase().trim() || '';

@@ -7195,6 +7195,56 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 .lib-filter-toggle button:hover:not(.active) {
   background: var(--bg-primary);
 }
+.lib-filter-lang-btn i {
+  margin-left: 5px;
+  font-size: 0.85em;
+  transition: transform 0.15s;
+}
+.lib-filter-lang-btn[aria-expanded="true"] i {
+  transform: rotate(180deg);
+}
+.lib-filter-lang-list {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  padding: 2px 0 6px;
+  max-height: 168px;
+  overflow-y: auto;
+}
+.lib-filter-lang-list[hidden] {
+  display: none;
+}
+.lib-filter-lang-list button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: 4px 0;
+  font-size: 0.78em;
+  font-weight: 600;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background 0.1s,
+    color 0.1s;
+}
+.lib-filter-lang-list button small {
+  font-size: 0.82em;
+  font-weight: 400;
+  opacity: 0.75;
+}
+.lib-filter-lang-list button:hover:not(.active) {
+  background: var(--bg-primary);
+}
+.lib-filter-lang-list button.active {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: #fff;
+}
 .sz-overlay {
   position: fixed;
   inset: 0;
