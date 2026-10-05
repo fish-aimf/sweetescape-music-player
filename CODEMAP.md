@@ -12,7 +12,7 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 | Source | sha256 (first 12) | Lines |
 |---|---|---|
-| `public/script.js` | `aae2463817a8` | 14952 |
+| `public/script.js` | `612f27f334ec` | 14988 |
 | `public/index.html` | `ad510e6a9148` | 1484 |
 | `public/script/settings.js` | `84c258c509ec` | 563 |
 | `public/karaoke-player.js` | `79175232d973` | 682 |
@@ -23,7 +23,7 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 ## Reading `public/script.js` cheaply
 
-- 56 lines are longer than 300 characters (the machine-formatted
+- 55 lines are longer than 300 characters (the machine-formatted
   `innerHTML` template literals; the longest is ~3.9 KB). A single `grep -n` that hits
   several of them dumps tens of kilobytes. Search with `grep -o`, or pipe through
   `cut -c1-200`, and only widen once you know which line you want.
@@ -38,7 +38,7 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 ---
 
-## `AdvancedMusicPlayer` by topic (571 methods)
+## `AdvancedMusicPlayer` by topic (572 methods)
 
 Names only. `grep -n "^  name(" public/script.js` gives the current line, and a name
 here that you cannot find has been renamed since this file was generated.
@@ -61,7 +61,7 @@ here that you cannot find has been renamed since this file was generated.
 
 ### YouTube & search
 
-`_searchFold` · `autofillFromUrl` · `showYouTubeSearchSuggestion` · `hideYouTubeSearchSuggestion` · `searchYouTube` · `validateYouTubeUrl` · `showYouTubeThumbnailPreview` · `removeYouTubeThumbnailPreview` · `handleAutofill` · `undoAutofill` · `showGhostPreview` · `createGhostPreview` · `createGhostElement` · `positionGhost` · `setupGhostEventListeners` · `updateGhostPositions` · `removeGhostPreview` · `extractYouTubeId` · `fetchYouTubeTitle` · `stripYouTubeTopicSuffix` · `fetchYouTubeChannel` · `setupYouTubePlayer` · `initializeYouTubePlayer` · `getRandomYouTubeApiKey` · `getYouTubeThumbnail` · `replaceSongVideoFromSearch` · `formatYouTubeViewCount` · `autofillYouTubeVideoFromSearch` · `formatYouTubeUploadDate` · `_handleStatsSearchInput`
+`_searchFold` · `_buildSearchFoldTables` · `autofillFromUrl` · `showYouTubeSearchSuggestion` · `hideYouTubeSearchSuggestion` · `searchYouTube` · `validateYouTubeUrl` · `showYouTubeThumbnailPreview` · `removeYouTubeThumbnailPreview` · `handleAutofill` · `undoAutofill` · `showGhostPreview` · `createGhostPreview` · `createGhostElement` · `positionGhost` · `setupGhostEventListeners` · `updateGhostPositions` · `removeGhostPreview` · `extractYouTubeId` · `fetchYouTubeTitle` · `stripYouTubeTopicSuffix` · `fetchYouTubeChannel` · `setupYouTubePlayer` · `initializeYouTubePlayer` · `getRandomYouTubeApiKey` · `getYouTubeThumbnail` · `replaceSongVideoFromSearch` · `formatYouTubeViewCount` · `autofillYouTubeVideoFromSearch` · `formatYouTubeUploadDate` · `_handleStatsSearchInput`
 
 ### Lyrics & karaoke
 

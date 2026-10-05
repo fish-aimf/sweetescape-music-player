@@ -1873,17 +1873,53 @@ class AdvancedMusicPlayer {
     if (key !== undefined) {
       return key;
     }
-    const CYR = {
-      а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'e', ж: 'zh', з: 'z', и: 'i', й: 'i', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p',
-      р: 'r', с: 's', т: 't', у: 'u', ф: 'f', х: 'h', ц: 'c', ч: 'ch', ш: 'sh', щ: 'sh', ъ: '', ы: 'i', ь: '', э: 'e', ю: 'iu', я: 'ia',
-      і: 'i', ї: 'i', є: 'e', ґ: 'g'
-    };
-    key = String(text).toLowerCase().replace(/[а-яёіїєґ]/g, c => CYR[c]).replace(/['`’ʼ]/g, '').replace(/shch|sch/g, 'sh').replace(/tch/g, 'ch').replace(/kh|x/g, 'h').replace(/tz|ts/g, 'c').replace(/ph/g, 'f').replace(/w/g, 'v').replace(/q/g, 'k').replace(/[yj]/g, 'i').replace(/i([eo])/g, 'e').replace(/(.)\1+/g, '$1').trim();
+    let s = String(text).toLowerCase();
+    if (/[^\x00-\x7f]/.test(s)) {
+      const T = this._searchFoldTables || (this._searchFoldTables = this._buildSearchFoldTables());
+      s = s.replace(/[가-힣]/g, c => {
+        const i = c.charCodeAt(0) - 0xac00;
+        return T.ko0[Math.floor(i / 588)] + T.ko1[Math.floor(i % 588 / 28)] + T.ko2[i % 28];
+      });
+      if (/[ぁ-ー]/.test(s)) {
+        const K = T.kana;
+        s = s.replace(/[ァ-ヶ]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x60)).replace(/([ぁ-ゖ])([ぁぃぅぇぉゃゅょ])/g, (m, a, b) => {
+          const r = K[a];
+          if (r.length < 2 || !/[aiueo]$/.test(r)) {
+            return r + K[b];
+          }
+          const base = r.slice(0, -1);
+          return /(sh|ch|j)$/.test(base) ? base + K[b].slice(-1) : base + K[b];
+        }).replace(/[ぁ-ゖー]/g, c => K[c] || '').replace(/・/g, ' ');
+      }
+      s = s.replace(/ο[υύ]/g, 'ou').replace(/[а-яёіїєґά-ώΐΰ]/g, c => T.map[c] ?? c);
+    }
+    key = s.replace(/['`’ʼ]/g, '').replace(/shch|sch/g, 'sh').replace(/tch/g, 'ch').replace(/kh|x/g, 'h').replace(/tz|ts/g, 'c').replace(/ph/g, 'f').replace(/w/g, 'v').replace(/q/g, 'k').replace(/[yj]/g, 'i').replace(/i([eo])/g, 'e').replace(/ou/g, 'o').replace(/\s+/g, '').replace(/(.)\1+/g, '$1');
     if (cache.size > 20000) {
       cache.clear();
     }
     cache.set(text, key);
     return key;
+  }
+  _buildSearchFoldTables() {
+    const map = {
+      а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'e', ж: 'zh', з: 'z', и: 'i', й: 'i', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p',
+      р: 'r', с: 's', т: 't', у: 'u', ф: 'f', х: 'h', ц: 'c', ч: 'ch', ш: 'sh', щ: 'sh', ъ: '', ы: 'i', ь: '', э: 'e', ю: 'iu', я: 'ia',
+      і: 'i', ї: 'i', є: 'e', ґ: 'g',
+      α: 'a', ά: 'a', β: 'v', γ: 'g', δ: 'd', ε: 'e', έ: 'e', ζ: 'z', η: 'i', ή: 'i', θ: 'th', ι: 'i', ί: 'i', ϊ: 'i', ΐ: 'i', κ: 'k', λ: 'l',
+      μ: 'm', ν: 'n', ξ: 'x', ο: 'o', ό: 'o', π: 'p', ρ: 'r', σ: 's', ς: 's', τ: 't', υ: 'i', ύ: 'i', ϋ: 'i', ΰ: 'i', φ: 'f', χ: 'h', ψ: 'ps',
+      ω: 'o', ώ: 'o'
+    };
+    const kana = {};
+    'a a i i u u e e o o ka ga ki gi ku gu ke ge ko go sa za shi ji su zu se ze so zo ta da chi ji _ tsu zu te de to do na ni nu ne no ha ba pa hi bi pi fu bu pu he be pe ho bo po ma mi mu me mo ya ya yu yu yo yo ra ri ru re ro wa wa i e o n vu ka ke'.split(' ').forEach((r, i) => {
+      kana[String.fromCharCode(0x3041 + i)] = r === '_' ? '' : r;
+    });
+    return {
+      map,
+      kana,
+      ko0: 'g kk n d tt r m b pp s ss _ j jj ch k t p h'.split(' ').map(r => r === '_' ? '' : r),
+      ko1: 'a ae ya yae eo e yeo ye o wa wae oe yo u wo we wi yu eu ui i'.split(' '),
+      ko2: [ '', 'k', 'k', 'k', 'n', 'n', 'n', 't', 'l', 'k', 'm', 'l', 'l', 'l', 'p', 'l', 'm', 'p', 'p', 't', 't', 'ng', 't', 't', 'k', 't', 'p', '' ]
+    };
   }
   renderLibraryView() {
     if (!this.elements.songLibrary) {
