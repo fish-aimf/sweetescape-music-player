@@ -1805,34 +1805,14 @@ class AdvancedMusicPlayer {
       }
       let filteredLibrary = this.songLibrary;
       if (searchTerm && searchTerm !== '') {
-        const LAT_TO_CYR = {
-          a: 'а',
-          b: 'б',
-          v: 'в',
-          g: 'г',
-          d: 'д',
-          e: 'е',
-          z: 'з',
-          i: 'и',
-          j: 'й',
-          k: 'к',
-          l: 'л',
-          m: 'м',
-          n: 'н',
-          o: 'о',
-          p: 'п',
-          r: 'р',
-          s: 'с',
-          t: 'т',
-          u: 'у',
-          f: 'ф',
-          y: 'ы'
-        };
-        const latinized = searchTerm.split('').map(c => LAT_TO_CYR[c] || c).join('');
+        const folded = this._searchFold(searchTerm);
         filteredLibrary = this.songLibrary.filter(song => {
           const name = song.name.toLowerCase();
           const author = (song.author || '').toLowerCase();
-          return name.includes(searchTerm) || author.includes(searchTerm) || name.includes(latinized) || author.includes(latinized);
+          if (name.includes(searchTerm) || author.includes(searchTerm)) {
+            return true;
+          }
+          return folded !== '' && (this._searchFold(song.name).includes(folded) || this._searchFold(song.author || '').includes(folded));
         });
       }
       if (this._libFilters && Object.values(this._libFilters).some(v => v !== null)) {
@@ -1885,6 +1865,24 @@ class AdvancedMusicPlayer {
       console.error('Error rendering song library:', error);
       this.elements.songLibrary.innerHTML = '<div class="error-message">Failed to display song library</div>';
     }
+  }
+  _searchFold(text) {
+    const cache = this._searchFoldCache || (this._searchFoldCache = new Map());
+    let key = cache.get(text);
+    if (key !== undefined) {
+      return key;
+    }
+    const CYR = {
+      а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'e', ж: 'zh', з: 'z', и: 'i', й: 'i', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p',
+      р: 'r', с: 's', т: 't', у: 'u', ф: 'f', х: 'h', ц: 'c', ч: 'ch', ш: 'sh', щ: 'sh', ъ: '', ы: 'i', ь: '', э: 'e', ю: 'iu', я: 'ia',
+      і: 'i', ї: 'i', є: 'e', ґ: 'g'
+    };
+    key = String(text).toLowerCase().replace(/[а-яёіїєґ]/g, c => CYR[c]).replace(/['`’ʼ]/g, '').replace(/shch|sch/g, 'sh').replace(/tch/g, 'ch').replace(/kh|x/g, 'h').replace(/tz|ts/g, 'c').replace(/ph/g, 'f').replace(/w/g, 'v').replace(/q/g, 'k').replace(/[yj]/g, 'i').replace(/i([eo])/g, 'e').replace(/(.)\1+/g, '$1').trim();
+    if (cache.size > 5000) {
+      cache.clear();
+    }
+    cache.set(text, key);
+    return key;
   }
   renderLibraryView() {
     if (!this.elements.songLibrary) {
