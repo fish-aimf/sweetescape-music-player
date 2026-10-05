@@ -83,6 +83,185 @@ const UI = {
     };
   }
 };
+const DISGUISE_FAVICONS = [ {
+  id: 'docs',
+  name: 'Docs',
+  title: 'Untitled document - Google Docs',
+  svg: '<path fill="#4285F4" d="M7 1h13l8 8v20a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2z"/><path fill="#A1C2FA" d="M20 1v6a2 2 0 0 0 2 2h6z"/><path fill="#fff" d="M10 14h12v2H10zm0 4h12v2H10zm0 4h8v2h-8z"/>'
+}, {
+  id: 'slides',
+  name: 'Slides',
+  title: 'Untitled presentation - Google Slides',
+  svg: '<path fill="#F4B400" d="M7 1h13l8 8v20a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2z"/><path fill="#FADA80" d="M20 1v6a2 2 0 0 0 2 2h6z"/><path fill="#fff" d="M10 14h12v10H10z"/><path fill="#F4B400" d="M12 16h8v6h-8z"/>'
+}, {
+  id: 'sheets',
+  name: 'Sheets',
+  title: 'Untitled spreadsheet - Google Sheets',
+  svg: '<path fill="#0F9D58" d="M7 1h13l8 8v20a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2z"/><path fill="#87CEAC" d="M20 1v6a2 2 0 0 0 2 2h6z"/><path fill="#fff" d="M10 14h12v11H10z"/><path fill="#0F9D58" d="M12 16h3v2h-3zm5 0h3v2h-3zm-5 4h3v3h-3zm5 0h3v3h-3z"/>'
+}, {
+  id: 'drive',
+  name: 'Drive',
+  title: 'My Drive - Google Drive',
+  svg: '<path fill="#0066DA" d="M3.4 25.8 4.8 28.2c.3.5.7.9 1.2 1.2l5-8.7H1c0 .6.1 1.1.4 1.6z"/><path fill="#00AC47" d="M16 11 11 2.3c-.5.3-.9.7-1.2 1.2L1.4 18.1c-.3.5-.4 1-.4 1.6h10z"/><path fill="#EA4335" d="M26 29.4c.5-.3.9-.7 1.2-1.2l.6-1 2.8-4.9c.3-.5.4-1 .4-1.6H21l2.1 4.2z"/><path fill="#00832D" d="M16 11l5-8.7c-.5-.3-1-.4-1.6-.4h-6.8c-.6 0-1.1.2-1.6.4z"/><path fill="#2684FC" d="M21 20.7H11l-5 8.7c.5.3 1 .4 1.6.4h16.8c.6 0 1.1-.2 1.6-.4z"/><path fill="#FFBA00" d="M25.9 11.6 21.3 3.5c-.3-.5-.7-.9-1.2-1.2L16 11l5 8.7h10c0-.6-.1-1.1-.4-1.6z"/>'
+}, {
+  id: 'gmail',
+  name: 'Gmail',
+  title: 'Inbox (78) - Gmail',
+  svg: '<path fill="#4285F4" d="M3 10v16a2 2 0 0 0 2 2h4.5V14.8z"/><path fill="#34A853" d="M22.5 28H27a2 2 0 0 0 2-2V10l-6.5 4.8z"/><path fill="#FBBC04" d="M22.5 6.5v8.3L29 10V8.3c0-2.6-3-4.1-5-2.5z"/><path fill="#EA4335" d="M9.5 14.8V6.5L16 11.4l6.5-4.9v8.3L16 19.7z"/><path fill="#C5221F" d="M3 8.3V10l6.5 4.8V6.5L8 5.3C6 3.8 3 5.2 3 8.3z"/>'
+}, {
+  id: 'classroom',
+  name: 'Classroom',
+  title: 'Classes',
+  svg: '<rect x="1" y="4" width="30" height="24" rx="2.5" fill="#F9AB00"/><rect x="3.5" y="6.5" width="25" height="19" fill="#1E8E3E"/><circle cx="9.5" cy="13.5" r="2" fill="#57BB8A"/><circle cx="22.5" cy="13.5" r="2" fill="#57BB8A"/><path fill="#57BB8A" d="M5 20c0-1.8 2-3 4.5-3s4.5 1.2 4.5 3zm13 0c0-1.8 2-3 4.5-3s4.5 1.2 4.5 3z"/><circle cx="16" cy="12.5" r="2.6" fill="#fff"/><path fill="#fff" d="M10.5 20.5c0-2.3 2.5-3.8 5.5-3.8s5.5 1.5 5.5 3.8z"/><rect x="18" y="23" width="7" height="2.5" fill="#fff"/>'
+}, {
+  id: 'google',
+  name: 'Google',
+  title: 'Google',
+  svg: '<path fill="#4285F4" d="M30.4 16.3c0-1-.1-2-.3-2.9H16v5.5h8.1c-.4 1.9-1.4 3.4-3 4.5v3.7h4.8c2.8-2.6 4.5-6.4 4.5-10.8z"/><path fill="#34A853" d="M16 31c4 0 7.4-1.3 9.9-3.6l-4.8-3.7c-1.3.9-3 1.4-5.1 1.4-3.9 0-7.2-2.6-8.4-6.2h-5v3.8C5.1 27.6 10.2 31 16 31z"/><path fill="#FBBC04" d="M7.6 18.9c-.3-.9-.5-1.9-.5-2.9s.2-2 .5-2.9V9.3h-5C1.6 11.3 1 13.6 1 16s.6 4.7 1.6 6.7z"/><path fill="#EA4335" d="M16 6.9c2.2 0 4.2.8 5.7 2.2L26 4.9C23.4 2.5 20 1 16 1 10.2 1 5.1 4.4 2.6 9.3l5 3.8C8.8 9.5 12.1 6.9 16 6.9z"/>'
+}, {
+  id: 'sls',
+  name: 'SLS',
+  title: 'Home',
+  svg: '<rect width="32" height="32" rx="5" fill="#13213F"/><rect x="5" y="8" width="22" height="2.4" rx="1" fill="#E5484D"/><text x="16" y="24.5" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="12" letter-spacing="-.3" fill="#fff">SLS</text>'
+}, {
+  id: 'desmos',
+  name: 'Desmos',
+  title: 'Desmos | Graphing Calculator',
+  svg: '<rect width="32" height="32" rx="6" fill="#127A3D"/><path fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" d="M9 2.5 15.5 21c1 2.6 2.6 2.6 3.6 0L25.5 2.5M2 24c3-4 5-4 7.5 0s4.5 4 7 0 4.5-4 7 0 4.5 4 6.5 1"/>'
+}, {
+  id: 'wikipedia',
+  name: 'Wikipedia',
+  title: 'Wikipedia, the free encyclopedia',
+  svg: '<rect width="32" height="32" rx="6" fill="#fff"/><text x="16" y="24" text-anchor="middle" font-family="Georgia,Times,serif" font-size="22" fill="#000">W</text>'
+}, {
+  id: 'khan',
+  name: 'Khan',
+  title: 'Khan Academy',
+  svg: '<path fill="#14BF96" d="M16 1 29 8.5v15L16 31 3 23.5v-15z"/><circle cx="16" cy="11.3" r="3.2" fill="#fff"/><path fill="#fff" d="M8.5 15.5c0 4.7 3.2 8 7.5 8.7 4.3-.7 7.5-4 7.5-8.7-3.2 0-6 1.9-7.5 4.6-1.5-2.7-4.3-4.6-7.5-4.6z"/>'
+}, {
+  id: 'quizlet',
+  name: 'Quizlet',
+  title: 'Your Sets | Quizlet',
+  svg: '<rect width="32" height="32" rx="7" fill="#4255FF"/><circle cx="15.2" cy="15" r="7.2" fill="none" stroke="#fff" stroke-width="3.4"/><path stroke="#fff" stroke-width="3.6" stroke-linecap="round" d="M19 19.5 24.5 25"/>'
+}, {
+  id: 'canvas',
+  name: 'Canvas',
+  title: 'Dashboard',
+  svg: '<g fill="#E72429"><circle cx="16" cy="16" r="5.2"/><circle cx="27.5" cy="16" r="2.6"/><circle cx="4.5" cy="16" r="2.6"/><circle cx="16" cy="4.5" r="2.6"/><circle cx="16" cy="27.5" r="2.6"/><circle cx="24.1" cy="7.9" r="2.6"/><circle cx="7.9" cy="7.9" r="2.6"/><circle cx="24.1" cy="24.1" r="2.6"/><circle cx="7.9" cy="24.1" r="2.6"/></g>'
+}, {
+  id: 'chatgpt',
+  name: 'ChatGPT',
+  title: 'ChatGPT',
+  svg: '<rect width="32" height="32" rx="8" fill="#000"/><g fill="none" stroke="#fff" stroke-width="1.9"><rect x="12.6" y="5" width="6.8" height="13" rx="3.4"/><rect x="12.6" y="5" width="6.8" height="13" rx="3.4" transform="rotate(60 16 16)"/><rect x="12.6" y="5" width="6.8" height="13" rx="3.4" transform="rotate(120 16 16)"/><rect x="12.6" y="5" width="6.8" height="13" rx="3.4" transform="rotate(180 16 16)"/><rect x="12.6" y="5" width="6.8" height="13" rx="3.4" transform="rotate(240 16 16)"/><rect x="12.6" y="5" width="6.8" height="13" rx="3.4" transform="rotate(300 16 16)"/></g>'
+}, {
+  id: 'gemini',
+  name: 'Gemini',
+  title: 'Google Gemini',
+  svg: '<defs><linearGradient id="a" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#1C7DFF"/><stop offset=".55" stop-color="#6E7CF2"/><stop offset="1" stop-color="#C27BE0"/></linearGradient></defs><path fill="url(#a)" d="M16 1c.9 7.8 7.2 14.1 15 15-7.8.9-14.1 7.2-15 15-.9-7.8-7.2-14.1-15-15C8.8 15.1 15.1 8.8 16 1z"/>'
+}, {
+  id: 'deepseek',
+  name: 'DeepSeek',
+  title: 'DeepSeek - Into the Unknown',
+  svg: '<path fill="#4D6BFE" d="M30.7 6.6c-.3-.2-.5.1-.8.3l-.3.3c-.6.6-1.3 1-2.2 1-1.3-.1-2.4.3-3.4 1.3-.2-1.2-.9-2-2-2.5-.6-.3-1.1-.5-1.5-1-.3-.4-.3-.8-.4-1.2 0-.3-.1-.5-.4-.6-.3 0-.4.2-.5.4-.4.8-.6 1.6-.5 2.5 0 1.9.8 3.4 2.4 4.4.2.1.2.3.2.5-.1.4-.2.7-.3 1.1-.1.2-.2.3-.4.2-.9-.4-1.7-.9-2.4-1.6-1.2-1.1-2.2-2.4-3.5-3.3-.3-.2-.6-.4-.9-.6-1.3-1.3.2-2.3.5-2.5.4-.1.1-.6-1-.6-1.1 0-2.2.4-3.5.9-.2.1-.4.1-.6.1-1.2-.2-2.4-.3-3.7-.1C3.1 6.2 1 7.4.4 9.4c-.8 2.1-.9 4.3-.4 6.6.6 2.7 2 5 4.2 6.8 2.2 1.9 4.9 2.8 7.9 2.6 1.8-.1 3.9-.4 6.2-2.3.6.3 1.2.4 2.2.5.8.1 1.5 0 2.1-.1.9-.2.8-1 .5-1.2-2.5-1.2-1.9-.7-2.4-1.1 1.2-1.5 3.1-3 3.8-7.9 0-.4 0-.6 0-.9 0-.2 0-.3.3-.3.7-.1 1.3-.3 1.9-.6 1.6-.9 2.3-2.4 2.5-4.2 0-.3 0-.5-.4-.7zM15.2 23.4c-2.5-1.9-3.7-2.6-4.2-2.6-.5 0-.4.6-.3.9.1.4.3.6.4.9.1.2.2.5-.2.7-.8.5-2.3-.2-2.4-.2-1.7-1-3.1-2.3-4.1-4-1-1.7-1.5-3.5-1.6-5.4 0-.5.1-.6.6-.7.6-.1 1.3-.1 1.9 0 2.7.4 5 1.6 6.9 3.5 1.1 1.1 1.9 2.4 2.8 3.7.9 1.4 1.9 2.7 3.2 3.7.4.3.8.6 1.2.8-1.1.1-2.9.1-4.2-.8zm1.4-9.1c0-.2.2-.4.4-.4h.1c.1 0 .2.1.3.1.1.1.1.2.1.3 0 .2-.2.4-.4.4-.3 0-.5-.2-.5-.4zm4.1 2.1c-.3.1-.5.2-.8.2-.4 0-.9-.1-1.1-.3-.4-.3-.7-.5-.8-1.1 0-.2 0-.6.1-.7.1-.3 0-.4-.2-.6-.2-.1-.4-.1-.6-.2-.1 0-.2-.1-.1-.3 0-.1.2-.2.2-.2.3-.2.7-.1 1.1 0 .3.1.6.4.9.8.4.4.4.6.6.9.2.3.3.5.4.8.1.3.1.4-.1.6z"/>'
+}, {
+  id: 'copilot',
+  name: 'Copilot',
+  title: 'Home | Microsoft 365 Copilot',
+  svg: '<defs><linearGradient id="a" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1E9BF0"/><stop offset=".5" stop-color="#2BC36B"/><stop offset="1" stop-color="#FFC23B"/></linearGradient><linearGradient id="b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7C5CFF"/><stop offset=".5" stop-color="#E8519E"/><stop offset="1" stop-color="#FF8A3D"/></linearGradient></defs><path fill="url(#a)" d="M11 2h9.5c1.4 0 2.3 1.4 1.8 2.7L18 17H9.5L6.7 26.6A3.4 3.4 0 0 1 3.4 29H2.6c-1.1 0-1.9-1.1-1.5-2.1L7.7 4.6A3.4 3.4 0 0 1 11 2z"/><path fill="url(#b)" d="M21 30h-9.5c-1.4 0-2.3-1.4-1.8-2.7L14 15h8.5l2.8-9.6A3.4 3.4 0 0 1 28.6 3h.8c1.1 0 1.9 1.1 1.5 2.1l-6.6 22.3A3.4 3.4 0 0 1 21 30z"/>'
+}, {
+  id: 'word',
+  name: 'Word',
+  title: 'Document1 - Word',
+  svg: '<rect x="8" y="2" width="23" height="28" rx="2.5" fill="#41A5EE"/><path fill="#2B7CD3" d="M8 11.3h23v9.4H8z"/><path fill="#185ABD" d="M8 20.7h23v6.8a2.5 2.5 0 0 1-2.5 2.5h-18A2.5 2.5 0 0 1 8 27.5z"/><rect x="1" y="8" width="17" height="16" rx="2" fill="#185ABD"/><path fill="#fff" d="M3.7 11.5h2.1l1.3 6.3 1.5-6.3h1.8l1.5 6.3 1.3-6.3h2.1l-2.3 9h-2l-1.5-6-1.5 6h-2z"/>'
+}, {
+  id: 'outlook',
+  name: 'Outlook',
+  title: 'Mail - Outlook',
+  svg: '<rect x="9" y="4" width="22" height="24" rx="2.5" fill="#28A8EA"/><path fill="#0364B8" d="M9 16h22v9.5a2.5 2.5 0 0 1-2.5 2.5h-17A2.5 2.5 0 0 1 9 25.5z"/><rect x="1" y="8" width="17" height="16" rx="2" fill="#0078D4"/><ellipse cx="9.5" cy="16" rx="3.8" ry="4.6" fill="none" stroke="#fff" stroke-width="2.3"/>'
+}, {
+  id: 'teams',
+  name: 'Teams',
+  title: 'Chat | Microsoft Teams',
+  svg: '<circle cx="25" cy="8.5" r="3.6" fill="#7B83EB"/><path fill="#7B83EB" d="M19 13.5h10.5a1.5 1.5 0 0 1 1.5 1.5v6.5a5.5 5.5 0 0 1-11 0z"/><circle cx="16" cy="7.5" r="4.5" fill="#5059C9"/><path fill="#5059C9" d="M9 13.5h13a1.5 1.5 0 0 1 1.5 1.5v7.5a7.3 7.3 0 0 1-14.5 0z"/><rect x="1" y="9" width="16" height="16" rx="2" fill="#4B53BC"/><path fill="#fff" d="M4.5 12.5h9v2.3h-3.2V22H7.7v-7.2H4.5z"/>'
+}, {
+  id: 'notion',
+  name: 'Notion',
+  title: 'Notion',
+  svg: '<rect x="2.5" y="2.5" width="27" height="27" rx="5" fill="#fff" stroke="#000" stroke-width="2.2"/><path fill="none" stroke="#000" stroke-width="2.8" stroke-linejoin="round" d="M10.5 23V9.5l11 13.3V9"/>'
+}, {
+  id: 'instagram',
+  name: 'Instagram',
+  title: 'Instagram',
+  svg: '<defs><radialGradient id="a" cx=".28" cy="1.05" r="1.3"><stop offset="0" stop-color="#FFD776"/><stop offset=".25" stop-color="#F3A554"/><stop offset=".5" stop-color="#F13D71"/><stop offset=".75" stop-color="#C2338B"/><stop offset="1" stop-color="#4F5BD5"/></radialGradient></defs><rect width="32" height="32" rx="8" fill="url(#a)"/><rect x="6.5" y="6.5" width="19" height="19" rx="5.6" fill="none" stroke="#fff" stroke-width="2.4"/><circle cx="16" cy="16" r="4.6" fill="none" stroke="#fff" stroke-width="2.4"/><circle cx="21.6" cy="10.4" r="1.5" fill="#fff"/>'
+}, {
+  id: 'whatsapp',
+  name: 'WhatsApp',
+  title: 'WhatsApp',
+  svg: '<path fill="#25D366" d="M16 1A15 15 0 0 0 3.1 23.6L1 31l7.6-2A15 15 0 1 0 16 1z"/><path fill="#fff" d="M11.6 8.6c.4 0 .7 0 .9.6l1.3 3.1c.1.3.1.6-.1.9l-.9 1.1c-.2.2-.2.5-.1.8 1 1.7 2.4 3.1 4.2 4.1.3.2.6.1.8-.1l1.1-1.3c.2-.3.6-.4.9-.2l3 1.4c.3.2.5.3.5.7 0 1-.4 2.1-1.3 2.8-1 .7-2.3.9-3.6.5-4.5-1.5-8-5.1-9.4-9.6-.4-1.2 0-2.5.9-3.4.6-.5 1.1-.8 1.8-.8z"/>'
+}, {
+  id: 'reddit',
+  name: 'Reddit',
+  title: 'Reddit - Dive into anything',
+  svg: '<circle cx="16" cy="16" r="15.5" fill="#FF4500"/><ellipse cx="16" cy="19" rx="9" ry="6.3" fill="#fff"/><circle cx="24" cy="14" r="2.3" fill="#fff"/><circle cx="8" cy="14" r="2.3" fill="#fff"/><circle cx="22.3" cy="7" r="2" fill="#fff"/><path fill="none" stroke="#fff" stroke-width="1.3" d="M16 13l1.4-6 4.9 1"/><circle cx="12.6" cy="18" r="1.6" fill="#FF4500"/><circle cx="19.4" cy="18" r="1.6" fill="#FF4500"/><path fill="none" stroke="#FF4500" stroke-width="1.2" stroke-linecap="round" d="M12.4 21.8c2.1 1.5 5.1 1.5 7.2 0"/>'
+}, {
+  id: 'newtab',
+  name: 'New Tab',
+  title: 'New Tab',
+  svg: '<circle cx="16" cy="16" r="15" fill="#5F6368"/><g stroke="#fff" stroke-width="2.2"><path d="M16 8.8h13.2"/><path d="M16 8.8h13.2" transform="rotate(120 16 16)"/><path d="M16 8.8h13.2" transform="rotate(240 16 16)"/></g><circle cx="16" cy="16" r="7.2" fill="#fff"/><circle cx="16" cy="16" r="5" fill="#5F6368"/>'
+} ];
+const DISGUISE_SITES = [ {
+  name: 'Google',
+  url: 'https://www.google.com/webhp?igu=1',
+  icon: 'fab fa-google'
+}, {
+  name: 'Wikipedia',
+  url: 'https://en.wikipedia.org/wiki/Special:Random',
+  icon: 'fab fa-wikipedia-w'
+}, {
+  name: 'Desmos Graphing',
+  url: 'https://www.desmos.com/calculator',
+  icon: 'fa-chart-line'
+}, {
+  name: 'Desmos Scientific',
+  url: 'https://www.desmos.com/scientific',
+  icon: 'fa-calculator'
+}, {
+  name: 'Desmos 3D',
+  url: 'https://www.desmos.com/3d',
+  icon: 'fa-cube'
+}, {
+  name: 'GeoGebra',
+  url: 'https://www.geogebra.org/calculator',
+  icon: 'fa-shapes'
+}, {
+  name: 'Khan Academy',
+  url: 'https://www.khanacademy.org',
+  icon: 'fa-graduation-cap'
+}, {
+  name: 'Math Is Fun',
+  url: 'https://www.mathsisfun.com',
+  icon: 'fa-square-root-variable'
+}, {
+  name: 'PhET Simulation',
+  url: 'https://phet.colorado.edu/sims/html/projectile-motion/latest/projectile-motion_en.html',
+  icon: 'fa-flask'
+}, {
+  name: 'Python Docs',
+  url: 'https://docs.python.org/3/',
+  icon: 'fab fa-python'
+}, {
+  name: 'Online Python',
+  url: 'https://www.online-python.com/',
+  icon: 'fa-code'
+}, {
+  name: 'Whiteboard',
+  url: 'https://excalidraw.com',
+  icon: 'fa-pen-ruler'
+}, {
+  name: 'PDF Reader',
+  url: 'https://mozilla.github.io/pdf.js/web/viewer.html',
+  icon: 'fa-file-pdf'
+} ];
 const HTML_ENTITIES = {
   amp: '&',
   lt: '<',
@@ -227,45 +406,14 @@ class AdvancedMusicPlayer {
     this.fullscreenLyricsInterval = null;
     this.originalFavicon = document.querySelector('link[rel="icon"]')?.href || '/favicon.ico';
     this.originalTitle = document.title;
-    this.currentDisguiseIndex = -1;
     this.priorityModeActive = false;
     this.titleObserver = null;
-    this.pageDisguises = [ {
-      favicon: 'https://i.ibb.co/W4MfKV9X/image.png',
-      title: 'WhatsApp',
-      isPriority: true
-    }, {
-      favicon: 'https://i.ibb.co/Y77XtqRh/image.png',
-      title: 'Inbox (78) - Gmail',
-      isPriority: true
-    }, {
-      favicon: 'https://i.ibb.co/fV4bT2Fp/image.png',
-      title: 'DeepSeek - Into the Unknown',
-      isPriority: true
-    }, {
-      favicon: 'https://i.ibb.co/35hmFHPL/image.png',
-      title: 'Home',
-      isPriority: true
-    }, {
-      favicon: 'https://i.ibb.co/JFKpsWK3/image.png',
-      title: 'Desmos | Graphing Calculator',
-      isPriority: true
-    }, {
-      favicon: 'https://i.ibb.co/35MNf3BZ/image.png',
-      title: 'New Tab',
-      isPriority: true
-    }, {
-      favicon: 'https://i.ibb.co/vCKb51GK/image.png',
-      title: 'ChatGPT',
-      isPriority: true
-    }, {
-      favicon: 'https://i.ibb.co/xtwTzMvz/image.png',
-      title: 'Home | Microsoft 365 Copilot',
-      isPriority: true
-    } ];
+    this.themedFavicon = null;
+    this.activeFaviconDisguise = null;
+    this.disguiseDialog = null;
+    this.disguiseEscHandler = null;
     this.webEmbedOverlay = null;
-    this.currentWebEmbedIndex = 0;
-    this.webEmbedSites = [ 'https://www.desmos.com/calculator', 'https://i2.res.24o.it/pdf2010/Editrice/ILSOLE24ORE/ILSOLE24ORE/Online/_Oggetti_Embedded/Documenti/2025/07/12/Preliminary%20Report%20VT.pdf', 'https://www.wikipedia.org', 'https://www.desmos.com/scientific', 'https://www.desmos.com/3d' ];
+    this.webEmbedKeyHandler = null;
     this.adsEnabled = false;
     this.visualizerEnabled = true;
     this.miniplayerWindow = null;
@@ -367,8 +515,6 @@ class AdvancedMusicPlayer {
       cycleTab: 'KeyQ',
       toggleVideoFullscreen: 'KeyU',
       showQueue: 'KeyY',
-      cycleFavicon: 'KeyB',
-      toggleWebEmbed: 'KeyN',
       toggleMusicExplorer: 'KeyO',
       seekForward: 'KeyG',
       seekBackward: 'KeyF',
@@ -681,6 +827,7 @@ class AdvancedMusicPlayer {
       switchLangBtn: document.getElementById('switchLangBtn'),
       transcriptLangSelect: document.getElementById('transcriptLangSelect'),
       statsButton: document.getElementById('statsButton'),
+      disguiseButton: document.getElementById('disguiseButton'),
       lsPanel: document.getElementById('lsPanel'),
       lsRangeToggle: document.getElementById('lsRangeToggle'),
       listeningStatsToggle: document.getElementById('listeningStatsToggle')
@@ -840,7 +987,7 @@ class AdvancedMusicPlayer {
       refreshRandomRecommendations: () => this.refreshRandomRecommendations(),
       visualizerToggle: e => this.handleVisualizerToggle(e)
     };
-    const simpleBindings = [ [ this.elements.addSongBtn, 'click', handlers.addSong ], [ this.elements.createPlaylistBtn, 'click', handlers.createPlaylist ], [ this.elements.closePlaylistModalBtn, 'click', handlers.closePlaylistModal ], [ this.elements.addSongToPlaylistBtn, 'click', handlers.addSongToPlaylist ], [ this.elements.playPauseBtn, 'click', handlers.togglePlayPause ], [ this.elements.prevBtn, 'click', handlers.playPrevious ], [ this.elements.nextBtn, 'click', handlers.playNext ], [ this.elements.loopBtn, 'click', handlers.toggleLoop ], [ this.elements.showPlaylistBtn, 'click', handlers.toggleSidebar ], [ this.elements.closeSidebarBtn, 'click', handlers.toggleSidebar ], [ this.elements.themeToggle, 'click', handlers.toggleTheme ], [ this.elements.autoplayBtn, 'click', handlers.toggleAutoplay ], [ this.elements.speedBtn, 'click', handlers.toggleSpeedOptions ], [ this.elements.volumeSlider, 'input', handlers.volumeChange ], [ this.elements.progressBar, 'click', handlers.seekMusic ], [ this.elements.currentSongName, 'contextmenu', handlers.songNameRightClick ], [ this.elements.toggleControlBarBtn, 'click', handlers.toggleControlBar ], [ this.elements.modifyLibraryBtn, 'click', handlers.openLibraryModal ], [ this.elements.closeLibraryModalBtn, 'click', handlers.closeLibraryModal ], [ this.elements.importLibraryBtn, 'click', handlers.importLibrary ], [ this.elements.exportLibraryBtn, 'click', handlers.exportLibrary ], [ this.elements.libraryModificationTabAddSong, 'click', handlers.libraryModificationTabAddSongClick ], [ this.elements.libraryModificationTabImportExport, 'click', handlers.libraryModificationTabImportExportClick ], [ this.elements.loopPlaylistBtn, 'click', handlers.togglePlaylistLoop ], [ this.elements.discordButton, 'click', handlers.discordClick ], [ this.elements.librarySortToggle, 'change', handlers.librarySortToggle ], [ this.elements.libraryReverseToggle, 'change', handlers.libraryReverseToggle ], [ this.elements.closeImportModalBtn, 'click', handlers.closeImportModal ], [ this.elements.importSongsBtn, 'click', handlers.importSongs ], [ this.elements.playlistSearch, 'input', handlers.filterPlaylists ], [ this.elements.playlistSearch, 'keypress', handlers.playlistSearchEnter ], [ this.elements.toggleCreatePlaylistBtn, 'click', handlers.toggleCreatePlaylistDiv ], [ this.elements.togglePlaylistEditModeBtn, 'click', handlers.togglePlaylistEditMode ], [ this.elements.settingsButton, 'click', handlers.openSettings ], [ this.elements.settingsCloseBtn, 'click', handlers.closeSettings ], [ this.elements.settingsModal, 'click', handlers.settingsModalClick ], [ this.elements.themeMode, 'change', handlers.themeModeChange ], [ this.elements.saveCustomTheme, 'click', handlers.saveCustomTheme ], [ this.elements.adsToggle, 'change', handlers.adsToggle ], [ this.elements.saveDiscoverMoreSettings, 'click', handlers.saveDiscoverMoreSettings ], [ this.elements.visualizerToggle, 'change', handlers.visualizerToggle ], [ this.elements.visualizerStyleGrid, 'click', this.handleVisualizerStyleClick.bind(this) ], [ this.elements.visualizerGain, 'input', this.handleVisualizerGainInput.bind(this) ], [ this.elements.findSongsBtn, 'click', handlers.findSongsOpen ], [ this.elements.closeFindSongs, 'click', handlers.findSongsClose ], [ this.elements.searchSongsToAdd, 'input', handlers.searchSongsToAdd ], [ this.elements.statsButton, 'click', this.openStatsModal.bind(this) ], [ this.elements.lsPanel, 'click', this._handleStatsShowAllClick.bind(this) ], [ this.elements.lsPanel, 'input', this._handleStatsSearchInput.bind(this) ], [ document.getElementById('lsCloseBtn'), 'click', this.closeStatsModal.bind(this) ], [ this.elements.lsRangeToggle, 'change', this._handleStatsRangeToggle.bind(this) ], [ this.elements.listeningStatsToggle, 'change', this.handleListeningStatsToggle.bind(this) ], [ this.elements.libTopicBtn, 'click', handlers.toggleTopicKeyword ] ];
+    const simpleBindings = [ [ this.elements.addSongBtn, 'click', handlers.addSong ], [ this.elements.createPlaylistBtn, 'click', handlers.createPlaylist ], [ this.elements.closePlaylistModalBtn, 'click', handlers.closePlaylistModal ], [ this.elements.addSongToPlaylistBtn, 'click', handlers.addSongToPlaylist ], [ this.elements.playPauseBtn, 'click', handlers.togglePlayPause ], [ this.elements.prevBtn, 'click', handlers.playPrevious ], [ this.elements.nextBtn, 'click', handlers.playNext ], [ this.elements.loopBtn, 'click', handlers.toggleLoop ], [ this.elements.showPlaylistBtn, 'click', handlers.toggleSidebar ], [ this.elements.closeSidebarBtn, 'click', handlers.toggleSidebar ], [ this.elements.themeToggle, 'click', handlers.toggleTheme ], [ this.elements.autoplayBtn, 'click', handlers.toggleAutoplay ], [ this.elements.speedBtn, 'click', handlers.toggleSpeedOptions ], [ this.elements.volumeSlider, 'input', handlers.volumeChange ], [ this.elements.progressBar, 'click', handlers.seekMusic ], [ this.elements.currentSongName, 'contextmenu', handlers.songNameRightClick ], [ this.elements.toggleControlBarBtn, 'click', handlers.toggleControlBar ], [ this.elements.modifyLibraryBtn, 'click', handlers.openLibraryModal ], [ this.elements.closeLibraryModalBtn, 'click', handlers.closeLibraryModal ], [ this.elements.importLibraryBtn, 'click', handlers.importLibrary ], [ this.elements.exportLibraryBtn, 'click', handlers.exportLibrary ], [ this.elements.libraryModificationTabAddSong, 'click', handlers.libraryModificationTabAddSongClick ], [ this.elements.libraryModificationTabImportExport, 'click', handlers.libraryModificationTabImportExportClick ], [ this.elements.loopPlaylistBtn, 'click', handlers.togglePlaylistLoop ], [ this.elements.discordButton, 'click', handlers.discordClick ], [ this.elements.librarySortToggle, 'change', handlers.librarySortToggle ], [ this.elements.libraryReverseToggle, 'change', handlers.libraryReverseToggle ], [ this.elements.closeImportModalBtn, 'click', handlers.closeImportModal ], [ this.elements.importSongsBtn, 'click', handlers.importSongs ], [ this.elements.playlistSearch, 'input', handlers.filterPlaylists ], [ this.elements.playlistSearch, 'keypress', handlers.playlistSearchEnter ], [ this.elements.toggleCreatePlaylistBtn, 'click', handlers.toggleCreatePlaylistDiv ], [ this.elements.togglePlaylistEditModeBtn, 'click', handlers.togglePlaylistEditMode ], [ this.elements.settingsButton, 'click', handlers.openSettings ], [ this.elements.settingsCloseBtn, 'click', handlers.closeSettings ], [ this.elements.settingsModal, 'click', handlers.settingsModalClick ], [ this.elements.themeMode, 'change', handlers.themeModeChange ], [ this.elements.saveCustomTheme, 'click', handlers.saveCustomTheme ], [ this.elements.adsToggle, 'change', handlers.adsToggle ], [ this.elements.saveDiscoverMoreSettings, 'click', handlers.saveDiscoverMoreSettings ], [ this.elements.visualizerToggle, 'change', handlers.visualizerToggle ], [ this.elements.visualizerStyleGrid, 'click', this.handleVisualizerStyleClick.bind(this) ], [ this.elements.visualizerGain, 'input', this.handleVisualizerGainInput.bind(this) ], [ this.elements.findSongsBtn, 'click', handlers.findSongsOpen ], [ this.elements.closeFindSongs, 'click', handlers.findSongsClose ], [ this.elements.searchSongsToAdd, 'input', handlers.searchSongsToAdd ], [ this.elements.statsButton, 'click', this.openStatsModal.bind(this) ], [ this.elements.disguiseButton, 'click', this.openDisguiseModal.bind(this) ], [ this.elements.lsPanel, 'click', this._handleStatsShowAllClick.bind(this) ], [ this.elements.lsPanel, 'input', this._handleStatsSearchInput.bind(this) ], [ document.getElementById('lsCloseBtn'), 'click', this.closeStatsModal.bind(this) ], [ this.elements.lsRangeToggle, 'change', this._handleStatsRangeToggle.bind(this) ], [ this.elements.listeningStatsToggle, 'change', this.handleListeningStatsToggle.bind(this) ], [ this.elements.libTopicBtn, 'click', handlers.toggleTopicKeyword ] ];
     simpleBindings.forEach(([element, event, handler]) => {
       if (element) {
         element.addEventListener(event, handler);
@@ -1021,14 +1168,6 @@ class AdvancedMusicPlayer {
       if (document.activeElement.tagName === 'TEXTAREA' || document.activeElement.isContentEditable) {
         return;
       }
-      if (e.key?.toLowerCase() === 'n' && this.currentKeybinds.toggleWebEmbed === 'KeyN') {
-        if (e.shiftKey) {
-          this.cycleWebEmbedSite();
-        } else {
-          this.toggleWebEmbedOverlay();
-        }
-        return;
-      }
       const preventDefaultCodes = Object.values(this.currentKeybinds);
       if (preventDefaultCodes.includes(e.code)) {
         e.preventDefault();
@@ -1043,6 +1182,10 @@ class AdvancedMusicPlayer {
     this.updateListeningTimeDisplay();
     this.renderAdditionalDetails();
     document.title = 'Music';
+    const savedDisguise = localStorage.getItem('faviconDisguise');
+    if (savedDisguise) {
+      this.applyFaviconDisguise(savedDisguise);
+    }
     this.elements.speedBtn.textContent = this.currentSpeed + 'x';
     const controlBarVisible = localStorage.getItem('controlBarVisible');
     const spacerDiv = document.getElementById('controlBarSpacer');
@@ -8921,70 +9064,172 @@ class AdvancedMusicPlayer {
     style.textContent = `\n\t        .queue-notification {\n\t            position: fixed;\n\t            top: 20px;\n\t            right: 20px;\n\t            background: var(--accent-color);\n\t            color: #fff;\n\t            padding: 9px 16px;\n\t            border-radius: 6px;\n\t            font-size: 13px;\n\t            z-index: 9999;\n\t            opacity: 0;\n\t            transform: translateX(12px);\n\t            transition: opacity .22s ease, transform .22s ease;\n\t            pointer-events: none;\n\t            box-shadow: 0 4px 14px rgba(0,0,0,.25);\n\t        }\n\t        .queue-notification--in {\n\t            opacity: 1;\n\t            transform: translateX(0);\n\t        }\n\t    `;
     document.head.appendChild(style);
   }
-  createWebEmbedOverlay() {
-    if (this.webEmbedOverlay) {
+  openDisguiseModal() {
+    if (!this.disguiseDialog) {
+      this.disguiseDialog = this.buildDisguiseModal();
+    }
+    this.syncDisguiseModal();
+    this.disguiseDialog.open();
+    document.addEventListener('keydown', this.disguiseEscHandler);
+  }
+  buildDisguiseModal() {
+    const dialog = UI.modal({
+      title: 'Disguise',
+      icon: 'fa-user-secret',
+      size: 'lg',
+      className: 'disguise-modal',
+      bodyClassName: 'disguise-panes',
+      onClose: () => document.removeEventListener('keydown', this.disguiseEscHandler)
+    });
+    this.disguiseEscHandler = e => {
+      if (e.key === 'Escape') {
+        dialog.close();
+      }
+    };
+    const tabPane = UI.el('section', 'disguise-pane', '<span class="ui-section-label">Tab disguise</span><p class="disguise-hint">Swap the tab icon and title.</p>');
+    const grid = UI.el('div', 'disguise-grid');
+    grid.append(...[ {
+      id: '',
+      name: 'Original',
+      title: 'Restore the original tab'
+    }, ...DISGUISE_FAVICONS ].map(item => {
+      const tile = UI.el('button', 'disguise-tile', item.svg ? `<img src="${this.disguiseIconUrl(item.svg)}" alt="" width="24" height="24" decoding="async">` : UI.icon('fa-music'));
+      const label = UI.el('span');
+      label.textContent = item.name;
+      tile.append(label);
+      tile.type = 'button';
+      tile.title = item.title;
+      tile.dataset.disguise = item.id;
+      return tile;
+    }));
+    grid.addEventListener('click', e => {
+      const tile = e.target.closest('.disguise-tile');
+      if (tile) {
+        this.applyFaviconDisguise(tile.dataset.disguise);
+        this.syncDisguiseModal();
+      }
+    });
+    tabPane.append(grid);
+    const pagePane = UI.el('section', 'disguise-pane', '<span class="ui-section-label">Page disguise</span><p class="disguise-hint">Cover the player with a website. Press Esc or the corner × to come back.</p>');
+    const form = UI.el('form', 'disguise-url');
+    const input = UI.el('input', 'ui-input');
+    input.type = 'text';
+    input.inputMode = 'url';
+    input.placeholder = 'Paste any URL to embed';
+    input.value = localStorage.getItem('disguiseCustomUrl') || '';
+    input.addEventListener('input', () => input.setCustomValidity(''));
+    const openBtn = UI.button('Open', {
+      variant: 'primary',
+      icon: 'fa-arrow-right'
+    });
+    openBtn.type = 'submit';
+    form.append(input, openBtn);
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const url = this.normalizeEmbedUrl(input.value);
+      if (!url) {
+        input.setCustomValidity('Enter a web address, e.g. example.com');
+        input.reportValidity();
+        return;
+      }
+      localStorage.setItem('disguiseCustomUrl', url);
+      input.value = url;
+      dialog.close();
+      this.openWebEmbed(url);
+    });
+    const list = UI.el('div', 'disguise-sites');
+    list.append(...DISGUISE_SITES.map(site => {
+      const row = UI.el('button', 'disguise-site', `${UI.icon(site.icon)}<span></span><small></small>`);
+      row.type = 'button';
+      row.dataset.url = site.url;
+      row.querySelector('span').textContent = site.name;
+      row.querySelector('small').textContent = new URL(site.url).hostname.replace(/^www\./, '');
+      return row;
+    }));
+    list.addEventListener('click', e => {
+      const row = e.target.closest('.disguise-site');
+      if (row) {
+        dialog.close();
+        this.openWebEmbed(row.dataset.url);
+      }
+    });
+    pagePane.append(form, list);
+    dialog.body.append(tabPane, pagePane);
+    return dialog;
+  }
+  syncDisguiseModal() {
+    const active = this.activeFaviconDisguise || '';
+    this.disguiseDialog.body.querySelectorAll('.disguise-tile').forEach(tile => tile.classList.toggle('active', tile.dataset.disguise === active));
+  }
+  disguiseIconUrl(svg) {
+    return 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">${svg}</svg>`);
+  }
+  applyFaviconDisguise(id) {
+    const disguise = DISGUISE_FAVICONS.find(item => item.id === id);
+    if (!disguise) {
+      localStorage.removeItem('faviconDisguise');
+      if (!this.activeFaviconDisguise) {
+        return;
+      }
+      this.activeFaviconDisguise = null;
+      this.priorityModeActive = false;
+      this.stopTitleMonitor();
+      this.changeFavicon(this.themedFavicon || this.originalFavicon);
+      this.updatePageTitle();
       return;
     }
-    this.webEmbedOverlay = document.createElement('div');
-    this.webEmbedOverlay.id = 'web-embed-overlay';
-    this.webEmbedOverlay.tabIndex = 0;
-    this.webEmbedOverlay.style.cssText = `\n    position: fixed;\n    top: 0;\n    left: 0;\n    width: 100vw;\n    height: 100vh;\n    background: white;\n    z-index: 9999;\n    display: none;\n    outline: none;\n  `;
-    const exitBtn = document.createElement('button');
-    exitBtn.innerHTML = '×';
-    exitBtn.style.cssText = `\n    position: absolute;\n    top: 10px;\n    right: 10px;\n    width: 30px;\n    height: 30px;\n    background: rgba(0,0,0,0.7);\n    color: white;\n    border: none;\n    border-radius: 50%;\n    font-size: 18px;\n    cursor: pointer;\n    z-index: 10000;\n    font-weight: bold;\n  `;
-    this.webEmbedExitHandler = () => this.toggleWebEmbedOverlay();
+    localStorage.setItem('faviconDisguise', disguise.id);
+    this.activeFaviconDisguise = disguise.id;
+    this.changeFavicon(this.disguiseIconUrl(disguise.svg));
+    this.priorityModeActive = true;
+    this.startTitleMonitor(disguise.title);
+  }
+  normalizeEmbedUrl(value) {
+    const text = value.trim();
+    if (!text) {
+      return null;
+    }
+    try {
+      const url = new URL(/^https?:\/\//i.test(text) ? text : `https://${text}`);
+      return url.hostname.includes('.') || url.hostname === 'localhost' ? url.href : null;
+    } catch {
+      return null;
+    }
+  }
+  openWebEmbed(url) {
+    this.closeWebEmbed();
+    const overlay = UI.el('div', 'web-embed-overlay');
+    const frame = UI.el('iframe', 'web-embed-overlay__frame');
+    frame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads');
+    frame.allow = 'fullscreen; clipboard-write';
+    frame.referrerPolicy = 'no-referrer';
+    frame.src = url;
+    const exitBtn = UI.el('button', 'web-embed-overlay__exit', UI.icon('fa-times'));
+    exitBtn.type = 'button';
+    exitBtn.title = 'Back to music (Esc)';
+    exitBtn.addEventListener('click', () => this.closeWebEmbed());
+    overlay.append(frame, exitBtn);
     this.webEmbedKeyHandler = e => {
       if (e.key === 'Escape') {
         e.preventDefault();
-        this.toggleWebEmbedOverlay();
-      }
-      if (e.key.toLowerCase() === 'c' && e.shiftKey) {
-        e.preventDefault();
-        this.cycleWebEmbedSite();
+        e.stopImmediatePropagation();
+        this.closeWebEmbed();
       }
     };
-    exitBtn.addEventListener('click', this.webEmbedExitHandler);
-    const iframe = document.createElement('iframe');
-    iframe.id = 'web-embed-iframe';
-    iframe.src = this.webEmbedSites[this.currentWebEmbedIndex];
-    iframe.style.cssText = 'width: 100%; height: 100%; border: none;';
-    this.webEmbedOverlay.appendChild(iframe);
-    this.webEmbedOverlay.appendChild(exitBtn);
-    document.body.appendChild(this.webEmbedOverlay);
-    this.webEmbedOverlay.addEventListener('keydown', this.webEmbedKeyHandler);
+    document.addEventListener('keydown', this.webEmbedKeyHandler, true);
+    document.body.appendChild(overlay);
+    this.webEmbedOverlay = overlay;
+    this.isWebEmbedVisible = true;
   }
-  toggleWebEmbedOverlay() {
-    this.createWebEmbedOverlay();
-    this.isWebEmbedVisible = !this.isWebEmbedVisible;
-    this.webEmbedOverlay.style.display = this.isWebEmbedVisible ? 'block' : 'none';
-    if (this.isWebEmbedVisible) {
-      this.webEmbedOverlay.focus();
+  closeWebEmbed() {
+    if (!this.webEmbedOverlay) {
+      return;
     }
-  }
-  destroyWebEmbedOverlay() {
-    if (this.webEmbedOverlay) {
-      if (this.webEmbedKeyHandler) {
-        this.webEmbedOverlay.removeEventListener('keydown', this.webEmbedKeyHandler);
-      }
-      const exitBtn = this.webEmbedOverlay.querySelector('button');
-      if (exitBtn && this.webEmbedExitHandler) {
-        exitBtn.removeEventListener('click', this.webEmbedExitHandler);
-      }
-      this.webEmbedOverlay.remove();
-      this.webEmbedOverlay = null;
-      this.webEmbedKeyHandler = null;
-      this.webEmbedExitHandler = null;
-      this.isWebEmbedVisible = false;
-    }
-  }
-  cycleWebEmbedSite() {
-    this.currentWebEmbedIndex = (this.currentWebEmbedIndex + 1) % this.webEmbedSites.length;
-    if (this.webEmbedOverlay) {
-      const iframe = document.getElementById('web-embed-iframe');
-      if (iframe) {
-        iframe.src = this.webEmbedSites[this.currentWebEmbedIndex];
-      }
-    }
+    document.removeEventListener('keydown', this.webEmbedKeyHandler, true);
+    this.webEmbedOverlay.remove();
+    this.webEmbedOverlay = null;
+    this.webEmbedKeyHandler = null;
+    this.isWebEmbedVisible = false;
   }
   changeFavicon(iconURL) {
     try {
@@ -8994,7 +9239,6 @@ class AdvancedMusicPlayer {
       }
       const newFavicon = document.createElement('link');
       newFavicon.rel = 'icon';
-      newFavicon.type = 'image/png';
       newFavicon.href = iconURL;
       document.head.appendChild(newFavicon);
     } catch (error) {
@@ -9023,26 +9267,12 @@ class AdvancedMusicPlayer {
       this.titleObserver = null;
     }
   }
-  cycleFaviconAndTitle() {
-    this.currentDisguiseIndex = (this.currentDisguiseIndex + 1) % (this.pageDisguises.length + 1);
-    if (this.currentDisguiseIndex === this.pageDisguises.length) {
-      this.changeFavicon(this.originalFavicon);
-      document.title = this.originalTitle;
-      this.priorityModeActive = false;
-      this.stopTitleMonitor();
-    } else {
-      const currentDisguise = this.pageDisguises[this.currentDisguiseIndex];
-      this.changeFavicon(currentDisguise.favicon);
-      document.title = currentDisguise.title;
-      this.priorityModeActive = currentDisguise.isPriority;
-      if (this.priorityModeActive) {
-        this.startTitleMonitor(currentDisguise.title);
-      } else {
-        this.stopTitleMonitor();
-      }
-    }
-  }
   updatePageTitle() {
+    if (this.priorityModeActive) {
+      clearInterval(this.titleScrollInterval);
+      this.titleScrollInterval = null;
+      return;
+    }
     const defaultTitle = 'Music';
     const MAX_TITLE_LENGTH = 60;
     const SCROLL_THRESHOLD = 70;
@@ -10477,11 +10707,12 @@ class AdvancedMusicPlayer {
         type: 'image/svg+xml'
       });
       const url = URL.createObjectURL(blob);
+      if (this.themedFavicon) {
+        URL.revokeObjectURL(this.themedFavicon);
+      }
+      this.themedFavicon = url;
       const favicon = document.querySelector('link[rel="icon"]');
-      if (favicon) {
-        if (favicon.href.startsWith('blob:')) {
-          URL.revokeObjectURL(favicon.href);
-        }
+      if (favicon && !this.activeFaviconDisguise) {
         favicon.href = url;
         console.log('Favicon updated successfully with color:', color);
       }
@@ -12596,10 +12827,15 @@ class AdvancedMusicPlayer {
       const request = store.get('keybinds');
       request.onsuccess = event => {
         if (event.target.result && event.target.result.settings) {
+          const saved = event.target.result.settings;
           this.currentKeybinds = {
-            ...this.defaultKeybinds,
-            ...event.target.result.settings
+            ...this.defaultKeybinds
           };
+          Object.keys(saved).forEach(action => {
+            if (action in this.defaultKeybinds) {
+              this.currentKeybinds[action] = saved[action];
+            }
+          });
         }
         resolve();
       };
@@ -12709,8 +12945,6 @@ class AdvancedMusicPlayer {
       cycleTab: 'Cycle Tab',
       toggleVideoFullscreen: 'Toggle Fullscreen',
       showQueue: 'Show Queue',
-      cycleFavicon: 'Cycle Favicon',
-      toggleWebEmbed: 'Toggle Web Embed',
       toggleMusicExplorer: 'Toggle Music Explorer',
       seekForward: 'Seek Forward 5s',
       seekBackward: 'Seek Backward 5s',
@@ -12772,11 +13006,7 @@ class AdvancedMusicPlayer {
   }
   handleKeybind(code) {
     const k = this.currentKeybinds;
-    if (code === k.cycleFavicon && k.cycleFavicon !== '') {
-      this.cycleFaviconAndTitle();
-    } else if (code === k.toggleWebEmbed && k.toggleWebEmbed !== '') {
-      this.toggleWebEmbedOverlay();
-    } else if (code === k.togglePlayPause && k.togglePlayPause !== '' || code === k.togglePlayPause2 && k.togglePlayPause2 !== '') {
+    if (code === k.togglePlayPause && k.togglePlayPause !== '' || code === k.togglePlayPause2 && k.togglePlayPause2 !== '') {
       this.togglePlayPause();
     } else if (code === k.previousSong && k.previousSong !== '' || code === k.previousSong2 && k.previousSong2 !== '') {
       this.playPreviousSong();
@@ -14835,7 +15065,7 @@ class AdvancedMusicPlayer {
         console.log(`Favicon restored: ${this.originalFavicon}`);
       }
       if (this.isWebEmbedVisible) {
-        this.destroyWebEmbedOverlay();
+        this.closeWebEmbed();
         console.log('Web embed overlay destroyed');
       }
       console.log('Page appearance restoration completed');

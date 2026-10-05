@@ -12,9 +12,9 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 | Source | sha256 (first 12) | Lines |
 |---|---|---|
-| `public/script.js` | `612f27f334ec` | 14988 |
-| `public/index.html` | `ad510e6a9148` | 1484 |
-| `public/script/settings.js` | `84c258c509ec` | 563 |
+| `public/script.js` | `c163f039f36e` | 15218 |
+| `public/index.html` | `d2e3a5a08c5f` | 1479 |
+| `public/script/settings.js` | `b1cbbfc3625b` | 561 |
 | `public/karaoke-player.js` | `79175232d973` | 682 |
 | `public/karaoke-encoder.js` | `d277db62d9e9` | 147 |
 | `public/sw.js` | `152e386ced40` | 224 |
@@ -23,12 +23,12 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 ## Reading `public/script.js` cheaply
 
-- 55 lines are longer than 300 characters (the machine-formatted
+- 69 lines are longer than 300 characters (the machine-formatted
   `innerHTML` template literals; the longest is ~3.9 KB). A single `grep -n` that hits
   several of them dumps tens of kilobytes. Search with `grep -o`, or pipe through
   `cut -c1-200`, and only widen once you know which line you want.
 - Read by range (`sed -n '1200,1260p'`) rather than opening the file.
-- `UI` factory: lines 1-85. `AdvancedMusicPlayer`: line 171 onwards.
+- `UI` factory: lines 1-85. `AdvancedMusicPlayer`: line 350 onwards.
 
 ---
 
@@ -38,7 +38,7 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 ---
 
-## `AdvancedMusicPlayer` by topic (572 methods)
+## `AdvancedMusicPlayer` by topic (575 methods)
 
 Names only. `grep -n "^  name(" public/script.js` gives the current line, and a name
 here that you cannot find has been renamed since this file was generated.
@@ -77,7 +77,7 @@ here that you cannot find has been renamed since this file was generated.
 
 ### Modals, notifications & UI chrome
 
-`_checkControlBarVisibility` · `showWelcomeModal` · `showSidebar` · `hideSidebar` · `updateSidebarModeToggleIcon` · `switchTab` · `cycleToNextTab` · `initNowPlayingTab` · `showNowPlayingTab` · `hideNowPlayingTab` · `createWebEmbedOverlay` · `toggleWebEmbedOverlay` · `destroyWebEmbedOverlay` · `openTimerModal` · `toggleControlBar` · `showExportModal` · `showImportModal` · `closeImportModal` · `handleSettingsModalClick` · `setupTabs` · `handleTabSwitch` · `showNotification` · `openDiscordModal` · `closeDiscordModal` · `_discordRefreshModal` · `initDownloadModal` · `suspendHiddenTabWork` · `openTemporarySongSampleModal` · `closeTemporarySongSampleModal` · `createTemporarySongModal` · `showChangelogModal` · `setupChangelogModal`
+`_checkControlBarVisibility` · `showWelcomeModal` · `showSidebar` · `hideSidebar` · `updateSidebarModeToggleIcon` · `switchTab` · `cycleToNextTab` · `initNowPlayingTab` · `showNowPlayingTab` · `hideNowPlayingTab` · `openDisguiseModal` · `buildDisguiseModal` · `syncDisguiseModal` · `openTimerModal` · `toggleControlBar` · `showExportModal` · `showImportModal` · `closeImportModal` · `handleSettingsModalClick` · `setupTabs` · `handleTabSwitch` · `showNotification` · `openDiscordModal` · `closeDiscordModal` · `_discordRefreshModal` · `initDownloadModal` · `suspendHiddenTabWork` · `openTemporarySongSampleModal` · `closeTemporarySongSampleModal` · `createTemporarySongModal` · `showChangelogModal` · `setupChangelogModal`
 
 ### Input, keybinds & escaping
 
@@ -85,11 +85,11 @@ here that you cannot find has been renamed since this file was generated.
 
 ### Settings, import & export
 
-`showExportDropdown` · `hideExportDropdown` · `addImportedSongsOneByOne` · `setupExportButtonListeners` · `handleOpenSettings` · `handleCloseSettings` · `initializeSettingsContent` · `getSetting` · `initializeAdvertisementSettings` · `initDiscordConnection` · `closeDiscordConnection` · `sendDiscordRPC` · `updateDiscordButtonUI` · `_discordRefreshSteps` · `_discordShowError` · `_discordShowSuccess` · `_discordSyncPreview` · `_discordSyncFields` · `_discordOnFieldEdit` · `_discordResetFields` · `_discordSendNow` · `_discordScheduleSend` · `_discordGetAuto` · `_discordGetEffective` · `_discordSyncLastUpdate` · `_discordStartLastUpdateTick` · `_discordStopLastUpdateTick` · `_discordRetry`
+`disguiseIconUrl` · `applyFaviconDisguise` · `showExportDropdown` · `hideExportDropdown` · `addImportedSongsOneByOne` · `setupExportButtonListeners` · `handleOpenSettings` · `handleCloseSettings` · `initializeSettingsContent` · `getSetting` · `initializeAdvertisementSettings` · `initDiscordConnection` · `closeDiscordConnection` · `sendDiscordRPC` · `updateDiscordButtonUI` · `_discordRefreshSteps` · `_discordShowError` · `_discordShowSuccess` · `_discordSyncPreview` · `_discordSyncFields` · `_discordOnFieldEdit` · `_discordResetFields` · `_discordSendNow` · `_discordScheduleSend` · `_discordGetAuto` · `_discordGetEffective` · `_discordSyncLastUpdate` · `_discordStartLastUpdateTick` · `_discordStopLastUpdateTick` · `_discordRetry`
 
 ### Uncategorised
 
-`_syncInitialUI` · `_setupComponents` · `_handleInitializationError` · `_recoverFromStaleCache` · `initializeElements` · `setupEventListeners` · `_setupDelegatedListeners` · `renderInitialState` · `debounce` · `deleteSingleSong` · `_getDefaultSectionOrder` · `_renderSectionOrderUI` · `_moveSectionOrderRow` · `removeSong` · `_mountVirtualScroll` · `_destroyVirtualScroll` · `createSongElement` · `playFirstVisibleSong` · `_buildFavThumb` · `checkVideoRestrictions` · `parseVideoTitle` · `removeNoisePatterns` · `extractFeaturedArtists` · `_applyFilters` · `_renderLanguageFilterList` · `_detectSongLanguage` · `_detectTextLanguage` · `createDuplicateToggle` · `updateDuplicatesButtonText` · `handleDrop` · `handleSongNameRightClick` · `playCurrentSong` · `_syncTransportDisplays` · `_getPreviewSource` · `_songToPreviewItem` · `getUpcomingSongsPreview` · `getPreviousSongsPreview` · `_buildTransportPreviewPopup` · `showTransportPreview` · `hideTransportPreview` · `setupTransportHoverPreviews` · `restartCurrentSong` · `temporarilySkipSong` · `isSongTemporarilySkipped` · `playLocalAudio` · `updatePlayerUI` · `formatTime` · `formatDuration` · `onPlayerReady` · `onPlayerError` · `onPlayerStateChange` · `updateNowPlayingView` · `initializeCurrentSongSection` · `updateCurrentSongDisplay` · `showCurrentSongSection` · `hideCurrentSongSection` · `renderAdditionalDetails` · `createDetailsSection` · `refreshSpecificSection` · `toggleAdditionalDetails` · `getRandomItems` · `getTimeAgorecentlyplayedmodel` · `stopPlaybackTrackingIntervals` · `autoFetchTranscript` · `populateTranscriptLangDropdown` · `addTimestampsToPlainText` · `formatSupadataTranscriptForConversion` · `isMobileConnection` · `toggleVideoFullscreen` · `showVideoFullscreen` · `hideVideoFullscreen` · `showVideoHint` · `hideVideoHint` · `addStopBlock` · `cycleWebEmbedSite` · `changeFavicon` · `startTitleMonitor` · `stopTitleMonitor` · `cycleFaviconAndTitle` · `updatePageTitle` · `setSpecificTimeTimer` · `setAppTimer` · `stopMusic` · `closeApp` · `clearAppTimer` · `updateTimerCountdown` · `setupTimerEventListeners` · `adjustLayoutTogglePosition` · `setupLayoutEventListeners` · `copyToClipboardWithFallback` · `parseSongLine` · `getGlassPresets` · `getBackgroundGradients` · `renderBackgroundGradients` · `renderBackgroundPreview` · `handleGlassPresetClick` · `handleBackgroundFitChange` · `handleBackgroundGradientClick` · `handleBackgroundFileChange` · `handleBackgroundRemove` · `applyCustomColors` · `updateColorPickerByKey` · `updateColorPickerValues` · `updateFaviconColor` · `lightenDarkColor` · `hexToRgba` · `handleAdsToggle` · `updateAdvertisementDisplay` · `resizeCanvas` · `toggleMiniplayer` · `openMiniplayer` · `closeMiniplayer` · `handleMiniplayerClosed` · `buildMiniplayerDOM` · `updateMiniplayerUI` · `openFindSongs` · `closeFindSongs` · `displayRandomRecommendations` · `getTimeAgo` · `refreshRandomRecommendations` · `getReplaceTargetSong` · `startSongVideoReplacement` · `cancelSongVideoReplacement` · `getKeyDisplayName` · `getActionDisplayName` · `_pruneOldDays` · `recordSongPlayStat` · `_applyPlayStat` · `get30DayCount` · `filterListeningStatisticsSongResults` · `_songThumbHtml` · `_buildFullListHtml` · `_heroCardHtml` · `_largeCardHtml` · `_smallCardHtml` · `_fullListItemHtml` · `_accumulate30DaySecond` · `_flush30DayTime` · `formatSecondsAsHM` · `updateListeningTimeDisplay` · `stopListeningTimeTracking` · `startListeningTimeTracking` · `toggleTopicKeyword` · `initializeVisibilityTracking` · `syncUIWithCurrentState` · `samplePlayTemporarySong` · `updateTemporarySongUrlDisplay` · `initializeTemporarySongPlayer` · `playTemporarySong` · `disconnectObservers` · `removeDynamicEventListeners` · `initializeMusicPlayer`
+`_syncInitialUI` · `_setupComponents` · `_handleInitializationError` · `_recoverFromStaleCache` · `initializeElements` · `setupEventListeners` · `_setupDelegatedListeners` · `renderInitialState` · `debounce` · `deleteSingleSong` · `_getDefaultSectionOrder` · `_renderSectionOrderUI` · `_moveSectionOrderRow` · `removeSong` · `_mountVirtualScroll` · `_destroyVirtualScroll` · `createSongElement` · `playFirstVisibleSong` · `_buildFavThumb` · `checkVideoRestrictions` · `parseVideoTitle` · `removeNoisePatterns` · `extractFeaturedArtists` · `_applyFilters` · `_renderLanguageFilterList` · `_detectSongLanguage` · `_detectTextLanguage` · `createDuplicateToggle` · `updateDuplicatesButtonText` · `handleDrop` · `handleSongNameRightClick` · `playCurrentSong` · `_syncTransportDisplays` · `_getPreviewSource` · `_songToPreviewItem` · `getUpcomingSongsPreview` · `getPreviousSongsPreview` · `_buildTransportPreviewPopup` · `showTransportPreview` · `hideTransportPreview` · `setupTransportHoverPreviews` · `restartCurrentSong` · `temporarilySkipSong` · `isSongTemporarilySkipped` · `playLocalAudio` · `updatePlayerUI` · `formatTime` · `formatDuration` · `onPlayerReady` · `onPlayerError` · `onPlayerStateChange` · `updateNowPlayingView` · `initializeCurrentSongSection` · `updateCurrentSongDisplay` · `showCurrentSongSection` · `hideCurrentSongSection` · `renderAdditionalDetails` · `createDetailsSection` · `refreshSpecificSection` · `toggleAdditionalDetails` · `getRandomItems` · `getTimeAgorecentlyplayedmodel` · `stopPlaybackTrackingIntervals` · `autoFetchTranscript` · `populateTranscriptLangDropdown` · `addTimestampsToPlainText` · `formatSupadataTranscriptForConversion` · `isMobileConnection` · `toggleVideoFullscreen` · `showVideoFullscreen` · `hideVideoFullscreen` · `showVideoHint` · `hideVideoHint` · `addStopBlock` · `normalizeEmbedUrl` · `openWebEmbed` · `closeWebEmbed` · `changeFavicon` · `startTitleMonitor` · `stopTitleMonitor` · `updatePageTitle` · `setSpecificTimeTimer` · `setAppTimer` · `stopMusic` · `closeApp` · `clearAppTimer` · `updateTimerCountdown` · `setupTimerEventListeners` · `adjustLayoutTogglePosition` · `setupLayoutEventListeners` · `copyToClipboardWithFallback` · `parseSongLine` · `getGlassPresets` · `getBackgroundGradients` · `renderBackgroundGradients` · `renderBackgroundPreview` · `handleGlassPresetClick` · `handleBackgroundFitChange` · `handleBackgroundGradientClick` · `handleBackgroundFileChange` · `handleBackgroundRemove` · `applyCustomColors` · `updateColorPickerByKey` · `updateColorPickerValues` · `updateFaviconColor` · `lightenDarkColor` · `hexToRgba` · `handleAdsToggle` · `updateAdvertisementDisplay` · `resizeCanvas` · `toggleMiniplayer` · `openMiniplayer` · `closeMiniplayer` · `handleMiniplayerClosed` · `buildMiniplayerDOM` · `updateMiniplayerUI` · `openFindSongs` · `closeFindSongs` · `displayRandomRecommendations` · `getTimeAgo` · `refreshRandomRecommendations` · `getReplaceTargetSong` · `startSongVideoReplacement` · `cancelSongVideoReplacement` · `getKeyDisplayName` · `getActionDisplayName` · `_pruneOldDays` · `recordSongPlayStat` · `_applyPlayStat` · `get30DayCount` · `filterListeningStatisticsSongResults` · `_songThumbHtml` · `_buildFullListHtml` · `_heroCardHtml` · `_largeCardHtml` · `_smallCardHtml` · `_fullListItemHtml` · `_accumulate30DaySecond` · `_flush30DayTime` · `formatSecondsAsHM` · `updateListeningTimeDisplay` · `stopListeningTimeTracking` · `startListeningTimeTracking` · `toggleTopicKeyword` · `initializeVisibilityTracking` · `syncUIWithCurrentState` · `samplePlayTemporarySong` · `updateTemporarySongUrlDisplay` · `initializeTemporarySongPlayer` · `playTemporarySong` · `disconnectObservers` · `removeDynamicEventListeners` · `initializeMusicPlayer`
 
 ---
 
@@ -115,20 +115,20 @@ The rest match their id exactly.
 
 | id | line | classes |
 |---|---|---|
-| `discordRpcModal` | 280 | `modal discord-rpc-modal-overlay ui-overlay` |
-| `libraryModificationModal` | 413 | `modal ui-overlay` |
-| `importModal` | 449 | `modal ui-overlay` |
-| `playlistEditModal` | 495 | `modal ui-overlay` |
-| `timerModal` | 515 | `modal ui-overlay` |
-| `lyricsFullscreenModal` | 654 | `lyrics-fullscreen-modal` |
-| `changelogModal` | 676 | `changelog-modal ui-overlay` |
-| `subtitlesImportModal` | 686 | `subtitles-import-modal-overlay ui-overlay` |
-| `settingsModal` | 755 | `settings-modal ui-overlay` |
-| `recentlyPlayedModal` | 1199 | `recently-played-modal-bg ui-overlay` |
-| `lyricsModal` | 1214 | `lyrics-maker-modal hidden ui-overlay` |
-| `downloadModal` | 1332 | `dl-overlay ui-overlay` |
-| `shazamModal` | 1396 | `sz-overlay ui-overlay` |
-| `statsModal` | 1447 | `ls-overlay ui-overlay` |
+| `discordRpcModal` | 283 | `modal discord-rpc-modal-overlay ui-overlay` |
+| `libraryModificationModal` | 416 | `modal ui-overlay` |
+| `importModal` | 452 | `modal ui-overlay` |
+| `playlistEditModal` | 498 | `modal ui-overlay` |
+| `timerModal` | 518 | `modal ui-overlay` |
+| `lyricsFullscreenModal` | 657 | `lyrics-fullscreen-modal` |
+| `changelogModal` | 679 | `changelog-modal ui-overlay` |
+| `subtitlesImportModal` | 689 | `subtitles-import-modal-overlay ui-overlay` |
+| `settingsModal` | 758 | `settings-modal ui-overlay` |
+| `recentlyPlayedModal` | 1194 | `recently-played-modal-bg ui-overlay` |
+| `lyricsModal` | 1209 | `lyrics-maker-modal hidden ui-overlay` |
+| `downloadModal` | 1327 | `dl-overlay ui-overlay` |
+| `shazamModal` | 1391 | `sz-overlay ui-overlay` |
+| `statsModal` | 1442 | `ls-overlay ui-overlay` |
 
 ---
 
@@ -136,7 +136,7 @@ The rest match their id exactly.
 
 ### `public/script/settings.js` (37 members)
 
-`handleCloseSettings` 3 · `handleSettingsModalClick` 8 · `initializeSettingsContent` 14 · `setupTabs` 26 · `handleTabSwitch` 35 · `loadThemeMode` 43 · `handleThemeModeChange` 54 · `loadCustomThemeColors` 67 · `handleSaveCustomTheme` 80 · `resetCustomTheme` 123 · `handleColorChange` 142 · `updateColorPickerByKey` 156 · `updateColorPickerValues` 171 · `exportTheme` 187 · `importTheme` 219 · `applyImportedTheme` 235 · `hexToRgba` 263 · `loadAdvertisementSettingsInModal` 271 · `handleAdsToggle` 275 · `handleVisualizerToggle` 281 · `handleLibrarySortToggle` 295 · `loadLibrarySortSetting` 301 · `handleLibraryReverseToggle` 317 · `loadLibraryReverseSetting` 323 · `saveDiscordSettings` 339 · `saveKeybinds` 349 · `loadKeybindsSettings` 360 · `getKeyDisplayName` 374 · `getActionDisplayName` 390 · `startKeybindRecording` 419 · `recordKeybind` 435 · `cancelKeybindRecording` 459 · `stopKeybindRecording` 467 · `resetKeybindsToDefault` 477 · `loadDiscoverMoreSettings` 484 · `setDefaultDiscoverMoreValues` 497 · `handleSaveDiscoverMoreSettings` 511
+`handleCloseSettings` 3 · `handleSettingsModalClick` 8 · `initializeSettingsContent` 14 · `setupTabs` 26 · `handleTabSwitch` 35 · `loadThemeMode` 43 · `handleThemeModeChange` 54 · `loadCustomThemeColors` 67 · `handleSaveCustomTheme` 80 · `resetCustomTheme` 123 · `handleColorChange` 142 · `updateColorPickerByKey` 156 · `updateColorPickerValues` 171 · `exportTheme` 187 · `importTheme` 219 · `applyImportedTheme` 235 · `hexToRgba` 263 · `loadAdvertisementSettingsInModal` 271 · `handleAdsToggle` 275 · `handleVisualizerToggle` 281 · `handleLibrarySortToggle` 295 · `loadLibrarySortSetting` 301 · `handleLibraryReverseToggle` 317 · `loadLibraryReverseSetting` 323 · `saveDiscordSettings` 339 · `saveKeybinds` 349 · `loadKeybindsSettings` 360 · `getKeyDisplayName` 374 · `getActionDisplayName` 390 · `startKeybindRecording` 417 · `recordKeybind` 433 · `cancelKeybindRecording` 457 · `stopKeybindRecording` 465 · `resetKeybindsToDefault` 475 · `loadDiscoverMoreSettings` 482 · `setDefaultDiscoverMoreValues` 495 · `handleSaveDiscoverMoreSettings` 509
 
 ### `public/karaoke-player.js` (40 members)
 

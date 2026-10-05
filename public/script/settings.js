@@ -409,8 +409,6 @@ export const settingsMethods = {
       cycleTab:               'Cycle Tab',
       toggleVideoFullscreen:  'Toggle Fullscreen',
       showQueue:              'Show Queue',
-      cycleFavicon:           'Cycle Favicon',
-      toggleWebEmbed:         'Toggle Web Embed',
       toggleMusicExplorer:    'Toggle Music Explorer'
     };
     return actionNames[action] || action;
