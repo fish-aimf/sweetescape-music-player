@@ -1586,6 +1586,8 @@ a.ui-btn--block {
   --glass-control-floor: 24%;
   --glass-float-ratio: 2;
   --glass-float-cap: 85%;
+  --glass-legible-floor: 0%;
+  --glass-float-floor: 0%;
   --glass-radius: var(--ui-radius-md);
   --app-bg-image: none;
   --app-bg-size: cover;
@@ -1632,8 +1634,8 @@ a.ui-btn--block {
 }
 
 [data-surface="glass"] {
-  --bg-secondary: color-mix(in srgb, var(--bg-secondary-base) calc(var(--glass-tint) * 1%), transparent);
-  --bg-primary: color-mix(in srgb, var(--bg-secondary-base) max(calc(var(--glass-tint) * 1%), var(--glass-control-floor)), transparent);
+  --bg-secondary: color-mix(in srgb, var(--bg-secondary-base) max(calc(var(--glass-tint) * 1%), var(--glass-legible-floor)), transparent);
+  --bg-primary: color-mix(in srgb, var(--bg-secondary-base) max(calc(var(--glass-tint) * 1%), var(--glass-control-floor), var(--glass-legible-floor)), transparent);
   --border-color: color-mix(in srgb, var(--border-color-base) 60%, transparent);
   --ui-surface: var(--bg-secondary);
   --ui-surface-sunken: var(--bg-primary);
@@ -1742,7 +1744,7 @@ a.ui-btn--block {
 [data-surface="glass"] .youtube-search-suggestion,
 [data-surface="glass"] .transport-preview-popup,
 [data-surface="glass"] .drag-link-toast {
-  background-color: color-mix(in srgb, var(--bg-secondary-base) min(calc(var(--glass-tint) * var(--glass-float-ratio) * 1%), var(--glass-float-cap)), transparent);
+  background-color: color-mix(in srgb, var(--bg-secondary-base) max(min(calc(var(--glass-tint) * var(--glass-float-ratio) * 1%), var(--glass-float-cap)), var(--glass-float-floor)), transparent);
   backdrop-filter: blur(calc(var(--glass-blur) * 1.4)) saturate(var(--glass-sat));
   -webkit-backdrop-filter: blur(calc(var(--glass-blur) * 1.4)) saturate(var(--glass-sat));
   background-image: linear-gradient(to bottom, var(--glass-sheen), transparent 42%);

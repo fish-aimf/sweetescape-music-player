@@ -10253,6 +10253,7 @@ class AdvancedMusicPlayer {
       URL.revokeObjectURL(this.backgroundObjectUrl);
     }
     this.backgroundObjectUrl = blob ? URL.createObjectURL(blob) : null;
+    this.sampleAppearanceBackground();
   }
   applyAppearance() {
     const state = this.appearance || this.getAppearanceDefaults();
@@ -10268,6 +10269,7 @@ class AdvancedMusicPlayer {
     const image = this.getAppearanceBackgroundValue();
     root.style.setProperty('--app-bg-image', image || 'none');
     root.setAttribute('data-app-bg', image ? 'on' : 'off');
+    this.scheduleGlassLegibility();
   }
   getAppearanceBackgroundValue() {
     const state = this.appearance || this.getAppearanceDefaults();
@@ -10278,6 +10280,159 @@ class AdvancedMusicPlayer {
       return state.backgroundGradient;
     }
     return '';
+  }
+  readCssColor(value) {
+    if (!this.colorProbe) {
+      this.colorProbe = document.createElement('canvas').getContext('2d');
+    }
+    const ctx = this.colorProbe;
+    ctx.fillStyle = '#000000';
+    ctx.fillStyle = String(value || '').trim() || '#000000';
+    const resolved = String(ctx.fillStyle);
+    if (resolved.charAt(0) === '#') {
+      const packed = parseInt(resolved.slice(1, 7), 16);
+      return [ packed >> 16 & 255, packed >> 8 & 255, packed & 255 ];
+    }
+    const parts = resolved.match(/[0-9.]+/g);
+    return parts && parts.length >= 3 ? [ Number(parts[0]), Number(parts[1]), Number(parts[2]) ] : [ 0, 0, 0 ];
+  }
+  sampleAppearanceBackground() {
+    const url = this.backgroundObjectUrl;
+    this.backgroundSamples = null;
+    if (!url) {
+      return;
+    }
+    const image = new Image();
+    image.onload = () => {
+      if (url !== this.backgroundObjectUrl) {
+        return;
+      }
+      const size = 24;
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d', {
+        willReadFrequently: true
+      });
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(image, 0, 0, size, size);
+      const data = ctx.getImageData(0, 0, size, size).data;
+      const samples = [];
+      for (let i = 0; i < data.length; i += 4) {
+        samples.push([ data[i], data[i + 1], data[i + 2], data[i + 3] / 255 ]);
+      }
+      this.backgroundSamples = samples;
+      this.scheduleGlassLegibility();
+    };
+    image.src = url;
+  }
+  getGlassBackdropColors(styles) {
+    const state = this.appearance || this.getAppearanceDefaults();
+    const base = this.readCssColor(styles.getPropertyValue('--bg-primary-base'));
+    const blend = (top, bottom, amount) => top.map((channel, i) => channel * amount + bottom[i] * (1 - amount));
+    const dim = state.backgroundDim / 100;
+    const scrim = color => blend(base, color, dim);
+    if (state.backgroundKind === 'image' && this.backgroundObjectUrl) {
+      return this.backgroundSamples ? this.backgroundSamples.map(([r, g, b, a]) => scrim(blend([ r, g, b ], base, a))) : null;
+    }
+    if (state.backgroundKind === 'gradient' && state.backgroundGradient) {
+      const stops = state.backgroundGradient.match(/#[0-9a-f]{3,8}\b|rgba?\([^)]*\)/gi) || [];
+      return stops.map(stop => scrim(this.readCssColor(stop))).concat([ base ]);
+    }
+    const accent = this.readCssColor(styles.getPropertyValue('--accent-color'));
+    const hover = this.readCssColor(styles.getPropertyValue('--hover-color'));
+    return [ base, blend(accent, base, 0.48), blend(hover, base, 0.34) ];
+  }
+  scheduleGlassLegibility() {
+    if (!this.legibilityObserver) {
+      this.legibilityObserver = new MutationObserver(() => this.scheduleGlassLegibility());
+      this.legibilityObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: [ 'data-theme', 'style' ]
+      });
+    }
+    if (this.legibilityFrame) {
+      return;
+    }
+    this.legibilityFrame = requestAnimationFrame(() => {
+      this.legibilityFrame = 0;
+      this.refreshGlassLegibility();
+    });
+  }
+  refreshGlassLegibility() {
+    const root = document.documentElement;
+    const state = this.appearance || this.getAppearanceDefaults();
+    const glass = state.surfaceStyle === 'glass';
+    const inline = root.style;
+    const signature = [ glass, root.getAttribute('data-theme'), state.glassTint, state.backgroundKind, state.backgroundGradient, state.backgroundDim, this.backgroundSamples ? this.backgroundObjectUrl : '' ].concat([ 'primary', 'background', 'secondary', 'text-primary', 'text-secondary', 'hover', 'accent' ].map(name => inline.getPropertyValue('--custom-' + name))).join('|');
+    if (signature === this.legibilitySignature) {
+      return;
+    }
+    const overrides = [ '--text-primary', '--text-secondary', '--glass-legible-floor', '--glass-float-floor' ];
+    overrides.forEach(name => inline.removeProperty(name));
+    if (!glass) {
+      this.legibilitySignature = signature;
+      return;
+    }
+    const styles = getComputedStyle(root);
+    const backdrops = this.getGlassBackdropColors(styles);
+    if (!backdrops) {
+      return;
+    }
+    this.legibilitySignature = signature;
+    const surface = this.readCssColor(styles.getPropertyValue('--bg-secondary-base'));
+    const linear = channel => {
+      const value = channel / 255;
+      return value <= 0.04045 ? value / 12.92 : Math.pow((value + 0.055) / 1.055, 2.4);
+    };
+    const luminance = rgb => 0.2126 * linear(rgb[0]) + 0.7152 * linear(rgb[1]) + 0.0722 * linear(rgb[2]);
+    const contrast = (a, b) => {
+      const x = luminance(a) + 0.05;
+      const y = luminance(b) + 0.05;
+      return x > y ? x / y : y / x;
+    };
+    const blend = (top, bottom, amount) => top.map((channel, i) => channel * amount + bottom[i] * (1 - amount));
+    const readable = (texts, tint, behind, ratio) => behind.every(color => {
+      const glassColor = blend(surface, color, tint);
+      return texts.every(text => contrast(text, glassColor) >= ratio);
+    });
+    const lowest = (from, limit, passes) => {
+      if (from >= limit || passes(from)) {
+        return from;
+      }
+      let low = from;
+      let high = limit;
+      for (let i = 0; i < 10; i++) {
+        const mid = (low + high) / 2;
+        if (passes(mid)) {
+          high = mid;
+        } else {
+          low = mid;
+        }
+      }
+      return high;
+    };
+    const target = 4.5;
+    const tint = state.glassTint / 100;
+    const extreme = luminance(this.readCssColor(styles.getPropertyValue('--text-primary'))) >= luminance(surface) ? [ 255, 255, 255 ] : [ 0, 0, 0 ];
+    const texts = [ [ '--text-primary', 1 ], [ '--text-secondary', 0.5 ] ].map(([name, reach]) => {
+      const original = this.readCssColor(styles.getPropertyValue(name));
+      const push = lowest(0, reach, amount => readable([ blend(extreme, original, amount) ], tint, backdrops, target));
+      const color = blend(extreme, original, push).map(Math.round);
+      if (push > 0) {
+        inline.setProperty(name, 'rgb(' + color.join(', ') + ')');
+      }
+      return color;
+    });
+    const panelFloor = lowest(tint, 1, amount => readable(texts, amount, backdrops, target));
+    const floatTint = Math.min(tint * 2, 0.85);
+    const floatFloor = lowest(floatTint, 1, amount => readable(texts, amount, backdrops, target) && readable(texts, amount, [ [ 255, 255, 255 ], [ 0, 0, 0 ] ], 3));
+    if (panelFloor > tint) {
+      inline.setProperty('--glass-legible-floor', (panelFloor * 100).toFixed(1) + '%');
+    }
+    if (floatFloor > floatTint) {
+      inline.setProperty('--glass-float-floor', (floatFloor * 100).toFixed(1) + '%');
+    }
   }
   renderAppearanceControls() {
     const state = this.appearance;
