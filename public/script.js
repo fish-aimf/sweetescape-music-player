@@ -8060,7 +8060,9 @@ class AdvancedMusicPlayer {
       drawn: NaN,
       track: null,
       zone: null,
-      heights: [],
+      pitch: 0,
+      speed: 0,
+      room: 0,
       frame: 0,
       timer: 0
     };
@@ -8194,7 +8196,6 @@ class AdvancedMusicPlayer {
     stage.shown.clear();
     stage.track = null;
     stage.zone = null;
-    stage.heights = [];
     const make = (className, text) => {
       const node = document.createElement('div');
       node.className = className;
@@ -8232,9 +8233,11 @@ class AdvancedMusicPlayer {
       }[stage.view];
       stage.nodes = stage.lines.map(line => make(className, lineText(line)));
       if (stage.view === 'cards') {
-        stage.nodes.forEach((node, i) => {
-          const next = stage.lines[i + 1];
-          node.classList.toggle('is-compact', Boolean(next) && next.time - stage.lines[i].time < 2.2);
+        stage.nodes.forEach(node => {
+          const text = document.createElement('span');
+          text.className = 'lyrics-card__text';
+          text.textContent = node.textContent;
+          node.replaceChildren(text);
         });
         stage.zone = make('lyrics-cards__zone', '');
         content = [ stage.zone, ...stage.nodes ];
@@ -8265,13 +8268,14 @@ class AdvancedMusicPlayer {
   }
   measureStageCards() {
     const stage = this.lyricsStage;
-    stage.heights = stage.nodes.map(node => node.offsetHeight);
+    const height = stage.nodes[0] ? stage.nodes[0].offsetHeight : 0;
+    const gaps = stage.lines.slice(1).map((line, i) => line.time - stage.lines[i].time).filter(gap => gap > 0).sort((a, b) => a - b);
+    const typical = gaps.length ? gaps[gaps.length >> 1] : 3;
+    stage.pitch = height + 10;
+    stage.room = stage.lyrics.clientHeight;
+    stage.speed = Math.max(40, (stage.room - 14) / Math.min(5, Math.max(1.5, typical * 1.5)));
+    stage.zone.style.height = height + 12 + 'px';
     stage.drawn = NaN;
-    this.sizeStageZone();
-  }
-  sizeStageZone() {
-    const stage = this.lyricsStage;
-    stage.zone.style.height = (stage.heights[Math.max(stage.index, 0)] || 0) + 12 + 'px';
   }
   readLyricsClock(now) {
     const stage = this.lyricsStage;
@@ -8291,18 +8295,20 @@ class AdvancedMusicPlayer {
     } catch {
       playing = false;
     }
-    if (raw !== stage.raw) {
+    if (raw !== stage.raw || playing !== stage.playing) {
       stage.raw = raw;
       stage.rawAt = now;
     }
-    const target = playing ? raw + (now - stage.rawAt) / 1000 * rate : raw;
+    const target = playing ? raw + Math.min(1, (now - stage.rawAt) / 1000) * rate : raw;
     const elapsed = Math.min(0.1, Math.max(0, (now - stage.lastFrame) / 1000));
     stage.lastFrame = now;
-    let clock = Number.isFinite(stage.clock) ? stage.clock + (playing ? elapsed * rate : 0) : target;
-    const drift = target - clock;
-    clock = !playing || Math.abs(drift) > 0.6 || Math.abs(drift) < 0.004 ? target : clock + drift * 0.15;
-    if (playing && Math.abs(drift) <= 0.6 && clock < stage.clock) {
-      clock = stage.clock;
+    let clock = target;
+    if (playing && Number.isFinite(stage.clock)) {
+      const step = elapsed * rate;
+      const drift = target - (stage.clock + step);
+      if (Math.abs(drift) <= 0.6) {
+        clock = stage.clock + step * (1 + Math.max(-0.25, Math.min(0.25, drift * 2)));
+      }
     }
     stage.clock = clock;
     stage.playing = playing;
@@ -8378,7 +8384,6 @@ class AdvancedMusicPlayer {
     } else if (stage.view === 'cards') {
       stage.nodes[previous]?.classList.remove('is-current');
       stage.nodes[index]?.classList.add('is-current');
-      this.sizeStageZone();
     }
   }
   layoutStageVerse(previous, index) {
@@ -8465,19 +8470,22 @@ class AdvancedMusicPlayer {
       return;
     }
     stage.drawn = time;
-    const { lines, nodes, heights, shown, stamps, index } = stage;
+    const { lines, nodes, shown, stamps, index, pitch, speed, room } = stage;
     const stamp = ++stage.stamp;
     const top = 14;
-    const gap = 10;
-    const speed = 380;
-    const anchor = Math.max(index, 0);
-    const pitch = i => heights[i] + gap;
-    const remaining = step => step < 1 ? 0 : Math.max(0, pitch(step - 1) - speed * (time - lines[step].time));
-    let offset = 0;
-    for (let step = Math.max(1, anchor - 3); step <= index; step++) {
-      offset += remaining(step);
+    const target = i => top + speed * Math.max(0, lines[i].time - time);
+    const first = Math.max(index - 1, 0);
+    let last = Math.max(index, 0);
+    while (last + 1 < lines.length && target(last + 1) < room) {
+      last++;
     }
-    const place = (i, y, opacity) => {
+    let y = Infinity;
+    for (let i = last; i >= first; i--) {
+      y = Math.min(target(i), y - pitch);
+      const opacity = y < top ? 1 - (top - y) / pitch : Math.min(1, (room - y) / (pitch * 0.8));
+      if (opacity <= 0.001) {
+        continue;
+      }
       const node = nodes[i];
       stamps[i] = stamp;
       if (!shown.has(i)) {
@@ -8486,24 +8494,6 @@ class AdvancedMusicPlayer {
       }
       node.style.transform = `translate3d(0, ${y.toFixed(1)}px, 0)`;
       node.style.opacity = opacity.toFixed(3);
-    };
-    let y = top;
-    for (let i = anchor - 1; i >= Math.max(anchor - 3, 0); i--) {
-      y -= pitch(i);
-      const opacity = remaining(i + 1) / pitch(i);
-      if (opacity > 0.001) {
-        place(i, y + offset, opacity);
-      }
-    }
-    y = top;
-    for (let i = anchor; i <= Math.min(anchor + 2, nodes.length - 1); i++) {
-      if (i > anchor) {
-        y += pitch(i - 1);
-      }
-      const opacity = i - 2 >= 1 ? 1 - remaining(i - 2) / pitch(i - 3) : 1;
-      if (opacity > 0.001) {
-        place(i, y + offset, opacity);
-      }
     }
     shown.forEach(i => {
       if (stamps[i] !== stamp) {
