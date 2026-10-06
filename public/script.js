@@ -8061,7 +8061,6 @@ class AdvancedMusicPlayer {
       track: null,
       zone: null,
       heights: [],
-      room: 0,
       frame: 0,
       timer: 0
     };
@@ -8267,7 +8266,6 @@ class AdvancedMusicPlayer {
   measureStageCards() {
     const stage = this.lyricsStage;
     stage.heights = stage.nodes.map(node => node.offsetHeight);
-    stage.room = stage.lyrics.clientHeight;
     stage.drawn = NaN;
     this.sizeStageZone();
   }
@@ -8467,12 +8465,18 @@ class AdvancedMusicPlayer {
       return;
     }
     stage.drawn = time;
-    const { lines, nodes, heights, shown, stamps, index, room } = stage;
+    const { lines, nodes, heights, shown, stamps, index } = stage;
     const stamp = ++stage.stamp;
     const top = 14;
     const gap = 10;
-    const reach = 28;
-    const ease = value => 1 - (1 - Math.min(1, Math.max(0, value))) ** 3;
+    const speed = 380;
+    const anchor = Math.max(index, 0);
+    const pitch = i => heights[i] + gap;
+    const remaining = step => step < 1 ? 0 : Math.max(0, pitch(step - 1) - speed * (time - lines[step].time));
+    let offset = 0;
+    for (let step = Math.max(1, anchor - 3); step <= index; step++) {
+      offset += remaining(step);
+    }
     const place = (i, y, opacity) => {
       const node = nodes[i];
       stamps[i] = stamp;
@@ -8483,27 +8487,23 @@ class AdvancedMusicPlayer {
       node.style.transform = `translate3d(0, ${y.toFixed(1)}px, 0)`;
       node.style.opacity = opacity.toFixed(3);
     };
-    let front = top;
-    if (index >= 0) {
-      const since = time - lines[index].time;
-      if (index >= 1 && since < 0.34) {
-        const lift = ease(since / 0.34);
-        place(index - 1, top - (heights[index - 1] + 40) * lift, 1 - lift);
+    let y = top;
+    for (let i = anchor - 1; i >= Math.max(anchor - 3, 0); i--) {
+      y -= pitch(i);
+      const opacity = remaining(i + 1) / pitch(i);
+      if (opacity > 0.001) {
+        place(i, y + offset, opacity);
       }
-      const from = index >= 1 ? top + heights[index - 1] + gap : top;
-      const y = from + (top - from) * ease(since / 0.3);
-      place(index, y, 1);
-      front = y + heights[index] + gap;
     }
-    for (let i = index + 1, count = 0; i < lines.length && count < 14; i++, count++) {
-      const start = i ? lines[i - 1].time : 0;
-      const span = lines[i].time - start;
-      const y = front + (span > 0 ? reach * Math.min(1, Math.max(0, (lines[i].time - Math.max(time, start)) / span)) : 0);
-      if (y > room) {
-        break;
+    y = top;
+    for (let i = anchor; i <= Math.min(anchor + 2, nodes.length - 1); i++) {
+      if (i > anchor) {
+        y += pitch(i - 1);
       }
-      place(i, y, Math.min(1, (room - y) / 90));
-      front = y + heights[i] + gap;
+      const opacity = i - 2 >= 1 ? 1 - remaining(i - 2) / pitch(i - 3) : 1;
+      if (opacity > 0.001) {
+        place(i, y + offset, opacity);
+      }
     }
     shown.forEach(i => {
       if (stamps[i] !== stamp) {
