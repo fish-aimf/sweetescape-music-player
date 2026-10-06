@@ -378,7 +378,6 @@ class AdvancedMusicPlayer {
     this.isSidebarVisible = false;
     this.isVideoFullscreen = false;
     this.isWebEmbedVisible = false;
-    this.isLyricsFullscreen = false;
     this.isAdditionalDetailsHidden = false;
     this.currentLayout = 'center';
     this.playlistSidebarMode = 'overlay';
@@ -403,7 +402,6 @@ class AdvancedMusicPlayer {
     this.appTimer = null;
     this.timerEndTime = null;
     this.timerAction = 'stopMusic';
-    this.fullscreenLyricsInterval = null;
     this.originalFavicon = document.querySelector('link[rel="icon"]')?.href || '/favicon.ico';
     this.originalTitle = document.title;
     this.priorityModeActive = false;
@@ -600,7 +598,6 @@ class AdvancedMusicPlayer {
     this.renderInitialState();
     this.renderAdditionalDetails();
     this.setupLyricsTabContextMenu();
-    this.initializeFullscreenLyrics();
     this.initializeAdvertisementSettings();
     this.initializeVisualizer();
     this.initGlobalLibraryDebouncedSearch();
@@ -5901,9 +5898,6 @@ class AdvancedMusicPlayer {
       if (this.lyricsInterval) {
         clearInterval(this.lyricsInterval);
       }
-      if (this.fullscreenLyricsInterval) {
-        clearInterval(this.fullscreenLyricsInterval);
-      }
     } else if (event.data === YT.PlayerState.PLAYING) {
       this.isPlaying = true;
       this.updatePlayerUI();
@@ -5921,9 +5915,6 @@ class AdvancedMusicPlayer {
           const currentTime = this.ytPlayer.getCurrentTime();
           this.updateHighlightedLyric(currentTime, this.currentLyrics, this.currentTimings);
         }
-      }
-      if (this.isLyricsFullscreen) {
-        this.renderFullscreenLyrics();
       }
     }
     if (event.data === YT.PlayerState.PLAYING) {
@@ -7100,16 +7091,6 @@ class AdvancedMusicPlayer {
       });
       floatingButtonsContainer.appendChild(shareButton);
     }
-    const expandButton = document.createElement('button');
-    expandButton.innerHTML = '<i class="fas fa-expand"></i>';
-    expandButton.title = 'Expand Lyrics';
-    expandButton._baseOpacity = '0.7';
-    expandButton.style.cssText = `\n\t        background: rgba(128, 128, 128, 0.15);\n\t        backdrop-filter: blur(10px);\n\t        border: 1px solid rgba(255, 255, 255, 0.2);\n\t        border-radius: 50%;\n\t        width: 25px;\n\t        height: 25px;\n\t        display: flex;\n\t        align-items: center;\n\t        justify-content: center;\n\t        cursor: pointer;\n\t        transition: all 0.3s ease;\n\t        color: var(--text-primary);\n\t        font-size: 10px;\n\t        pointer-events: auto;\n\t        opacity: 0.7;\n\t    `;
-    addSimpleHover(expandButton);
-    expandButton.addEventListener('click', () => {
-      this.enterLyricsFullscreen();
-    });
-    floatingButtonsContainer.appendChild(expandButton);
     lyricsPlayer.appendChild(floatingButtonsContainer);
     this.elements.lyricsPane.appendChild(lyricsPlayer);
     this.currentLyrics = hasTimestamps ? lyricsArray : [];
@@ -7894,175 +7875,6 @@ class AdvancedMusicPlayer {
     };
     setTimeout(() => loadVideo(), 100);
     setupLyricMakerProgressBarSeek();
-  }
-  initializeFullscreenLyrics() {
-    this.elements.lyricsFullscreenModal = document.getElementById('lyricsFullscreenModal');
-    this.elements.fullscreenSongName = document.getElementById('fullscreenSongName');
-    this.elements.fullscreenSongAuthor = document.getElementById('fullscreenSongAuthor');
-    this.elements.fullscreenLyricsDisplay = document.getElementById('fullscreenLyricsDisplay');
-    this.elements.exitFullscreenBtn = document.getElementById('exitFullscreenBtn');
-    this.elements.exitFullscreenBtn.addEventListener('click', () => this.exitLyricsFullscreen());
-  }
-  enterLyricsFullscreen() {
-    if (!this.elements.lyricsFullscreenModal) {
-      this.initializeFullscreenLyrics();
-    }
-    this.isLyricsFullscreen = true;
-    this.elements.lyricsFullscreenModal.classList.add('active');
-    const currentSong = this.currentPlaylist ? this.currentPlaylist.songs[this.currentSongIndex] : this.songLibrary[this.currentSongIndex];
-    if (currentSong) {
-      this.elements.fullscreenSongName.textContent = currentSong.name;
-      this.elements.fullscreenSongAuthor.textContent = currentSong.author || 'Unknown Artist';
-    }
-    this.renderFullscreenLyrics();
-    this.hideMainUIForLyrics();
-  }
-  exitLyricsFullscreen() {
-    this.isLyricsFullscreen = false;
-    this.elements.lyricsFullscreenModal.classList.remove('active');
-    if (this.fullscreenLyricsInterval) {
-      clearInterval(this.fullscreenLyricsInterval);
-      this.fullscreenLyricsInterval = null;
-    }
-    this.currentFullscreenHighlightedLyricIndex = -1;
-    this.showMainUIFromLyrics();
-    if (this.isPlaying && document.getElementById('lyrics') && document.getElementById('lyrics').classList.contains('active')) {
-      this.renderLyricsTab();
-    }
-  }
-  hideMainUIForLyrics() {
-    document.querySelector('.main-container').style.display = 'none';
-    document.querySelector('.theme-toggle').style.display = 'none';
-    document.querySelector('.listening-stats').style.display = 'none';
-    document.querySelector('.control-bar-toggle').style.display = 'none';
-    document.querySelector('.layout-toggle').style.display = 'none';
-    document.querySelector('.watermark').style.display = 'none';
-  }
-  showMainUIFromLyrics() {
-    document.querySelector('.main-container').style.display = 'flex';
-    document.querySelector('.theme-toggle').style.display = 'flex';
-    document.querySelector('.listening-stats').style.display = 'flex';
-    document.querySelector('.control-bar-toggle').style.display = 'block';
-    document.querySelector('.layout-toggle').style.display = 'block';
-    document.querySelector('.watermark').style.display = 'block';
-  }
-  renderFullscreenLyrics() {
-    if (!this.elements.fullscreenLyricsDisplay) {
-      return;
-    }
-    const currentSong = this.currentPlaylist ? this.currentPlaylist.songs[this.currentSongIndex] : this.songLibrary[this.currentSongIndex];
-    if (!currentSong) {
-      return;
-    }
-    let songWithLyrics = currentSong;
-    if (this.currentPlaylist) {
-      const libraryMatch = this.songLibrary.find(libSong => libSong.videoId === currentSong.videoId);
-      if (libraryMatch && libraryMatch.lyrics) {
-        songWithLyrics = libraryMatch;
-      }
-    }
-    if (!songWithLyrics.lyrics || songWithLyrics.lyrics.trim() === '') {
-      this.elements.fullscreenLyricsDisplay.innerHTML = '<div class="no-lyrics-message">No lyrics available</div>';
-      return;
-    }
-    this.elements.fullscreenLyricsDisplay.innerHTML = '';
-    const lyricsArray = [];
-    const timingsArray = [];
-    let hasTimestamps = false;
-    const lines = songWithLyrics.lyrics.split('\n').filter(line => line.trim() !== '');
-    for (const line of lines) {
-      if (line.match(/.*\s*\[(\d+):(\d+)\]/)) {
-        hasTimestamps = true;
-        break;
-      }
-    }
-    for (const line of lines) {
-      if (hasTimestamps) {
-        const match = line.match(/(.*)\s*\[(\d+):(\d+)\]/);
-        if (match) {
-          const lyric = match[1].trim();
-          const minutes = parseInt(match[2]);
-          const seconds = parseInt(match[3]);
-          const timeInSeconds = minutes * 60 + seconds;
-          lyricsArray.push(lyric);
-          timingsArray.push(timeInSeconds);
-        }
-      } else {
-        lyricsArray.push(line.trim());
-      }
-    }
-    for (let i = 0; i < lyricsArray.length; i++) {
-      const lineElement = document.createElement('div');
-      lineElement.classList.add('lyric-line');
-      lineElement.textContent = lyricsArray[i];
-      lineElement.id = `fullscreen-lyric-${i}`;
-      lineElement.style.padding = '8px 10px';
-      lineElement.style.margin = '5px 0';
-      lineElement.style.borderRadius = '3px';
-      lineElement.style.transition = 'all 0.3s ease';
-      lineElement.style.color = 'var(--text-secondary)';
-      this.elements.fullscreenLyricsDisplay.appendChild(lineElement);
-    }
-    if (this.fullscreenLyricsInterval) {
-      clearInterval(this.fullscreenLyricsInterval);
-      this.fullscreenLyricsInterval = null;
-    }
-    this.currentFullscreenHighlightedLyricIndex = -1;
-    if (hasTimestamps && this.ytPlayer && this.isPlaying && this.ytPlayer.getCurrentTime) {
-      this.fullscreenLyricsInterval = setInterval(() => {
-        if (!this.isTabVisible) {
-          return;
-        }
-        if (this.ytPlayer && this.ytPlayer.getCurrentTime && this.isPlaying && this.isLyricsFullscreen) {
-          try {
-            const currentTime = this.ytPlayer.getCurrentTime();
-            this.updateFullscreenHighlightedLyric(currentTime, lyricsArray, timingsArray);
-          } catch (error) {
-            console.warn('Error updating fullscreen lyrics:', error);
-          }
-        }
-      }, 100);
-    }
-  }
-  updateFullscreenHighlightedLyric(currentTime, lyrics, timings) {
-    if (!lyrics.length || !timings.length || timings.length !== lyrics.length) {
-      return;
-    }
-    let highlightIndex = -1;
-    for (let i = 0; i < timings.length; i++) {
-      if (currentTime >= timings[i]) {
-        if (i === timings.length - 1 || currentTime < timings[i + 1]) {
-          highlightIndex = i;
-        }
-      }
-    }
-    if (highlightIndex !== this.currentFullscreenHighlightedLyricIndex) {
-      const allLines = this.elements.fullscreenLyricsDisplay.querySelectorAll('.lyric-line');
-      allLines.forEach(line => {
-        line.classList.remove('active');
-        line.style.backgroundColor = '';
-        line.style.color = 'var(--text-secondary)';
-        line.style.fontWeight = 'normal';
-        line.style.fontSize = '';
-        line.style.transform = '';
-      });
-      if (highlightIndex !== -1) {
-        const currentElement = document.getElementById(`fullscreen-lyric-${highlightIndex}`);
-        if (currentElement) {
-          currentElement.classList.add('active');
-          currentElement.style.backgroundColor = 'var(--accent-color)';
-          currentElement.style.color = 'var(--text-primary)';
-          currentElement.style.fontWeight = 'bold';
-          currentElement.style.fontSize = '1.1em';
-          currentElement.style.transform = 'scale(1.02)';
-          currentElement.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center'
-          });
-        }
-      }
-      this.currentFullscreenHighlightedLyricIndex = highlightIndex;
-    }
   }
   openImportSubtitlesModal(songId) {
     const song = this.songLibrary.find(s => s.id === songId);

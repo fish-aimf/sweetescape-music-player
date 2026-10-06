@@ -12,8 +12,8 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 | Source | sha256 (first 12) | Lines |
 |---|---|---|
-| `public/script.js` | `b0a027469125` | 15373 |
-| `public/index.html` | `d2e3a5a08c5f` | 1479 |
+| `public/script.js` | `d74b54356ddb` | 15185 |
+| `public/index.html` | `50f06fbfbf81` | 1460 |
 | `public/script/settings.js` | `b1cbbfc3625b` | 561 |
 | `public/karaoke-player.js` | `79175232d973` | 682 |
 | `public/karaoke-encoder.js` | `d277db62d9e9` | 147 |
@@ -23,7 +23,7 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 ## Reading `public/script.js` cheaply
 
-- 72 lines are longer than 300 characters (the machine-formatted
+- 71 lines are longer than 300 characters (the machine-formatted
   `innerHTML` template literals; the longest is ~3.9 KB). A single `grep -n` that hits
   several of them dumps tens of kilobytes. Search with `grep -o`, or pipe through
   `cut -c1-200`, and only widen once you know which line you want.
@@ -38,7 +38,7 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 ---
 
-## `AdvancedMusicPlayer` by topic (580 methods)
+## `AdvancedMusicPlayer` by topic (573 methods)
 
 Names only. `grep -n "^  name(" public/script.js` gives the current line, and a name
 here that you cannot find has been renamed since this file was generated.
@@ -65,7 +65,7 @@ here that you cannot find has been renamed since this file was generated.
 
 ### Lyrics & karaoke
 
-`renderLyricsTab` · `generateKaraokeURL` · `shareKaraokeURL` · `updateHighlightedLyric` · `setupLyricsTabContextMenu` · `openLyricsMakerModal` · `initLyricMaker` · `initializeFullscreenLyrics` · `enterLyricsFullscreen` · `exitLyricsFullscreen` · `hideMainUIForLyrics` · `showMainUIFromLyrics` · `renderFullscreenLyrics` · `updateFullscreenHighlightedLyric` · `openImportSubtitlesModal` · `setupSubtitlesImportEventListeners` · `closeSubtitlesImportModal` · `resetSubtitlesImportForm` · `convertTranscriptToLyricsHandler` · `convertTranscriptToLyrics` · `formatLyricText`
+`renderLyricsTab` · `generateKaraokeURL` · `shareKaraokeURL` · `updateHighlightedLyric` · `setupLyricsTabContextMenu` · `openLyricsMakerModal` · `initLyricMaker` · `openImportSubtitlesModal` · `setupSubtitlesImportEventListeners` · `closeSubtitlesImportModal` · `resetSubtitlesImportForm` · `convertTranscriptToLyricsHandler` · `convertTranscriptToLyrics` · `formatLyricText`
 
 ### Discovery, stats & charts
 
@@ -111,7 +111,7 @@ The rest match their id exactly.
 
 ---
 
-## Dialogs in `public/index.html` (14)
+## Dialogs in `public/index.html` (13)
 
 | id | line | classes |
 |---|---|---|
@@ -120,15 +120,14 @@ The rest match their id exactly.
 | `importModal` | 452 | `modal ui-overlay` |
 | `playlistEditModal` | 498 | `modal ui-overlay` |
 | `timerModal` | 518 | `modal ui-overlay` |
-| `lyricsFullscreenModal` | 657 | `lyrics-fullscreen-modal` |
-| `changelogModal` | 679 | `changelog-modal ui-overlay` |
-| `subtitlesImportModal` | 689 | `subtitles-import-modal-overlay ui-overlay` |
-| `settingsModal` | 758 | `settings-modal ui-overlay` |
-| `recentlyPlayedModal` | 1194 | `recently-played-modal-bg ui-overlay` |
-| `lyricsModal` | 1209 | `lyrics-maker-modal hidden ui-overlay` |
-| `downloadModal` | 1327 | `dl-overlay ui-overlay` |
-| `shazamModal` | 1391 | `sz-overlay ui-overlay` |
-| `statsModal` | 1442 | `ls-overlay ui-overlay` |
+| `changelogModal` | 660 | `changelog-modal ui-overlay` |
+| `subtitlesImportModal` | 670 | `subtitles-import-modal-overlay ui-overlay` |
+| `settingsModal` | 739 | `settings-modal ui-overlay` |
+| `recentlyPlayedModal` | 1175 | `recently-played-modal-bg ui-overlay` |
+| `lyricsModal` | 1190 | `lyrics-maker-modal hidden ui-overlay` |
+| `downloadModal` | 1308 | `dl-overlay ui-overlay` |
+| `shazamModal` | 1372 | `sz-overlay ui-overlay` |
+| `statsModal` | 1423 | `ls-overlay ui-overlay` |
 
 ---
 

@@ -189,7 +189,6 @@ body {
 .favorites-card.expanded .favorites-expanded-list,
 .global-library-songs-container.expanded,
 .library-options-dropdown.show,
-.lyrics-fullscreen-modal.active,
 .lyrics-tab.active,
 .playlist-sidebar.expanded-mode .sidebar-search-container,
 .tab-pane.active,
@@ -1072,7 +1071,6 @@ body {
   color: #fff;
   border-image: initial;
 }
-.lyrics-expand-btn i,
 .video-hint i {
   margin-right: 8px;
 }
@@ -1731,12 +1729,6 @@ body:has(#ytPlayer.fullscreen-video) {
   color: var(--text-primary);
   font-weight: 500;
 }
-.fullscreen-btn,
-.lyrics-expand-btn {
-  color: #fff;
-  cursor: pointer;
-  transition: 0.3s;
-}
 #autofillBtn:disabled {
   background-color: #ccc;
   cursor: not-allowed;
@@ -1746,103 +1738,14 @@ body:has(#ytPlayer.fullscreen-video) {
   color: var(--accent-color);
   background-color: transparent;
 }
-.lyrics-fullscreen-modal {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: var(--bg-primary);
-  z-index: 10000;
-  animation: 0.3s fadeIn;
-}
-.lyrics-fullscreen-container {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  padding: 20px;
-  box-sizing: border-box;
-}
-.lyrics-fullscreen-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 20px;
-  border-bottom: 2px solid var(--border-color);
-}
-.fullscreen-btn,
 .settings-close-btn {
   border: currentcolor;
   border-image: initial;
-}
-.song-info h2 {
-  margin: 0;
-  color: var(--text-primary);
-  font-size: 2.5em;
-  font-weight: 700;
-}
-.song-info p {
-  margin: 5px 0 0;
-  color: var(--text-secondary);
-  font-size: 1.5em;
-}
-.fullscreen-controls {
-  display: flex;
-  gap: 15px;
-}
-.fullscreen-btn {
-  background: var(--accent-color);
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  font-size: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 .settings-button,
 .version-display {
   cursor: pointer;
   transition: opacity 0.3s;
-}
-.fullscreen-btn:hover {
-  background: var(--hover-color);
-  transform: scale(1.1);
-}
-.lyrics-fullscreen-content {
-  flex: 1 1 0%;
-  display: flex;
-  gap: 20px;
-  height: calc(100% - 120px);
-}
-.fullscreen-lyrics-display {
-  flex: 1 1 0%;
-  background: var(--bg-secondary);
-  border-radius: 10px;
-  padding: 30px;
-  overflow-y: auto;
-  border: 2px solid var(--border-color);
-}
-.fullscreen-lyrics-display .lyric-line {
-  text-align: center;
-  padding: 15px 20px !important;
-  margin: 10px 0 !important;
-  font-size: 1.8em !important;
-  line-height: 1.6 !important;
-  border-radius: 8px !important;
-  transition: 0.3s !important;
-  color: var(--text-secondary) !important;
-}
-.fullscreen-lyrics-display .lyric-line.active {
-  box-shadow: rgba(0, 0, 0, 0.2) 0 5px 15px;
-  background: var(--accent-color) !important;
-  color: #fff !important;
-  font-weight: 700 !important;
-  font-size: 2.2em !important;
-  transform: scale(1.05) !important;
 }
 .version-display {
   position: fixed;
@@ -3160,11 +3063,6 @@ body:has(#ytPlayer.fullscreen-video) {
     display: none;
   }
 }
-.song-info {
-  flex: 1 1 0%;
-  min-width: 0;
-  margin-right: 10px;
-}
 .song-actions {
   display: flex;
   gap: 6px;
@@ -3930,21 +3828,6 @@ body:has(#ytPlayer.fullscreen-video) {
   }
   body:has(#ytPlayer.fullscreen-video) .now-playing {
     padding: 10px 15px !important;
-  }
-  .lyrics-fullscreen-content {
-    flex-direction: column;
-  }
-  .song-info h2 {
-    font-size: 2em;
-  }
-  .song-info p {
-    font-size: 1.2em;
-  }
-  .fullscreen-lyrics-display .lyric-line {
-    font-size: 1.4em !important;
-  }
-  .fullscreen-lyrics-display .lyric-line.active {
-    font-size: 1.8em !important;
   }
   .settings-modal-content {
     width: 95%;
