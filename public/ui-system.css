@@ -1870,7 +1870,7 @@ a.ui-btn--block {
 }
 
 [data-surface="glass"] .lyrics-stage__lyrics--verse,
-[data-surface="glass"] .lyrics-stage__lyrics--spotlight,
+[data-surface="glass"] .lyrics-stage__lyrics--stanza,
 [data-surface="glass"] .lyrics-stage__lyrics--flow,
 [data-surface="glass"] .lyrics-stage__lyrics--empty,
 [data-surface="glass"] .lyrics-card {

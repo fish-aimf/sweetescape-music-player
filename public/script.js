@@ -368,11 +368,11 @@ class AdvancedMusicPlayer {
     timed: true,
     glyph: '<rect x="15" y="5" width="10" height="14" rx="1.5"/><path d="M3 9h8M5 14h6M29 10h8M29 15h6"/>'
   }, {
-    id: 'spotlight',
-    name: 'Spotlight',
-    hint: 'One big line that fills as it is sung',
+    id: 'stanza',
+    name: 'Lyric Video',
+    hint: 'Three lines, the oldest swapped for the next',
     timed: true,
-    glyph: '<path d="M10 4h20M10 20h20"/><path d="M4 12h19" stroke-width="4"/><path d="M27 12h9" opacity=".4"/>'
+    glyph: '<path d="M8 5h24M10 19h20"/><path d="M5 12h30" stroke-width="3.4"/>'
   }, {
     id: 'flow',
     name: 'Flow',
@@ -8059,7 +8059,6 @@ class AdvancedMusicPlayer {
       playing: false,
       drawn: NaN,
       track: null,
-      spot: null,
       zone: null,
       heights: [],
       room: 0,
@@ -8195,7 +8194,6 @@ class AdvancedMusicPlayer {
     stage.stamp = 0;
     stage.shown.clear();
     stage.track = null;
-    stage.spot = null;
     stage.zone = null;
     stage.heights = [];
     const make = (className, text) => {
@@ -8209,18 +8207,15 @@ class AdvancedMusicPlayer {
     if (stage.view === 'empty') {
       stage.nodes = [];
       content = [ make('', song ? 'No lyrics for this song yet' : 'Play a song to see its lyrics here') ];
-    } else if (stage.view === 'spotlight') {
-      stage.nodes = [];
-      stage.spot = {
-        prev: make('lyrics-spot__side', ''),
-        current: make('lyrics-spot__current', ''),
-        next: make('lyrics-spot__side', ''),
-        anchor: -1,
-        words: [],
-        fills: [],
-        total: 0
-      };
-      content = [ stage.spot.prev, stage.spot.current, stage.spot.next ];
+    } else if (stage.view === 'stanza') {
+      stage.nodes = stage.lines.map(line => {
+        const node = make('lyrics-stanza__line', '');
+        this.fillStageWords(node, lineText(line), 'lyrics-stanza__word');
+        return node;
+      });
+      const slots = [ 0, 1, 2 ].map(() => make('lyrics-stanza__slot', ''));
+      stage.nodes.forEach((node, i) => slots[i % 3].append(node));
+      content = slots;
     } else if (stage.view === 'mirror') {
       stage.nodes = stage.lines.map(line => {
         const node = make('lyrics-mirror__line', '');
@@ -8238,6 +8233,10 @@ class AdvancedMusicPlayer {
       }[stage.view];
       stage.nodes = stage.lines.map(line => make(className, lineText(line)));
       if (stage.view === 'cards') {
+        stage.nodes.forEach((node, i) => {
+          const next = stage.lines[i + 1];
+          node.classList.toggle('is-compact', Boolean(next) && next.time - stage.lines[i].time < 2.2);
+        });
         stage.zone = make('lyrics-cards__zone', '');
         content = [ stage.zone, ...stage.nodes ];
       } else {
@@ -8274,7 +8273,7 @@ class AdvancedMusicPlayer {
   }
   sizeStageZone() {
     const stage = this.lyricsStage;
-    stage.zone.style.height = (stage.heights[Math.max(stage.index, 0)] || 0) + 20 + 'px';
+    stage.zone.style.height = (stage.heights[Math.max(stage.index, 0)] || 0) + 12 + 'px';
   }
   readLyricsClock(now) {
     const stage = this.lyricsStage;
@@ -8346,8 +8345,6 @@ class AdvancedMusicPlayer {
       }
       if (stage.view === 'cards') {
         this.frameStageCards(time);
-      } else if (stage.view === 'spotlight') {
-        this.frameStageSpotlight(time);
       }
     }
     if (live && stage.playing) {
@@ -8378,8 +8375,8 @@ class AdvancedMusicPlayer {
     } else if (stage.view === 'mirror') {
       stage.nodes[previous]?.removeAttribute('data-state');
       stage.nodes[index]?.setAttribute('data-state', 'current');
-    } else if (stage.view === 'spotlight') {
-      this.layoutStageSpotlight(index);
+    } else if (stage.view === 'stanza') {
+      this.layoutStageStanza(previous, index);
     } else if (stage.view === 'cards') {
       stage.nodes[previous]?.classList.remove('is-current');
       stage.nodes[index]?.classList.add('is-current');
@@ -8445,63 +8442,24 @@ class AdvancedMusicPlayer {
     target.classList.toggle('is-active', index >= 0);
     stage.track.style.transform = `translate3d(0, ${offset.toFixed(1)}px, 0)`;
   }
-  layoutStageSpotlight(index) {
-    const { lines, spot } = this.lyricsStage;
-    const anchor = Math.max(index, 0);
-    const lineText = line => line ? line.text || '♪' : '';
-    spot.prev.textContent = index > 0 ? lineText(lines[index - 1]) : '';
-    spot.next.textContent = lineText(lines[anchor + 1]);
-    if (spot.anchor === anchor) {
-      return;
-    }
-    spot.anchor = anchor;
-    let total = 0;
-    spot.words = this.fillStageWords(spot.current, lineText(lines[anchor]), 'lyrics-spot__word').map(span => {
-      const length = span.textContent.length + 1;
-      total += length;
-      return {
-        span,
-        start: total - length,
-        length
-      };
-    });
-    spot.total = total;
-    spot.fills = spot.words.map(() => '');
-    spot.current.animate([ {
-      opacity: 0,
-      transform: 'translate3d(0, 18px, 0) scale(0.97)'
-    } ], {
-      duration: 420,
-      easing: 'cubic-bezier(0.2, 0.7, 0.2, 1)'
-    });
-    spot.prev.animate([ {
-      opacity: 0
-    } ], {
-      duration: 420
-    });
-    spot.next.animate([ {
-      opacity: 0
-    } ], {
-      duration: 420
-    });
-  }
-  frameStageSpotlight(time) {
-    const { lines, index, spot } = this.lyricsStage;
-    let progress = 0;
-    if (index >= 0) {
-      const line = lines[index];
-      const end = lines[index + 1] ? lines[index + 1].time : line.time + 4;
-      const span = Math.max(0.6, Math.min((end - line.time) * 0.95, 1 + line.text.length * 0.11));
-      progress = Math.min(1, Math.max(0, (time - line.time) / span));
-    }
-    const sung = progress * spot.total;
-    spot.words.forEach((word, i) => {
-      const value = Math.min(1, Math.max(0, (sung - word.start) / word.length)).toFixed(3);
-      if (value !== spot.fills[i]) {
-        spot.fills[i] = value;
-        word.span.style.setProperty('--w', value);
+  layoutStageStanza(previous, index) {
+    const nodes = this.lyricsStage.nodes;
+    const range = current => {
+      const start = Math.max(Math.max(current, 0) - 1, 0);
+      return [ start, Math.min(start + 2, nodes.length - 1) ];
+    };
+    const [ from, to ] = range(index);
+    if (previous > -2) {
+      const [ oldFrom, oldTo ] = range(previous);
+      for (let i = oldFrom; i <= oldTo; i++) {
+        if (i < from || i > to) {
+          nodes[i].removeAttribute('data-state');
+        }
       }
-    });
+    }
+    for (let i = from; i <= to; i++) {
+      nodes[i].dataset.state = i === index ? 'current' : i < index ? 'sung' : 'next';
+    }
   }
   frameStageCards(time) {
     const stage = this.lyricsStage;
@@ -8511,9 +8469,9 @@ class AdvancedMusicPlayer {
     stage.drawn = time;
     const { lines, nodes, heights, shown, stamps, index, room } = stage;
     const stamp = ++stage.stamp;
-    const top = 36;
-    const gap = 14;
-    const pace = 36;
+    const top = 14;
+    const gap = 10;
+    const reach = 28;
     const ease = value => 1 - (1 - Math.min(1, Math.max(0, value))) ** 3;
     const place = (i, y, opacity) => {
       const node = nodes[i];
@@ -8537,8 +8495,10 @@ class AdvancedMusicPlayer {
       place(index, y, 1);
       front = y + heights[index] + gap;
     }
-    for (let i = index + 1, count = 0; i < lines.length && count < 10; i++, count++) {
-      const y = Math.max(top + pace * Math.max(lines[i].time - time, 0), front);
+    for (let i = index + 1, count = 0; i < lines.length && count < 14; i++, count++) {
+      const start = i ? lines[i - 1].time : 0;
+      const span = lines[i].time - start;
+      const y = front + (span > 0 ? reach * Math.min(1, Math.max(0, (lines[i].time - Math.max(time, start)) / span)) : 0);
       if (y > room) {
         break;
       }
