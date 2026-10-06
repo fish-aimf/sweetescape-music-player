@@ -349,6 +349,37 @@ const HTML_ENTITIES = {
 const HTML_ENTITY_PATTERN = /&(#\d{1,7}|#[xX][0-9a-fA-F]{1,6}|[a-zA-Z][a-zA-Z0-9]{1,30});/g;
 class AdvancedMusicPlayer {
   static VISUALIZER_STYLES = new Set([ 'bars', 'levels', 'wave', 'ribbon', 'radial', 'glow' ]);
+  static LYRICS_STAGE_MODES = [ {
+    id: 'verse',
+    name: 'Verse',
+    hint: 'Music-video lines that roll upward',
+    timed: true,
+    glyph: '<path d="M4 6h28M4 13h20M4 19h14"/>'
+  }, {
+    id: 'cards',
+    name: 'Cards',
+    hint: 'Cards glide in and land on the beat',
+    timed: true,
+    glyph: '<rect x="11" y="2" width="18" height="5" rx="1.5"/><rect x="7" y="9" width="26" height="6" rx="1.5"/><rect x="3" y="17" width="34" height="6" rx="1.5"/>'
+  }, {
+    id: 'mirror',
+    name: 'Mirror',
+    hint: 'Cover in the middle, lines trade sides',
+    timed: true,
+    glyph: '<rect x="15" y="5" width="10" height="14" rx="1.5"/><path d="M3 9h8M5 14h6M29 10h8M29 15h6"/>'
+  }, {
+    id: 'spotlight',
+    name: 'Spotlight',
+    hint: 'One big line that fills as it is sung',
+    timed: true,
+    glyph: '<path d="M10 4h20M10 20h20"/><path d="M4 12h19" stroke-width="4"/><path d="M27 12h9" opacity=".4"/>'
+  }, {
+    id: 'flow',
+    name: 'Flow',
+    hint: 'The whole song scrolls along with you',
+    timed: false,
+    glyph: '<path d="M8 3h24M5 8h30M6 17h28M9 21h22"/><path d="M3 12.5h34" stroke-width="3.4"/>'
+  } ];
   constructor() {
     this.playlists = [];
     this.songLibrary = [];
@@ -7091,6 +7122,14 @@ class AdvancedMusicPlayer {
       });
       floatingButtonsContainer.appendChild(shareButton);
     }
+    const stageButton = document.createElement('button');
+    stageButton.innerHTML = '<i class="fas fa-expand"></i>';
+    stageButton.title = 'Fullscreen lyrics';
+    stageButton._baseOpacity = '0.7';
+    stageButton.style.cssText = `\n\t        background: rgba(128, 128, 128, 0.15);\n\t        backdrop-filter: blur(10px);\n\t        border: 1px solid rgba(255, 255, 255, 0.2);\n\t        border-radius: 50%;\n\t        width: 25px;\n\t        height: 25px;\n\t        display: flex;\n\t        align-items: center;\n\t        justify-content: center;\n\t        cursor: pointer;\n\t        transition: all 0.3s ease;\n\t        color: var(--text-primary);\n\t        font-size: 10px;\n\t        pointer-events: auto;\n\t        opacity: 0.7;\n\t    `;
+    addSimpleHover(stageButton);
+    stageButton.addEventListener('click', () => this.openLyricsModePicker());
+    floatingButtonsContainer.appendChild(stageButton);
     lyricsPlayer.appendChild(floatingButtonsContainer);
     this.elements.lyricsPane.appendChild(lyricsPlayer);
     this.currentLyrics = hasTimestamps ? lyricsArray : [];
@@ -7875,6 +7914,618 @@ class AdvancedMusicPlayer {
     };
     setTimeout(() => loadVideo(), 100);
     setupLyricMakerProgressBarSeek();
+  }
+  openLyricsModePicker() {
+    if (this.lyricsModeDialog) {
+      return;
+    }
+    if (!this.lyricsStageMode) {
+      this.lyricsStageMode = localStorage.getItem('lyricsStageMode') || 'verse';
+    }
+    const active = this.lyricsStage?.open ? this.lyricsStage.mode : this.lyricsStageMode;
+    const timed = this.parseStageLyrics(this.resolveLyricsStageSong().source?.lyrics).timed;
+    const dialog = UI.modal({
+      title: 'Fullscreen lyrics',
+      icon: 'fa-expand',
+      size: 'md',
+      className: 'lyrics-mode-modal',
+      bodyClassName: 'lyrics-mode-grid',
+      onClose: () => {
+        this.lyricsModeDialog = null;
+        this.syncLyricsStageKeys();
+      }
+    });
+    dialog.body.innerHTML = AdvancedMusicPlayer.LYRICS_STAGE_MODES.map(mode => {
+      const locked = mode.timed && !timed;
+      return `<button type="button" class="lyrics-mode${mode.id === active ? ' active' : ''}" data-mode="${mode.id}"${locked ? ' disabled' : ''}><svg class="lyrics-mode__glyph" viewBox="0 0 40 24" aria-hidden="true">${mode.glyph}</svg><span class="lyrics-mode__name">${mode.name}</span><span class="lyrics-mode__hint">${locked ? 'Needs timed lyrics' : mode.hint}</span></button>`;
+    }).join('');
+    dialog.body.addEventListener('click', event => {
+      const tile = event.target.closest('.lyrics-mode');
+      if (!tile || tile.disabled) {
+        return;
+      }
+      dialog.close();
+      this.openLyricsStage(tile.dataset.mode);
+    });
+    this.lyricsModeDialog = dialog;
+    dialog.open();
+    this.syncLyricsStageKeys();
+  }
+  resolveLyricsStageSong() {
+    const song = this.currentPlaylist ? this.currentPlaylist.songs?.[this.currentSongIndex] : this.songLibrary[this.currentSongIndex];
+    if (!song) {
+      return {
+        song: null,
+        source: null
+      };
+    }
+    let source = song;
+    if (this.currentPlaylist) {
+      const match = this.songLibrary.find(libSong => libSong.videoId === song.videoId);
+      if (match && match.lyrics) {
+        source = match;
+      }
+    }
+    return {
+      song,
+      source
+    };
+  }
+  parseStageLyrics(text) {
+    const rows = String(text || '').split('\n').map(row => row.trim()).filter(Boolean);
+    const timed = rows.some(row => /\[\d+:\d+\]/.test(row));
+    const lines = [];
+    rows.forEach(row => {
+      if (!timed) {
+        lines.push({
+          text: row,
+          time: 0
+        });
+        return;
+      }
+      const match = row.match(/(.*)\s*\[(\d+):(\d+)\]/);
+      if (match) {
+        lines.push({
+          text: match[1].trim(),
+          time: parseInt(match[2], 10) * 60 + parseInt(match[3], 10)
+        });
+      }
+    });
+    if (timed) {
+      lines.sort((a, b) => a.time - b.time);
+    }
+    return {
+      lines,
+      timed
+    };
+  }
+  buildLyricsStage() {
+    const root = UI.el('div', 'lyrics-stage', `<div class="lyrics-stage__tools"></div><div class="lyrics-stage__art"><div class="lyrics-stage__cover">${UI.icon('fa-music')}<img alt="" decoding="async"></div><div class="lyrics-stage__meta"><div class="lyrics-stage__title"></div><div class="lyrics-stage__artist"></div></div></div><div class="lyrics-stage__lyrics"></div>`);
+    root.setAttribute('role', 'dialog');
+    root.setAttribute('aria-label', 'Fullscreen lyrics');
+    const tools = root.querySelector('.lyrics-stage__tools');
+    [ [ 'fa-layer-group', 'Change lyrics style', () => this.openLyricsModePicker() ], [ 'fa-compress', 'Exit fullscreen (Esc)', () => this.closeLyricsStage() ] ].forEach(([icon, title, onClick]) => {
+      const button = UI.button('', {
+        icon,
+        size: 'sm',
+        className: 'lyrics-stage__tool',
+        onClick
+      });
+      button.title = title;
+      button.setAttribute('aria-label', title);
+      tools.append(button);
+    });
+    const cover = root.querySelector('.lyrics-stage__cover');
+    const img = cover.querySelector('img');
+    const fallback = () => {
+      if (img.dataset.fallback) {
+        img.src = img.dataset.fallback;
+        img.dataset.fallback = '';
+      } else {
+        cover.classList.add('is-empty');
+      }
+    };
+    img.addEventListener('load', () => {
+      if (img.naturalHeight <= 90 && img.dataset.fallback) {
+        fallback();
+      }
+    });
+    img.addEventListener('error', fallback);
+    const stage = {
+      root,
+      cover,
+      img,
+      title: root.querySelector('.lyrics-stage__title'),
+      artist: root.querySelector('.lyrics-stage__artist'),
+      lyrics: root.querySelector('.lyrics-stage__lyrics'),
+      open: false,
+      dirty: true,
+      mode: 'verse',
+      view: '',
+      song: null,
+      source: null,
+      text: '',
+      lines: [],
+      timed: false,
+      nodes: [],
+      stamps: [],
+      shown: new Set(),
+      stamp: 0,
+      index: -2,
+      clock: NaN,
+      raw: NaN,
+      rawAt: 0,
+      lastFrame: 0,
+      playing: false,
+      drawn: NaN,
+      progress: '',
+      track: null,
+      spot: null,
+      frame: 0,
+      timer: 0
+    };
+    stage.tick = now => this.tickLyricsStage(now);
+    stage.wake = () => {
+      stage.timer = 0;
+      if (stage.open) {
+        stage.frame = requestAnimationFrame(stage.tick);
+      }
+    };
+    stage.resizeObserver = new ResizeObserver(() => this.relayoutLyricsStage());
+    stage.barObserver = new ResizeObserver(() => this.syncLyricsStageInset());
+    stage.bodyObserver = new MutationObserver(() => this.syncLyricsStageInset());
+    this.lyricsStage = stage;
+    return stage;
+  }
+  openLyricsStage(mode) {
+    const stage = this.lyricsStage || this.buildLyricsStage();
+    stage.mode = AdvancedMusicPlayer.LYRICS_STAGE_MODES.some(item => item.id === mode) ? mode : 'verse';
+    this.lyricsStageMode = stage.mode;
+    localStorage.setItem('lyricsStageMode', stage.mode);
+    if (!stage.open) {
+      stage.open = true;
+      stage.clock = NaN;
+      stage.raw = NaN;
+      stage.lastFrame = performance.now();
+      document.body.appendChild(stage.root);
+      document.documentElement.classList.add('lyrics-stage-open');
+      const bar = document.querySelector('.now-playing');
+      if (bar) {
+        stage.barObserver.observe(bar);
+      }
+      stage.bodyObserver.observe(document.body, {
+        attributes: true,
+        attributeFilter: [ 'class' ]
+      });
+      this.syncLyricsStageInset();
+      stage.resizeObserver.observe(stage.lyrics);
+    }
+    stage.dirty = true;
+    this.syncLyricsStageKeys();
+    cancelAnimationFrame(stage.frame);
+    clearTimeout(stage.timer);
+    stage.frame = 0;
+    stage.timer = 0;
+    this.tickLyricsStage(performance.now());
+  }
+  closeLyricsStage() {
+    const stage = this.lyricsStage;
+    if (!stage?.open) {
+      return;
+    }
+    stage.open = false;
+    cancelAnimationFrame(stage.frame);
+    clearTimeout(stage.timer);
+    stage.frame = 0;
+    stage.timer = 0;
+    stage.resizeObserver.disconnect();
+    stage.barObserver.disconnect();
+    stage.bodyObserver.disconnect();
+    stage.root.remove();
+    stage.lyrics.replaceChildren();
+    stage.nodes = [];
+    stage.stamps = [];
+    stage.lines = [];
+    stage.shown.clear();
+    stage.track = null;
+    stage.spot = null;
+    stage.song = null;
+    stage.source = null;
+    stage.dirty = true;
+    document.documentElement.classList.remove('lyrics-stage-open');
+    this.lyricsModeDialog?.close();
+    this.syncLyricsStageKeys();
+    if (document.getElementById('lyrics')?.classList.contains('active')) {
+      this.renderLyricsTab();
+    }
+  }
+  syncLyricsStageKeys() {
+    const wanted = Boolean(this.lyricsModeDialog || this.lyricsStage?.open);
+    if (wanted === Boolean(this.lyricsStageKeys)) {
+      return;
+    }
+    if (wanted) {
+      this.lyricsStageKeys = event => {
+        if (event.key !== 'Escape') {
+          return;
+        }
+        if (this.lyricsModeDialog) {
+          this.lyricsModeDialog.close();
+        } else {
+          this.closeLyricsStage();
+        }
+      };
+      document.addEventListener('keydown', this.lyricsStageKeys);
+    } else {
+      document.removeEventListener('keydown', this.lyricsStageKeys);
+      this.lyricsStageKeys = null;
+    }
+  }
+  syncLyricsStageInset() {
+    const stage = this.lyricsStage;
+    const bar = document.querySelector('.now-playing');
+    const inset = !bar || document.body.classList.contains('control-bar-hidden') ? 0 : bar.offsetHeight;
+    stage.root.style.setProperty('--lyrics-stage-inset', inset + 'px');
+  }
+  setLyricsStageCover(song) {
+    const { cover, img } = this.lyricsStage;
+    const custom = song?.thumbnailUrl && !song.thumbnailUrl.includes('i.ytimg.com/') ? song.thumbnailUrl : '';
+    const src = custom || (song?.videoId ? `https://i.ytimg.com/vi/${song.videoId}/maxresdefault.jpg` : '');
+    img.dataset.fallback = !custom && song?.videoId ? `https://i.ytimg.com/vi/${song.videoId}/hqdefault.jpg` : '';
+    cover.classList.toggle('is-empty', !src);
+    if (!src) {
+      img.removeAttribute('src');
+    } else if (img.getAttribute('src') !== src) {
+      img.src = src;
+    }
+  }
+  loadLyricsStageSong() {
+    const stage = this.lyricsStage;
+    const { song, source } = this.resolveLyricsStageSong();
+    const parsed = this.parseStageLyrics(source?.lyrics);
+    stage.dirty = false;
+    stage.song = song;
+    stage.source = source;
+    stage.text = source?.lyrics || '';
+    stage.lines = parsed.lines;
+    stage.timed = parsed.timed;
+    stage.view = !stage.lines.length ? 'empty' : stage.timed ? stage.mode : 'flow';
+    stage.root.dataset.layout = stage.view === 'mirror' ? 'center' : 'side';
+    stage.title.textContent = song?.name || 'Nothing is playing';
+    stage.artist.textContent = song?.author || '';
+    this.setLyricsStageCover(song);
+    stage.index = -2;
+    stage.drawn = NaN;
+    stage.progress = '';
+    stage.stamp = 0;
+    stage.shown.clear();
+    stage.track = null;
+    stage.spot = null;
+    const make = (className, text) => {
+      const node = document.createElement('div');
+      node.className = className;
+      node.textContent = text;
+      return node;
+    };
+    const lineText = line => line ? line.text || '♪' : '';
+    let content;
+    if (stage.view === 'empty') {
+      stage.nodes = [];
+      content = [ make('', song ? 'No lyrics for this song yet' : 'Play a song to see its lyrics here') ];
+    } else if (stage.view === 'spotlight') {
+      stage.nodes = [];
+      const current = make('lyrics-spot__current', '');
+      const base = make('lyrics-spot__base', '');
+      const fill = make('lyrics-spot__fill', '');
+      fill.setAttribute('aria-hidden', 'true');
+      current.append(base, fill);
+      stage.spot = {
+        prev: make('lyrics-spot__side', ''),
+        current,
+        base,
+        fill,
+        next: make('lyrics-spot__side', '')
+      };
+      content = [ stage.spot.prev, current, stage.spot.next ];
+    } else {
+      const className = {
+        verse: 'lyrics-verse__line',
+        cards: 'lyrics-card',
+        mirror: 'lyrics-mirror__line',
+        flow: 'lyrics-flow__line'
+      }[stage.view];
+      stage.nodes = stage.lines.map(line => make(className, lineText(line)));
+      if (stage.view === 'cards') {
+        stage.nodes.forEach((node, i) => {
+          node.style.zIndex = String(stage.nodes.length - i);
+        });
+        content = stage.nodes;
+      } else if (stage.view === 'mirror') {
+        const sides = [ make('lyrics-mirror__side lyrics-mirror__side--left', ''), make('lyrics-mirror__side lyrics-mirror__side--right', '') ];
+        stage.nodes.forEach((node, i) => sides[i % 2].append(node));
+        content = sides;
+      } else {
+        stage.track = make(stage.view === 'verse' ? 'lyrics-verse__track' : 'lyrics-flow__track', '');
+        stage.track.append(...stage.nodes);
+        content = [ stage.track ];
+      }
+    }
+    stage.stamps = new Array(stage.nodes.length).fill(0);
+    stage.lyrics.className = 'lyrics-stage__lyrics lyrics-stage__lyrics--' + stage.view + (stage.view === 'flow' && !stage.timed ? ' is-static' : '');
+    stage.lyrics.replaceChildren(...content);
+    stage.lyrics.scrollTop = 0;
+  }
+  readLyricsClock(now) {
+    const stage = this.lyricsStage;
+    let raw = 0;
+    let playing = false;
+    let rate = 1;
+    try {
+      if (this.isLocalPlayback && this.localAudio) {
+        raw = this.localAudio.currentTime || 0;
+        playing = !this.localAudio.paused;
+        rate = this.localAudio.playbackRate || 1;
+      } else if (this.ytPlayer && typeof this.ytPlayer.getCurrentTime === 'function') {
+        raw = this.ytPlayer.getCurrentTime() || 0;
+        playing = this.ytPlayer.getPlayerState() === YT.PlayerState.PLAYING;
+        rate = this.currentSpeed || 1;
+      }
+    } catch {
+      playing = false;
+    }
+    if (raw !== stage.raw) {
+      stage.raw = raw;
+      stage.rawAt = now;
+    }
+    const target = playing ? raw + (now - stage.rawAt) / 1000 * rate : raw;
+    const elapsed = Math.min(0.1, Math.max(0, (now - stage.lastFrame) / 1000));
+    stage.lastFrame = now;
+    let clock = Number.isFinite(stage.clock) ? stage.clock + (playing ? elapsed * rate : 0) : target;
+    const drift = target - clock;
+    clock = !playing || Math.abs(drift) > 0.6 || Math.abs(drift) < 0.004 ? target : clock + drift * 0.15;
+    stage.clock = clock;
+    stage.playing = playing;
+    return clock;
+  }
+  findStageLine(time) {
+    const lines = this.lyricsStage.lines;
+    let low = 0;
+    let high = lines.length - 1;
+    let found = -1;
+    while (low <= high) {
+      const mid = low + high >> 1;
+      if (lines[mid].time <= time) {
+        found = mid;
+        low = mid + 1;
+      } else {
+        high = mid - 1;
+      }
+    }
+    return found;
+  }
+  tickLyricsStage(now) {
+    const stage = this.lyricsStage;
+    stage.frame = 0;
+    if (!stage.open) {
+      return;
+    }
+    const song = this.currentPlaylist ? this.currentPlaylist.songs?.[this.currentSongIndex] : this.songLibrary[this.currentSongIndex];
+    if (stage.dirty || (song || null) !== stage.song || (stage.source?.lyrics || '') !== stage.text) {
+      this.loadLyricsStageSong();
+    }
+    const time = this.readLyricsClock(now);
+    const live = stage.timed && stage.lines.length > 0;
+    if (live) {
+      const index = this.findStageLine(time);
+      if (index !== stage.index) {
+        this.applyStageLine(index);
+      }
+      if (stage.view === 'cards') {
+        this.frameStageCards(time);
+      } else if (stage.view === 'spotlight') {
+        this.frameStageSpotlight(time);
+      }
+    }
+    if (live && stage.playing) {
+      stage.frame = requestAnimationFrame(stage.tick);
+    } else {
+      stage.timer = setTimeout(stage.wake, 200);
+    }
+  }
+  relayoutLyricsStage() {
+    const stage = this.lyricsStage;
+    if (stage.open && stage.timed && stage.index > -2 && (stage.view === 'verse' || stage.view === 'flow')) {
+      this.applyStageLine(stage.index);
+    }
+  }
+  applyStageLine(index) {
+    const stage = this.lyricsStage;
+    const previous = stage.index;
+    stage.index = index;
+    if (stage.view === 'verse') {
+      this.layoutStageVerse(previous, index);
+    } else if (stage.view === 'flow') {
+      this.layoutStageFlow(previous, index);
+    } else if (stage.view === 'mirror') {
+      this.layoutStageMirror(previous, index);
+    } else if (stage.view === 'spotlight') {
+      this.layoutStageSpotlight(index);
+    } else if (stage.view === 'cards') {
+      if (previous > -2) {
+        [ previous - 1, previous, previous + 1 ].forEach(i => stage.nodes[i]?.classList.remove('is-past', 'is-current', 'is-next'));
+      }
+      stage.nodes[index - 1]?.classList.add('is-past');
+      stage.nodes[index]?.classList.add('is-current');
+      stage.nodes[index + 1]?.classList.add('is-next');
+    }
+  }
+  layoutStageVerse(previous, index) {
+    const nodes = this.lyricsStage.nodes;
+    const anchor = Math.max(index, 0);
+    const items = [];
+    for (let slot = -1; slot <= 3; slot++) {
+      const node = nodes[anchor + slot];
+      if (node) {
+        items.push({
+          node,
+          slot,
+          height: node.offsetHeight
+        });
+      }
+    }
+    if (previous > -2) {
+      const old = Math.max(previous, 0);
+      for (let i = Math.max(old - 1, 0); i <= Math.min(old + 3, nodes.length - 1); i++) {
+        if (i < anchor - 1 || i > anchor + 3) {
+          nodes[i].removeAttribute('data-slot');
+          nodes[i].classList.remove('is-active');
+        }
+      }
+    }
+    const gap = 18;
+    const small = 0.6;
+    let below = 0;
+    items.forEach(item => {
+      const scale = item.slot === 0 ? 1 : small;
+      let y;
+      if (item.slot < 0) {
+        y = -(item.height * small + gap);
+      } else {
+        y = below;
+        below += item.height * scale + gap;
+      }
+      item.node.dataset.slot = String(item.slot);
+      item.node.classList.toggle('is-active', item.slot === 0 && index >= 0);
+      item.node.style.transform = `translate3d(0, ${y.toFixed(1)}px, 0) scale(${scale})`;
+    });
+  }
+  layoutStageFlow(previous, index) {
+    const stage = this.lyricsStage;
+    const nodes = stage.nodes;
+    const anchor = Math.max(index, 0);
+    const target = nodes[anchor];
+    const offset = stage.lyrics.clientHeight * 0.42 - (target.offsetTop + target.offsetHeight / 2);
+    if (previous > -2) {
+      const old = Math.max(previous, 0);
+      nodes[old].classList.remove('is-active');
+      for (let i = Math.max(old - 2, 0); i <= Math.min(old + 2, nodes.length - 1); i++) {
+        nodes[i].removeAttribute('data-near');
+      }
+    }
+    for (let i = Math.max(anchor - 2, 0); i <= Math.min(anchor + 2, nodes.length - 1); i++) {
+      nodes[i].dataset.near = String(Math.abs(i - anchor));
+    }
+    target.classList.toggle('is-active', index >= 0);
+    stage.track.style.transform = `translate3d(0, ${offset.toFixed(1)}px, 0)`;
+  }
+  layoutStageMirror(previous, index) {
+    const nodes = this.lyricsStage.nodes;
+    if (previous > -2) {
+      nodes[previous]?.removeAttribute('data-state');
+      nodes[previous + 1]?.removeAttribute('data-state');
+    }
+    if (index >= 0) {
+      nodes[index].dataset.state = 'current';
+    }
+    if (nodes[index + 1]) {
+      nodes[index + 1].dataset.state = 'next';
+    }
+  }
+  layoutStageSpotlight(index) {
+    const stage = this.lyricsStage;
+    const { lines, spot } = stage;
+    const anchor = Math.max(index, 0);
+    const lineText = line => line ? line.text || '♪' : '';
+    const text = lineText(lines[anchor]);
+    spot.prev.textContent = index > 0 ? lineText(lines[index - 1]) : '';
+    spot.next.textContent = lineText(lines[anchor + 1]);
+    spot.current.classList.toggle('is-waiting', index < 0);
+    stage.progress = '';
+    if (spot.current.dataset.line !== String(anchor)) {
+      spot.current.dataset.line = String(anchor);
+      spot.base.textContent = text;
+      spot.fill.textContent = text;
+      spot.current.animate([ {
+        opacity: 0,
+        transform: 'translate3d(0, 18px, 0) scale(0.97)'
+      } ], {
+        duration: 420,
+        easing: 'cubic-bezier(0.2, 0.7, 0.2, 1)'
+      });
+      spot.prev.animate([ {
+        opacity: 0
+      } ], {
+        duration: 420
+      });
+      spot.next.animate([ {
+        opacity: 0
+      } ], {
+        duration: 420
+      });
+    }
+  }
+  frameStageSpotlight(time) {
+    const stage = this.lyricsStage;
+    const { lines, index } = stage;
+    let progress = 0;
+    if (index >= 0) {
+      const line = lines[index];
+      const end = lines[index + 1] ? lines[index + 1].time : line.time + 4;
+      const span = Math.max(0.25, Math.min(end - line.time, 0.35 + line.text.length * 0.075));
+      progress = Math.min(1, Math.max(0, (time - line.time) / span));
+    }
+    const value = progress.toFixed(3);
+    if (value !== stage.progress) {
+      stage.progress = value;
+      stage.spot.fill.style.setProperty('--p', value);
+    }
+  }
+  frameStageCards(time) {
+    const stage = this.lyricsStage;
+    if (time === stage.drawn) {
+      return;
+    }
+    stage.drawn = time;
+    const { lines, nodes, shown, stamps, index } = stage;
+    const stamp = ++stage.stamp;
+    const depth = 230;
+    const place = (i, y, scale, opacity) => {
+      const node = nodes[i];
+      stamps[i] = stamp;
+      if (!shown.has(i)) {
+        shown.add(i);
+        node.classList.add('is-shown');
+      }
+      node.style.transform = `translate(-50%, -50%) translate3d(0, ${y.toFixed(1)}px, 0) scale(${scale.toFixed(4)})`;
+      node.style.opacity = opacity.toFixed(3);
+    };
+    if (index >= 1) {
+      const leave = (time - lines[index].time) / 0.5;
+      if (leave < 1) {
+        const eased = 1 - (1 - leave) ** 3;
+        place(index - 1, -100 * eased, 1 + 0.08 * eased, 1 - leave);
+      }
+    }
+    if (index >= 0) {
+      place(index, 0, 1, 1);
+    }
+    let floor = -Infinity;
+    for (let i = index + 1, count = 0; i < lines.length && count < 5; i++, count++) {
+      const wait = lines[i].time - time;
+      if (wait > 12) {
+        break;
+      }
+      const reach = 1 - Math.exp(-Math.pow(Math.max(wait, 0) / 3.5, 1.4));
+      const y = Math.max(depth * reach, floor);
+      floor = y + 22;
+      place(i, y, 1 - 0.2 * Math.min(1, y / depth), Math.min(1, (12 - wait) / 2));
+    }
+    shown.forEach(i => {
+      if (stamps[i] !== stamp) {
+        shown.delete(i);
+        nodes[i].classList.remove('is-shown');
+      }
+    });
   }
   openImportSubtitlesModal(songId) {
     const song = this.songLibrary.find(s => s.id === songId);

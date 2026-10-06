@@ -1869,6 +1869,39 @@ a.ui-btn--block {
   box-shadow: 0 4px 14px var(--glass-shade);
 }
 
+[data-surface="glass"] .lyrics-stage__lyrics--verse,
+[data-surface="glass"] .lyrics-stage__lyrics--spotlight,
+[data-surface="glass"] .lyrics-stage__lyrics--flow,
+[data-surface="glass"] .lyrics-stage__lyrics--empty,
+[data-surface="glass"] .lyrics-mirror__line {
+  background-color: var(--bg-secondary);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  border-color: var(--glass-edge);
+  box-shadow:
+    inset 0 1px 0 var(--glass-sheen),
+    0 6px 22px var(--glass-shade);
+}
+
+[data-surface="glass"] .lyrics-mirror__line[data-state="current"] {
+  border-color: var(--accent-color);
+}
+
+[data-surface="glass"] .lyrics-card {
+  background-color: color-mix(in srgb, var(--bg-secondary-base) max(86%, var(--glass-legible-floor)), transparent);
+  border-color: var(--glass-edge);
+}
+
+[data-surface="glass"] .lyrics-card.is-current {
+  border-color: var(--accent-color);
+}
+
+[data-surface="glass"] .lyrics-stage__cover {
+  box-shadow:
+    inset 0 0 0 1px var(--glass-edge),
+    0 24px 64px var(--glass-shade);
+}
+
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   [data-surface="glass"] {
     --glass-tint: 94;
