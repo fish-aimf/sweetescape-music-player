@@ -8812,11 +8812,11 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 }
 .lyrics-stage__cover,
 .lyrics-stage__meta {
-  width: min(100%, 54vh, 460px);
+  width: min(100%, 40vh, 340px);
 }
 .lyrics-stage[data-layout="center"] .lyrics-stage__cover,
 .lyrics-stage[data-layout="center"] .lyrics-stage__meta {
-  width: min(30vw, 46vh, 440px);
+  width: min(26vw, 38vh, 340px);
 }
 .lyrics-stage__cover {
   position: relative;
@@ -8851,20 +8851,22 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   min-width: 0;
   text-align: center;
 }
-.lyrics-stage__title,
-.lyrics-stage__artist {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 .lyrics-stage__title {
-  font-size: clamp(1.1rem, 2vw, 1.6rem);
-  font-weight: 700;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  font-size: clamp(1.5rem, 2.6vw, 2.3rem);
+  font-weight: 800;
+  line-height: 1.2;
   color: var(--text-primary);
 }
 .lyrics-stage__artist {
-  margin-top: 4px;
-  font-size: clamp(0.9rem, 1.3vw, 1.1rem);
+  margin-top: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: clamp(1.1rem, 1.7vw, 1.45rem);
   color: var(--text-secondary);
 }
 .lyrics-stage__lyrics {
@@ -8939,42 +8941,61 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 .lyrics-verse__line[data-slot="2"] {
   opacity: 0.3;
 }
+.lyrics-stage__lyrics--cards {
+  overflow: hidden;
+}
+.lyrics-cards__zone {
+  position: absolute;
+  top: 26px;
+  left: 0;
+  right: 0;
+  box-sizing: border-box;
+  border: 1.5px solid color-mix(in srgb, var(--accent-color) 70%, transparent);
+  border-radius: calc(var(--ui-radius-lg) + 6px);
+  background: color-mix(in srgb, var(--accent-color) 12%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-color) 10%, transparent);
+  pointer-events: none;
+  transition: height 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.lyrics-cards__zone::before {
+  content: 'Now singing';
+  position: absolute;
+  bottom: 100%;
+  left: 12px;
+  margin-bottom: 5px;
+  font-size: var(--ui-font-xs);
+  font-weight: var(--ui-weight-semibold);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
 .lyrics-card {
   position: absolute;
-  top: 46%;
-  left: 50%;
-  display: none;
-  width: min(100%, 560px);
+  top: 0;
+  left: 10px;
+  right: 10px;
   box-sizing: border-box;
-  padding: 18px 24px;
+  padding: 14px 20px;
   border: var(--ui-border);
   border-radius: var(--ui-radius-lg);
   background: var(--bg-secondary);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-  font-size: clamp(1.15rem, 2vw, 1.6rem);
-  font-weight: 600;
-  line-height: 1.35;
-  color: transparent;
-  text-align: center;
+  font-size: clamp(1.1rem, 2vw, 1.7rem);
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--text-secondary);
   overflow-wrap: anywhere;
+  visibility: hidden;
   will-change: transform, opacity;
   transition:
     color 0.3s ease,
     border-color 0.3s ease;
 }
 .lyrics-card.is-shown {
-  display: block;
-}
-.lyrics-card.is-next,
-.lyrics-card.is-past {
-  color: var(--text-secondary);
+  visibility: visible;
 }
 .lyrics-card.is-current {
   border-color: var(--accent-color);
   color: var(--text-primary);
-  box-shadow:
-    0 0 0 1px var(--accent-color),
-    0 14px 40px color-mix(in srgb, var(--accent-color) 30%, transparent);
 }
 .lyrics-stage[data-layout="center"] .lyrics-stage__lyrics {
   display: contents;
@@ -8997,45 +9018,38 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 .lyrics-mirror__line {
   grid-area: 1 / 1;
   max-width: 100%;
-  box-sizing: border-box;
-  padding: 14px 20px;
-  border: var(--ui-border);
-  border-radius: var(--ui-radius-lg);
-  background: var(--bg-secondary);
-  font-size: clamp(1.1rem, 2.1vw, 1.9rem);
-  font-weight: 700;
-  line-height: 1.3;
-  color: var(--text-secondary);
+  font-size: clamp(1.6rem, 3.1vw, 3.1rem);
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--text-primary);
   overflow-wrap: anywhere;
+  text-shadow: 0 2px 18px color-mix(in srgb, var(--bg-primary-base) 75%, transparent);
   opacity: 0;
   visibility: hidden;
-  transform: translate3d(0, 16px, 0) scale(0.96);
+  transform: translate3d(0, -12px, 0);
   transition:
-    opacity 0.22s ease,
-    transform 0.3s ease,
-    color 0.4s ease,
-    border-color 0.4s ease,
-    visibility 0s linear 0.3s;
-}
-.lyrics-mirror__line[data-state] {
-  visibility: visible;
-  transition:
-    opacity 0.5s ease 0.2s,
-    transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) 0.2s,
-    color 0.4s ease,
-    border-color 0.4s ease,
-    visibility 0s;
-}
-.lyrics-mirror__line[data-state="next"] {
-  opacity: 0.5;
-  transform: scale(0.94);
+    opacity 0.5s ease,
+    transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1),
+    visibility 0s linear 0.6s;
 }
 .lyrics-mirror__line[data-state="current"] {
-  transition-delay: 0s;
   opacity: 1;
+  visibility: visible;
   transform: none;
-  border-color: var(--accent-color);
-  color: var(--text-primary);
+  transition-delay: 0s;
+}
+.lyrics-mirror__word {
+  display: inline-block;
+}
+.lyrics-mirror__line[data-state="current"] .lyrics-mirror__word {
+  animation: lyrics-word-in 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: calc(var(--i) * 70ms);
+}
+@keyframes lyrics-word-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 0.45em, 0);
+  }
 }
 .lyrics-stage__lyrics--spotlight {
   display: flex;
@@ -9053,24 +9067,16 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   overflow-wrap: anywhere;
 }
 .lyrics-spot__current {
-  position: relative;
   font-size: clamp(1.9rem, 4vw, 3.6rem);
   font-weight: 800;
   line-height: 1.2;
   overflow-wrap: anywhere;
 }
-.lyrics-spot__base {
-  color: var(--text-secondary);
-  opacity: 0.4;
-}
-.lyrics-spot__fill {
-  position: absolute;
-  inset: 0;
-  color: var(--text-primary);
-  clip-path: inset(0 calc(100% - var(--p, 0) * 100%) 0 0);
-}
-.lyrics-spot__current.is-waiting .lyrics-spot__base {
-  opacity: 0.6;
+.lyrics-spot__word {
+  background-image: linear-gradient(90deg, var(--text-primary) calc(var(--w, 0) * 100%), color-mix(in srgb, var(--text-secondary) 45%, transparent) calc(var(--w, 0) * 100%));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 .lyrics-flow__track {
   position: relative;
@@ -9139,6 +9145,12 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
     flex: 1;
     width: auto;
     text-align: left;
+  }
+  .lyrics-stage__title {
+    font-size: 1.3rem;
+  }
+  .lyrics-stage__artist {
+    font-size: 1rem;
   }
   .lyrics-stage__lyrics--verse,
   .lyrics-stage__lyrics--spotlight,

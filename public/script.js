@@ -8058,9 +8058,11 @@ class AdvancedMusicPlayer {
       lastFrame: 0,
       playing: false,
       drawn: NaN,
-      progress: '',
       track: null,
       spot: null,
+      zone: null,
+      heights: [],
+      room: 0,
       frame: 0,
       timer: 0
     };
@@ -8122,16 +8124,7 @@ class AdvancedMusicPlayer {
     stage.barObserver.disconnect();
     stage.bodyObserver.disconnect();
     stage.root.remove();
-    stage.lyrics.replaceChildren();
-    stage.nodes = [];
-    stage.stamps = [];
-    stage.lines = [];
-    stage.shown.clear();
-    stage.track = null;
-    stage.spot = null;
-    stage.song = null;
-    stage.source = null;
-    stage.dirty = true;
+    this.lyricsStage = null;
     document.documentElement.classList.remove('lyrics-stage-open');
     this.lyricsModeDialog?.close();
     this.syncLyricsStageKeys();
@@ -8163,6 +8156,9 @@ class AdvancedMusicPlayer {
   }
   syncLyricsStageInset() {
     const stage = this.lyricsStage;
+    if (!stage) {
+      return;
+    }
     const bar = document.querySelector('.now-playing');
     const inset = !bar || document.body.classList.contains('control-bar-hidden') ? 0 : bar.offsetHeight;
     stage.root.style.setProperty('--lyrics-stage-inset', inset + 'px');
@@ -8196,11 +8192,12 @@ class AdvancedMusicPlayer {
     this.setLyricsStageCover(song);
     stage.index = -2;
     stage.drawn = NaN;
-    stage.progress = '';
     stage.stamp = 0;
     stage.shown.clear();
     stage.track = null;
     stage.spot = null;
+    stage.zone = null;
+    stage.heights = [];
     const make = (className, text) => {
       const node = document.createElement('div');
       node.className = className;
@@ -8214,36 +8211,35 @@ class AdvancedMusicPlayer {
       content = [ make('', song ? 'No lyrics for this song yet' : 'Play a song to see its lyrics here') ];
     } else if (stage.view === 'spotlight') {
       stage.nodes = [];
-      const current = make('lyrics-spot__current', '');
-      const base = make('lyrics-spot__base', '');
-      const fill = make('lyrics-spot__fill', '');
-      fill.setAttribute('aria-hidden', 'true');
-      current.append(base, fill);
       stage.spot = {
         prev: make('lyrics-spot__side', ''),
-        current,
-        base,
-        fill,
-        next: make('lyrics-spot__side', '')
+        current: make('lyrics-spot__current', ''),
+        next: make('lyrics-spot__side', ''),
+        anchor: -1,
+        words: [],
+        fills: [],
+        total: 0
       };
-      content = [ stage.spot.prev, current, stage.spot.next ];
+      content = [ stage.spot.prev, stage.spot.current, stage.spot.next ];
+    } else if (stage.view === 'mirror') {
+      stage.nodes = stage.lines.map(line => {
+        const node = make('lyrics-mirror__line', '');
+        this.fillStageWords(node, lineText(line), 'lyrics-mirror__word');
+        return node;
+      });
+      const sides = [ make('lyrics-mirror__side lyrics-mirror__side--left', ''), make('lyrics-mirror__side lyrics-mirror__side--right', '') ];
+      stage.nodes.forEach((node, i) => sides[i % 2].append(node));
+      content = sides;
     } else {
       const className = {
         verse: 'lyrics-verse__line',
         cards: 'lyrics-card',
-        mirror: 'lyrics-mirror__line',
         flow: 'lyrics-flow__line'
       }[stage.view];
       stage.nodes = stage.lines.map(line => make(className, lineText(line)));
       if (stage.view === 'cards') {
-        stage.nodes.forEach((node, i) => {
-          node.style.zIndex = String(stage.nodes.length - i);
-        });
-        content = stage.nodes;
-      } else if (stage.view === 'mirror') {
-        const sides = [ make('lyrics-mirror__side lyrics-mirror__side--left', ''), make('lyrics-mirror__side lyrics-mirror__side--right', '') ];
-        stage.nodes.forEach((node, i) => sides[i % 2].append(node));
-        content = sides;
+        stage.zone = make('lyrics-cards__zone', '');
+        content = [ stage.zone, ...stage.nodes ];
       } else {
         stage.track = make(stage.view === 'verse' ? 'lyrics-verse__track' : 'lyrics-flow__track', '');
         stage.track.append(...stage.nodes);
@@ -8254,6 +8250,31 @@ class AdvancedMusicPlayer {
     stage.lyrics.className = 'lyrics-stage__lyrics lyrics-stage__lyrics--' + stage.view + (stage.view === 'flow' && !stage.timed ? ' is-static' : '');
     stage.lyrics.replaceChildren(...content);
     stage.lyrics.scrollTop = 0;
+    if (stage.zone) {
+      this.measureStageCards();
+    }
+  }
+  fillStageWords(node, text, className) {
+    const spans = text.split(/\s+/).filter(Boolean).map((word, i) => {
+      const span = document.createElement('span');
+      span.className = className;
+      span.textContent = word;
+      span.style.setProperty('--i', String(Math.min(i, 14)));
+      return span;
+    });
+    node.replaceChildren(...spans.flatMap((span, i) => i ? [ ' ', span ] : [ span ]));
+    return spans;
+  }
+  measureStageCards() {
+    const stage = this.lyricsStage;
+    stage.heights = stage.nodes.map(node => node.offsetHeight);
+    stage.room = stage.lyrics.clientHeight;
+    stage.drawn = NaN;
+    this.sizeStageZone();
+  }
+  sizeStageZone() {
+    const stage = this.lyricsStage;
+    stage.zone.style.height = (stage.heights[Math.max(stage.index, 0)] || 0) + 20 + 'px';
   }
   readLyricsClock(now) {
     const stage = this.lyricsStage;
@@ -8283,6 +8304,9 @@ class AdvancedMusicPlayer {
     let clock = Number.isFinite(stage.clock) ? stage.clock + (playing ? elapsed * rate : 0) : target;
     const drift = target - clock;
     clock = !playing || Math.abs(drift) > 0.6 || Math.abs(drift) < 0.004 ? target : clock + drift * 0.15;
+    if (playing && Math.abs(drift) <= 0.6 && clock < stage.clock) {
+      clock = stage.clock;
+    }
     stage.clock = clock;
     stage.playing = playing;
     return clock;
@@ -8334,8 +8358,13 @@ class AdvancedMusicPlayer {
   }
   relayoutLyricsStage() {
     const stage = this.lyricsStage;
-    if (stage.open && stage.timed && stage.index > -2 && (stage.view === 'verse' || stage.view === 'flow')) {
+    if (!stage?.open || !stage.timed || stage.index < -1) {
+      return;
+    }
+    if (stage.view === 'verse' || stage.view === 'flow') {
       this.applyStageLine(stage.index);
+    } else if (stage.view === 'cards') {
+      this.measureStageCards();
     }
   }
   applyStageLine(index) {
@@ -8347,16 +8376,14 @@ class AdvancedMusicPlayer {
     } else if (stage.view === 'flow') {
       this.layoutStageFlow(previous, index);
     } else if (stage.view === 'mirror') {
-      this.layoutStageMirror(previous, index);
+      stage.nodes[previous]?.removeAttribute('data-state');
+      stage.nodes[index]?.setAttribute('data-state', 'current');
     } else if (stage.view === 'spotlight') {
       this.layoutStageSpotlight(index);
     } else if (stage.view === 'cards') {
-      if (previous > -2) {
-        [ previous - 1, previous, previous + 1 ].forEach(i => stage.nodes[i]?.classList.remove('is-past', 'is-current', 'is-next'));
-      }
-      stage.nodes[index - 1]?.classList.add('is-past');
+      stage.nodes[previous]?.classList.remove('is-current');
       stage.nodes[index]?.classList.add('is-current');
-      stage.nodes[index + 1]?.classList.add('is-next');
+      this.sizeStageZone();
     }
   }
   layoutStageVerse(previous, index) {
@@ -8418,67 +8445,63 @@ class AdvancedMusicPlayer {
     target.classList.toggle('is-active', index >= 0);
     stage.track.style.transform = `translate3d(0, ${offset.toFixed(1)}px, 0)`;
   }
-  layoutStageMirror(previous, index) {
-    const nodes = this.lyricsStage.nodes;
-    if (previous > -2) {
-      nodes[previous]?.removeAttribute('data-state');
-      nodes[previous + 1]?.removeAttribute('data-state');
-    }
-    if (index >= 0) {
-      nodes[index].dataset.state = 'current';
-    }
-    if (nodes[index + 1]) {
-      nodes[index + 1].dataset.state = 'next';
-    }
-  }
   layoutStageSpotlight(index) {
-    const stage = this.lyricsStage;
-    const { lines, spot } = stage;
+    const { lines, spot } = this.lyricsStage;
     const anchor = Math.max(index, 0);
     const lineText = line => line ? line.text || '♪' : '';
-    const text = lineText(lines[anchor]);
     spot.prev.textContent = index > 0 ? lineText(lines[index - 1]) : '';
     spot.next.textContent = lineText(lines[anchor + 1]);
-    spot.current.classList.toggle('is-waiting', index < 0);
-    stage.progress = '';
-    if (spot.current.dataset.line !== String(anchor)) {
-      spot.current.dataset.line = String(anchor);
-      spot.base.textContent = text;
-      spot.fill.textContent = text;
-      spot.current.animate([ {
-        opacity: 0,
-        transform: 'translate3d(0, 18px, 0) scale(0.97)'
-      } ], {
-        duration: 420,
-        easing: 'cubic-bezier(0.2, 0.7, 0.2, 1)'
-      });
-      spot.prev.animate([ {
-        opacity: 0
-      } ], {
-        duration: 420
-      });
-      spot.next.animate([ {
-        opacity: 0
-      } ], {
-        duration: 420
-      });
+    if (spot.anchor === anchor) {
+      return;
     }
+    spot.anchor = anchor;
+    let total = 0;
+    spot.words = this.fillStageWords(spot.current, lineText(lines[anchor]), 'lyrics-spot__word').map(span => {
+      const length = span.textContent.length + 1;
+      total += length;
+      return {
+        span,
+        start: total - length,
+        length
+      };
+    });
+    spot.total = total;
+    spot.fills = spot.words.map(() => '');
+    spot.current.animate([ {
+      opacity: 0,
+      transform: 'translate3d(0, 18px, 0) scale(0.97)'
+    } ], {
+      duration: 420,
+      easing: 'cubic-bezier(0.2, 0.7, 0.2, 1)'
+    });
+    spot.prev.animate([ {
+      opacity: 0
+    } ], {
+      duration: 420
+    });
+    spot.next.animate([ {
+      opacity: 0
+    } ], {
+      duration: 420
+    });
   }
   frameStageSpotlight(time) {
-    const stage = this.lyricsStage;
-    const { lines, index } = stage;
+    const { lines, index, spot } = this.lyricsStage;
     let progress = 0;
     if (index >= 0) {
       const line = lines[index];
       const end = lines[index + 1] ? lines[index + 1].time : line.time + 4;
-      const span = Math.max(0.25, Math.min(end - line.time, 0.35 + line.text.length * 0.075));
+      const span = Math.max(0.6, Math.min((end - line.time) * 0.95, 1 + line.text.length * 0.11));
       progress = Math.min(1, Math.max(0, (time - line.time) / span));
     }
-    const value = progress.toFixed(3);
-    if (value !== stage.progress) {
-      stage.progress = value;
-      stage.spot.fill.style.setProperty('--p', value);
-    }
+    const sung = progress * spot.total;
+    spot.words.forEach((word, i) => {
+      const value = Math.min(1, Math.max(0, (sung - word.start) / word.length)).toFixed(3);
+      if (value !== spot.fills[i]) {
+        spot.fills[i] = value;
+        word.span.style.setProperty('--w', value);
+      }
+    });
   }
   frameStageCards(time) {
     const stage = this.lyricsStage;
@@ -8486,39 +8509,41 @@ class AdvancedMusicPlayer {
       return;
     }
     stage.drawn = time;
-    const { lines, nodes, shown, stamps, index } = stage;
+    const { lines, nodes, heights, shown, stamps, index, room } = stage;
     const stamp = ++stage.stamp;
-    const depth = 230;
-    const place = (i, y, scale, opacity) => {
+    const top = 36;
+    const gap = 14;
+    const pace = 36;
+    const ease = value => 1 - (1 - Math.min(1, Math.max(0, value))) ** 3;
+    const place = (i, y, opacity) => {
       const node = nodes[i];
       stamps[i] = stamp;
       if (!shown.has(i)) {
         shown.add(i);
         node.classList.add('is-shown');
       }
-      node.style.transform = `translate(-50%, -50%) translate3d(0, ${y.toFixed(1)}px, 0) scale(${scale.toFixed(4)})`;
+      node.style.transform = `translate3d(0, ${y.toFixed(1)}px, 0)`;
       node.style.opacity = opacity.toFixed(3);
     };
-    if (index >= 1) {
-      const leave = (time - lines[index].time) / 0.5;
-      if (leave < 1) {
-        const eased = 1 - (1 - leave) ** 3;
-        place(index - 1, -100 * eased, 1 + 0.08 * eased, 1 - leave);
-      }
-    }
+    let front = top;
     if (index >= 0) {
-      place(index, 0, 1, 1);
+      const since = time - lines[index].time;
+      if (index >= 1 && since < 0.34) {
+        const lift = ease(since / 0.34);
+        place(index - 1, top - (heights[index - 1] + 40) * lift, 1 - lift);
+      }
+      const from = index >= 1 ? top + heights[index - 1] + gap : top;
+      const y = from + (top - from) * ease(since / 0.3);
+      place(index, y, 1);
+      front = y + heights[index] + gap;
     }
-    let floor = -Infinity;
-    for (let i = index + 1, count = 0; i < lines.length && count < 5; i++, count++) {
-      const wait = lines[i].time - time;
-      if (wait > 12) {
+    for (let i = index + 1, count = 0; i < lines.length && count < 10; i++, count++) {
+      const y = Math.max(top + pace * Math.max(lines[i].time - time, 0), front);
+      if (y > room) {
         break;
       }
-      const reach = 1 - Math.exp(-Math.pow(Math.max(wait, 0) / 3.5, 1.4));
-      const y = Math.max(depth * reach, floor);
-      floor = y + 22;
-      place(i, y, 1 - 0.2 * Math.min(1, y / depth), Math.min(1, (12 - wait) / 2));
+      place(i, y, Math.min(1, (room - y) / 90));
+      front = y + heights[i] + gap;
     }
     shown.forEach(i => {
       if (stamps[i] !== stamp) {
