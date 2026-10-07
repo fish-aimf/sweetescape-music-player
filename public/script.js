@@ -857,7 +857,7 @@ class AdvancedMusicPlayer {
       statsButton: document.getElementById('statsButton'),
       disguiseButton: document.getElementById('disguiseButton'),
       lsPanel: document.getElementById('lsPanel'),
-      lsRangeToggle: document.getElementById('lsRangeToggle'),
+      lsRangeTabs: document.getElementById('lsRangeTabs'),
       listeningStatsToggle: document.getElementById('listeningStatsToggle')
     };
     this._setupSpeedButton();
@@ -1015,7 +1015,7 @@ class AdvancedMusicPlayer {
       refreshRandomRecommendations: () => this.refreshRandomRecommendations(),
       visualizerToggle: e => this.handleVisualizerToggle(e)
     };
-    const simpleBindings = [ [ this.elements.addSongBtn, 'click', handlers.addSong ], [ this.elements.createPlaylistBtn, 'click', handlers.createPlaylist ], [ this.elements.closePlaylistModalBtn, 'click', handlers.closePlaylistModal ], [ this.elements.addSongToPlaylistBtn, 'click', handlers.addSongToPlaylist ], [ this.elements.playPauseBtn, 'click', handlers.togglePlayPause ], [ this.elements.prevBtn, 'click', handlers.playPrevious ], [ this.elements.nextBtn, 'click', handlers.playNext ], [ this.elements.loopBtn, 'click', handlers.toggleLoop ], [ this.elements.showPlaylistBtn, 'click', handlers.toggleSidebar ], [ this.elements.closeSidebarBtn, 'click', handlers.toggleSidebar ], [ this.elements.themeToggle, 'click', handlers.toggleTheme ], [ this.elements.autoplayBtn, 'click', handlers.toggleAutoplay ], [ this.elements.speedBtn, 'click', handlers.toggleSpeedOptions ], [ this.elements.volumeSlider, 'input', handlers.volumeChange ], [ this.elements.progressBar, 'click', handlers.seekMusic ], [ this.elements.currentSongName, 'contextmenu', handlers.songNameRightClick ], [ this.elements.toggleControlBarBtn, 'click', handlers.toggleControlBar ], [ this.elements.modifyLibraryBtn, 'click', handlers.openLibraryModal ], [ this.elements.closeLibraryModalBtn, 'click', handlers.closeLibraryModal ], [ this.elements.importLibraryBtn, 'click', handlers.importLibrary ], [ this.elements.exportLibraryBtn, 'click', handlers.exportLibrary ], [ this.elements.libraryModificationTabAddSong, 'click', handlers.libraryModificationTabAddSongClick ], [ this.elements.libraryModificationTabImportExport, 'click', handlers.libraryModificationTabImportExportClick ], [ this.elements.loopPlaylistBtn, 'click', handlers.togglePlaylistLoop ], [ this.elements.discordButton, 'click', handlers.discordClick ], [ this.elements.librarySortToggle, 'change', handlers.librarySortToggle ], [ this.elements.libraryReverseToggle, 'change', handlers.libraryReverseToggle ], [ this.elements.closeImportModalBtn, 'click', handlers.closeImportModal ], [ this.elements.importSongsBtn, 'click', handlers.importSongs ], [ this.elements.playlistSearch, 'input', handlers.filterPlaylists ], [ this.elements.playlistSearch, 'keypress', handlers.playlistSearchEnter ], [ this.elements.toggleCreatePlaylistBtn, 'click', handlers.toggleCreatePlaylistDiv ], [ this.elements.togglePlaylistEditModeBtn, 'click', handlers.togglePlaylistEditMode ], [ this.elements.settingsButton, 'click', handlers.openSettings ], [ this.elements.settingsCloseBtn, 'click', handlers.closeSettings ], [ this.elements.settingsModal, 'click', handlers.settingsModalClick ], [ this.elements.themeMode, 'change', handlers.themeModeChange ], [ this.elements.saveCustomTheme, 'click', handlers.saveCustomTheme ], [ this.elements.adsToggle, 'change', handlers.adsToggle ], [ this.elements.saveDiscoverMoreSettings, 'click', handlers.saveDiscoverMoreSettings ], [ this.elements.visualizerToggle, 'change', handlers.visualizerToggle ], [ this.elements.visualizerStyleGrid, 'click', this.handleVisualizerStyleClick.bind(this) ], [ this.elements.visualizerGain, 'input', this.handleVisualizerGainInput.bind(this) ], [ this.elements.findSongsBtn, 'click', handlers.findSongsOpen ], [ this.elements.closeFindSongs, 'click', handlers.findSongsClose ], [ this.elements.searchSongsToAdd, 'input', handlers.searchSongsToAdd ], [ this.elements.statsButton, 'click', this.openStatsModal.bind(this) ], [ this.elements.disguiseButton, 'click', this.openDisguiseModal.bind(this) ], [ this.elements.lsPanel, 'click', this._handleStatsShowAllClick.bind(this) ], [ this.elements.lsPanel, 'input', this._handleStatsSearchInput.bind(this) ], [ document.getElementById('lsCloseBtn'), 'click', this.closeStatsModal.bind(this) ], [ this.elements.lsRangeToggle, 'change', this._handleStatsRangeToggle.bind(this) ], [ this.elements.listeningStatsToggle, 'change', this.handleListeningStatsToggle.bind(this) ], [ this.elements.libTopicBtn, 'click', handlers.toggleTopicKeyword ] ];
+    const simpleBindings = [ [ this.elements.addSongBtn, 'click', handlers.addSong ], [ this.elements.createPlaylistBtn, 'click', handlers.createPlaylist ], [ this.elements.closePlaylistModalBtn, 'click', handlers.closePlaylistModal ], [ this.elements.addSongToPlaylistBtn, 'click', handlers.addSongToPlaylist ], [ this.elements.playPauseBtn, 'click', handlers.togglePlayPause ], [ this.elements.prevBtn, 'click', handlers.playPrevious ], [ this.elements.nextBtn, 'click', handlers.playNext ], [ this.elements.loopBtn, 'click', handlers.toggleLoop ], [ this.elements.showPlaylistBtn, 'click', handlers.toggleSidebar ], [ this.elements.closeSidebarBtn, 'click', handlers.toggleSidebar ], [ this.elements.themeToggle, 'click', handlers.toggleTheme ], [ this.elements.autoplayBtn, 'click', handlers.toggleAutoplay ], [ this.elements.speedBtn, 'click', handlers.toggleSpeedOptions ], [ this.elements.volumeSlider, 'input', handlers.volumeChange ], [ this.elements.progressBar, 'click', handlers.seekMusic ], [ this.elements.currentSongName, 'contextmenu', handlers.songNameRightClick ], [ this.elements.toggleControlBarBtn, 'click', handlers.toggleControlBar ], [ this.elements.modifyLibraryBtn, 'click', handlers.openLibraryModal ], [ this.elements.closeLibraryModalBtn, 'click', handlers.closeLibraryModal ], [ this.elements.importLibraryBtn, 'click', handlers.importLibrary ], [ this.elements.exportLibraryBtn, 'click', handlers.exportLibrary ], [ this.elements.libraryModificationTabAddSong, 'click', handlers.libraryModificationTabAddSongClick ], [ this.elements.libraryModificationTabImportExport, 'click', handlers.libraryModificationTabImportExportClick ], [ this.elements.loopPlaylistBtn, 'click', handlers.togglePlaylistLoop ], [ this.elements.discordButton, 'click', handlers.discordClick ], [ this.elements.librarySortToggle, 'change', handlers.librarySortToggle ], [ this.elements.libraryReverseToggle, 'change', handlers.libraryReverseToggle ], [ this.elements.closeImportModalBtn, 'click', handlers.closeImportModal ], [ this.elements.importSongsBtn, 'click', handlers.importSongs ], [ this.elements.playlistSearch, 'input', handlers.filterPlaylists ], [ this.elements.playlistSearch, 'keypress', handlers.playlistSearchEnter ], [ this.elements.toggleCreatePlaylistBtn, 'click', handlers.toggleCreatePlaylistDiv ], [ this.elements.togglePlaylistEditModeBtn, 'click', handlers.togglePlaylistEditMode ], [ this.elements.settingsButton, 'click', handlers.openSettings ], [ this.elements.settingsCloseBtn, 'click', handlers.closeSettings ], [ this.elements.settingsModal, 'click', handlers.settingsModalClick ], [ this.elements.themeMode, 'change', handlers.themeModeChange ], [ this.elements.saveCustomTheme, 'click', handlers.saveCustomTheme ], [ this.elements.adsToggle, 'change', handlers.adsToggle ], [ this.elements.saveDiscoverMoreSettings, 'click', handlers.saveDiscoverMoreSettings ], [ this.elements.visualizerToggle, 'change', handlers.visualizerToggle ], [ this.elements.visualizerStyleGrid, 'click', this.handleVisualizerStyleClick.bind(this) ], [ this.elements.visualizerGain, 'input', this.handleVisualizerGainInput.bind(this) ], [ this.elements.findSongsBtn, 'click', handlers.findSongsOpen ], [ this.elements.closeFindSongs, 'click', handlers.findSongsClose ], [ this.elements.searchSongsToAdd, 'input', handlers.searchSongsToAdd ], [ this.elements.statsButton, 'click', this.openStatsModal.bind(this) ], [ this.elements.disguiseButton, 'click', this.openDisguiseModal.bind(this) ], [ this.elements.lsPanel, 'click', this._handleStatsShowAllClick.bind(this) ], [ this.elements.lsPanel, 'input', this._handleStatsSearchInput.bind(this) ], [ document.getElementById('lsCloseBtn'), 'click', this.closeStatsModal.bind(this) ], [ this.elements.lsRangeTabs, 'click', this._handleStatsRangeToggle.bind(this) ], [ this.elements.listeningStatsToggle, 'change', this.handleListeningStatsToggle.bind(this) ], [ this.elements.libTopicBtn, 'click', handlers.toggleTopicKeyword ] ];
     simpleBindings.forEach(([element, event, handler]) => {
       if (element) {
         element.addEventListener(event, handler);
@@ -5588,13 +5588,7 @@ class AdvancedMusicPlayer {
             this.elements.timeDisplay.textContent = `${this.formatTime(current)}/${this.formatTime(duration)}`;
           }
           this.updateHighlightedLyric(current, this.currentLyrics ?? [], this.currentTimings ?? []);
-          if (this.listeningStatsEnabled && !this._statCountedForCurrentPlay) {
-            const threshold = Math.min(10, duration / 3);
-            if (current >= threshold) {
-              this._statCountedForCurrentPlay = true;
-              this.recordSongPlayStat(this.currentSong?.videoId);
-            }
-          }
+          this._trackPlayStat(current, duration);
         }
       });
       this.localAudio.addEventListener('ended', () => {
@@ -5612,7 +5606,6 @@ class AdvancedMusicPlayer {
           this.localAudio.currentTime = 0;
           this.localAudio.play().catch(e => console.warn('Loop replay failed:', e));
           this.isPlaying = true;
-          this._statCountedForCurrentPlay = false;
         } else if (this.isAutoplayEnabled) {
           this.isLocalPlayback = false;
           this.playNextSong();
@@ -5709,13 +5702,6 @@ class AdvancedMusicPlayer {
             this.elements.timeDisplay.textContent = `${this.formatTime(currentTime)}/${this.formatTime(duration)}`;
           }
           this.updateHighlightedLyric(currentTime, this.currentLyrics ?? [], this.currentTimings ?? []);
-          if (this.listeningStatsEnabled && !this._statCountedForCurrentPlay) {
-            const threshold = Math.min(10, duration / 3);
-            if (currentTime >= threshold) {
-              this._statCountedForCurrentPlay = true;
-              this.recordSongPlayStat(this.currentSong?.videoId);
-            }
-          }
         }
       } catch (error) {
         console.error('Error updating progress bar:', error);
@@ -5900,7 +5886,6 @@ class AdvancedMusicPlayer {
             this.ytPlayer.seekTo(0, true);
             this.ytPlayer.playVideo();
           }
-          this._statCountedForCurrentPlay = false;
         } else if (this.isAutoplayEnabled) {
           this.playNextSong();
         } else {
@@ -14935,6 +14920,33 @@ class AdvancedMusicPlayer {
     this._pruneOldDays(record.days);
     store.put(record);
   }
+  _trackPlayStat(current, duration) {
+    if (!this.listeningStatsEnabled || !(duration > 0)) {
+      return;
+    }
+    const threshold = Math.min(10, duration / 3);
+    if (this._statCountedForCurrentPlay && current < threshold && current < (this._statLastPosition || 0) - 1) {
+      this._statCountedForCurrentPlay = false;
+    }
+    this._statLastPosition = current;
+    if (!this._statCountedForCurrentPlay && current >= threshold) {
+      this._statCountedForCurrentPlay = true;
+      this.recordSongPlayStat(this.currentSong?.videoId);
+    }
+  }
+  _trackYouTubePlayStat() {
+    if (this.isLocalPlayback || !this.ytPlayer || typeof this.ytPlayer.getPlayerState !== 'function') {
+      return;
+    }
+    try {
+      if (this.ytPlayer.getPlayerState() !== YT.PlayerState.PLAYING) {
+        return;
+      }
+      this._trackPlayStat(this.ytPlayer.getCurrentTime() || 0, this.ytPlayer.getDuration() || 0);
+    } catch (error) {
+      console.error('Error tracking play stat:', error);
+    }
+  }
   get30DayCount(record) {
     if (!record || !record.days) {
       return 0;
@@ -14951,11 +14963,12 @@ class AdvancedMusicPlayer {
   renderListeningStats() {
     const panel = document.getElementById('lsPanel');
     if (!this.listeningStatsEnabled) {
-      panel.innerHTML = `<p class="ls-disabled-msg">Listening statistics are off. Enable them in Settings → Additional.</p>`;
+      this._syncStatsRangeTabs();
+      panel.innerHTML = `<div class="ui-empty"><i class="fas fa-chart-simple"></i><span>Listening statistics are off.</span><span class="ls-empty-hint">Turn them on in Settings → Additional.</span></div>`;
       return;
     }
     if (!this.db || !this.db.objectStoreNames.contains('listeningStats')) {
-      panel.innerHTML = `<p class="ls-disabled-msg">No data yet.</p>`;
+      panel.innerHTML = `<div class="ui-empty"><i class="fas fa-headphones"></i><span>No data yet.</span></div>`;
       return;
     }
     const transaction = this.db.transaction([ 'listeningStats' ], 'readonly');
@@ -14997,27 +15010,47 @@ class AdvancedMusicPlayer {
     const isLifetime = this._statsRange === 'lifetime';
     const list = isLifetime ? c.byLifetime : c.by30Day;
     const countKey = isLifetime ? 'lifetime' : 'count30';
-    const title = isLifetime ? 'Lifetime' : 'Last 30 Days';
-    if (this.elements.lsRangeToggle) {
-      this.elements.lsRangeToggle.checked = isLifetime;
-    }
-    const timeSummaryHtml = `\n\t\t        <div class="ls-time-summary">\n\t\t            <div><span class="ls-time-label">Last 30 Days</span><span class="ls-time-value">${this.formatSecondsAsHM(c.time30dSeconds)}</span></div>\n\t\t            <div><span class="ls-time-label">Lifetime</span><span class="ls-time-value">${this.formatSecondsAsHM(this.listeningTime)}</span></div>\n\t\t        </div>\n\t\t    `;
-    panel.innerHTML = `\n\t\t        ${timeSummaryHtml}\n\t\t        ${this._buildStatsSectionHtml(title, list, countKey, this._statsShowAll)}\n\t\t    `;
+    this._syncStatsRangeTabs();
+    const seconds = isLifetime ? this.listeningTime : c.time30dSeconds;
+    panel.innerHTML = this._buildStatsSummaryHtml(list, countKey, seconds) + this._buildStatsSectionHtml(isLifetime ? 'All time' : 'Last 30 days', list, countKey, this._statsShowAll);
   }
-  _buildStatsSectionHtml(title, list, countKey, showAll) {
+  _syncStatsRangeTabs() {
+    const tabs = this.elements.lsRangeTabs;
+    if (!tabs) {
+      return;
+    }
+    tabs.querySelectorAll('[data-range]').forEach(tab => {
+      const active = tab.dataset.range === this._statsRange;
+      tab.classList.toggle('active', active);
+      tab.setAttribute('aria-selected', String(active));
+    });
+  }
+  _formatPlayCount(n) {
+    return `${n.toLocaleString()} ${n === 1 ? 'play' : 'plays'}`;
+  }
+  _buildStatsSummaryHtml(list, countKey, seconds) {
+    const plays = list.reduce((sum, r) => sum + r[countKey], 0);
+    const byArtist = new Map();
+    list.forEach(r => {
+      const artist = (r.song.author || '').trim();
+      if (artist) {
+        byArtist.set(artist, (byArtist.get(artist) || 0) + r[countKey]);
+      }
+    });
+    const topArtist = [ ...byArtist.entries() ].sort((a, b) => b[1] - a[1])[0];
+    const tiles = [ [ 'fa-clock', 'Time listened', this.formatSecondsAsHM(seconds) ], [ 'fa-play', 'Plays', plays.toLocaleString() ], [ 'fa-music', 'Songs', list.length.toLocaleString() ], [ 'fa-microphone', 'Top artist', topArtist ? topArtist[0] : '—' ] ];
+    return `<div class="ls-summary">${tiles.map(([icon, label, value]) => `<div class="ls-tile"><span class="ls-tile-icon"><i class="fas ${icon}"></i></span><div class="ls-tile-text"><span class="ls-tile-label">${label}</span><span class="ls-tile-value" title="${this.escapeHtml(value)}">${this.escapeHtml(value)}</span></div></div>`).join('')}</div>`;
+  }
+  _buildStatsSectionHtml(rangeLabel, list, countKey, showAll) {
     if (!list.length) {
-      return `\n\t            <div class="ls-section">\n\t                <div class="ls-section-header"><h3>${title}</h3></div>\n\t                <p class="ls-empty">No plays recorded yet</p>\n\t            </div>`;
+      return `<section class="ls-section"><div class="ui-empty"><i class="fas fa-headphones"></i><span>No plays recorded ${rangeLabel === 'All time' ? 'yet' : 'in the last 30 days'}.</span><span class="ls-empty-hint">Songs count as played after 10 seconds of listening.</span></div></section>`;
     }
+    const max = list[0][countKey];
     if (showAll) {
-      return `\n\t            <div class="ls-section">\n\t                <div class="ls-section-header">\n\t                    <h3>${title}</h3>\n\t                    <button class="ls-showall-btn" data-action="collapse">Show Top</button>\n\t                </div>\n\t                <div class="ls-search-wrap">\n\t                    <i class="fas fa-search ls-search-icon"></i>\n\t                    <input type="text" id="lsSearchInput" class="ls-search-input" placeholder="Search a song to see how many times you've listened…" autocomplete="off">\n\t                </div>\n\t                <div class="ls-full-list" id="lsFullListContainer">\n\t                    ${this._buildFullListHtml(list, countKey, '')}\n\t                </div>\n\t            </div>`;
+      return `<section class="ls-section"><div class="ls-section-header"><h3 class="ls-section-title">All songs <span class="ls-section-meta">${list.length.toLocaleString()} · ${rangeLabel}</span></h3><button type="button" class="ls-showall-btn ui-btn ui-btn--ghost ui-btn--sm" data-action="collapse"><i class="fas fa-arrow-left"></i> Top 10</button></div><div class="ls-search"><i class="fas fa-search ls-search-icon"></i><input type="text" id="lsSearchInput" class="ls-search-input ui-input" placeholder="Search songs or artists" aria-label="Search songs or artists" autocomplete="off"></div><div id="lsFullListContainer">${this._buildFullListHtml(list, countKey, '', max)}</div></section>`;
     }
-    const hero = list[0];
-    const mid4 = list.slice(1, 5);
-    const rest10 = list.slice(5, 15);
-    const heroCard = hero ? this._heroCardHtml(hero, countKey) : '';
-    const midCards = mid4.map((r, i) => this._largeCardHtml(r, i + 2, countKey)).join('');
-    const smallCards = rest10.map((r, i) => this._smallCardHtml(r, i + 6, countKey)).join('');
-    return `\n\t        <div class="ls-section">\n\t            <div class="ls-section-header">\n\t                <h3>${title}</h3>\n\t                ${list.length > 5 ? `<button class="ls-showall-btn" data-action="expand">Show All (${list.length})</button>` : ''}\n\t            </div>\n\t            <div class="ls-compact-view">\n\t                <div class="ls-left-col">\n\t                    ${heroCard}\n\t                    ${midCards ? `<div class="ls-top-large">${midCards}</div>` : ''}\n\t                </div>\n\t                ${smallCards ? `<div class="ls-top-small">${smallCards}</div>` : ''}\n\t            </div>\n\t        </div>`;
+    const rows = list.slice(1, 10).map((r, i) => this._statsRowHtml(r, i + 2, countKey, max)).join('');
+    return `<section class="ls-section"><div class="ls-section-header"><h3 class="ls-section-title">Top songs <span class="ls-section-meta">${rangeLabel}</span></h3>${list.length > 10 ? `<button type="button" class="ls-showall-btn ui-btn ui-btn--ghost ui-btn--sm" data-action="expand">See all ${list.length.toLocaleString()} <i class="fas fa-arrow-right"></i></button>` : ''}</div>${this._heroCardHtml(list[0], countKey)}${rows ? `<ol class="ls-grid">${rows}</ol>` : ''}</section>`;
   }
   filterListeningStatisticsSongResults(list, searchTerm) {
     const ranked = list.map((r, i) => ({
@@ -15032,29 +15065,23 @@ class AdvancedMusicPlayer {
   }
   _songThumbHtml(song, sizeClass) {
     if (song.videoId) {
-      return `<div class="ls-thumb-square ${sizeClass}" style="background-image:url(https://i.ytimg.com/vi/${song.videoId}/mqdefault.jpg)"></div>`;
+      return `<div class="ls-thumb ${sizeClass}" style="background-image:url(https://i.ytimg.com/vi/${encodeURIComponent(song.videoId)}/mqdefault.jpg)"></div>`;
     }
-    return `<div class="ls-thumb-square ${sizeClass} ls-thumb-fallback"><i class="fas fa-music"></i></div>`;
+    return `<div class="ls-thumb ${sizeClass} ls-thumb-fallback"><i class="fas fa-music"></i></div>`;
   }
-  _buildFullListHtml(list, countKey, searchTerm) {
+  _buildFullListHtml(list, countKey, searchTerm, max) {
     const filtered = this.filterListeningStatisticsSongResults(list, searchTerm);
     if (!filtered.length) {
-      return `<p class="ls-empty">No songs match "${this.escapeHtml(searchTerm)}"</p>`;
+      return `<div class="ui-empty"><i class="fas fa-magnifying-glass"></i><span>No songs match "${this.escapeHtml(searchTerm)}"</span></div>`;
     }
-    const items = filtered.map(r => this._fullListItemHtml(r, r._rank, countKey)).join('');
-    return `<ul class="ls-full-ranked-list">${items}</ul>`;
+    return `<ol class="ls-list">${filtered.map(r => this._statsRowHtml(r, r._rank, countKey, max)).join('')}</ol>`;
   }
   _heroCardHtml(r, countKey) {
-    return `\n\t        <div class="ls-card-hero">\n\t            ${this._songThumbHtml(r.song, 'ls-thumb-hero')}\n\t            <div class="ls-hero-info">\n\t                <span class="ls-rank-badge ls-rank-badge-hero">#1</span>\n\t                <div class="ls-card-name ls-hero-name">${this.escapeHtml(r.song.name)}</div>\n\t                ${r.song.author ? `<div class="ls-card-artist ls-hero-artist">${this.escapeHtml(r.song.author)}</div>` : ''}\n\t                <div class="ls-hero-count"><i class="fas fa-play"></i> ${r[countKey]} times listened</div>\n\t            </div>\n\t        </div>`;
+    return `<div class="ls-hero">${this._songThumbHtml(r.song, 'ls-hero-thumb')}<div class="ls-hero-info"><span class="ls-hero-rank"><i class="fas fa-crown"></i> Most played</span><div class="ls-hero-name" title="${this.escapeHtml(r.song.name)}">${this.escapeHtml(r.song.name)}</div>${r.song.author ? `<div class="ls-hero-artist">${this.escapeHtml(r.song.author)}</div>` : ''}</div><div class="ls-hero-count"><strong>${r[countKey].toLocaleString()}</strong><span>${r[countKey] === 1 ? 'play' : 'plays'}</span></div></div>`;
   }
-  _largeCardHtml(r, rank, countKey) {
-    return `\n\t        <div class="ls-card-large">\n\t            <span class="ls-rank-badge">#${rank}</span>\n\t            ${this._songThumbHtml(r.song, 'ls-thumb-lg')}\n\t            <div class="ls-card-info">\n\t                <div class="ls-card-name">${this.escapeHtml(r.song.name)}</div>\n\t                ${r.song.author ? `<div class="ls-card-artist">${this.escapeHtml(r.song.author)}</div>` : ''}\n\t            </div>\n\t            <span class="ls-card-count" title="Times listened"><i class="fas fa-play"></i> ${r[countKey]}</span>\n\t        </div>`;
-  }
-  _smallCardHtml(r, rank, countKey) {
-    return `\n\t        <div class="ls-card-small">\n\t            <span class="ls-rank">#${rank}</span>\n\t            ${this._songThumbHtml(r.song, 'ls-thumb-sm')}\n\t            <div class="ls-card-info">\n\t                <div class="ls-card-name">${this.escapeHtml(r.song.name)}</div>\n\t                ${r.song.author ? `<div class="ls-card-artist">${this.escapeHtml(r.song.author)}</div>` : ''}\n\t            </div>\n\t            <span class="ls-card-count" title="Times listened"><i class="fas fa-play"></i> ${r[countKey]}</span>\n\t        </div>`;
-  }
-  _fullListItemHtml(r, rank, countKey) {
-    return `\n\t        <li class="ls-card-small ls-full-item">\n\t            <span class="ls-rank">#${rank}</span>\n\t            ${this._songThumbHtml(r.song, 'ls-thumb-sm')}\n\t            <div class="ls-card-info">\n\t                <div class="ls-card-name">${this.escapeHtml(r.song.name)}</div>\n\t                ${r.song.author ? `<div class="ls-card-artist">${this.escapeHtml(r.song.author)}</div>` : ''}\n\t            </div>\n\t            <span class="ls-card-count" title="Times listened"><i class="fas fa-play"></i> ${r[countKey]}</span>\n\t        </li>`;
+  _statsRowHtml(r, rank, countKey, max) {
+    const pct = max > 0 ? Math.max(4, Math.round(r[countKey] / max * 100)) : 0;
+    return `<li class="ls-row"><span class="ls-row-rank${rank <= 3 ? ' is-podium' : ''}">${rank}</span>${this._songThumbHtml(r.song, 'ls-row-thumb')}<div class="ls-row-info"><div class="ls-row-name" title="${this.escapeHtml(r.song.name)}">${this.escapeHtml(r.song.name)}</div>${r.song.author ? `<div class="ls-row-artist">${this.escapeHtml(r.song.author)}</div>` : ''}<span class="ls-row-bar"><span style="width:${pct}%"></span></span></div><span class="ls-row-count">${this._formatPlayCount(r[countKey])}</span></li>`;
   }
   _handleStatsShowAllClick(e) {
     const btn = e.target.closest('.ls-showall-btn');
@@ -15064,9 +15091,14 @@ class AdvancedMusicPlayer {
     this._statsShowAll = btn.dataset.action === 'expand';
     this._statsSearchTerm = '';
     this._renderStatsPanel();
+    document.getElementById('lsPanel').scrollTop = 0;
   }
   _handleStatsRangeToggle(e) {
-    this._statsRange = e.target.checked ? 'lifetime' : '30';
+    const tab = e.target.closest('[data-range]');
+    if (!tab || tab.dataset.range === this._statsRange) {
+      return;
+    }
+    this._statsRange = tab.dataset.range;
     this._statsShowAll = false;
     this._statsSearchTerm = '';
     this._renderStatsPanel();
@@ -15085,7 +15117,7 @@ class AdvancedMusicPlayer {
     const countKey = isLifetime ? 'lifetime' : 'count30';
     const container = document.getElementById('lsFullListContainer');
     if (container) {
-      container.innerHTML = this._buildFullListHtml(list, countKey, this._statsSearchTerm);
+      container.innerHTML = this._buildFullListHtml(list, countKey, this._statsSearchTerm, list[0]?.[countKey] || 0);
     }
   }
   _accumulate30DaySecond() {
@@ -15151,6 +15183,7 @@ class AdvancedMusicPlayer {
     }
     this.listeningTimeInterval = setInterval(() => {
       this.listeningTime++;
+      this._trackYouTubePlayStat();
       if (this.listeningStatsEnabled) {
         this._accumulate30DaySecond();
       }

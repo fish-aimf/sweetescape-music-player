@@ -1424,17 +1424,13 @@ Another Playlist{
         <div class="ls-modal-content ui-modal ui-modal--2xl">
           <div class="ls-header ui-modal__header">
             <span class="ls-title ui-modal__title"><i class="fas fa-chart-bar"></i> Listening Statistics</span>
-            <div class="ls-range-switch ui-modal__header-actions">
-              <span class="ls-range-label" id="lsRangeLabelLeft">30 Days</span>
-              <div class="toggle-switch">
-                <input type="checkbox" id="lsRangeToggle" class="toggle-input">
-                <label for="lsRangeToggle" class="toggle-label">
-                <span class="toggle-slider"></span>
-                </label>
-              </div>
-              <span class="ls-range-label" id="lsRangeLabelRight">Lifetime</span>
+            <button class="ls-close ui-modal__close" id="lsCloseBtn" title="Close" aria-label="Close"><i class="fas fa-times"></i></button>
+          </div>
+          <div class="ls-toolbar">
+            <div class="ls-range-tabs ui-tabs" id="lsRangeTabs" role="tablist" aria-label="Time range">
+              <button type="button" class="ui-tab active" role="tab" aria-selected="true" data-range="30"><i class="fas fa-calendar-days"></i> Last 30 days</button>
+              <button type="button" class="ui-tab" role="tab" aria-selected="false" data-range="lifetime"><i class="fas fa-infinity"></i> All time</button>
             </div>
-            <button class="ls-close ui-modal__close" id="lsCloseBtn" title="Close"><i class="fas fa-times"></i></button>
           </div>
           <div class="ls-body ui-modal__body" id="lsPanel"></div>
         </div>
