@@ -881,7 +881,7 @@ a.ui-btn--block {
   padding: var(--ui-space-3) var(--ui-modal-pad-x);
 }
 
-.modal button:where(:not(.ui-modal__close)):where(:not(.ui-btn)),
+.modal button:where(:not(.ui-modal__close)):where(:not(.ui-btn)):where(:not(.ui-tab)),
 .subtitles-import-youtube-btn,
 .subtitles-import-convert-btn,
 .subtitles-import-cancel-btn,
@@ -922,7 +922,7 @@ a.ui-btn--block {
     color var(--ui-motion-fast);
 }
 
-.modal button:where(:not(.ui-modal__close)):where(:not(.ui-btn)) i,
+.modal button:where(:not(.ui-modal__close)):where(:not(.ui-btn)):where(:not(.ui-tab)) i,
 .subtitles-import-youtube-btn i,
 .subtitles-import-convert-btn i,
 .subtitles-import-cancel-btn i,
@@ -936,7 +936,7 @@ a.ui-btn--block {
   text-align: center;
 }
 
-.modal button:where(:not(.ui-modal__close)):where(:not(.ui-btn)):hover,
+.modal button:where(:not(.ui-modal__close)):where(:not(.ui-btn)):where(:not(.ui-tab)):hover,
 .subtitles-import-switch-lang-btn:hover,
 .welcome-skip-btn:hover,
 .sz-btn:hover:not(:disabled),
@@ -946,7 +946,7 @@ a.ui-btn--block {
   transform: none;
 }
 
-.modal button:where(:not(.ui-modal__close)):where(:not(.ui-btn)):disabled,
+.modal button:where(:not(.ui-modal__close)):where(:not(.ui-btn)):where(:not(.ui-tab)):disabled,
 .subtitles-import-youtube-btn:disabled,
 .subtitles-import-convert-btn:disabled,
 .sz-btn:disabled,
@@ -1680,6 +1680,7 @@ a.ui-btn--block {
 [data-surface="glass"] .ls-tile,
 [data-surface="glass"] .ls-hero,
 [data-surface="glass"] .ls-row,
+[data-surface="glass"] .ls-chart-card,
 [data-surface="glass"] .discord-status-card,
 [data-surface="glass"] .dl-current-card,
 [data-surface="glass"] .ui-card,
@@ -1763,7 +1764,7 @@ a.ui-btn--block {
 [data-surface="glass"] .np-controls button,
 [data-surface="glass"] #npSpeedBtn,
 [data-surface="glass"] .setting-group select,
-[data-surface="glass"] .modal button:where(:not(.ui-modal__close)):where(:not(.ui-btn)) {
+[data-surface="glass"] .modal button:where(:not(.ui-modal__close)):where(:not(.ui-btn)):where(:not(.ui-tab)) {
   backdrop-filter: blur(10px) saturate(var(--glass-sat));
   -webkit-backdrop-filter: blur(10px) saturate(var(--glass-sat));
   border-color: var(--glass-edge);
@@ -1864,7 +1865,7 @@ a.ui-btn--block {
 
 [data-surface="glass"] .ui-btn:hover,
 [data-surface="glass"] button.ui-btn:hover,
-[data-surface="glass"] .modal button:where(:not(.ui-modal__close)):where(:not(.ui-btn)):hover {
+[data-surface="glass"] .modal button:where(:not(.ui-modal__close)):where(:not(.ui-btn)):where(:not(.ui-tab)):hover {
   border-color: color-mix(in srgb, var(--accent-color) 75%, transparent);
   box-shadow: 0 4px 14px var(--glass-shade);
 }

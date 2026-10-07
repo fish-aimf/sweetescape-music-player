@@ -12,7 +12,7 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 | Source | sha256 (first 12) | Lines |
 |---|---|---|
-| `public/script.js` | `ea2c10d5b8cb` | 15844 |
+| `public/script.js` | `cf3cb04b3ac8` | 16061 |
 | `public/index.html` | `1d9dce7c94c9` | 1456 |
 | `public/script/settings.js` | `b1cbbfc3625b` | 561 |
 | `public/karaoke-player.js` | `79175232d973` | 682 |
@@ -23,7 +23,7 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 ## Reading `public/script.js` cheaply
 
-- 72 lines are longer than 300 characters (the machine-formatted
+- 74 lines are longer than 300 characters (the machine-formatted
   `innerHTML` template literals; the longest is ~3.9 KB). A single `grep -n` that hits
   several of them dumps tens of kilobytes. Search with `grep -o`, or pipe through
   `cut -c1-200`, and only widen once you know which line you want.
@@ -38,7 +38,7 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 ---
 
-## `AdvancedMusicPlayer` by topic (597 methods)
+## `AdvancedMusicPlayer` by topic (603 methods)
 
 Names only. `grep -n "^  name(" public/script.js` gives the current line, and a name
 here that you cannot find has been renamed since this file was generated.
@@ -69,7 +69,7 @@ here that you cannot find has been renamed since this file was generated.
 
 ### Discovery, stats & charts
 
-`setDefaultDiscoverMoreValuesOnStartup` · `setDefaultDiscoverMoreValues` · `handleSaveDiscoverMoreSettings` · `_buildDiscoveryCard` · `_buildDiscoverySongItem` · `getCombinedRecentlyPlayed` · `showRecentlyPlayedModal` · `setupRecentlyPlayedModalListeners` · `renderRecentlyPlayedContent` · `hideRecentlyPlayedModal` · `removeFromRecentlyPlayed` · `updateRecentlyPlayedLimit` · `initSupabaseForFindSongs` · `checkGlobalSongCacheSupabase` · `insertGlobalSongCacheSupabase` · `displayBillboardHot100Top3` · `openBillboardHot100Modal` · `displayBillboardHot100FullModal` · `createBillboardSongElementInModal` · `closeBillboardHot100Modal` · `initShazamModal` · `handleListeningStatsToggle` · `clearListeningStats` · `_statsDayKey` · `openStatsModal` · `closeStatsModal` · `renderListeningStats` · `_renderStatsPanel` · `_syncStatsRangeTabs` · `_buildStatsSummaryHtml` · `_buildStatsSectionHtml` · `_statsRowHtml` · `_handleStatsShowAllClick` · `_handleStatsRangeToggle`
+`setDefaultDiscoverMoreValuesOnStartup` · `setDefaultDiscoverMoreValues` · `handleSaveDiscoverMoreSettings` · `_buildDiscoveryCard` · `_buildDiscoverySongItem` · `getCombinedRecentlyPlayed` · `showRecentlyPlayedModal` · `setupRecentlyPlayedModalListeners` · `renderRecentlyPlayedContent` · `hideRecentlyPlayedModal` · `removeFromRecentlyPlayed` · `updateRecentlyPlayedLimit` · `initSupabaseForFindSongs` · `checkGlobalSongCacheSupabase` · `insertGlobalSongCacheSupabase` · `displayBillboardHot100Top3` · `openBillboardHot100Modal` · `displayBillboardHot100FullModal` · `createBillboardSongElementInModal` · `closeBillboardHot100Modal` · `initShazamModal` · `handleListeningStatsToggle` · `clearListeningStats` · `_statsDayKey` · `openStatsModal` · `closeStatsModal` · `renderListeningStats` · `_renderStatsPanel` · `_syncStatsRangeTabs` · `_buildStatsSummaryHtml` · `_statsTilesHtml` · `_buildStatsSectionHtml` · `_statsRowHtml` · `_handleStatsRowKeydown` · `_statsDateLabel` · `openSongStatsModal` · `_songStatsBuckets` · `_songStatsChartSvg` · `_handleStatsShowAllClick` · `_handleStatsRangeToggle`
 
 ### Appearance & visualizer
 

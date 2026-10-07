@@ -7765,6 +7765,208 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   padding-left: 34px;
 }
 
+.ls-hero,
+.ls-row {
+  cursor: pointer;
+}
+.ls-hero:focus-visible,
+.ls-row:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+.ls-hero {
+  transition: border-color var(--ui-motion-fast);
+}
+.ls-hero:hover {
+  border-color: color-mix(in srgb, var(--accent-color) 45%, var(--border-color));
+}
+
+.ls-song-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-4);
+}
+.ls-song-head {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-4);
+  min-width: 0;
+}
+.ls-song-thumb {
+  width: 64px;
+  border-radius: var(--ui-radius-lg);
+  font-size: 1.2rem;
+}
+.ls-song-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.ls-song-name {
+  font-size: var(--ui-font-xl);
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+.ls-song-artist {
+  font-size: var(--ui-font-md);
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ls-summary.ls-summary--pair {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ls-chart-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-3);
+  min-width: 0;
+  padding: var(--ui-space-4);
+  background: var(--ui-surface-sunken);
+  border: var(--ui-border);
+  border-radius: var(--ui-radius-lg);
+}
+.ls-chart-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ui-space-3);
+  flex-wrap: wrap;
+}
+.ls-chart-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ls-chart-title {
+  margin: 0;
+  font-size: var(--ui-font-lg);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.ls-chart-sub {
+  font-size: var(--ui-font-sm);
+  color: var(--text-secondary);
+}
+.ls-chart-tabs .ui-tab {
+  flex: 0 0 auto;
+}
+.ls-chart {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+.ls-chart svg {
+  display: block;
+  overflow: visible;
+}
+.ls-chart-grid {
+  stroke: var(--border-color);
+  stroke-width: 1;
+}
+.ls-chart-baseline {
+  stroke: var(--text-secondary);
+  stroke-opacity: 0.5;
+  stroke-width: 1;
+}
+.ls-chart-axis {
+  fill: var(--text-secondary);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.ls-chart-bar {
+  fill: var(--accent-color);
+}
+.ls-chart-hit {
+  fill: transparent;
+}
+.ls-chart-col:hover .ls-chart-hit {
+  fill: color-mix(in srgb, var(--text-secondary) 12%, transparent);
+}
+.ls-chart-empty {
+  fill: var(--text-secondary);
+  font-size: var(--ui-font-sm);
+}
+.ls-chart-tip {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 10px;
+  border: var(--ui-border);
+  border-radius: var(--ui-radius-md);
+  background: var(--ui-surface);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  color: var(--text-secondary);
+  font-size: var(--ui-font-xs);
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translate(-50%, -100%);
+}
+.ls-chart-tip[hidden] {
+  display: none;
+}
+.ls-chart-tip strong {
+  color: var(--text-primary);
+  font-size: var(--ui-font-sm);
+}
+.ls-chart-note {
+  display: flex;
+  align-items: baseline;
+  gap: var(--ui-space-2);
+  margin: 0;
+  font-size: var(--ui-font-sm);
+  color: var(--text-secondary);
+}
+.ls-chart-note[hidden] {
+  display: none;
+}
+.ls-chart-table summary {
+  cursor: pointer;
+  font-size: var(--ui-font-sm);
+  font-weight: var(--ui-weight-semibold);
+  color: var(--text-secondary);
+}
+.ls-chart-table summary:hover {
+  color: var(--text-primary);
+}
+.ls-chart-table-body {
+  max-height: 240px;
+  margin-top: var(--ui-space-2);
+  overflow-y: auto;
+}
+.ls-chart-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--ui-font-sm);
+}
+.ls-chart-table th,
+.ls-chart-table td {
+  padding: 6px var(--ui-space-2);
+  border-bottom: var(--ui-border);
+  text-align: left;
+}
+.ls-chart-table th {
+  color: var(--text-secondary);
+  font-weight: var(--ui-weight-semibold);
+}
+.ls-chart-table td:last-child,
+.ls-chart-table th:last-child {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.ls-chart-table-empty {
+  margin: 0;
+  font-size: var(--ui-font-sm);
+  color: var(--text-secondary);
+}
+
 @media (max-width: 860px) {
   .ls-summary {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -7813,6 +8015,15 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   }
   .ls-row-thumb {
     width: 38px;
+  }
+  .ls-song-thumb {
+    width: 52px;
+  }
+  .ls-song-name {
+    font-size: var(--ui-font-lg);
+  }
+  .ls-chart-card {
+    padding: var(--ui-space-3);
   }
 }
 .lib-topic-btn {

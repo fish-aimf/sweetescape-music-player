@@ -1015,7 +1015,7 @@ class AdvancedMusicPlayer {
       refreshRandomRecommendations: () => this.refreshRandomRecommendations(),
       visualizerToggle: e => this.handleVisualizerToggle(e)
     };
-    const simpleBindings = [ [ this.elements.addSongBtn, 'click', handlers.addSong ], [ this.elements.createPlaylistBtn, 'click', handlers.createPlaylist ], [ this.elements.closePlaylistModalBtn, 'click', handlers.closePlaylistModal ], [ this.elements.addSongToPlaylistBtn, 'click', handlers.addSongToPlaylist ], [ this.elements.playPauseBtn, 'click', handlers.togglePlayPause ], [ this.elements.prevBtn, 'click', handlers.playPrevious ], [ this.elements.nextBtn, 'click', handlers.playNext ], [ this.elements.loopBtn, 'click', handlers.toggleLoop ], [ this.elements.showPlaylistBtn, 'click', handlers.toggleSidebar ], [ this.elements.closeSidebarBtn, 'click', handlers.toggleSidebar ], [ this.elements.themeToggle, 'click', handlers.toggleTheme ], [ this.elements.autoplayBtn, 'click', handlers.toggleAutoplay ], [ this.elements.speedBtn, 'click', handlers.toggleSpeedOptions ], [ this.elements.volumeSlider, 'input', handlers.volumeChange ], [ this.elements.progressBar, 'click', handlers.seekMusic ], [ this.elements.currentSongName, 'contextmenu', handlers.songNameRightClick ], [ this.elements.toggleControlBarBtn, 'click', handlers.toggleControlBar ], [ this.elements.modifyLibraryBtn, 'click', handlers.openLibraryModal ], [ this.elements.closeLibraryModalBtn, 'click', handlers.closeLibraryModal ], [ this.elements.importLibraryBtn, 'click', handlers.importLibrary ], [ this.elements.exportLibraryBtn, 'click', handlers.exportLibrary ], [ this.elements.libraryModificationTabAddSong, 'click', handlers.libraryModificationTabAddSongClick ], [ this.elements.libraryModificationTabImportExport, 'click', handlers.libraryModificationTabImportExportClick ], [ this.elements.loopPlaylistBtn, 'click', handlers.togglePlaylistLoop ], [ this.elements.discordButton, 'click', handlers.discordClick ], [ this.elements.librarySortToggle, 'change', handlers.librarySortToggle ], [ this.elements.libraryReverseToggle, 'change', handlers.libraryReverseToggle ], [ this.elements.closeImportModalBtn, 'click', handlers.closeImportModal ], [ this.elements.importSongsBtn, 'click', handlers.importSongs ], [ this.elements.playlistSearch, 'input', handlers.filterPlaylists ], [ this.elements.playlistSearch, 'keypress', handlers.playlistSearchEnter ], [ this.elements.toggleCreatePlaylistBtn, 'click', handlers.toggleCreatePlaylistDiv ], [ this.elements.togglePlaylistEditModeBtn, 'click', handlers.togglePlaylistEditMode ], [ this.elements.settingsButton, 'click', handlers.openSettings ], [ this.elements.settingsCloseBtn, 'click', handlers.closeSettings ], [ this.elements.settingsModal, 'click', handlers.settingsModalClick ], [ this.elements.themeMode, 'change', handlers.themeModeChange ], [ this.elements.saveCustomTheme, 'click', handlers.saveCustomTheme ], [ this.elements.adsToggle, 'change', handlers.adsToggle ], [ this.elements.saveDiscoverMoreSettings, 'click', handlers.saveDiscoverMoreSettings ], [ this.elements.visualizerToggle, 'change', handlers.visualizerToggle ], [ this.elements.visualizerStyleGrid, 'click', this.handleVisualizerStyleClick.bind(this) ], [ this.elements.visualizerGain, 'input', this.handleVisualizerGainInput.bind(this) ], [ this.elements.findSongsBtn, 'click', handlers.findSongsOpen ], [ this.elements.closeFindSongs, 'click', handlers.findSongsClose ], [ this.elements.searchSongsToAdd, 'input', handlers.searchSongsToAdd ], [ this.elements.statsButton, 'click', this.openStatsModal.bind(this) ], [ this.elements.disguiseButton, 'click', this.openDisguiseModal.bind(this) ], [ this.elements.lsPanel, 'click', this._handleStatsShowAllClick.bind(this) ], [ this.elements.lsPanel, 'input', this._handleStatsSearchInput.bind(this) ], [ document.getElementById('lsCloseBtn'), 'click', this.closeStatsModal.bind(this) ], [ this.elements.lsRangeTabs, 'click', this._handleStatsRangeToggle.bind(this) ], [ this.elements.listeningStatsToggle, 'change', this.handleListeningStatsToggle.bind(this) ], [ this.elements.libTopicBtn, 'click', handlers.toggleTopicKeyword ] ];
+    const simpleBindings = [ [ this.elements.addSongBtn, 'click', handlers.addSong ], [ this.elements.createPlaylistBtn, 'click', handlers.createPlaylist ], [ this.elements.closePlaylistModalBtn, 'click', handlers.closePlaylistModal ], [ this.elements.addSongToPlaylistBtn, 'click', handlers.addSongToPlaylist ], [ this.elements.playPauseBtn, 'click', handlers.togglePlayPause ], [ this.elements.prevBtn, 'click', handlers.playPrevious ], [ this.elements.nextBtn, 'click', handlers.playNext ], [ this.elements.loopBtn, 'click', handlers.toggleLoop ], [ this.elements.showPlaylistBtn, 'click', handlers.toggleSidebar ], [ this.elements.closeSidebarBtn, 'click', handlers.toggleSidebar ], [ this.elements.themeToggle, 'click', handlers.toggleTheme ], [ this.elements.autoplayBtn, 'click', handlers.toggleAutoplay ], [ this.elements.speedBtn, 'click', handlers.toggleSpeedOptions ], [ this.elements.volumeSlider, 'input', handlers.volumeChange ], [ this.elements.progressBar, 'click', handlers.seekMusic ], [ this.elements.currentSongName, 'contextmenu', handlers.songNameRightClick ], [ this.elements.toggleControlBarBtn, 'click', handlers.toggleControlBar ], [ this.elements.modifyLibraryBtn, 'click', handlers.openLibraryModal ], [ this.elements.closeLibraryModalBtn, 'click', handlers.closeLibraryModal ], [ this.elements.importLibraryBtn, 'click', handlers.importLibrary ], [ this.elements.exportLibraryBtn, 'click', handlers.exportLibrary ], [ this.elements.libraryModificationTabAddSong, 'click', handlers.libraryModificationTabAddSongClick ], [ this.elements.libraryModificationTabImportExport, 'click', handlers.libraryModificationTabImportExportClick ], [ this.elements.loopPlaylistBtn, 'click', handlers.togglePlaylistLoop ], [ this.elements.discordButton, 'click', handlers.discordClick ], [ this.elements.librarySortToggle, 'change', handlers.librarySortToggle ], [ this.elements.libraryReverseToggle, 'change', handlers.libraryReverseToggle ], [ this.elements.closeImportModalBtn, 'click', handlers.closeImportModal ], [ this.elements.importSongsBtn, 'click', handlers.importSongs ], [ this.elements.playlistSearch, 'input', handlers.filterPlaylists ], [ this.elements.playlistSearch, 'keypress', handlers.playlistSearchEnter ], [ this.elements.toggleCreatePlaylistBtn, 'click', handlers.toggleCreatePlaylistDiv ], [ this.elements.togglePlaylistEditModeBtn, 'click', handlers.togglePlaylistEditMode ], [ this.elements.settingsButton, 'click', handlers.openSettings ], [ this.elements.settingsCloseBtn, 'click', handlers.closeSettings ], [ this.elements.settingsModal, 'click', handlers.settingsModalClick ], [ this.elements.themeMode, 'change', handlers.themeModeChange ], [ this.elements.saveCustomTheme, 'click', handlers.saveCustomTheme ], [ this.elements.adsToggle, 'change', handlers.adsToggle ], [ this.elements.saveDiscoverMoreSettings, 'click', handlers.saveDiscoverMoreSettings ], [ this.elements.visualizerToggle, 'change', handlers.visualizerToggle ], [ this.elements.visualizerStyleGrid, 'click', this.handleVisualizerStyleClick.bind(this) ], [ this.elements.visualizerGain, 'input', this.handleVisualizerGainInput.bind(this) ], [ this.elements.findSongsBtn, 'click', handlers.findSongsOpen ], [ this.elements.closeFindSongs, 'click', handlers.findSongsClose ], [ this.elements.searchSongsToAdd, 'input', handlers.searchSongsToAdd ], [ this.elements.statsButton, 'click', this.openStatsModal.bind(this) ], [ this.elements.disguiseButton, 'click', this.openDisguiseModal.bind(this) ], [ this.elements.lsPanel, 'click', this._handleStatsShowAllClick.bind(this) ], [ this.elements.lsPanel, 'input', this._handleStatsSearchInput.bind(this) ], [ this.elements.lsPanel, 'keydown', this._handleStatsRowKeydown.bind(this) ], [ document.getElementById('lsCloseBtn'), 'click', this.closeStatsModal.bind(this) ], [ this.elements.lsRangeTabs, 'click', this._handleStatsRangeToggle.bind(this) ], [ this.elements.listeningStatsToggle, 'change', this.handleListeningStatsToggle.bind(this) ], [ this.elements.libTopicBtn, 'click', handlers.toggleTopicKeyword ] ];
     simpleBindings.forEach(([element, event, handler]) => {
       if (element) {
         element.addEventListener(event, handler);
@@ -14917,7 +14917,6 @@ class AdvancedMusicPlayer {
     record.lifetime += 1;
     const todayKey = this._statsDayKey();
     record.days[todayKey] = (record.days[todayKey] || 0) + 1;
-    this._pruneOldDays(record.days);
     store.put(record);
   }
   _trackPlayStat(current, duration) {
@@ -14951,7 +14950,8 @@ class AdvancedMusicPlayer {
     if (!record || !record.days) {
       return 0;
     }
-    return Object.values(record.days).reduce((sum, n) => sum + n, 0);
+    const cutoff = this._statsDayKey(new Date(Date.now() - 29 * 864e5));
+    return Object.entries(record.days).reduce((sum, [key, n]) => key >= cutoff ? sum + n : sum, 0);
   }
   openStatsModal() {
     document.getElementById('statsModal').style.display = 'flex';
@@ -15039,7 +15039,10 @@ class AdvancedMusicPlayer {
     });
     const topArtist = [ ...byArtist.entries() ].sort((a, b) => b[1] - a[1])[0];
     const tiles = [ [ 'fa-clock', 'Time listened', this.formatSecondsAsHM(seconds) ], [ 'fa-play', 'Plays', plays.toLocaleString() ], [ 'fa-music', 'Songs', list.length.toLocaleString() ], [ 'fa-microphone', 'Top artist', topArtist ? topArtist[0] : '—' ] ];
-    return `<div class="ls-summary">${tiles.map(([icon, label, value]) => `<div class="ls-tile"><span class="ls-tile-icon"><i class="fas ${icon}"></i></span><div class="ls-tile-text"><span class="ls-tile-label">${label}</span><span class="ls-tile-value" title="${this.escapeHtml(value)}">${this.escapeHtml(value)}</span></div></div>`).join('')}</div>`;
+    return `<div class="ls-summary">${this._statsTilesHtml(tiles)}</div>`;
+  }
+  _statsTilesHtml(tiles) {
+    return `${tiles.map(([icon, label, value]) => `<div class="ls-tile"><span class="ls-tile-icon"><i class="fas ${icon}"></i></span><div class="ls-tile-text"><span class="ls-tile-label">${label}</span><span class="ls-tile-value" title="${this.escapeHtml(value)}">${this.escapeHtml(value)}</span></div></div>`).join('')}`;
   }
   _buildStatsSectionHtml(rangeLabel, list, countKey, showAll) {
     if (!list.length) {
@@ -15077,15 +15080,229 @@ class AdvancedMusicPlayer {
     return `<ol class="ls-list">${filtered.map(r => this._statsRowHtml(r, r._rank, countKey, max)).join('')}</ol>`;
   }
   _heroCardHtml(r, countKey) {
-    return `<div class="ls-hero">${this._songThumbHtml(r.song, 'ls-hero-thumb')}<div class="ls-hero-info"><span class="ls-hero-rank"><i class="fas fa-crown"></i> Most played</span><div class="ls-hero-name" title="${this.escapeHtml(r.song.name)}">${this.escapeHtml(r.song.name)}</div>${r.song.author ? `<div class="ls-hero-artist">${this.escapeHtml(r.song.author)}</div>` : ''}</div><div class="ls-hero-count"><strong>${r[countKey].toLocaleString()}</strong><span>${r[countKey] === 1 ? 'play' : 'plays'}</span></div></div>`;
+    return `<div class="ls-hero" data-stat-id="${this.escapeHtml(r.id)}" role="button" tabindex="0" title="View play history">${this._songThumbHtml(r.song, 'ls-hero-thumb')}<div class="ls-hero-info"><span class="ls-hero-rank"><i class="fas fa-crown"></i> Most played</span><div class="ls-hero-name" title="${this.escapeHtml(r.song.name)}">${this.escapeHtml(r.song.name)}</div>${r.song.author ? `<div class="ls-hero-artist">${this.escapeHtml(r.song.author)}</div>` : ''}</div><div class="ls-hero-count"><strong>${r[countKey].toLocaleString()}</strong><span>${r[countKey] === 1 ? 'play' : 'plays'}</span></div></div>`;
   }
   _statsRowHtml(r, rank, countKey, max) {
     const pct = max > 0 ? Math.max(4, Math.round(r[countKey] / max * 100)) : 0;
-    return `<li class="ls-row"><span class="ls-row-rank${rank <= 3 ? ' is-podium' : ''}">${rank}</span>${this._songThumbHtml(r.song, 'ls-row-thumb')}<div class="ls-row-info"><div class="ls-row-name" title="${this.escapeHtml(r.song.name)}">${this.escapeHtml(r.song.name)}</div>${r.song.author ? `<div class="ls-row-artist">${this.escapeHtml(r.song.author)}</div>` : ''}<span class="ls-row-bar"><span style="width:${pct}%"></span></span></div><span class="ls-row-count">${this._formatPlayCount(r[countKey])}</span></li>`;
+    return `<li class="ls-row" data-stat-id="${this.escapeHtml(r.id)}" role="button" tabindex="0" title="View play history"><span class="ls-row-rank${rank <= 3 ? ' is-podium' : ''}">${rank}</span>${this._songThumbHtml(r.song, 'ls-row-thumb')}<div class="ls-row-info"><div class="ls-row-name" title="${this.escapeHtml(r.song.name)}">${this.escapeHtml(r.song.name)}</div>${r.song.author ? `<div class="ls-row-artist">${this.escapeHtml(r.song.author)}</div>` : ''}<span class="ls-row-bar"><span style="width:${pct}%"></span></span></div><span class="ls-row-count">${this._formatPlayCount(r[countKey])}</span></li>`;
+  }
+  _handleStatsRowKeydown(e) {
+    if (e.key !== 'Enter' && e.key !== ' ') {
+      return;
+    }
+    const row = e.target.closest('[data-stat-id]');
+    if (!row || e.target !== row) {
+      return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
+    this.openSongStatsModal(row.dataset.statId);
+  }
+  _statsDateLabel(key, options) {
+    return new Date(key + 'T00:00:00Z').toLocaleDateString(undefined, {
+      ...options,
+      timeZone: 'UTC'
+    });
+  }
+  openSongStatsModal(id) {
+    const c = this._statsCache;
+    const record = c && (c.byLifetime.find(r => r.id === id) || c.by30Day.find(r => r.id === id));
+    if (!record) {
+      return;
+    }
+    const song = record.song;
+    const days = record.days || {};
+    const datedKeys = Object.keys(days).filter(k => days[k] > 0).sort();
+    const datedTotal = datedKeys.reduce((sum, k) => sum + days[k], 0);
+    const lifetime = Math.max(record.lifetime || 0, datedTotal);
+    const undated = lifetime - datedTotal;
+    const best = datedKeys.reduce((b, k) => !b || days[k] >= days[b] ? k : b, null);
+    const last = datedKeys[datedKeys.length - 1];
+    let range = this._statsRange === 'lifetime' ? 'lifetime' : '30';
+    let buckets = [];
+    let observer = null;
+    const onKey = e => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        modal.close();
+      }
+    };
+    const modal = UI.modal({
+      title: 'Play history',
+      icon: 'fa-chart-column',
+      size: 'lg',
+      bodyClassName: 'ls-song-body',
+      onClose: () => {
+        observer?.disconnect();
+        document.removeEventListener('keydown', onKey, true);
+      }
+    });
+    const tiles = [ [ 'fa-calendar-days', 'Last 30 days', this._formatPlayCount(this.get30DayCount(record)) ], [ 'fa-infinity', 'All time', this._formatPlayCount(lifetime) ], [ 'fa-trophy', 'Best day', best ? `${this._formatPlayCount(days[best])} · ${this._statsDateLabel(best, {
+      month: 'short',
+      day: 'numeric'
+    })}` : '—' ], [ 'fa-clock-rotate-left', 'Last played', last ? this._statsDateLabel(last, {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    }) : '—' ] ];
+    modal.body.innerHTML = `<div class="ls-song-head">${this._songThumbHtml(song, 'ls-song-thumb')}<div class="ls-song-meta"><div class="ls-song-name">${this.escapeHtml(song.name)}</div>${song.author ? `<div class="ls-song-artist">${this.escapeHtml(song.author)}</div>` : ''}</div></div><div class="ls-summary ls-summary--pair">${this._statsTilesHtml(tiles)}</div><div class="ls-chart-card"><div class="ls-chart-head"><div class="ls-chart-heading"><h3 class="ls-chart-title"></h3><span class="ls-chart-sub"></span></div><div class="ls-chart-tabs ui-tabs" role="tablist" aria-label="Time range"><button type="button" class="ui-tab" role="tab" data-range="30">30 days</button><button type="button" class="ui-tab" role="tab" data-range="lifetime">All time</button></div></div><div class="ls-chart" role="img"></div><p class="ls-chart-note" hidden></p><details class="ls-chart-table"><summary>View as table</summary><div class="ls-chart-table-body"></div></details></div>`;
+    const q = sel => modal.body.querySelector(sel);
+    const chart = q('.ls-chart');
+    const tip = document.createElement('div');
+    tip.className = 'ls-chart-tip';
+    tip.hidden = true;
+    const draw = () => {
+      chart.innerHTML = this._songStatsChartSvg(buckets, chart.clientWidth);
+      chart.appendChild(tip);
+      tip.hidden = true;
+    };
+    const render = () => {
+      buckets = this._songStatsBuckets(days, range);
+      const total = buckets.reduce((sum, b) => sum + b.count, 0);
+      const isLifetime = range === 'lifetime';
+      q('.ls-chart-title').textContent = isLifetime ? 'Plays per month' : 'Plays per day';
+      q('.ls-chart-sub').textContent = `${this._formatPlayCount(total)} ${isLifetime ? 'since ' + buckets[0].label : 'in the last 30 days'}`;
+      chart.setAttribute('aria-label', `Bar chart of ${isLifetime ? 'plays per month' : 'plays per day over the last 30 days'}, ${this._formatPlayCount(total)} in total`);
+      modal.body.querySelectorAll('.ls-chart-tabs [data-range]').forEach(tab => {
+        const active = tab.dataset.range === range;
+        tab.classList.toggle('active', active);
+        tab.setAttribute('aria-selected', String(active));
+      });
+      const note = q('.ls-chart-note');
+      note.hidden = !(isLifetime && undated > 0);
+      note.innerHTML = `<i class="fas fa-circle-info"></i> ${this._formatPlayCount(undated)} from before daily history was kept ${undated === 1 ? 'is' : 'are'} counted in the all-time total but not shown on the graph.`;
+      const rows = buckets.filter(b => b.count > 0).reverse();
+      q('.ls-chart-table-body').innerHTML = rows.length ? `<table><thead><tr><th scope="col">${isLifetime ? 'Month' : 'Day'}</th><th scope="col">Plays</th></tr></thead><tbody>${rows.map(b => `<tr><td>${this.escapeHtml(b.label)}</td><td>${b.count.toLocaleString()}</td></tr>`).join('')}</tbody></table>` : '<p class="ls-chart-table-empty">No plays in this period.</p>';
+      draw();
+    };
+    q('.ls-chart-tabs').addEventListener('click', e => {
+      const tab = e.target.closest('[data-range]');
+      if (tab && tab.dataset.range !== range) {
+        range = tab.dataset.range;
+        render();
+      }
+    });
+    chart.addEventListener('pointermove', e => {
+      const col = e.target.closest('.ls-chart-col');
+      if (!col) {
+        tip.hidden = true;
+        return;
+      }
+      const b = buckets[Number(col.dataset.i)];
+      tip.innerHTML = `<strong>${this._formatPlayCount(b.count)}</strong><span>${this.escapeHtml(b.label)}</span>`;
+      tip.hidden = false;
+      const half = tip.offsetWidth / 2;
+      tip.style.left = `${Math.min(Math.max(Number(col.dataset.x), half), chart.clientWidth - half)}px`;
+      tip.style.top = `${col.dataset.y}px`;
+    });
+    chart.addEventListener('pointerleave', () => {
+      tip.hidden = true;
+    });
+    document.addEventListener('keydown', onKey, true);
+    modal.open();
+    render();
+    if (typeof ResizeObserver === 'function') {
+      let lastWidth = chart.clientWidth;
+      observer = new ResizeObserver(() => {
+        if (chart.clientWidth !== lastWidth) {
+          lastWidth = chart.clientWidth;
+          draw();
+        }
+      });
+      observer.observe(chart);
+    }
+  }
+  _songStatsBuckets(days, range) {
+    const today = new Date(this._statsDayKey() + 'T00:00:00Z');
+    if (range !== 'lifetime') {
+      return Array.from({
+        length: 30
+      }, (_, i) => {
+        const key = this._statsDayKey(new Date(today.getTime() - (29 - i) * 864e5));
+        return {
+          count: days[key] || 0,
+          label: this._statsDateLabel(key, {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric'
+          }),
+          tick: this._statsDateLabel(key, {
+            month: 'short',
+            day: 'numeric'
+          })
+        };
+      });
+    }
+    const months = new Map();
+    Object.keys(days).forEach(k => months.set(k.slice(0, 7), (months.get(k.slice(0, 7)) || 0) + days[k]));
+    const end = today.getUTCFullYear() * 12 + today.getUTCMonth();
+    const first = [ ...months.keys() ].sort()[0];
+    const start = Math.min(end - 5, first ? Number(first.slice(0, 4)) * 12 + Number(first.slice(5, 7)) - 1 : end);
+    const buckets = [];
+    for (let i = start; i <= end; i++) {
+      const key = new Date(Date.UTC(Math.floor(i / 12), i % 12, 1)).toISOString().slice(0, 10);
+      buckets.push({
+        count: months.get(key.slice(0, 7)) || 0,
+        label: this._statsDateLabel(key, {
+          month: 'long',
+          year: 'numeric'
+        }),
+        tick: this._statsDateLabel(key, i === start || i % 12 === 0 ? {
+          month: 'short',
+          year: '2-digit'
+        } : {
+          month: 'short'
+        })
+      });
+    }
+    return buckets;
+  }
+  _songStatsChartSvg(buckets, containerWidth) {
+    const width = Math.max(240, Math.round(containerWidth || 0));
+    const height = width < 480 ? 180 : 220;
+    const pad = {
+      top: 10,
+      right: 14,
+      bottom: 26,
+      left: 34
+    };
+    const plotW = width - pad.left - pad.right;
+    const plotH = height - pad.top - pad.bottom;
+    const base = pad.top + plotH;
+    const max = Math.max(0, ...buckets.map(b => b.count));
+    const step = [ 1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1e3, 2e3, 5e3 ].find(s => max / s <= 4) || Math.ceil(max / 4);
+    const top = Math.max(step * 2, Math.ceil(max / step) * step);
+    const band = plotW / buckets.length;
+    const barW = Math.max(2, Math.min(24, band - 2));
+    const every = Math.ceil(64 / band);
+    const ticks = [];
+    for (let v = 0; v <= top; v += step) {
+      ticks.push(v);
+    }
+    const grid = ticks.map(v => {
+      const y = base - v / top * plotH;
+      return `<line class="ls-chart-grid" x1="${pad.left}" x2="${width - pad.right}" y1="${y}" y2="${y}"></line><text class="ls-chart-axis" x="${pad.left - 8}" y="${y}" text-anchor="end" dominant-baseline="middle">${v.toLocaleString()}</text>`;
+    }).join('');
+    const cols = buckets.map((b, i) => {
+      const cx = pad.left + band * i + band / 2;
+      const h = b.count / top * plotH;
+      const x0 = cx - barW / 2;
+      const yTop = base - h;
+      const r = Math.min(4, barW / 2, h);
+      const bar = b.count > 0 ? `<path class="ls-chart-bar" d="M${x0},${base}V${yTop + r}Q${x0},${yTop} ${x0 + r},${yTop}H${x0 + barW - r}Q${x0 + barW},${yTop} ${x0 + barW},${yTop + r}V${base}Z"></path>` : '';
+      const label = (buckets.length - 1 - i) % every === 0 ? `<text class="ls-chart-axis" x="${cx}" y="${height - 6}" text-anchor="middle">${this.escapeHtml(b.tick)}</text>` : '';
+      return `<g class="ls-chart-col" data-i="${i}" data-x="${cx}" data-y="${yTop - 8}"><rect class="ls-chart-hit" x="${pad.left + band * i}" y="${pad.top}" width="${band}" height="${plotH}"></rect>${bar}</g>${label}`;
+    }).join('');
+    const empty = max === 0 ? `<text class="ls-chart-empty" x="${pad.left + plotW / 2}" y="${pad.top + plotH / 2}" text-anchor="middle" dominant-baseline="middle">No plays in this period</text>` : '';
+    return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" aria-hidden="true">${grid}<line class="ls-chart-baseline" x1="${pad.left}" x2="${width - pad.right}" y1="${base}" y2="${base}"></line>${cols}${empty}</svg>`;
   }
   _handleStatsShowAllClick(e) {
     const btn = e.target.closest('.ls-showall-btn');
     if (!btn) {
+      const row = e.target.closest('[data-stat-id]');
+      if (row) {
+        this.openSongStatsModal(row.dataset.statId);
+      }
       return;
     }
     this._statsShowAll = btn.dataset.action === 'expand';
