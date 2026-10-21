@@ -292,15 +292,21 @@ body {
   gap: 10px;
 }
 .song-item--thumb .song-item-art {
-  align-self: stretch;
-  contain: size;
-  height: auto;
-  width: auto;
-  aspect-ratio: 1;
+  width: 1.75em;
+  height: 1.75em;
   border-radius: 3px;
 }
 .song-item--thumb .song-name {
   min-width: 0;
+}
+.song-item--thumb .song-item-title,
+.song-item--thumb .song-author {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.song-item--thumb .song-item-title {
+  display: block;
 }
 .song-item--cover {
   gap: 16px;
@@ -319,12 +325,22 @@ body {
   font-size: 1.35em;
   font-weight: 600;
   line-height: 1.25;
+}
+.song-item--cover .song-item-title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
   overflow-wrap: anywhere;
 }
 .song-item--cover .song-author {
   margin-top: 6px;
   font-size: 0.6em;
   font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 @media (max-width: 480px) {
   .song-item--cover .song-item-art {
