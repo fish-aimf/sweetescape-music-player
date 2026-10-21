@@ -282,6 +282,58 @@ body {
 .song-item {
   position: relative;
 }
+.song-item-art {
+  flex-shrink: 0;
+  object-fit: cover;
+  background-color: var(--bg-secondary);
+  cursor: pointer;
+}
+.song-item--thumb {
+  gap: 10px;
+}
+.song-item--thumb .song-item-art {
+  align-self: stretch;
+  height: auto;
+  width: auto;
+  aspect-ratio: 1;
+  border-radius: 3px;
+}
+.song-item--thumb .song-name {
+  min-width: 0;
+}
+.song-item--cover {
+  gap: 16px;
+  padding: 12px;
+  margin-bottom: 8px;
+  border-radius: 10px;
+}
+.song-item--cover .song-item-art {
+  width: 104px;
+  height: 104px;
+  border-radius: 6px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+.song-item--cover .song-name {
+  min-width: 0;
+  font-size: 1.35em;
+  font-weight: 600;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.song-item--cover .song-author {
+  margin-top: 6px;
+  font-size: 0.6em;
+  font-weight: 400;
+}
+@media (max-width: 480px) {
+  .song-item--cover .song-item-art {
+    width: 84px;
+    height: 84px;
+  }
+  .song-item--cover .song-name {
+    font-size: 1.15em;
+  }
+}
 
 .song-item-right {
   display: flex;

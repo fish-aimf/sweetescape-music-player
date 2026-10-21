@@ -2032,7 +2032,12 @@ class AdvancedMusicPlayer {
         this._destroyVirtualScroll();
         return;
       }
-      this._mountVirtualScroll(container, sortedLibrary);
+      let art = null;
+      if (searchTerm) {
+        const fitsCovers = Math.min(4, Math.floor((container.clientHeight || 480) / 136));
+        art = sortedLibrary.length <= fitsCovers ? 'cover' : sortedLibrary.length <= 12 ? 'thumb' : null;
+      }
+      this._mountVirtualScroll(container, sortedLibrary, art);
     } catch (error) {
       console.error('Error rendering song library:', error);
       this.elements.songLibrary.innerHTML = '<div class="error-message">Failed to display song library</div>';
@@ -2213,9 +2218,9 @@ class AdvancedMusicPlayer {
       this.elements.newPlaylistName?.focus();
     }
   }
-  _mountVirtualScroll(container, songs) {
+  _mountVirtualScroll(container, songs, art = null) {
     const BUFFER = 5;
-    const probe = this.createSongElement(songs[0]);
+    const probe = this.createSongElement(songs[0], art);
     probe.style.cssText = 'position:absolute;visibility:hidden;pointer-events:none;';
     container.appendChild(probe);
     const ITEM_H = probe.getBoundingClientRect().height || 44;
@@ -2246,7 +2251,7 @@ class AdvancedMusicPlayer {
       window_.innerHTML = '';
       const frag = document.createDocumentFragment();
       for (let i = start; i < end; i++) {
-        const el = this.createSongElement(songs[i]);
+        const el = this.createSongElement(songs[i], art);
         el.style.height = ITEM_H + 'px';
         el.style.boxSizing = 'border-box';
         frag.appendChild(el);
@@ -2280,9 +2285,12 @@ class AdvancedMusicPlayer {
       this._vsContainer = null;
     }
   }
-  createSongElement(song) {
+  createSongElement(song, art = null) {
     const songElement = document.createElement('div');
     songElement.classList.add('song-item');
+    if (art) {
+      songElement.classList.add(`song-item--${art}`);
+    }
     const isFav = song.favorite;
     const isDl = !!song.localFileHandle;
     const hasLyrics = !!(song.lyrics && song.lyrics.trim());
@@ -2294,11 +2302,26 @@ class AdvancedMusicPlayer {
       indicatorsHtml = `<div class="song-status-indicators">${lyricsHtml}${dlHtml}${favHtml}</div>`;
     }
     songElement.innerHTML = `\n\t        <span class="song-name" data-song-id="${song.id}">\n\t            ${this.escapeHtml(song.name)}\n\t            ${song.author ? `<small class="song-author">by ${this.escapeHtml(song.author)}</small>` : ''}\n\t        </span>\n\t        <div class="song-item-right">\n\t            ${indicatorsHtml}\n\t            <div class="song-actions">\n\t                <button class="song-card-btn favorite-btn" data-song-id="${song.id}" title="${isFav ? 'Unfavourite' : 'Favourite'}">\n\t                    <i class="${isFav ? 'fas fa-star' : 'far fa-star'}"></i>\n\t                </button>\n\t                <button class="song-card-btn play-btn" data-song-id="${song.id}" title="Play">\n\t                    <i class="fas fa-play"></i>\n\t                </button>\n\t                <button class="song-card-btn delete-btn" data-song-id="${song.id}" title="Delete">\n\t                    <i class="fas fa-trash"></i>\n\t                </button>\n\t                <button class="song-card-btn edit-btn" data-song-id="${song.id}" title="Edit">\n\t                    <i class="fas fa-pen"></i>\n\t                </button>\n\t            </div>\n\t        </div>\n\t    `;
+    if (art) {
+      const img = document.createElement('img');
+      img.className = 'song-item-art';
+      img.alt = '';
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      img.draggable = false;
+      img.dataset.songId = song.id;
+      img.src = song.thumbnailUrl || `https://i.ytimg.com/vi/${song.videoId}/mqdefault.jpg`;
+      img.onerror = () => {
+        img.onerror = null;
+        img.src = `https://i.ytimg.com/vi/${song.videoId}/default.jpg`;
+      };
+      songElement.prepend(img);
+    }
     return songElement;
   }
   setupSongLibraryDelegation() {
     this.elements.songLibrary.addEventListener('click', e => {
-      const target = e.target.closest('button, .song-name');
+      const target = e.target.closest('button, .song-name, .song-item-art');
       if (!target) {
         return;
       }
@@ -2315,7 +2338,7 @@ class AdvancedMusicPlayer {
         this.removeSong(songIdNum);
       } else if (target.classList.contains('edit-btn')) {
         this.openSongEditModal(songIdNum);
-      } else if (target.classList.contains('song-name')) {
+      } else if (target.classList.contains('song-name') || target.classList.contains('song-item-art')) {
         this.playSong(songIdNum);
       }
     });
