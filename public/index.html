@@ -69,6 +69,8 @@
 
       <div id="appBackdrop" aria-hidden="true">
          <div class="app-backdrop__image"></div>
+         <div class="app-backdrop__art"></div>
+         <div class="app-backdrop__art"></div>
          <div class="app-backdrop__scrim"></div>
       </div>
       <div class="music-visualizer" id="musicVisualizer">
@@ -809,6 +811,16 @@ Another Playlist{
                            <span class="appearance-value" id="glassSatValue">160%</span>
                         </div>
                         <p class="setting-description">Lower opacity and higher blur read as frosted glass. Vibrancy boosts the colour coming through from behind.</p>
+                     </div>
+                     <div class="setting-group" id="albumArtControls">
+                        <label for="backgroundAlbumArt">Album Art Background:</label>
+                        <div class="toggle-switch">
+                           <input type="checkbox" id="backgroundAlbumArt" class="toggle-input">
+                           <label for="backgroundAlbumArt" class="toggle-label">
+                           <span class="toggle-slider"></span>
+                           </label>
+                        </div>
+                        <p class="setting-description">Replaces the background with a soft, blurred version of the current song's cover. Your own background below returns when nothing is loaded. Dim and Background blur still apply.</p>
                      </div>
                      <div class="setting-group appearance-section">
                         <label>Background:</label>

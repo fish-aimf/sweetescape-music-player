@@ -1623,8 +1623,55 @@ a.ui-btn--block {
 }
 
 [data-app-bg="off"] .app-backdrop__image,
-[data-app-bg="off"] .app-backdrop__scrim {
+[data-app-bg="off"] .app-backdrop__scrim,
+[data-app-art="on"] .app-backdrop__image,
+[data-app-art="off"] .app-backdrop__art {
   display: none;
+}
+
+.app-backdrop__art {
+  position: absolute;
+  inset: -12%;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  filter: blur(calc(56px + var(--app-bg-blur))) saturate(1.5);
+  opacity: 0;
+  transform: scale(1.12);
+  transition: opacity 1.2s ease;
+  animation: app-backdrop-drift 40s ease-in-out infinite alternate;
+  animation-play-state: paused;
+}
+
+.app-backdrop__art.is-visible {
+  opacity: 1;
+}
+
+[data-art-playing] .app-backdrop__art {
+  animation-play-state: running;
+}
+
+[data-app-art="on"] #appBackdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 40%, transparent 35%, color-mix(in srgb, var(--bg-primary-base) 55%, transparent) 100%);
+}
+
+@keyframes app-backdrop-drift {
+  from {
+    transform: scale(1.12) translate3d(0, 0, 0) rotate(0deg);
+  }
+  to {
+    transform: scale(1.28) translate3d(-3%, 2%, 0) rotate(3deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-backdrop__art {
+    animation: none;
+    transition: none;
+  }
 }
 
 [data-app-bg="on"] body,

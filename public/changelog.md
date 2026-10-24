@@ -771,3 +771,4 @@ The speed button on the Now Playing tab now shows your actual playback speed ins
 The Lyrics tab now switches to the new song whenever the song changes, keeps highlighting after pause and resume, and several dialogs no longer leak keyboard listeners or timers when reopened v74.7.0
 Removed leftover code comments from the API functions and standalone pages v74.7.1
 Moved the outdated scriptforcoding.js out of the website into an archive folder, so it is no longer downloadable v74.7.2
+Added an Album Art Background option for glass mode in Settings, which fills the background with a soft, blurred version of the current song's cover that crossfades between songs and gently drifts while music plays v74.8.0

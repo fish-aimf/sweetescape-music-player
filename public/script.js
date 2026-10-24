@@ -791,6 +791,8 @@ class AdvancedMusicPlayer {
       themeMode: document.getElementById('themeMode'),
       surfaceStyle: document.getElementById('surfaceStyle'),
       glassControls: document.getElementById('glassControls'),
+      albumArtControls: document.getElementById('albumArtControls'),
+      backgroundAlbumArt: document.getElementById('backgroundAlbumArt'),
       appearancePresets: document.getElementById('appearancePresets'),
       glassTint: document.getElementById('glassTint'),
       glassTintValue: document.getElementById('glassTintValue'),
@@ -5732,6 +5734,7 @@ class AdvancedMusicPlayer {
     }, 1200);
   }
   updatePlayerUI() {
+    this.syncAlbumArtBackdrop();
     let currentSong;
     if (this.currentPlaylist && this.currentPlaylist.songs[this.currentSongIndex]) {
       currentSong = this.currentPlaylist.songs[this.currentSongIndex];
@@ -6365,6 +6368,7 @@ class AdvancedMusicPlayer {
     this.updateCurrentSongDisplay();
   }
   updateCurrentSongDisplay() {
+    this.syncAlbumArtBackdrop();
     if (!this.currentSong) {
       this.hideCurrentSongSection();
       this.hideNowPlayingTab();
@@ -10623,7 +10627,8 @@ class AdvancedMusicPlayer {
       backgroundGradient: '',
       backgroundFit: 'cover',
       backgroundDim: 40,
-      backgroundBlur: 0
+      backgroundBlur: 0,
+      backgroundAlbumArt: false
     };
   }
   getGlassPresets() {
@@ -10718,7 +10723,7 @@ class AdvancedMusicPlayer {
     root.style.setProperty('--app-bg-repeat', state.backgroundFit === 'tile' ? 'repeat' : 'no-repeat');
     const image = this.getAppearanceBackgroundValue();
     root.style.setProperty('--app-bg-image', image || 'none');
-    root.setAttribute('data-app-bg', image ? 'on' : 'off');
+    this.syncAlbumArtBackdrop();
     this.scheduleGlassLegibility();
   }
   getAppearanceBackgroundValue() {
@@ -10757,24 +10762,102 @@ class AdvancedMusicPlayer {
       if (url !== this.backgroundObjectUrl) {
         return;
       }
-      const size = 24;
-      const canvas = document.createElement('canvas');
-      canvas.width = size;
-      canvas.height = size;
-      const ctx = canvas.getContext('2d', {
-        willReadFrequently: true
-      });
-      ctx.imageSmoothingQuality = 'high';
-      ctx.drawImage(image, 0, 0, size, size);
-      const data = ctx.getImageData(0, 0, size, size).data;
-      const samples = [];
-      for (let i = 0; i < data.length; i += 4) {
-        samples.push([ data[i], data[i + 1], data[i + 2], data[i + 3] / 255 ]);
-      }
-      this.backgroundSamples = samples;
+      this.backgroundSamples = this.sampleImageColors(image);
       this.scheduleGlassLegibility();
     };
     image.src = url;
+  }
+  sampleImageColors(image) {
+    const size = 24;
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d', {
+      willReadFrequently: true
+    });
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(image, 0, 0, size, size);
+    let data;
+    try {
+      data = ctx.getImageData(0, 0, size, size).data;
+    } catch (error) {
+      return null;
+    }
+    const samples = [];
+    for (let i = 0; i < data.length; i += 4) {
+      samples.push([ data[i], data[i + 1], data[i + 2], data[i + 3] / 255 ]);
+    }
+    return samples;
+  }
+  getAlbumArtSong() {
+    const state = this.appearance || this.getAppearanceDefaults();
+    if (state.surfaceStyle !== 'glass' || !state.backgroundAlbumArt || !this.currentSong) {
+      return null;
+    }
+    return this.songLibrary.find(s => s.videoId === this.currentSong.videoId) || this.currentSong;
+  }
+  syncAlbumArtBackdrop() {
+    const root = document.documentElement;
+    const song = this.getAlbumArtSong();
+    const custom = song?.thumbnailUrl && !song.thumbnailUrl.includes('i.ytimg.com/') ? song.thumbnailUrl : '';
+    const key = custom || song?.videoId || '';
+    root.setAttribute('data-app-art', key ? 'on' : 'off');
+    root.setAttribute('data-app-bg', key || this.getAppearanceBackgroundValue() ? 'on' : 'off');
+    root.toggleAttribute('data-art-playing', Boolean(key && this.isPlaying));
+    if (key === this.albumArtKey) {
+      return;
+    }
+    this.albumArtKey = key;
+    this.albumArtSamples = null;
+    this.scheduleGlassLegibility();
+    if (!key) {
+      return;
+    }
+    const sources = custom ? [ [ custom, true ], [ custom, false ] ] : [ [ `https://i.ytimg.com/vi/${key}/maxresdefault.jpg`, true ], [ `https://i.ytimg.com/vi/${key}/hqdefault.jpg`, true ], [ `https://i.ytimg.com/vi/${key}/hqdefault.jpg`, false ] ];
+    this.loadAlbumArt(key, sources);
+  }
+  loadAlbumArt(key, sources) {
+    const [ [ src, cors ], ...rest ] = sources;
+    const image = new Image();
+    const next = () => {
+      if (key !== this.albumArtKey) {
+        return;
+      }
+      if (rest.length) {
+        this.loadAlbumArt(key, rest);
+      } else {
+        this.albumArtSamples = false;
+        this.scheduleGlassLegibility();
+      }
+    };
+    image.onload = () => {
+      if (key !== this.albumArtKey) {
+        return;
+      }
+      if (image.naturalHeight <= 90) {
+        next();
+        return;
+      }
+      this.showAlbumArt(src);
+      this.albumArtSamples = cors && this.sampleImageColors(image) || false;
+      this.scheduleGlassLegibility();
+    };
+    image.onerror = next;
+    if (cors) {
+      image.crossOrigin = 'anonymous';
+    }
+    image.src = src;
+  }
+  showAlbumArt(src) {
+    const layers = document.querySelectorAll('.app-backdrop__art');
+    if (layers.length < 2) {
+      return;
+    }
+    this.albumArtLayer = this.albumArtLayer ? 0 : 1;
+    const incoming = layers[this.albumArtLayer];
+    incoming.style.backgroundImage = 'url("' + src.replace(/"/g, '%22') + '")';
+    incoming.classList.add('is-visible');
+    layers[1 - this.albumArtLayer].classList.remove('is-visible');
   }
   getGlassBackdropColors(styles) {
     const state = this.appearance || this.getAppearanceDefaults();
@@ -10782,6 +10865,13 @@ class AdvancedMusicPlayer {
     const blend = (top, bottom, amount) => top.map((channel, i) => channel * amount + bottom[i] * (1 - amount));
     const dim = state.backgroundDim / 100;
     const scrim = color => blend(base, color, dim);
+    if (this.albumArtKey) {
+      if (this.albumArtSamples === null) {
+        return null;
+      }
+      const samples = this.albumArtSamples || [ [ 255, 255, 255, 1 ], [ 0, 0, 0, 1 ], [ 128, 128, 128, 1 ] ];
+      return samples.map(([r, g, b, a]) => scrim(blend([ r, g, b ], base, a)));
+    }
     if (state.backgroundKind === 'image' && this.backgroundObjectUrl) {
       return this.backgroundSamples ? this.backgroundSamples.map(([r, g, b, a]) => scrim(blend([ r, g, b ], base, a))) : null;
     }
@@ -10814,7 +10904,7 @@ class AdvancedMusicPlayer {
     const state = this.appearance || this.getAppearanceDefaults();
     const glass = state.surfaceStyle === 'glass';
     const inline = root.style;
-    const signature = [ glass, root.getAttribute('data-theme'), state.glassTint, state.backgroundKind, state.backgroundGradient, state.backgroundDim, this.backgroundSamples ? this.backgroundObjectUrl : '' ].concat([ 'primary', 'background', 'secondary', 'text-primary', 'text-secondary', 'hover', 'accent' ].map(name => inline.getPropertyValue('--custom-' + name))).join('|');
+    const signature = [ glass, root.getAttribute('data-theme'), state.glassTint, state.backgroundKind, state.backgroundGradient, state.backgroundDim, this.backgroundSamples ? this.backgroundObjectUrl : '', this.albumArtKey + ':' + (this.albumArtSamples ? 'sampled' : String(this.albumArtSamples)) ].concat([ 'primary', 'background', 'secondary', 'text-primary', 'text-secondary', 'hover', 'accent' ].map(name => inline.getPropertyValue('--custom-' + name))).join('|');
     if (signature === this.legibilitySignature) {
       return;
     }
@@ -10894,6 +10984,12 @@ class AdvancedMusicPlayer {
     if (els.glassControls) {
       els.glassControls.style.display = state.surfaceStyle === 'glass' ? 'flex' : 'none';
     }
+    if (els.albumArtControls) {
+      els.albumArtControls.style.display = state.surfaceStyle === 'glass' ? 'flex' : 'none';
+    }
+    if (els.backgroundAlbumArt) {
+      els.backgroundAlbumArt.checked = Boolean(state.backgroundAlbumArt);
+    }
     [ [ 'glassTint', 'glassTintValue', '%', true ], [ 'glassBlur', 'glassBlurValue', 'px' ], [ 'glassSat', 'glassSatValue', '%' ], [ 'backgroundDim', 'backgroundDimValue', '%' ], [ 'backgroundBlur', 'backgroundBlurValue', 'px' ] ].forEach(([key, labelKey, suffix, invert]) => {
       const shown = invert ? 100 - state[key] : state[key];
       if (els[key]) {
@@ -10959,6 +11055,11 @@ class AdvancedMusicPlayer {
   handleSurfaceStyleChange(event) {
     this.updateAppearance({
       surfaceStyle: event.target.value
+    });
+  }
+  handleAlbumArtToggle(event) {
+    this.updateAppearance({
+      backgroundAlbumArt: event.target.checked
     });
   }
   handleGlassPresetClick(event) {
@@ -11043,7 +11144,7 @@ class AdvancedMusicPlayer {
   }
   setupAppearanceListeners() {
     const els = this.elements;
-    const bindings = [ [ els.surfaceStyle, 'change', this.handleSurfaceStyleChange.bind(this) ], [ els.appearancePresets, 'click', this.handleGlassPresetClick.bind(this) ], [ els.glassTint, 'input', this.handleAppearanceSliderInput('glassTint', '%', 'glassTintValue', true) ], [ els.glassBlur, 'input', this.handleAppearanceSliderInput('glassBlur', 'px', 'glassBlurValue') ], [ els.glassSat, 'input', this.handleAppearanceSliderInput('glassSat', '%', 'glassSatValue') ], [ els.backgroundDim, 'input', this.handleAppearanceSliderInput('backgroundDim', '%', 'backgroundDimValue') ], [ els.backgroundBlur, 'input', this.handleAppearanceSliderInput('backgroundBlur', 'px', 'backgroundBlurValue') ], [ els.backgroundFit, 'change', this.handleBackgroundFitChange.bind(this) ], [ els.backgroundGradients, 'click', this.handleBackgroundGradientClick.bind(this) ], [ els.backgroundChooseBtn, 'click', () => els.backgroundFileInput?.click() ], [ els.backgroundFileInput, 'change', this.handleBackgroundFileChange.bind(this) ], [ els.backgroundRemoveBtn, 'click', this.handleBackgroundRemove.bind(this) ] ];
+    const bindings = [ [ els.surfaceStyle, 'change', this.handleSurfaceStyleChange.bind(this) ], [ els.backgroundAlbumArt, 'change', this.handleAlbumArtToggle.bind(this) ], [ els.appearancePresets, 'click', this.handleGlassPresetClick.bind(this) ], [ els.glassTint, 'input', this.handleAppearanceSliderInput('glassTint', '%', 'glassTintValue', true) ], [ els.glassBlur, 'input', this.handleAppearanceSliderInput('glassBlur', 'px', 'glassBlurValue') ], [ els.glassSat, 'input', this.handleAppearanceSliderInput('glassSat', '%', 'glassSatValue') ], [ els.backgroundDim, 'input', this.handleAppearanceSliderInput('backgroundDim', '%', 'backgroundDimValue') ], [ els.backgroundBlur, 'input', this.handleAppearanceSliderInput('backgroundBlur', 'px', 'backgroundBlurValue') ], [ els.backgroundFit, 'change', this.handleBackgroundFitChange.bind(this) ], [ els.backgroundGradients, 'click', this.handleBackgroundGradientClick.bind(this) ], [ els.backgroundChooseBtn, 'click', () => els.backgroundFileInput?.click() ], [ els.backgroundFileInput, 'change', this.handleBackgroundFileChange.bind(this) ], [ els.backgroundRemoveBtn, 'click', this.handleBackgroundRemove.bind(this) ] ];
     bindings.forEach(([element, event, handler]) => {
       if (element) {
         element.addEventListener(event, handler);
