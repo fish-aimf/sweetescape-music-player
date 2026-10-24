@@ -470,7 +470,8 @@ class AdvancedMusicPlayer {
       maxRenderWidth: 960,
       frameInterval: 1000 / 48,
       lastFrame: 0,
-      lastPalette: 0,
+      paletteDirty: true,
+      paletteFrame: 0,
       levels: null,
       targets: null,
       phases: null,
@@ -798,6 +799,11 @@ class AdvancedMusicPlayer {
       albumArtBlurValue: document.getElementById('albumArtBlurValue'),
       albumArtSat: document.getElementById('albumArtSat'),
       albumArtSatValue: document.getElementById('albumArtSatValue'),
+      visualizerColorModes: document.getElementById('visualizerColorModes'),
+      visualizerColorCustomRow: document.getElementById('visualizerColorCustomRow'),
+      visualizerColorPicker: document.getElementById('visualizerColorPicker'),
+      visualizerColorValue: document.getElementById('visualizerColorValue'),
+      visualizerColorCustomSwatch: document.getElementById('visualizerColorCustomSwatch'),
       appearancePresets: document.getElementById('appearancePresets'),
       glassTint: document.getElementById('glassTint'),
       glassTintValue: document.getElementById('glassTintValue'),
@@ -10635,7 +10641,9 @@ class AdvancedMusicPlayer {
       backgroundBlur: 0,
       backgroundAlbumArt: false,
       albumArtBlur: 56,
-      albumArtSat: 150
+      albumArtSat: 150,
+      visualizerColorMode: 'primary',
+      visualizerColor: '#4a9eff'
     };
   }
   getGlassPresets() {
@@ -10814,10 +10822,17 @@ class AdvancedMusicPlayer {
     root.setAttribute('data-app-bg', key || this.getAppearanceBackgroundValue() ? 'on' : 'off');
     root.toggleAttribute('data-art-playing', Boolean(key && this.isPlaying));
     if (key === this.albumArtKey) {
+      const state = this.appearance || this.getAppearanceDefaults();
+      if (key && this.albumArtImage && this.albumArtLook !== state.albumArtBlur + '|' + state.albumArtSat) {
+        clearTimeout(this.albumArtLookTimer);
+        this.albumArtLookTimer = setTimeout(() => this.paintAlbumArt(false), 90);
+      }
       return;
     }
+    clearTimeout(this.albumArtLookTimer);
     this.albumArtKey = key;
     this.albumArtSamples = null;
+    this.albumArtImage = null;
     this.scheduleGlassLegibility();
     if (!key) {
       return;
@@ -10847,8 +10862,10 @@ class AdvancedMusicPlayer {
         next();
         return;
       }
-      this.showAlbumArt(src);
       this.albumArtSamples = cors && this.sampleImageColors(image) || false;
+      this.albumArtImage = this.albumArtSamples ? image : null;
+      this.albumArtSource = src;
+      this.paintAlbumArt(true);
       this.scheduleGlassLegibility();
     };
     image.onerror = next;
@@ -10857,16 +10874,82 @@ class AdvancedMusicPlayer {
     }
     image.src = src;
   }
-  showAlbumArt(src) {
+  paintAlbumArt(crossfade) {
+    const key = this.albumArtKey;
+    const state = this.appearance || this.getAppearanceDefaults();
+    const look = state.albumArtBlur + '|' + state.albumArtSat;
+    this.albumArtLook = look;
+    const apply = url => {
+      if (key !== this.albumArtKey || look !== this.albumArtLook) {
+        if (url) {
+          URL.revokeObjectURL(url);
+        }
+        return;
+      }
+      this.showAlbumArt(url || this.albumArtSource, !url, crossfade);
+    };
+    if (!this.albumArtImage) {
+      apply(null);
+      return;
+    }
+    this.renderAlbumArt(this.albumArtImage, state, url => {
+      if (!url) {
+        apply(null);
+        return;
+      }
+      const probe = new Image();
+      probe.src = url;
+      probe.decode().catch(() => {}).then(() => apply(url));
+    });
+  }
+  renderAlbumArt(image, state, done) {
+    const width = image.naturalWidth;
+    const aspect = width / image.naturalHeight;
+    const blur = Math.max(0, Number(state.albumArtBlur) || 0);
+    const cover = Math.max(window.innerWidth, window.innerHeight * aspect) * 1.24 * 1.12;
+    const canvasWidth = Math.round(Math.max(64, Math.min(width, cover, blur ? cover * 6 / blur : width)));
+    const canvasHeight = Math.max(1, Math.round(canvasWidth / aspect));
+    const canvas = document.createElement('canvas');
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+    const ctx = canvas.getContext('2d', {
+      alpha: false
+    });
+    if (!ctx || typeof ctx.filter !== 'string') {
+      done(null);
+      return;
+    }
+    const radius = blur * canvasWidth / cover;
+    const pad = radius * 3;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.filter = 'blur(' + radius.toFixed(2) + 'px) saturate(' + state.albumArtSat + '%)';
+    try {
+      ctx.drawImage(image, -pad, -pad, canvasWidth + pad * 2, canvasHeight + pad * 2);
+      canvas.toBlob(blob => done(blob ? URL.createObjectURL(blob) : null), 'image/jpeg', 0.9);
+    } catch (error) {
+      done(null);
+    }
+  }
+  showAlbumArt(src, raw, crossfade) {
     const layers = document.querySelectorAll('.app-backdrop__art');
     if (layers.length < 2) {
       return;
     }
-    this.albumArtLayer = this.albumArtLayer ? 0 : 1;
-    const incoming = layers[this.albumArtLayer];
+    if (crossfade || this.albumArtLayer === undefined) {
+      this.albumArtLayer = this.albumArtLayer ? 0 : 1;
+    }
+    const index = this.albumArtLayer;
+    const incoming = layers[index];
+    this.albumArtUrls = this.albumArtUrls || [ '', '' ];
+    const previous = this.albumArtUrls[index];
+    this.albumArtUrls[index] = src;
     incoming.style.backgroundImage = 'url("' + src.replace(/"/g, '%22') + '")';
+    incoming.classList.toggle('app-backdrop__art--raw', raw);
     incoming.classList.add('is-visible');
-    layers[1 - this.albumArtLayer].classList.remove('is-visible');
+    layers[1 - index].classList.remove('is-visible');
+    if (previous && previous !== src && previous.indexOf('blob:') === 0) {
+      URL.revokeObjectURL(previous);
+    }
   }
   getGlassBackdropColors(styles) {
     const state = this.appearance || this.getAppearanceDefaults();
@@ -10892,14 +10975,19 @@ class AdvancedMusicPlayer {
     const hover = this.readCssColor(styles.getPropertyValue('--hover-color'));
     return [ base, blend(accent, base, 0.48), blend(hover, base, 0.34) ];
   }
-  scheduleGlassLegibility() {
-    if (!this.legibilityObserver) {
-      this.legibilityObserver = new MutationObserver(() => this.scheduleGlassLegibility());
-      this.legibilityObserver.observe(document.documentElement, {
-        attributes: true,
-        attributeFilter: [ 'data-theme', 'style' ]
-      });
+  observeRootStyle() {
+    if (this.legibilityObserver) {
+      return;
     }
+    this.legibilityObserver = new MutationObserver(() => this.scheduleGlassLegibility());
+    this.legibilityObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: [ 'data-theme', 'style' ]
+    });
+  }
+  scheduleGlassLegibility() {
+    this.observeRootStyle();
+    this.invalidateVisualizerPalette();
     if (this.legibilityFrame) {
       return;
     }
@@ -10930,16 +11018,8 @@ class AdvancedMusicPlayer {
     }
     this.legibilitySignature = signature;
     const surface = this.readCssColor(styles.getPropertyValue('--bg-secondary-base'));
-    const linear = channel => {
-      const value = channel / 255;
-      return value <= 0.04045 ? value / 12.92 : Math.pow((value + 0.055) / 1.055, 2.4);
-    };
-    const luminance = rgb => 0.2126 * linear(rgb[0]) + 0.7152 * linear(rgb[1]) + 0.0722 * linear(rgb[2]);
-    const contrast = (a, b) => {
-      const x = luminance(a) + 0.05;
-      const y = luminance(b) + 0.05;
-      return x > y ? x / y : y / x;
-    };
+    const luminance = rgb => this.relativeLuminance(rgb);
+    const contrast = (a, b) => this.contrastRatio(a, b);
     const blend = (top, bottom, amount) => top.map((channel, i) => channel * amount + bottom[i] * (1 - amount));
     const readable = (texts, tint, behind, ratio) => behind.every(color => {
       const glassColor = blend(surface, color, tint);
@@ -11017,6 +11097,57 @@ class AdvancedMusicPlayer {
     this.renderAppearancePresets();
     this.renderBackgroundGradients();
     this.renderBackgroundPreview();
+    this.renderVisualizerColorControls();
+  }
+  relativeLuminance(rgb) {
+    const linear = channel => {
+      const value = channel / 255;
+      return value <= 0.04045 ? value / 12.92 : Math.pow((value + 0.055) / 1.055, 2.4);
+    };
+    return 0.2126 * linear(rgb[0]) + 0.7152 * linear(rgb[1]) + 0.0722 * linear(rgb[2]);
+  }
+  contrastRatio(a, b) {
+    const x = this.relativeLuminance(a) + 0.05;
+    const y = this.relativeLuminance(b) + 0.05;
+    return x > y ? x / y : y / x;
+  }
+  renderVisualizerColorControls() {
+    const state = this.appearance;
+    const els = this.elements;
+    if (!state || !els.visualizerColorModes) {
+      return;
+    }
+    els.visualizerColorModes.querySelectorAll('.appearance-preset').forEach(button => {
+      button.classList.toggle('active', button.dataset.visColor === state.visualizerColorMode);
+    });
+    if (els.visualizerColorCustomRow) {
+      els.visualizerColorCustomRow.style.display = state.visualizerColorMode === 'custom' ? 'grid' : 'none';
+    }
+    if (els.visualizerColorPicker) {
+      els.visualizerColorPicker.value = state.visualizerColor;
+    }
+    if (els.visualizerColorValue) {
+      els.visualizerColorValue.textContent = state.visualizerColor.toUpperCase();
+    }
+    if (els.visualizerColorCustomSwatch) {
+      els.visualizerColorCustomSwatch.style.background = state.visualizerColor;
+    }
+  }
+  handleVisualizerColorModeClick(event) {
+    const button = event.target.closest('.appearance-preset');
+    if (button && [ 'primary', 'custom', 'auto' ].includes(button.dataset.visColor)) {
+      this.updateAppearance({
+        visualizerColorMode: button.dataset.visColor
+      });
+    }
+  }
+  handleVisualizerColorInput(event) {
+    const color = event.target.value;
+    this.appearance.visualizerColor = color;
+    this.renderVisualizerColorControls();
+    this.invalidateVisualizerPalette();
+    clearTimeout(this.visualizerColorSaveTimer);
+    this.visualizerColorSaveTimer = setTimeout(() => this.saveSetting('visualizerColor', color), 250);
   }
   renderAppearancePresets() {
     if (!this.elements.appearancePresets) {
@@ -11156,7 +11287,7 @@ class AdvancedMusicPlayer {
   }
   setupAppearanceListeners() {
     const els = this.elements;
-    const bindings = [ [ els.surfaceStyle, 'change', this.handleSurfaceStyleChange.bind(this) ], [ els.backgroundAlbumArt, 'change', this.handleAlbumArtToggle.bind(this) ], [ els.appearancePresets, 'click', this.handleGlassPresetClick.bind(this) ], [ els.glassTint, 'input', this.handleAppearanceSliderInput('glassTint', '%', 'glassTintValue', true) ], [ els.glassBlur, 'input', this.handleAppearanceSliderInput('glassBlur', 'px', 'glassBlurValue') ], [ els.glassSat, 'input', this.handleAppearanceSliderInput('glassSat', '%', 'glassSatValue') ], [ els.backgroundDim, 'input', this.handleAppearanceSliderInput('backgroundDim', '%', 'backgroundDimValue') ], [ els.backgroundBlur, 'input', this.handleAppearanceSliderInput('backgroundBlur', 'px', 'backgroundBlurValue') ], [ els.albumArtBlur, 'input', this.handleAppearanceSliderInput('albumArtBlur', 'px', 'albumArtBlurValue') ], [ els.albumArtSat, 'input', this.handleAppearanceSliderInput('albumArtSat', '%', 'albumArtSatValue') ], [ els.backgroundFit, 'change', this.handleBackgroundFitChange.bind(this) ], [ els.backgroundGradients, 'click', this.handleBackgroundGradientClick.bind(this) ], [ els.backgroundChooseBtn, 'click', () => els.backgroundFileInput?.click() ], [ els.backgroundFileInput, 'change', this.handleBackgroundFileChange.bind(this) ], [ els.backgroundRemoveBtn, 'click', this.handleBackgroundRemove.bind(this) ] ];
+    const bindings = [ [ els.surfaceStyle, 'change', this.handleSurfaceStyleChange.bind(this) ], [ els.backgroundAlbumArt, 'change', this.handleAlbumArtToggle.bind(this) ], [ els.visualizerColorModes, 'click', this.handleVisualizerColorModeClick.bind(this) ], [ els.visualizerColorPicker, 'input', this.handleVisualizerColorInput.bind(this) ], [ els.appearancePresets, 'click', this.handleGlassPresetClick.bind(this) ], [ els.glassTint, 'input', this.handleAppearanceSliderInput('glassTint', '%', 'glassTintValue', true) ], [ els.glassBlur, 'input', this.handleAppearanceSliderInput('glassBlur', 'px', 'glassBlurValue') ], [ els.glassSat, 'input', this.handleAppearanceSliderInput('glassSat', '%', 'glassSatValue') ], [ els.backgroundDim, 'input', this.handleAppearanceSliderInput('backgroundDim', '%', 'backgroundDimValue') ], [ els.backgroundBlur, 'input', this.handleAppearanceSliderInput('backgroundBlur', 'px', 'backgroundBlurValue') ], [ els.albumArtBlur, 'input', this.handleAppearanceSliderInput('albumArtBlur', 'px', 'albumArtBlurValue') ], [ els.albumArtSat, 'input', this.handleAppearanceSliderInput('albumArtSat', '%', 'albumArtSatValue') ], [ els.backgroundFit, 'change', this.handleBackgroundFitChange.bind(this) ], [ els.backgroundGradients, 'click', this.handleBackgroundGradientClick.bind(this) ], [ els.backgroundChooseBtn, 'click', () => els.backgroundFileInput?.click() ], [ els.backgroundFileInput, 'change', this.handleBackgroundFileChange.bind(this) ], [ els.backgroundRemoveBtn, 'click', this.handleBackgroundRemove.bind(this) ] ];
     bindings.forEach(([element, event, handler]) => {
       if (element) {
         element.addEventListener(event, handler);
@@ -11869,6 +12000,7 @@ class AdvancedMusicPlayer {
       return;
     }
     v.roundedBars = typeof v.ctx.roundRect === 'function';
+    this.observeRootStyle();
     v.reducedMotion = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
     this._visualizerTick = timestamp => this.renderVisualizerFrame(timestamp);
     this._visualizerResizeHandler = this.debounce(() => this.resizeCanvas(), 200);
@@ -12020,10 +12152,6 @@ class AdvancedMusicPlayer {
     const delta = v.lastFrame ? Math.min((timestamp - v.lastFrame) / 1000, 0.12) : 1 / 30;
     v.lastFrame = timestamp;
     v.now = timestamp;
-    if (timestamp - v.lastPalette > 1000) {
-      v.lastPalette = timestamp;
-      this.refreshVisualizerPalette();
-    }
     const still = v.reducedMotion ? v.reducedMotion.matches : false;
     const playing = !still && this.isPlaying && this.isTabVisible;
     const settling = this.sampleVisualizerLevels(playing, timestamp, delta);
@@ -12188,24 +12316,120 @@ class AdvancedMusicPlayer {
     }
     return `rgb(${out[0]},${out[1]},${out[2]})`;
   }
+  invalidateVisualizerPalette() {
+    const v = this.visualizer;
+    v.paletteDirty = true;
+    if (!v.isActive || !v.ctx || v.animationId !== null || v.paletteFrame) {
+      return;
+    }
+    v.paletteFrame = requestAnimationFrame(() => {
+      v.paletteFrame = 0;
+      if (v.animationId === null && v.isActive) {
+        this.drawVisualizerFrame();
+      }
+    });
+  }
+  pickVibrantColor(samples) {
+    if (!samples || !samples.length) {
+      return null;
+    }
+    const bins = new Float32Array(12);
+    const members = [];
+    for (let i = 0; i < samples.length; i++) {
+      const [r, g, b, a] = samples[i];
+      const max = Math.max(r, g, b);
+      const chroma = max - Math.min(r, g, b);
+      if (chroma < 28 || a < 0.5) {
+        continue;
+      }
+      const hue = max === r ? (g - b) / chroma % 6 : max === g ? (b - r) / chroma + 2 : (r - g) / chroma + 4;
+      const bin = Math.floor((hue + 6) % 6 * 2) % 12;
+      bins[bin] += chroma * chroma;
+      members.push([ bin, chroma, r, g, b ]);
+    }
+    if (!members.length) {
+      return null;
+    }
+    let best = 0;
+    for (let i = 1; i < 12; i++) {
+      if (bins[i] > bins[best]) {
+        best = i;
+      }
+    }
+    const sum = [ 0, 0, 0 ];
+    let weight = 0;
+    members.forEach(([bin, chroma, r, g, b]) => {
+      if (bin === best) {
+        sum[0] += r * chroma;
+        sum[1] += g * chroma;
+        sum[2] += b * chroma;
+        weight += chroma;
+      }
+    });
+    return sum.map(channel => channel / weight);
+  }
+  getVisualizerBackdropColors(styles) {
+    if (document.documentElement.getAttribute('data-app-bg') === 'on') {
+      const colors = this.getGlassBackdropColors(styles);
+      if (colors && colors.length) {
+        return colors;
+      }
+    }
+    return [ this.readCssColor(styles.getPropertyValue('--bg-primary-base')), this.readCssColor(styles.getPropertyValue('--bg-secondary-base')) ];
+  }
+  getAutoVisualizerColor(styles, accent) {
+    const v = this.visualizer;
+    const backdrops = this.getVisualizerBackdropColors(styles);
+    const seed = (this.albumArtKey ? this.pickVibrantColor(this.albumArtSamples) : null) || (this.backgroundSamples && this.appearance?.backgroundKind === 'image' ? this.pickVibrantColor(this.backgroundSamples) : null) || this.readVisualizerColor(accent);
+    const blend = (top, bottom, amount) => top.map((channel, i) => channel * amount + bottom[i] * (1 - amount));
+    const mean = backdrops.reduce((total, color) => total.map((channel, i) => channel + color[i] / backdrops.length), [ 0, 0, 0 ]);
+    const away = this.relativeLuminance(mean) > 0.179 ? [ 0, 0, 0 ] : [ 255, 255, 255 ];
+    const opacity = Math.min(1, Math.max(0.05, parseFloat(getComputedStyle(v.canvas).opacity) || 0.5));
+    const needed = Math.ceil(backdrops.length * 0.8);
+    const visible = color => backdrops.filter(behind => this.contrastRatio(blend(color, behind, opacity), behind) >= 3).length >= needed;
+    let amount = 0;
+    while (amount < 1 && !visible(blend(away, seed, amount))) {
+      amount = Math.min(1, amount + 0.05);
+    }
+    return {
+      color: blend(away, seed, amount).map(Math.round),
+      away: away
+    };
+  }
   refreshVisualizerPalette() {
     const v = this.visualizer;
     if (!v.ctx) {
       return;
     }
+    v.paletteDirty = false;
+    const state = this.appearance || this.getAppearanceDefaults();
+    const mode = state.visualizerColorMode;
     const styles = getComputedStyle(document.documentElement);
     const accent = (styles.getPropertyValue('--accent-color') || '#4a9eff').trim();
     const hover = (styles.getPropertyValue('--hover-color') || accent).trim();
-    const key = accent + '|' + hover + '|' + v.height + '|' + v.scale.toFixed(3);
+    const picked = mode === 'auto' ? this.getAutoVisualizerColor(styles, accent) : mode === 'custom' ? {
+      color: this.readVisualizerColor(state.visualizerColor),
+      away: [ 255, 255, 255 ]
+    } : null;
+    const key = (picked ? mode + '|' + picked.color.join(',') + '|' + picked.away[0] : accent + '|' + hover) + '|' + v.height + '|' + v.scale.toFixed(3);
     if (key === v.paletteKey && v.gradient) {
       return;
     }
     v.paletteKey = key;
-    const accentRgb = this.readVisualizerColor(accent);
-    const hoverRgb = this.readVisualizerColor(hover);
-    v.accent = this.vividVisualizerColor(accentRgb, 1.55, 1.34);
-    v.hover = this.vividVisualizerColor(hoverRgb, 1.55, 1.16);
-    const crest = this.vividVisualizerColor(accentRgb, 1.8, 1.9, 0.2);
+    let crest;
+    if (picked) {
+      const [r, g, b] = picked.color;
+      const lift = picked.away[0] ? 0.3 : 0;
+      v.accent = `rgb(${r},${g},${b})`;
+      v.hover = this.vividVisualizerColor(picked.color, 1.3, 1);
+      crest = picked.away[0] ? this.vividVisualizerColor(picked.color, 1.1, 1, lift) : this.vividVisualizerColor(picked.color, 1.2, 0.7);
+    } else {
+      const accentRgb = this.readVisualizerColor(accent);
+      const hoverRgb = this.readVisualizerColor(hover);
+      v.accent = this.vividVisualizerColor(accentRgb, 1.55, 1.34);
+      v.hover = this.vividVisualizerColor(hoverRgb, 1.55, 1.16);
+      crest = this.vividVisualizerColor(accentRgb, 1.8, 1.9, 0.2);
+    }
     v.crest = crest;
     const band = Math.max(6, v.height * 0.46 * v.scale * (1 + v.headroom));
     const gradient = v.ctx.createLinearGradient(0, v.height * 0.5 - band, 0, v.height * 0.5 + band);
@@ -12248,7 +12472,7 @@ class AdvancedMusicPlayer {
     if (!ctx || !v.levels) {
       return;
     }
-    if (!v.gradient) {
+    if (!v.gradient || v.paletteDirty) {
       this.refreshVisualizerPalette();
     }
     ctx.clearRect(0, 0, v.width, v.height);
@@ -12496,6 +12720,7 @@ class AdvancedMusicPlayer {
     }
     this.visualizer.style = this.visualizerStyle;
     this.visualizer.scale = this.visualizerGain / 3;
+    this.visualizer.paletteDirty = true;
     if (this.elements.visualizerGain) {
       this.elements.visualizerGain.value = this.visualizerGain;
     }
@@ -12547,6 +12772,7 @@ class AdvancedMusicPlayer {
   handleVisualizerGainInput(event) {
     this.visualizerGain = this.clampVisualizerGain(event.target.value);
     this.visualizer.scale = this.visualizerGain / 3;
+    this.visualizer.paletteDirty = true;
     this.renderVisualizerGainLabel();
     if (this.visualizer.ctx) {
       this.drawVisualizerFrame();

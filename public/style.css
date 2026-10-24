@@ -8700,6 +8700,29 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 .appearance-preset-swatch--subtle {
   background: linear-gradient(135deg, rgba(160, 165, 175, 0.95), rgba(120, 125, 135, 0.95));
 }
+.appearance-preset-swatch--accent {
+  background: var(--accent-color);
+}
+.appearance-preset-swatch--auto {
+  background: conic-gradient(#f87171, #fbbf24, #34d399, #60a5fa, #a78bfa, #f87171);
+}
+.appearance-row input[type="color"] {
+  width: 100%;
+  min-width: 0;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--border-color);
+  border-radius: var(--ui-radius-sm);
+  cursor: pointer;
+  background: 0 0;
+}
+.appearance-row input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+.appearance-row input[type="color"]::-webkit-color-swatch {
+  border: 0;
+  border-radius: 3px;
+}
 .vis-style-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

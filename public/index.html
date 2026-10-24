@@ -868,6 +868,20 @@ Another Playlist{
                         </div>
                         <p class="setting-description">Raise Dim if text is hard to read over a busy photo. Images are stored on this device only.</p>
                      </div>
+                     <div class="setting-group appearance-section" id="visualizerColorControls">
+                        <label>Visualizer Colour:</label>
+                        <div class="appearance-presets" id="visualizerColorModes">
+                           <button type="button" class="appearance-preset" data-vis-color="primary"><span class="appearance-preset-swatch appearance-preset-swatch--accent"></span>Primary</button>
+                           <button type="button" class="appearance-preset" data-vis-color="custom"><span class="appearance-preset-swatch" id="visualizerColorCustomSwatch"></span>Custom</button>
+                           <button type="button" class="appearance-preset" data-vis-color="auto"><span class="appearance-preset-swatch appearance-preset-swatch--auto"></span>Auto</button>
+                        </div>
+                        <div class="appearance-row" id="visualizerColorCustomRow">
+                           <label for="visualizerColorPicker">Colour</label>
+                           <input type="color" id="visualizerColorPicker" value="#4a9eff">
+                           <span class="appearance-value" id="visualizerColorValue">#4A9EFF</span>
+                        </div>
+                        <p class="setting-description">Primary follows your theme colour. Auto picks a colour from the album art or background and adjusts its brightness so the visualizer always stands out from what is behind it.</p>
+                     </div>
                      <div class="custom-theme-section" id="customThemeSection">
                         <h3>Customize Colors</h3>
                         <div class="color-picker-grid">
