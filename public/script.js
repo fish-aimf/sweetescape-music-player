@@ -2106,10 +2106,7 @@ class AdvancedMusicPlayer {
       this.renderSongLibrary(searchTerm);
       return;
     }
-    if (this._discoveryResizeObserver) {
-      this._discoveryResizeObserver.disconnect();
-      this._discoveryResizeObserver = null;
-    }
+    this._discoveryCleanup?.();
     const view = document.createElement('div');
     view.className = 'compact-library-view';
     view.appendChild(this._buildFavoritesCard());
@@ -2804,9 +2801,7 @@ class AdvancedMusicPlayer {
     });
     card.appendChild(header);
     card.appendChild(grid);
-    if (this._discoveryResizeObserver) {
-      this._discoveryResizeObserver.disconnect();
-    }
+    this._discoveryCleanup?.();
     this._discoveryResizeObserver = new ResizeObserver(() => {
       if (card.classList.contains('expanded')) {
         return;
@@ -2825,10 +2820,9 @@ class AdvancedMusicPlayer {
         this._discoveryResizeObserver.disconnect();
         this._discoveryResizeObserver = null;
       }
+      this._discoveryCleanup = null;
     };
-    card.addEventListener('remove', cleanup, {
-      once: true
-    });
+    this._discoveryCleanup = cleanup;
     return card;
   }
   _buildDiscoverySongItem(song) {
@@ -4889,9 +4883,6 @@ class AdvancedMusicPlayer {
     this.saveRecentlyPlayedSong(song);
     this.updateCurrentSongDisplay();
     this._discordScheduleSend();
-    if (document.getElementById('lyrics') && document.getElementById('lyrics').classList.contains('active')) {
-      this.renderLyricsTab();
-    }
   }
   handleSongNameRightClick(event) {
     event.preventDefault();
@@ -4949,8 +4940,13 @@ class AdvancedMusicPlayer {
         }
       }
     }
-    if (this.localAudio && !this.localAudio.paused) {
+    if (this.localAudio) {
       this.localAudio.pause();
+      if (this.localAudio.src?.startsWith('blob:')) {
+        URL.revokeObjectURL(this.localAudio.src);
+        this.localAudio.removeAttribute('src');
+        this.localAudio.load();
+      }
     }
     this.isLocalPlayback = false;
     if (!this.ytPlayer) {
@@ -5935,12 +5931,10 @@ class AdvancedMusicPlayer {
         this.titleScrollInterval = null;
       }
       this.updatePageTitle();
-      if (this.progressInterval) {
-        clearInterval(this.progressInterval);
-      }
-      if (this.lyricsInterval) {
-        clearInterval(this.lyricsInterval);
-      }
+      clearInterval(this.progressInterval);
+      this.progressInterval = null;
+      clearInterval(this.lyricsInterval);
+      this.lyricsInterval = null;
     } else if (event.data === YT.PlayerState.PLAYING) {
       this.isPlaying = true;
       this.updatePlayerUI();
@@ -5952,11 +5946,12 @@ class AdvancedMusicPlayer {
       }
       this.startListeningTimeTracking();
       if (document.getElementById('lyrics') && document.getElementById('lyrics').classList.contains('active')) {
-        if (!this.currentLyrics?.length) {
+        if (!this.currentLyrics?.length || this._lyricsPaneVideoId !== this.currentSong?.videoId) {
           this.renderLyricsTab();
         } else {
           const currentTime = this.ytPlayer.getCurrentTime();
           this.updateHighlightedLyric(currentTime, this.currentLyrics, this.currentTimings);
+          this._startLyricsInterval();
         }
       }
     }
@@ -6213,6 +6208,9 @@ class AdvancedMusicPlayer {
     document.getElementById(tabName).classList.add('active');
     if (tabName === 'lyrics') {
       this.renderLyricsTab();
+    } else {
+      clearInterval(this.lyricsInterval);
+      this.lyricsInterval = null;
     }
     const nowPlaying = document.querySelector('.now-playing');
     const spacer = document.getElementById('controlBarSpacer');
@@ -6374,6 +6372,9 @@ class AdvancedMusicPlayer {
     }
     this.showNowPlayingTab();
     this.updateNowPlayingView();
+    if (this._lyricsPaneVideoId !== this.currentSong.videoId && document.getElementById('lyrics')?.classList.contains('active')) {
+      this.renderLyricsTab();
+    }
     let displaySong = this.currentSong;
     if (this.currentPlaylist) {
       const libMatch = this.songLibrary.find(s => s.videoId === this.currentSong.videoId);
@@ -6972,6 +6973,11 @@ class AdvancedMusicPlayer {
     if (!this.elements.lyricsPane) {
       return;
     }
+    clearInterval(this.lyricsInterval);
+    this.lyricsInterval = null;
+    this.currentLyrics = [];
+    this.currentTimings = [];
+    this._lyricsPaneVideoId = this.currentSong?.videoId ?? null;
     this.elements.lyricsPane.innerHTML = '';
     if (this.currentSongIndex === undefined || !this.songLibrary.length && !this.currentPlaylist) {
       const emptyMessage = document.createElement('div');
@@ -7147,11 +7153,12 @@ class AdvancedMusicPlayer {
     this.elements.lyricsPane.appendChild(lyricsPlayer);
     this.currentLyrics = hasTimestamps ? lyricsArray : [];
     this.currentTimings = hasTimestamps ? timingsArray : [];
-    if (this.lyricsInterval) {
-      clearInterval(this.lyricsInterval);
-      this.lyricsInterval = null;
-    }
-    if (hasTimestamps && this.ytPlayer) {
+    this._startLyricsInterval();
+  }
+  _startLyricsInterval() {
+    clearInterval(this.lyricsInterval);
+    this.lyricsInterval = null;
+    if (this.currentTimings?.length && this.ytPlayer) {
       this.lyricsInterval = setInterval(() => {
         if (!this.isTabVisible) {
           return;
@@ -7346,15 +7353,12 @@ class AdvancedMusicPlayer {
     modal.classList.remove('hidden');
   }
   stopPlaybackTrackingIntervals() {
-    if (this.titleScrollInterval) {
-      clearInterval(this.titleScrollInterval);
-    }
-    if (this.progressInterval) {
-      clearInterval(this.progressInterval);
-    }
-    if (this.lyricsInterval) {
-      clearInterval(this.lyricsInterval);
-    }
+    clearInterval(this.titleScrollInterval);
+    clearInterval(this.progressInterval);
+    clearInterval(this.lyricsInterval);
+    this.titleScrollInterval = null;
+    this.progressInterval = null;
+    this.lyricsInterval = null;
   }
   initLyricMaker(song) {
     const modal = document.getElementById('lyricsModal');
@@ -7371,12 +7375,9 @@ class AdvancedMusicPlayer {
     };
     const closeModal = () => {
       modal.classList.add('hidden');
-      if (state.timeUpdateInterval) {
-        clearInterval(state.timeUpdateInterval);
-      }
-      if (player.ytPlayer) {
-        player.ytPlayer.destroy();
-      }
+      clearInterval(state.timeUpdateInterval);
+      state.timeUpdateInterval = null;
+      player.ytPlayer?.pauseVideo?.();
     };
     closeBtn.onclick = closeModal;
     const showTab = tabId => {
@@ -7779,7 +7780,7 @@ class AdvancedMusicPlayer {
       if (!progressBar) {
         return;
       }
-      progressBar.addEventListener('click', e => {
+      progressBar.onclick = e => {
         if (!player.ytPlayer || !player.ytPlayer.getDuration) {
           return;
         }
@@ -7789,7 +7790,7 @@ class AdvancedMusicPlayer {
         const duration = player.ytPlayer.getDuration();
         const seekTime = percentage / 100 * duration;
         seekVideoToLyricTime(seekTime);
-      });
+      };
     };
     const skipCurrentLyricLine = () => {
       if (!state.isRecording) {
@@ -7865,7 +7866,8 @@ class AdvancedMusicPlayer {
       }
     };
     document.getElementById('prepareLyricsBtn').addEventListener('click', prepareLyrics);
-    document.getElementById('nextToRecordBtn').addEventListener('click', () => showTab('recordTab'));
+    const goToRecordTab = () => showTab('recordTab');
+    document.getElementById('nextToRecordBtn').addEventListener('click', goToRecordTab);
     document.getElementById('startRecording').addEventListener('click', startRecording);
     document.getElementById('markLine').addEventListener('click', markCurrentLine);
     document.getElementById('finishRecording').addEventListener('click', finishRecording);
@@ -7881,9 +7883,7 @@ class AdvancedMusicPlayer {
     document.addEventListener('keydown', handleKeyDown);
     this.lyricMakerCleanup = () => {
       document.getElementById('prepareLyricsBtn').removeEventListener('click', prepareLyrics);
-      const nextToRecordBtn = document.getElementById('nextToRecordBtn');
-      const recordTabHandler = () => showTab('recordTab');
-      nextToRecordBtn.removeEventListener('click', recordTabHandler);
+      document.getElementById('nextToRecordBtn').removeEventListener('click', goToRecordTab);
       document.getElementById('startRecording').removeEventListener('click', startRecording);
       document.getElementById('markLine').removeEventListener('click', markCurrentLine);
       document.getElementById('finishRecording').removeEventListener('click', finishRecording);
@@ -7896,16 +7896,14 @@ class AdvancedMusicPlayer {
       document.getElementById('geniusBtn').removeEventListener('click', searchGenius);
       document.getElementById('googleBtn').removeEventListener('click', searchGoogle);
       document.getElementById('autoFetchGeniusLyricsBtn')?.removeEventListener('click', autoFetchGeniusLyrics);
-      document.addEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keydown', handleKeyDown);
       tabHandlers.forEach(({element: element, handler: handler}) => {
         element.removeEventListener('click', handler);
       });
-      if (state.timeUpdateInterval) {
-        clearInterval(state.timeUpdateInterval);
-      }
-      if (player.ytPlayer) {
-        player.ytPlayer.destroy();
-      }
+      clearInterval(state.timeUpdateInterval);
+      state.timeUpdateInterval = null;
+      player.ytPlayer?.destroy();
+      player.ytPlayer = null;
       state.lyrics = [];
       state.timings = [];
       state.currentLineIndex = -1;
@@ -9246,28 +9244,29 @@ class AdvancedMusicPlayer {
       }
       this.clearQueue();
     });
-    document.getElementById('qv2-close').addEventListener('click', () => backdrop.remove());
-    backdrop.addEventListener('click', e => {
-      if (e.target === backdrop) {
-        backdrop.remove();
-      }
-    });
     const onKey = e => {
       if (e.key === 'Escape') {
-        backdrop.remove();
-        document.removeEventListener('keydown', onKey);
+        close();
       }
     };
-    document.addEventListener('keydown', onKey);
-    backdrop.addEventListener('remove', () => document.removeEventListener('keydown', onKey), {
-      once: true
+    const close = () => {
+      backdrop.remove();
+      document.removeEventListener('keydown', onKey);
+      this._queueCloseOverlay = null;
+    };
+    this._queueCloseOverlay = close;
+    document.getElementById('qv2-close').addEventListener('click', close);
+    backdrop.addEventListener('click', e => {
+      if (e.target === backdrop) {
+        close();
+      }
     });
+    document.addEventListener('keydown', onKey);
     requestAnimationFrame(() => backdrop.classList.add('qv2-backdrop--in'));
   }
   showQueueOverlay() {
-    const existing = document.getElementById('qv2-backdrop');
-    if (existing) {
-      existing.remove();
+    if (this._queueCloseOverlay) {
+      this._queueCloseOverlay();
       return;
     }
     this._queueBuildOverlay();
@@ -13689,7 +13688,7 @@ class AdvancedMusicPlayer {
     document.getElementById('discordRpcModal')?.classList.remove('active');
   }
   initDiscordConnection() {
-    if (this.discordWs?.readyState === WebSocket.OPEN) {
+    if (this.discordWs?.readyState === WebSocket.OPEN || this.discordWs?.readyState === WebSocket.CONNECTING) {
       return;
     }
     this._discordConnecting = true;
@@ -13802,6 +13801,9 @@ class AdvancedMusicPlayer {
         this.discordWs?.close();
         this.discordWs = null;
       }, 100);
+    } else if (this.discordWs?.readyState === WebSocket.CONNECTING) {
+      this.discordWs.close();
+      this.discordWs = null;
     }
     clearTimeout(this.discordReconnectTimer);
     this.discordReconnectTimer = null;
@@ -15803,11 +15805,7 @@ class AdvancedMusicPlayer {
   }
   cleanupDiscoveryObserver() {
     try {
-      if (this._discoveryResizeObserver) {
-        this._discoveryResizeObserver.disconnect();
-        this._discoveryResizeObserver = null;
-        console.log('Discovery ResizeObserver disconnected');
-      }
+      this._discoveryCleanup?.();
     } catch (error) {
       console.warn('Error disconnecting discovery observer:', error.message);
     }

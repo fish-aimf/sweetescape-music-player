@@ -12,7 +12,7 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 | Source | sha256 (first 12) | Lines |
 |---|---|---|
-| `public/script.js` | `f1078ce555ab` | 16084 |
+| `public/script.js` | `be6c84023d4a` | 16087 |
 | `public/index.html` | `1d9dce7c94c9` | 1456 |
 | `public/script/settings.js` | `b1cbbfc3625b` | 561 |
 | `public/karaoke-player.js` | `79175232d973` | 682 |
@@ -38,7 +38,7 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 ---
 
-## `AdvancedMusicPlayer` by topic (603 methods)
+## `AdvancedMusicPlayer` by topic (604 methods)
 
 Names only. `grep -n "^  name(" public/script.js` gives the current line, and a name
 here that you cannot find has been renamed since this file was generated.
@@ -65,7 +65,7 @@ here that you cannot find has been renamed since this file was generated.
 
 ### Lyrics & karaoke
 
-`renderLyricsTab` · `generateKaraokeURL` · `shareKaraokeURL` · `updateHighlightedLyric` · `setupLyricsTabContextMenu` · `openLyricsMakerModal` · `initLyricMaker` · `openLyricsModePicker` · `resolveLyricsStageSong` · `parseStageLyrics` · `buildLyricsStage` · `openLyricsStage` · `closeLyricsStage` · `syncLyricsStageKeys` · `syncLyricsStageInset` · `setLyricsStageCover` · `readLyricsClock` · `tickLyricsStage` · `relayoutLyricsStage` · `openImportSubtitlesModal` · `setupSubtitlesImportEventListeners` · `closeSubtitlesImportModal` · `resetSubtitlesImportForm` · `convertTranscriptToLyricsHandler` · `convertTranscriptToLyrics` · `formatLyricText`
+`renderLyricsTab` · `_startLyricsInterval` · `generateKaraokeURL` · `shareKaraokeURL` · `updateHighlightedLyric` · `setupLyricsTabContextMenu` · `openLyricsMakerModal` · `initLyricMaker` · `openLyricsModePicker` · `resolveLyricsStageSong` · `parseStageLyrics` · `buildLyricsStage` · `openLyricsStage` · `closeLyricsStage` · `syncLyricsStageKeys` · `syncLyricsStageInset` · `setLyricsStageCover` · `readLyricsClock` · `tickLyricsStage` · `relayoutLyricsStage` · `openImportSubtitlesModal` · `setupSubtitlesImportEventListeners` · `closeSubtitlesImportModal` · `resetSubtitlesImportForm` · `convertTranscriptToLyricsHandler` · `convertTranscriptToLyrics` · `formatLyricText`
 
 ### Discovery, stats & charts
 
