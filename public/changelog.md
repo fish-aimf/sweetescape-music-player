@@ -767,3 +767,4 @@ Tap any song in Listening Statistics to open its play history: plays in the last
 Library search now shows cover art: when only a few songs match, each result becomes a large card with big cover art; with a few more, a small cover sits beside each song without making the row any taller; with many matches the list stays text-only to stay fast v74.6.0
 Fixed small cover art in library search turning huge after deleting letters from the search, once the covers had loaded v74.6.1
 Library search covers are now a fixed size, so they can never blow up while typing or deleting, in any browser; songs with a cover show their title and artist on one line, ending in "..." if too long, so every row stays the same height, and big result cards cap long titles at two lines v74.6.2
+The speed button on the Now Playing tab now shows your actual playback speed instead of resetting to 1x v74.6.3

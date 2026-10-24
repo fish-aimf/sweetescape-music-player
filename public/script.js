@@ -5484,6 +5484,10 @@ class AdvancedMusicPlayer {
   setPlaybackSpeed(speed) {
     this.currentSpeed = speed;
     this.elements.speedBtn.textContent = speed + 'x';
+    const npSpeedBtn = document.getElementById('npSpeedBtn');
+    if (npSpeedBtn) {
+      npSpeedBtn.textContent = speed + 'x';
+    }
     this.elements.speedOptions.classList.remove('show');
     if (this.ytPlayer) {
       this.ytPlayer.setPlaybackRate(speed);
@@ -6287,9 +6291,6 @@ class AdvancedMusicPlayer {
       opt.addEventListener('click', () => {
         const speed = parseFloat(opt.dataset.speed);
         this.setPlaybackSpeed(speed);
-        if (npSpeedBtn) {
-          npSpeedBtn.textContent = speed + 'x';
-        }
         npSpeedOptions?.classList.remove('show');
       });
     });
@@ -6325,6 +6326,7 @@ class AdvancedMusicPlayer {
     const ppBtn = document.getElementById('npPlayPauseBtn');
     const loopBtn = document.getElementById('npLoopBtn');
     const autoBtn = document.getElementById('npAutoplayBtn');
+    const speedBtn = document.getElementById('npSpeedBtn');
     if (thumb) {
       thumb.src = `https://i.ytimg.com/vi/${song.videoId}/maxresdefault.jpg`;
       thumb.onload = function() {
@@ -6356,6 +6358,9 @@ class AdvancedMusicPlayer {
     }
     if (autoBtn) {
       autoBtn.classList.toggle('active', this.isAutoplayEnabled);
+    }
+    if (speedBtn) {
+      speedBtn.textContent = this.currentSpeed + 'x';
     }
   }
   initializeCurrentSongSection() {
