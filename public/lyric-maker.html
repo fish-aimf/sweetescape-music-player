@@ -406,17 +406,14 @@
                 }
                 
                 if (this.currentLineIndex === -1) {
-                    // Before first line is marked
                     currentLineElement.textContent = "[Press Space to start the first lyric]";
                     prevLineElement.textContent = "";
                     nextLineElement.textContent = this.lyrics[0] || "";
                 } else if (this.currentLineIndex >= this.lyrics.length) {
-                    // After all lines are marked
                     currentLineElement.textContent = "Recording complete!";
                     prevLineElement.textContent = this.lyrics[this.lyrics.length - 1] || "";
                     nextLineElement.textContent = "";
                 } else {
-                    // Currently showing line at currentLineIndex
                     currentLineElement.textContent = this.lyrics[this.currentLineIndex];
                     
                     if (this.currentLineIndex > 0) {
@@ -456,11 +453,9 @@
                 
                 const currentTime = this.player.getCurrentTime();
                 
-                // Update the NEXT line with current time - this is when it STARTS being displayed
                 this.currentLineIndex++;
                 
                 if (this.currentLineIndex < this.lyrics.length) {
-                    // Save the current time for the line that is ABOUT to be displayed
                     this.timings[this.currentLineIndex] = currentTime;
                     
                     const timeElement = document.getElementById(`time-${this.currentLineIndex}`);

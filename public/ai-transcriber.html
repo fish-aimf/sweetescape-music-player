@@ -69,13 +69,7 @@
 <pre id="repairedOutput">(repaired lyrics will appear here)</pre>
 
 <script>
-/* ---------------------------------------------------------------------- */
-/* Step 1: transcription (unchanged from original)                        */
-/* ---------------------------------------------------------------------- */
 
-// Holds {word, start}[] from the most recent whisper-1 transcription that
-// included word-level timestamps. Used by repair() for exact timing instead
-// of estimating positions within a chunk.
 let wordLevelData = null;
 
 async function transcribe() {
@@ -94,8 +88,6 @@ async function transcribe() {
     const file = fileInput.files[0];
     let options;
     if (model === 'whisper-1') {
-      // whisper-1 is the only model that currently supports word-level
-      // timestamps via timestamp_granularities.
       options = {
         model,
         response_format: 'verbose_json',
@@ -155,28 +147,7 @@ function formatAsLyricLines(result) {
   }
 }
 
-/* ---------------------------------------------------------------------- */
-/* Step 2: repair broken lyrics against a correct reference               */
-/*                                                                        */
-/* Approach:                                                              */
-/*  1. Parse the broken transcript into timestamped segments, then flatten*/
-/*     every segment into a word list, tagging each word with the segment*/
-/*     (timestamp) it came from.                                          */
-/*  2. Flatten the correct lyrics into a plain word list (no timestamps). */
-/*  3. Run a Needleman-Wunsch global alignment between the two word lists,*/
-/*     using a fuzzy (Levenshtein-based) similarity score so that near-   */
-/*     miss transcriptions ("lovin'" vs "loving", "craving" vs "cryin'")  */
-/*     still line up instead of being treated as unrelated words.         */
-/*  4. Walk the alignment: wherever a correct word is matched (exactly or */
-/*     fuzzily) to a broken word, use the correct word's real spelling,   */
-/*     but keep the broken word's timestamp/segment. Correct words that   */
-/*     were missing entirely from the transcript get inserted into the   */
-/*     nearest timestamped segment. Broken words that don't correspond to */
-/*     anything in the correct lyrics are dropped (or kept bracketed).    */
-/* ---------------------------------------------------------------------- */
 
-// Parse "...text... [m:ss] ...text... [m:ss]" into segments, robust to both
-// one-timestamp-per-line and multiple timestamps inline in one blob.
 function parseBrokenTranscript(raw) {
   const segments = [];
   const re = /([\s\S]*?)\[(\d+):(\d{2})\]/g;
@@ -191,8 +162,6 @@ function parseBrokenTranscript(raw) {
     }
     lastIndex = re.lastIndex;
   }
-  // Anything left after the final timestamp (no closing tag) becomes a final
-  // untimed segment, inheriting the last known timestamp.
   const remainder = raw.slice(lastIndex).trim();
   if (remainder) {
     const lastTime = segments.length ? segments[segments.length - 1].time : 0;
@@ -201,8 +170,6 @@ function parseBrokenTranscript(raw) {
   return segments;
 }
 
-// Normalize a word for comparison: lowercase, strip surrounding punctuation,
-// keep internal apostrophes/hyphens since they're meaningful in lyrics.
 function normalizeWord(w) {
   return w.toLowerCase().replace(/^[^a-z0-9']+|[^a-z0-9']+$/gi, '');
 }
@@ -223,9 +190,9 @@ function levenshtein(a, b) {
     for (let j = 1; j <= n; j++) {
       const tmp = dp[j];
       dp[j] = Math.min(
-        dp[j] + 1,          // deletion
-        dp[j - 1] + 1,      // insertion
-        prev + (a[i - 1] === b[j - 1] ? 0 : 1) // substitution
+        dp[j] + 1,
+        dp[j - 1] + 1,
+        prev + (a[i - 1] === b[j - 1] ? 0 : 1)
       );
       prev = tmp;
     }
@@ -233,25 +200,21 @@ function levenshtein(a, b) {
   return dp[n];
 }
 
-// Similarity in [-1, 1]: 1 = identical, negative = very different.
 function wordScore(normA, normB) {
   if (normA === normB) return 2;
   if (!normA || !normB) return -1;
   const dist = levenshtein(normA, normB);
   const maxLen = Math.max(normA.length, normB.length);
-  const similarity = 1 - dist / maxLen; // 0..1
-  return similarity * 3 - 1; // maps 0..1 -> -1..2, matching identical-word scale roughly
+  const similarity = 1 - dist / maxLen;
+  return similarity * 3 - 1;
 }
 
 const GAP_PENALTY = -1;
 
-// Needleman-Wunsch global alignment between two arrays of normalized words.
-// Returns a list of {a: indexOrNull, b: indexOrNull} pairs in order.
 function alignWords(seqA, seqB) {
   const n = seqA.length, m = seqB.length;
-  // score[i][j] = best score aligning seqA[0..i) with seqB[0..j)
   const score = new Array(n + 1);
-  const trace = new Array(n + 1); // 0 = diag, 1 = up (gap in B), 2 = left (gap in A)
+  const trace = new Array(n + 1);
   for (let i = 0; i <= n; i++) {
     score[i] = new Float64Array(m + 1);
     trace[i] = new Uint8Array(m + 1);
@@ -290,11 +253,8 @@ function alignWords(seqA, seqB) {
   return alignment;
 }
 
-// Split correct lyrics on real line breaks, tokenize each line, and tag
-// every word with which original lyric-line it belongs to. Blank lines are
-// skipped (not counted) so they don't create empty output lines.
 function parseCorrectLyricsLines(raw) {
-  const words = []; // {orig, norm, lineIdx}
+  const words = [];
   let lineIdx = -1;
   raw.split(/\r?\n/).forEach(line => {
     const toks = tokenize(line);
@@ -329,7 +289,6 @@ function repair() {
   }
 }
 
-// --- Path A: exact timing, using per-word timestamps from whisper-1 -------
 function repairWithWordLevelTimestamps(correctWords, keepUnmatched, outEl) {
   const brokenWords = wordLevelData.map(w => ({ orig: w.word, norm: normalizeWord(w.word), start: w.start }));
 
@@ -338,10 +297,6 @@ function repairWithWordLevelTimestamps(correctWords, keepUnmatched, outEl) {
     correctWords.map(w => w.norm)
   );
 
-  // Each aligned entry: {word, lineIdx, time}. time is exact when it comes
-  // from a matched/dropped broken word; inserted correct-only words borrow
-  // the time of the most recent broken word seen so far (still accurate to
-  // within a word or two, since nothing is being stretched over a whole chunk).
   const entries = [];
   let lastTime = brokenWords.length ? brokenWords[0].start : 0;
 
@@ -360,9 +315,6 @@ function repairWithWordLevelTimestamps(correctWords, keepUnmatched, outEl) {
   outEl.textContent = groupEntriesIntoLines(entries).join('\n');
 }
 
-// Groups a flat list of {word, lineIdx, time} entries into output lines,
-// starting a new line whenever lineIdx changes (correct-lyrics line breaks).
-// Each line is timestamped with the time of its first word.
 function groupEntriesIntoLines(entries) {
   const lines = [];
   let group = [];
@@ -384,7 +336,6 @@ function groupEntriesIntoLines(entries) {
   return lines;
 }
 
-// --- Path B: fallback, interpolating within Whisper's coarser chunks ------
 function repairWithChunkInterpolation(brokenRaw, correctWords, keepUnmatched, splitLines, outEl) {
   const segments = parseBrokenTranscript(brokenRaw);
   if (!segments.length) {

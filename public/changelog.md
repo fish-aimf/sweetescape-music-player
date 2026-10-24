@@ -769,3 +769,4 @@ Fixed small cover art in library search turning huge after deleting letters from
 Library search covers are now a fixed size, so they can never blow up while typing or deleting, in any browser; songs with a cover show their title and artist on one line, ending in "..." if too long, so every row stays the same height, and big result cards cap long titles at two lines v74.6.2
 The speed button on the Now Playing tab now shows your actual playback speed instead of resetting to 1x v74.6.3
 The Lyrics tab now switches to the new song whenever the song changes, keeps highlighting after pause and resume, and several dialogs no longer leak keyboard listeners or timers when reopened v74.7.0
+Removed leftover code comments from the API functions and standalone pages v74.7.1

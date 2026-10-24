@@ -107,8 +107,6 @@ module.exports = async function handler(req, res) {
     }
   }
 
-  // RapidAPI keys are missing, unsubscribed, or rate-limited - fall back to
-  // the free, keyless lyrics.ovh API so the feature still works.
   try {
     const fallback = await fetchFromLyricsOvh(song, artist);
     if (fallback) {

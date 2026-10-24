@@ -21,7 +21,6 @@ export default async function handler(req, res) {
         } else if (type === 'statistics') {
             youtubeUrl = `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${encodeURIComponent(query)}&key=${apiKey}`;
         } else if (type === 'combined') {
-            // Step 1: search
             let searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=${parsedMaxResults}&q=${encodeURIComponent(query)}&type=video&order=relevance&key=${apiKey}`;
             if (pageToken) searchUrl += `&pageToken=${encodeURIComponent(pageToken)}`;
             const searchResponse = await fetch(searchUrl);
@@ -34,12 +33,10 @@ export default async function handler(req, res) {
             if (items.length === 0) {
                 return res.status(200).json({ data: { items: [], nextPageToken: null }, status: 200 });
             }
-            // Step 2: batch statistics for all video IDs in one call
             const videoIds = items.map(item => item.id.videoId).join(',');
             const statsUrl = `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${encodeURIComponent(videoIds)}&key=${apiKey}`;
             const statsResponse = await fetch(statsUrl);
             const statsData = await statsResponse.json();
-            // Merge statistics into search items
             const statsMap = {};
             (statsData.items || []).forEach(stat => {
                 statsMap[stat.id] = stat.statistics;
@@ -55,7 +52,6 @@ export default async function handler(req, res) {
         } else {
             return res.status(400).json({ error: 'Invalid type parameter' });
         }
-        // For search and statistics types
         const response = await fetch(youtubeUrl);
         const data = await response.json();
         return res.status(response.status).json({ data, status: response.status });

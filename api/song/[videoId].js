@@ -6,7 +6,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Fetch YouTube data
     const response = await fetch(
       `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`
     );
@@ -21,7 +20,6 @@ export default async function handler(req, res) {
     const thumbnail = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
     const pageUrl = `https://sweetescape.vercel.app/song/${videoId}`;
 
-    // Generate HTML with proper meta tags
     const html = generateHTML(title, author, thumbnail, pageUrl, videoId);
     
     res.setHeader('Content-Type', 'text/html');
@@ -30,7 +28,6 @@ export default async function handler(req, res) {
     
   } catch (error) {
     console.error('Error:', error);
-    // Fallback to basic HTML
     const html = generateHTML('Unknown Song', 'Unknown Artist', '', '', videoId);
     res.status(200).send(html);
   }
@@ -51,7 +48,6 @@ function generateHTML(title, author, thumbnail, pageUrl, videoId) {
   const escapedThumbnail = escapeHtml(thumbnail || '');
   const escapedPageUrl = escapeHtml(pageUrl || '');
   
-  // Simple short description
   const ogDescription = `by ${cleanAuthor}`;
   
   return `<!DOCTYPE html>
@@ -60,11 +56,9 @@ function generateHTML(title, author, thumbnail, pageUrl, videoId) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- Primary Meta Tags -->
     <title>${cleanTitle} - ${cleanAuthor} | SweetEscape</title>
     <meta name="description" content="${ogDescription}">
     
-    <!-- Open Graph / Facebook / Discord -->
     <meta property="og:type" content="music.song">
     <meta property="og:url" content="${escapedPageUrl}">
     <meta property="og:site_name" content="SweetEscape Music Player">
@@ -74,7 +68,6 @@ function generateHTML(title, author, thumbnail, pageUrl, videoId) {
     <meta property="og:image:width" content="1280">
     <meta property="og:image:height" content="720">
     
-    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="${cleanTitle}">
     <meta name="twitter:description" content="${ogDescription}">

@@ -22,7 +22,6 @@ function log(message, type = 'info') {
   console.log(`[${timestamp}] [${type.toUpperCase()}] ${message}`);
 }
 
-// ---- Supabase REST helpers ----
 
 function supabaseHeaders(extra = {}) {
   return {
@@ -57,7 +56,6 @@ async function supabaseUpsert(table, row) {
   return { error: null };
 }
 
-// ---- YouTube search with key rotation ----
 
 async function searchYouTube(songTitle, artist) {
   const query = `${artist} - ${songTitle} "topic"`;
@@ -91,7 +89,6 @@ async function searchYouTube(songTitle, artist) {
   return null;
 }
 
-// ---- Main ----
 
 async function updateBillboard() {
   log('=== Starting Billboard Hot 100 Update ===', 'info');

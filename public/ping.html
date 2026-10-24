@@ -20,7 +20,6 @@
                 
                 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
                 
-                // Simple query to keep the connection active
                 const { error } = await supabase
                     .from('songs')
                     .select('*', { count: 'exact', head: true });
@@ -35,7 +34,6 @@
             }
         }
         
-        // Ping on page load
         pingSupabase();
     </script>
 
