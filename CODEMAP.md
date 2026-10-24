@@ -12,7 +12,7 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 | Source | sha256 (first 12) | Lines |
 |---|---|---|
-| `public/script.js` | `4dff4ec13623` | 16426 |
+| `public/script.js` | `2e2917e46ccd` | 16436 |
 | `public/index.html` | `95a3f604f412` | 1494 |
 | `public/script/settings.js` | `b1cbbfc3625b` | 561 |
 | `public/karaoke-player.js` | `79175232d973` | 682 |

@@ -1595,6 +1595,7 @@ a.ui-btn--block {
   --app-bg-blur: 0px;
   --art-blur: 56px;
   --art-sat: 150%;
+  --art-drift-steps: 25;
 }
 
 #appBackdrop {
@@ -1641,8 +1642,43 @@ a.ui-btn--block {
   opacity: 0;
   transform: scale(1.12);
   transition: opacity 1.2s ease;
-  animation: app-backdrop-drift 40s ease-in-out infinite alternate;
+  animation: app-backdrop-drift 40s infinite alternate;
+  animation-timing-function: steps(var(--art-drift-steps));
   animation-play-state: paused;
+}
+
+[data-art-playing] .app-backdrop__art {
+  animation-play-state: running;
+}
+
+@keyframes app-backdrop-drift {
+  0% {
+    transform: scale(1.12) translate3d(0%, 0%, 0) rotate(0deg);
+  }
+  12.5% {
+    transform: scale(1.1261) translate3d(-0.1142%, 0.0761%, 0) rotate(0.1142deg);
+  }
+  25% {
+    transform: scale(1.1434) translate3d(-0.4393%, 0.2929%, 0) rotate(0.4393deg);
+  }
+  37.5% {
+    transform: scale(1.1694) translate3d(-0.926%, 0.6173%, 0) rotate(0.926deg);
+  }
+  50% {
+    transform: scale(1.2) translate3d(-1.5%, 1%, 0) rotate(1.5deg);
+  }
+  62.5% {
+    transform: scale(1.2306) translate3d(-2.074%, 1.3827%, 0) rotate(2.074deg);
+  }
+  75% {
+    transform: scale(1.2566) translate3d(-2.5607%, 1.7071%, 0) rotate(2.5607deg);
+  }
+  87.5% {
+    transform: scale(1.2739) translate3d(-2.8858%, 1.9239%, 0) rotate(2.8858deg);
+  }
+  100% {
+    transform: scale(1.28) translate3d(-3%, 2%, 0) rotate(3deg);
+  }
 }
 
 .album-art-tuning {
@@ -1659,24 +1695,11 @@ a.ui-btn--block {
   filter: blur(var(--art-blur)) saturate(var(--art-sat));
 }
 
-[data-art-playing] .app-backdrop__art {
-  animation-play-state: running;
-}
-
 [data-app-art="on"] #appBackdrop::after {
   content: "";
   position: absolute;
   inset: 0;
   background: radial-gradient(ellipse at 50% 40%, transparent 35%, color-mix(in srgb, var(--bg-primary-base) 55%, transparent) 100%);
-}
-
-@keyframes app-backdrop-drift {
-  from {
-    transform: scale(1.12) translate3d(0, 0, 0) rotate(0deg);
-  }
-  to {
-    transform: scale(1.28) translate3d(-3%, 2%, 0) rotate(3deg);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

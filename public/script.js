@@ -468,7 +468,9 @@ class AdvancedMusicPlayer {
       width: 0,
       height: 0,
       maxRenderWidth: 960,
-      frameInterval: 1000 / 48,
+      frameInterval: 1000 / 30,
+      vsync: 1000 / 60,
+      lastTick: 0,
       lastFrame: 0,
       paletteDirty: true,
       paletteFrame: 0,
@@ -10738,6 +10740,7 @@ class AdvancedMusicPlayer {
     root.style.setProperty('--app-bg-repeat', state.backgroundFit === 'tile' ? 'repeat' : 'no-repeat');
     root.style.setProperty('--art-blur', state.albumArtBlur + 'px');
     root.style.setProperty('--art-sat', state.albumArtSat + '%');
+    root.style.setProperty('--art-drift-steps', String(state.albumArtBlur >= 24 ? 25 : 75));
     const image = this.getAppearanceBackgroundValue();
     root.style.setProperty('--app-bg-image', image || 'none');
     this.syncAlbumArtBackdrop();
@@ -12137,6 +12140,7 @@ class AdvancedMusicPlayer {
       return;
     }
     v.lastFrame = 0;
+    v.lastTick = 0;
     v.animationId = requestAnimationFrame(this._visualizerTick);
   }
   renderVisualizerFrame(timestamp) {
@@ -12145,7 +12149,13 @@ class AdvancedMusicPlayer {
     if (!v.isActive || !v.ctx) {
       return;
     }
-    if (v.lastFrame && timestamp - v.lastFrame < v.frameInterval) {
+    const gap = v.lastTick ? timestamp - v.lastTick : 0;
+    v.lastTick = timestamp;
+    if (gap > 2 && gap < 50) {
+      v.vsync += (gap - v.vsync) * 0.1;
+    }
+    const every = Math.max(1, Math.ceil(v.frameInterval * 0.9 / v.vsync));
+    if (v.lastFrame && timestamp - v.lastFrame < v.vsync * (every - 0.5)) {
       v.animationId = requestAnimationFrame(this._visualizerTick);
       return;
     }

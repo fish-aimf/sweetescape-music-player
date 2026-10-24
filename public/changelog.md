@@ -774,3 +774,4 @@ Moved the outdated scriptforcoding.js out of the website into an archive folder,
 Added an Album Art Background option for glass mode in Settings, which fills the background with a soft, blurred version of the current song's cover that crossfades between songs and gently drifts while music plays v74.8.0
 Added Art blur and Art vibrancy sliders to the Album Art Background setting, so you can tune how soft and how colourful the cover background looks v74.9.0
 Added a Visualizer Colour setting to the Theme tab with Primary, Custom and Auto modes, where Auto picks a colour from the album art or background and keeps it visible, and made the album art background and visualizer much lighter on the GPU v74.10.0
+Cut GPU work while music plays: the album art drift now updates five times a second instead of every screen refresh, halving the cost of glass mode with album art, and the visualizer runs at a steady 30fps on high refresh rate screens v74.11.0
