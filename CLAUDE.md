@@ -19,6 +19,7 @@ There is no bundler, no package.json, no test suite. Edit the file, reload the p
 | `CODEMAP.md` | **Generated** index of every method, element alias and dialog — read this before searching `script.js` |
 | `ARCHITECTURE.md` | Class overview and the full UI design system reference |
 | `scripts/` | Dev tooling (below) + `update-billboard.js`, run by a GitHub Action |
+| `archive/` | Outdated reference copies, not deployed. `scriptforcoding.js` is an old commented `script.js` — don't edit it or treat it as current |
 
 ## Finding things without burning tokens
 
