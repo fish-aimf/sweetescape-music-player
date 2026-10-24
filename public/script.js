@@ -793,6 +793,11 @@ class AdvancedMusicPlayer {
       glassControls: document.getElementById('glassControls'),
       albumArtControls: document.getElementById('albumArtControls'),
       backgroundAlbumArt: document.getElementById('backgroundAlbumArt'),
+      albumArtTuning: document.getElementById('albumArtTuning'),
+      albumArtBlur: document.getElementById('albumArtBlur'),
+      albumArtBlurValue: document.getElementById('albumArtBlurValue'),
+      albumArtSat: document.getElementById('albumArtSat'),
+      albumArtSatValue: document.getElementById('albumArtSatValue'),
       appearancePresets: document.getElementById('appearancePresets'),
       glassTint: document.getElementById('glassTint'),
       glassTintValue: document.getElementById('glassTintValue'),
@@ -10628,7 +10633,9 @@ class AdvancedMusicPlayer {
       backgroundFit: 'cover',
       backgroundDim: 40,
       backgroundBlur: 0,
-      backgroundAlbumArt: false
+      backgroundAlbumArt: false,
+      albumArtBlur: 56,
+      albumArtSat: 150
     };
   }
   getGlassPresets() {
@@ -10721,6 +10728,8 @@ class AdvancedMusicPlayer {
     root.style.setProperty('--app-bg-blur', state.backgroundBlur + 'px');
     root.style.setProperty('--app-bg-size', state.backgroundFit === 'tile' ? 'auto' : state.backgroundFit);
     root.style.setProperty('--app-bg-repeat', state.backgroundFit === 'tile' ? 'repeat' : 'no-repeat');
+    root.style.setProperty('--art-blur', state.albumArtBlur + 'px');
+    root.style.setProperty('--art-sat', state.albumArtSat + '%');
     const image = this.getAppearanceBackgroundValue();
     root.style.setProperty('--app-bg-image', image || 'none');
     this.syncAlbumArtBackdrop();
@@ -10990,7 +10999,10 @@ class AdvancedMusicPlayer {
     if (els.backgroundAlbumArt) {
       els.backgroundAlbumArt.checked = Boolean(state.backgroundAlbumArt);
     }
-    [ [ 'glassTint', 'glassTintValue', '%', true ], [ 'glassBlur', 'glassBlurValue', 'px' ], [ 'glassSat', 'glassSatValue', '%' ], [ 'backgroundDim', 'backgroundDimValue', '%' ], [ 'backgroundBlur', 'backgroundBlurValue', 'px' ] ].forEach(([key, labelKey, suffix, invert]) => {
+    if (els.albumArtTuning) {
+      els.albumArtTuning.style.display = state.backgroundAlbumArt ? 'flex' : 'none';
+    }
+    [ [ 'glassTint', 'glassTintValue', '%', true ], [ 'glassBlur', 'glassBlurValue', 'px' ], [ 'glassSat', 'glassSatValue', '%' ], [ 'backgroundDim', 'backgroundDimValue', '%' ], [ 'backgroundBlur', 'backgroundBlurValue', 'px' ], [ 'albumArtBlur', 'albumArtBlurValue', 'px' ], [ 'albumArtSat', 'albumArtSatValue', '%' ] ].forEach(([key, labelKey, suffix, invert]) => {
       const shown = invert ? 100 - state[key] : state[key];
       if (els[key]) {
         els[key].value = shown;
@@ -11144,7 +11156,7 @@ class AdvancedMusicPlayer {
   }
   setupAppearanceListeners() {
     const els = this.elements;
-    const bindings = [ [ els.surfaceStyle, 'change', this.handleSurfaceStyleChange.bind(this) ], [ els.backgroundAlbumArt, 'change', this.handleAlbumArtToggle.bind(this) ], [ els.appearancePresets, 'click', this.handleGlassPresetClick.bind(this) ], [ els.glassTint, 'input', this.handleAppearanceSliderInput('glassTint', '%', 'glassTintValue', true) ], [ els.glassBlur, 'input', this.handleAppearanceSliderInput('glassBlur', 'px', 'glassBlurValue') ], [ els.glassSat, 'input', this.handleAppearanceSliderInput('glassSat', '%', 'glassSatValue') ], [ els.backgroundDim, 'input', this.handleAppearanceSliderInput('backgroundDim', '%', 'backgroundDimValue') ], [ els.backgroundBlur, 'input', this.handleAppearanceSliderInput('backgroundBlur', 'px', 'backgroundBlurValue') ], [ els.backgroundFit, 'change', this.handleBackgroundFitChange.bind(this) ], [ els.backgroundGradients, 'click', this.handleBackgroundGradientClick.bind(this) ], [ els.backgroundChooseBtn, 'click', () => els.backgroundFileInput?.click() ], [ els.backgroundFileInput, 'change', this.handleBackgroundFileChange.bind(this) ], [ els.backgroundRemoveBtn, 'click', this.handleBackgroundRemove.bind(this) ] ];
+    const bindings = [ [ els.surfaceStyle, 'change', this.handleSurfaceStyleChange.bind(this) ], [ els.backgroundAlbumArt, 'change', this.handleAlbumArtToggle.bind(this) ], [ els.appearancePresets, 'click', this.handleGlassPresetClick.bind(this) ], [ els.glassTint, 'input', this.handleAppearanceSliderInput('glassTint', '%', 'glassTintValue', true) ], [ els.glassBlur, 'input', this.handleAppearanceSliderInput('glassBlur', 'px', 'glassBlurValue') ], [ els.glassSat, 'input', this.handleAppearanceSliderInput('glassSat', '%', 'glassSatValue') ], [ els.backgroundDim, 'input', this.handleAppearanceSliderInput('backgroundDim', '%', 'backgroundDimValue') ], [ els.backgroundBlur, 'input', this.handleAppearanceSliderInput('backgroundBlur', 'px', 'backgroundBlurValue') ], [ els.albumArtBlur, 'input', this.handleAppearanceSliderInput('albumArtBlur', 'px', 'albumArtBlurValue') ], [ els.albumArtSat, 'input', this.handleAppearanceSliderInput('albumArtSat', '%', 'albumArtSatValue') ], [ els.backgroundFit, 'change', this.handleBackgroundFitChange.bind(this) ], [ els.backgroundGradients, 'click', this.handleBackgroundGradientClick.bind(this) ], [ els.backgroundChooseBtn, 'click', () => els.backgroundFileInput?.click() ], [ els.backgroundFileInput, 'change', this.handleBackgroundFileChange.bind(this) ], [ els.backgroundRemoveBtn, 'click', this.handleBackgroundRemove.bind(this) ] ];
     bindings.forEach(([element, event, handler]) => {
       if (element) {
         element.addEventListener(event, handler);

@@ -1593,6 +1593,8 @@ a.ui-btn--block {
   --app-bg-repeat: no-repeat;
   --app-bg-dim: 0.4;
   --app-bg-blur: 0px;
+  --art-blur: 56px;
+  --art-sat: 150%;
 }
 
 #appBackdrop {
@@ -1635,12 +1637,18 @@ a.ui-btn--block {
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
-  filter: blur(calc(56px + var(--app-bg-blur))) saturate(1.5);
+  filter: blur(var(--art-blur)) saturate(var(--art-sat));
   opacity: 0;
   transform: scale(1.12);
   transition: opacity 1.2s ease;
   animation: app-backdrop-drift 40s ease-in-out infinite alternate;
   animation-play-state: paused;
+}
+
+.album-art-tuning {
+  display: flex;
+  flex-basis: 100%;
+  margin: var(--ui-space-3) 0 var(--ui-space-2);
 }
 
 .app-backdrop__art.is-visible {

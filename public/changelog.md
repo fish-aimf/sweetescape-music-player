@@ -772,3 +772,4 @@ The Lyrics tab now switches to the new song whenever the song changes, keeps hig
 Removed leftover code comments from the API functions and standalone pages v74.7.1
 Moved the outdated scriptforcoding.js out of the website into an archive folder, so it is no longer downloadable v74.7.2
 Added an Album Art Background option for glass mode in Settings, which fills the background with a soft, blurred version of the current song's cover that crossfades between songs and gently drifts while music plays v74.8.0
+Added Art blur and Art vibrancy sliders to the Album Art Background setting, so you can tune how soft and how colourful the cover background looks v74.9.0

@@ -12,8 +12,8 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 | Source | sha256 (first 12) | Lines |
 |---|---|---|
-| `public/script.js` | `c9cad225d1ea` | 16188 |
-| `public/index.html` | `d15b0014649d` | 1468 |
+| `public/script.js` | `6a589fb48827` | 16200 |
+| `public/index.html` | `8fb15901d4d4` | 1480 |
 | `public/script/settings.js` | `b1cbbfc3625b` | 561 |
 | `public/karaoke-player.js` | `79175232d973` | 682 |
 | `public/karaoke-encoder.js` | `d277db62d9e9` | 147 |
@@ -23,7 +23,7 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 ## Reading `public/script.js` cheaply
 
-- 74 lines are longer than 300 characters (the machine-formatted
+- 75 lines are longer than 300 characters (the machine-formatted
   `innerHTML` template literals; the longest is ~3.9 KB). A single `grep -n` that hits
   several of them dumps tens of kilobytes. Search with `grep -o`, or pipe through
   `cut -c1-200`, and only widen once you know which line you want.
@@ -123,11 +123,11 @@ The rest match their id exactly.
 | `changelogModal` | 662 | `changelog-modal ui-overlay` |
 | `subtitlesImportModal` | 672 | `subtitles-import-modal-overlay ui-overlay` |
 | `settingsModal` | 741 | `settings-modal ui-overlay` |
-| `recentlyPlayedModal` | 1187 | `recently-played-modal-bg ui-overlay` |
-| `lyricsModal` | 1202 | `lyrics-maker-modal hidden ui-overlay` |
-| `downloadModal` | 1320 | `dl-overlay ui-overlay` |
-| `shazamModal` | 1384 | `sz-overlay ui-overlay` |
-| `statsModal` | 1435 | `ls-overlay ui-overlay` |
+| `recentlyPlayedModal` | 1199 | `recently-played-modal-bg ui-overlay` |
+| `lyricsModal` | 1214 | `lyrics-maker-modal hidden ui-overlay` |
+| `downloadModal` | 1332 | `dl-overlay ui-overlay` |
+| `shazamModal` | 1396 | `sz-overlay ui-overlay` |
+| `statsModal` | 1447 | `ls-overlay ui-overlay` |
 
 ---
 

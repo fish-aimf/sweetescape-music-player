@@ -820,7 +820,19 @@ Another Playlist{
                            <span class="toggle-slider"></span>
                            </label>
                         </div>
-                        <p class="setting-description">Replaces the background with a soft, blurred version of the current song's cover. Your own background below returns when nothing is loaded. Dim and Background blur still apply.</p>
+                        <div class="appearance-section album-art-tuning" id="albumArtTuning">
+                           <div class="appearance-row">
+                              <label for="albumArtBlur">Art blur</label>
+                              <input type="range" id="albumArtBlur" min="0" max="120" step="1" value="56">
+                              <span class="appearance-value" id="albumArtBlurValue">56px</span>
+                           </div>
+                           <div class="appearance-row">
+                              <label for="albumArtSat">Art vibrancy</label>
+                              <input type="range" id="albumArtSat" min="50" max="250" step="5" value="150">
+                              <span class="appearance-value" id="albumArtSatValue">150%</span>
+                           </div>
+                        </div>
+                        <p class="setting-description">Replaces the background with a soft, blurred version of the current song's cover. Your own background below returns when nothing is loaded. Lower blur shows more detail, higher vibrancy makes the colours richer. The Dim slider below still applies.</p>
                      </div>
                      <div class="setting-group appearance-section">
                         <label>Background:</label>
