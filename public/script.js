@@ -2569,10 +2569,34 @@ class AdvancedMusicPlayer {
       grid.appendChild(empty);
     } else {
       const shuffled = this._shuffleArray([ ...favorites ]);
-      const toShow = shuffled.slice(0, 20);
-      const frag = document.createDocumentFragment();
-      toShow.forEach(song => frag.appendChild(this._buildFavThumb(song)));
-      grid.appendChild(frag);
+      let shown = 0;
+      const showMore = () => {
+        const frag = document.createDocumentFragment();
+        shuffled.slice(shown, shown + 20).forEach(song => frag.appendChild(this._buildFavThumb(song)));
+        shown += 20;
+        grid.appendChild(frag);
+      };
+      showMore();
+      grid.addEventListener('scroll', () => {
+        if (shown < shuffled.length && grid.scrollLeft + grid.clientWidth > grid.scrollWidth - 300) {
+          showMore();
+        }
+      }, {
+        passive: true
+      });
+      grid.addEventListener('wheel', e => {
+        if (e.shiftKey || Math.abs(e.deltaX) >= Math.abs(e.deltaY)) {
+          return;
+        }
+        const end = grid.scrollWidth - grid.clientWidth;
+        if (end <= 0 || e.deltaY < 0 && grid.scrollLeft <= 0 || e.deltaY > 0 && grid.scrollLeft >= end - 1) {
+          return;
+        }
+        e.preventDefault();
+        grid.scrollLeft += e.deltaMode === 1 ? e.deltaY * 40 : e.deltaY;
+      }, {
+        passive: false
+      });
       grid.addEventListener('click', e => {
         const thumb = e.target.closest('.fav-thumb');
         if (!thumb) {
@@ -2628,7 +2652,7 @@ class AdvancedMusicPlayer {
           expList.innerHTML = '<div class="empty-library-message">No favourites yet.</div>';
         } else {
           const frag = document.createDocumentFragment();
-          favSongs.forEach(song => frag.appendChild(this.createSongElement(song)));
+          favSongs.forEach(song => frag.appendChild(this.createSongElement(song, 'thumb')));
           expList.appendChild(frag);
         }
       } else if (expList) {
