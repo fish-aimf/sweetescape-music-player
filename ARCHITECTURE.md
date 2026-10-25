@@ -178,6 +178,27 @@ both raise `--glass-tint` to near-opaque so the app stays readable.
 
 ---
 
+## 🧭 Guide Mode and Docs Pages
+
+Three layers, each loaded only by the people who need it:
+
+| Layer | Files | Loaded when |
+|---|---|---|
+| Docs pages | `introduction.html`, `tutorial.html`, `learn/learn.css`, `learn/shots/` | Someone visits `/introduction` or `/tutorial` (plain HTML, readable without JavaScript, so crawlers see everything) |
+| Guide runtime | `guide/guide.js`, `guide/guide.css` | First Alt+Shift+G (or `/?guide`) in a session, via `import()` |
+| Guide content | `guide/guide.json` | Every time guide mode opens, fetched with `cache: 'no-store'` |
+
+The player itself only knows two methods: `setupGuideHotkey()` registers the key and the `?guide`
+parameter, and `openGuide()` imports the module and calls `start(player)`. The module talks back to
+the player only through existing public methods (`switchTab`, `showQueueOverlay`, `showSidebar`,
+`hideSidebar`), and undoes anything it opened when it closes.
+
+`guide.json` holds *spots*: a CSS selector plus what to say about it. The tour walks the ids listed
+in `tour`. Point and ask uses every spot with a target and picks the deepest one under the pointer,
+so a specific spot (`#nextBtn`) wins over a general one (`.player-controls`). While guide mode is
+open it swallows keyboard shortcuts and, in Point and ask, clicks, so exploring never changes
+anything.
+
 ## 🧩 Core Architecture
 
 **The entire project revolves around a single class: `AdvancedMusicPlayer`.**  

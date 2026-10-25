@@ -13,7 +13,9 @@ There is no bundler, no package.json, no test suite. Edit the file, reload the p
 | `public/ui-system.css` | Design system. Loads **after** style.css and is authoritative for shared chrome |
 | `public/script/settings.js` | Settings modal behaviour, lazy-fetched on first open |
 | `public/karaoke.html` + `karaoke-styles.css` + `karaoke-player.js` + `karaoke-encoder.js` | Standalone karaoke share page |
-| `public/sw.js` | Service worker. `STATIC_ASSETS` must list any new top-level asset |
+| `public/sw.js` | Service worker. `STATIC_ASSETS` must list any new top-level asset; `NETWORK_ONLY_PREFIXES` lists paths it must never cache |
+| `public/introduction.html`, `public/tutorial.html` | Static SEO pages served at `/introduction` and `/tutorial`, styled by `public/learn/learn.css`, screenshots in `public/learn/shots/` |
+| `public/guide/` | Guide mode (`guide.js` module, `guide.json` content, `guide.css`). Fetched only on Alt+Shift+G or `/?guide`, never cached |
 | `api/` | Vercel serverless functions (`youtube`, `deezer`, `genius`, `shazam`, `download`, `count`, `gemini`, `song/[videoId]`) |
 | `vercel.json` | Rewrites + the immutable `Cache-Control` regex for hashed-forever assets |
 | `CODEMAP.md` | **Generated** index of every method, element alias and dialog — read this before searching `script.js` |
@@ -141,6 +143,22 @@ Notes when driving the page:
 - Check both `data-theme="dark"` (default) and `"light"`, and 400px width for overflow.
 - `page.route('**/youtube.com/oembed**', …)` stubs the metadata fetches, so the add-song
   and autofill paths can be tested without network or API keys.
+
+## Guide mode and the docs pages
+
+- `script.js` only carries `setupGuideHotkey()` and `openGuide()`. Everything else lives in `public/guide/`
+  and is pulled in with `import()` on demand. Keep it that way: nothing guide-related belongs in the
+  always-loaded bundle.
+- Guide text is data. To explain a new control, add a spot to `guide.json` (`target` selector, `title`,
+  `body`, optional `keys`, `hidden`, `prepare`, `fallback`). Put its id in `tour` only if the step-by-step
+  tour should stop there; every spot with a `target` is used by Point and ask. `prepare` understands
+  `tab`, `queue` and `sidebar` only; add new actions in `GuideSession.prepare`/`restorePrepared`.
+- `vercel.json` sends `/guide/*` with `Cache-Control: no-store` and the service worker skips it, so a
+  content change is live on the next press.
+- When a feature changes, update `tutorial.html` (and `introduction.html` if it is a headline
+  feature). Regenerate screenshots with the dev server running:
+  `PLAYWRIGHT_PATH="$SCRATCHPAD/node_modules/playwright" node scripts/tutorial-shots.js [scene ...]`.
+  It seeds a throwaway profile and proxies `/api/*` to production, so YouTube search uses real quota.
 
 ## Auditing CSS
 

@@ -1493,6 +1493,15 @@ a.ui-btn--block {
   line-height: var(--ui-line);
 }
 
+.welcome-instructions a,
+.setting-description a {
+  color: var(--text-primary);
+  text-decoration: underline;
+  text-decoration-color: var(--accent-color);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+}
+
 .playlist-selection-container {
   display: flex;
   flex-direction: column;

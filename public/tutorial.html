@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SweetEscape tutorial: every feature, with screenshots</title>
+  <meta name="description" content="How to use SweetEscape: adding songs, playlists, the queue, synced lyrics, karaoke links, themes, shortcuts, and every hidden right-click and long-press.">
+  <link rel="canonical" href="https://sweetescape.vercel.app/tutorial">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <meta name="theme-color" content="#121212">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="SweetEscape">
+  <meta property="og:title" content="SweetEscape tutorial: every feature, with screenshots">
+  <meta property="og:description" content="Adding songs, playlists, the queue, lyrics and karaoke, identification, downloads, themes, shortcuts, and every hidden right-click and long-press.">
+  <meta property="og:url" content="https://sweetescape.vercel.app/tutorial">
+  <meta property="og:image" content="https://sweetescape.vercel.app/learn/shots/sidebar.jpg">
+  <meta property="og:image:width" content="1280">
+  <meta property="og:image:height" content="800">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="SweetEscape tutorial: every feature, with screenshots">
+  <meta name="twitter:description" content="Adding songs, playlists, the queue, lyrics and karaoke, identification, downloads, themes, shortcuts, and every hidden right-click and long-press.">
+  <meta name="twitter:image" content="https://sweetescape.vercel.app/learn/shots/sidebar.jpg">
+  <link rel="stylesheet" href="/learn/learn.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "TechArticle",
+        "headline": "SweetEscape tutorial: every feature, with screenshots",
+        "description": "How to use every part of the SweetEscape browser music player.",
+        "url": "https://sweetescape.vercel.app/tutorial",
+        "inLanguage": "en",
+        "image": "https://sweetescape.vercel.app/learn/shots/sidebar.jpg",
+        "dateModified": "2026-10-25",
+        "about": { "@id": "https://sweetescape.vercel.app/#app" },
+        "author": { "@type": "Person", "name": "FishAreSmart", "url": "https://github.com/fish-aimf" }
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "SweetEscape", "item": "https://sweetescape.vercel.app/introduction" },
+          { "@type": "ListItem", "position": 2, "name": "Tutorial", "item": "https://sweetescape.vercel.app/tutorial" }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar__inner">
+      <a class="brand" href="/introduction"><img src="/favicon.svg" alt="" width="26" height="26"><span class="brand__name">SweetEscape</span></a>
+      <nav aria-label="Site">
+        <a href="/introduction">Introduction</a>
+        <a href="/tutorial" aria-current="page">Tutorial</a>
+        <a class="hide-sm" href="https://github.com/fish-aimf/sweetescape-music-player">GitHub</a>
+        <a class="button" href="/">Open the player</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page docs">
+    <nav class="toc" aria-label="On this page">
+      <p>On this page</p>
+      <ol>
+        <li><a href="#layout">The screen</a></li>
+        <li><a href="#adding">Adding songs</a></li>
+        <li><a href="#library">The library</a></li>
+        <li><a href="#editing">Editing a song</a></li>
+        <li><a href="#playback">Playback controls</a></li>
+        <li><a href="#queue">The queue</a></li>
+        <li><a href="#playlists">Playlists</a></li>
+        <li><a href="#side-panel">Playlist side panel</a></li>
+        <li><a href="#explorer">Music Explorer</a></li>
+        <li><a href="#lyrics">Lyrics</a></li>
+        <li><a href="#fullscreen-lyrics">Fullscreen lyrics</a></li>
+        <li><a href="#karaoke">Karaoke links</a></li>
+        <li><a href="#identify">Identify a song</a></li>
+        <li><a href="#download">Downloads and local files</a></li>
+        <li><a href="#stats">Listening statistics</a></li>
+        <li><a href="#appearance">Themes and glass</a></li>
+        <li><a href="#visualizer">Visualizer</a></li>
+        <li><a href="#shortcuts">Keyboard shortcuts</a></li>
+        <li><a href="#timer">Sleep timer</a></li>
+        <li><a href="#disguise">Disguise</a></li>
+        <li><a href="#discord">Discord</a></li>
+        <li><a href="#backup">Backup and sharing</a></li>
+        <li><a href="#settings">Other settings</a></li>
+        <li><a href="#guide">Guide mode</a></li>
+        <li><a href="#hidden">Every hidden gesture</a></li>
+      </ol>
+    </nav>
+
+    <article>
+      <section class="prose">
+        <h1>How to use SweetEscape</h1>
+        <p class="lede">This page goes through the whole player, top to bottom. Anything marked <span class="tag">Hidden</span> has no button or label, so you'd only find it by accident.</p>
+        <p>If you'd rather learn by poking around, open the player and press <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>G</kbd>. <a href="#guide">Guide mode</a> points at each part of the screen and tells you what it does.</p>
+      </section>
+
+      <section id="layout">
+        <div class="prose">
+          <h2>The screen</h2>
+          <p>There are three areas. <strong>Music Explorer</strong> on the left shows what's playing and what to play next. The <strong>tabs</strong> in the middle switch between Now Playing, Library, Playlists and Lyrics. The <strong>control bar</strong> along the bottom has the transport buttons, the progress bar and the volume.</p>
+        </div>
+        <figure class="shot">
+          <img src="/learn/shots/overview.jpg" width="1280" height="800" alt="The full player with Music Explorer, the Library tab and the control bar.">
+          <figcaption>The Library tab with a song playing. The Now Playing tab only appears once something is playing.</figcaption>
+        </figure>
+        <div class="prose">
+          <p>The row of icons at the top right, from left to right:</p>
+          <ul>
+            <li><strong>Moon</strong>: switches between light, dark and your custom theme (<kbd>P</kbd>).</li>
+            <li><strong>Mask</strong>: <a href="#disguise">Disguise</a>.</li>
+            <li><strong>Bar chart</strong>: <a href="#stats">Listening statistics</a>.</li>
+            <li><strong>Clock</strong>: <a href="#timer">Sleep timer</a> (<kbd>T</kbd>). A countdown appears next to it while a timer runs.</li>
+            <li><strong>Discord</strong>: <a href="#discord">Rich Presence</a>. The dot shows whether it's connected.</li>
+            <li><strong>Magnifier</strong>: <a href="#identify">Identify a song</a>.</li>
+            <li><strong>Download arrow</strong>: <a href="#download">Downloads</a>.</li>
+            <li><strong>Cog</strong>: Settings.</li>
+          </ul>
+          <p>Top left is your total listening time and the site's visitor count. Bottom right is the version number. <span class="tag">Hidden</span> Click it to read the changelog.</p>
+          <p>The two round buttons at the bottom left hide the control bar (<kbd>H</kbd>) and move the transport buttons left, centre or right.</p>
+        </div>
+      </section>
+
+      <section id="adding">
+        <div class="prose">
+          <h2>Adding songs</h2>
+          <p>Your library starts empty. There are four ways to fill it.</p>
+          <h3>1. Search, then press Enter</h3>
+          <p>Type into <strong>Search songs</strong> on the Library tab. If nothing in your library matches and you press <kbd>Enter</kbd>, it searches YouTube instead. Each result has <strong>Preview</strong>, which plays it in a small temporary player without adding it, and <strong>Add</strong>.</p>
+        </div>
+        <figure class="shot shot--narrow">
+          <img src="/learn/shots/youtube-search.jpg" width="678" height="761" loading="lazy" alt="YouTube results under the library search box, each with Preview and Add buttons.">
+          <figcaption>Results from YouTube. Scroll to the bottom for more.</figcaption>
+        </figure>
+        <div class="prose">
+          <p>The <strong>"topic"</strong> button inside the search box adds the word "topic" to YouTube searches. Topic uploads are the official audio-only versions, which load faster and use less data. It's on when lit, and struck through when off.</p>
+          <p><span class="tag">Hidden</span> Paste a YouTube link into the same search box and press <kbd>Enter</kbd> to add that exact video.</p>
+          <h3>2. Modify Library</h3>
+          <p><strong>Modify Library</strong>, then the <strong>Add Song</strong> tab, takes a name, an optional artist and a YouTube URL. Paste the URL first: the name fills itself in, and <strong>Autofill Name &amp; Author</strong> splits a title like "Queen - Don't Stop Me Now (Official Video)" into a clean name and artist. <span class="tag">Hidden</span> Hover over Autofill to preview what it will write before you click. If you don't like the result, <strong>Undo</strong> puts back what you'd typed.</p>
+        </div>
+        <figure class="shot shot--small">
+          <img src="/learn/shots/add-song.jpg" width="560" height="390" loading="lazy" alt="The Add Song form with a song name filled in from a pasted YouTube URL.">
+          <figcaption>Pasting a link fills in the name.</figcaption>
+        </figure>
+        <div class="prose">
+          <h3>3. Global library</h3>
+          <p>The <strong>Global library</strong> button opens a full-screen browser. On the left is the current <strong>Billboard Hot 100</strong> top three, refreshed daily, and <strong>Discover Something New</strong>, a few random picks with a Refresh button. Click a song to hear a preview. <span class="tag">Hidden</span> Click the "Billboard Hot 100" heading to open the full chart, where every entry has Preview and Add to Library buttons.</p>
+          <p>The search box on the right finds artists, songs and premade playlists. An artist opens a grid of their songs. A song opens a card with a listen button and an add button. A premade playlist is added to your library in one go.</p>
+        </div>
+        <figure class="shot">
+          <img src="/learn/shots/global-library-search.jpg" width="1280" height="800" loading="lazy" alt="The Global library with the Billboard top three on the left and search results for Queen on the right.">
+          <figcaption>Searching the Global library for an artist.</figcaption>
+        </figure>
+        <div class="prose">
+          <h3>4. Import a list</h3>
+          <p><strong>Modify Library, Import/Export, Import Songs</strong> takes plain text, one song per line, and whole playlists in braces. See <a href="#backup">Backup and sharing</a> for the format.</p>
+        </div>
+      </section>
+
+      <section id="library">
+        <div class="prose">
+          <h2>The library</h2>
+          <p>With the search box empty, the Library tab is a home screen with three shelves:</p>
+          <ul>
+            <li><strong>Favourites</strong>: a strip of every song you've starred. Scroll it sideways with the mouse wheel or a swipe. Click a cover to play it. <strong>Play</strong> plays them all as a playlist and <strong>All</strong> opens them as a list.</li>
+            <li><strong>Playlists</strong>: your playlists as cover tiles, plus a tile for making a new one.</li>
+            <li><strong>From your library</strong>: a shuffled grid of your songs. <strong>Shuffle</strong> reshuffles it and <strong>All</strong> shows the full list.</li>
+          </ul>
+          <p><span class="tag">Hidden</span> Right-click any cover in the favourites strip or the song grid to add it to the <a href="#queue">queue</a> instead of playing it.</p>
+          <h3>Searching</h3>
+          <p>Search matches names and artists as you type. When only a few songs match they show as big cards, a few more get small covers, and long lists stay plain so they scroll fast. Press <kbd>Enter</kbd> to play the first match.</p>
+          <p>It also matches songs in other alphabets typed in Latin letters: <code>eto</code> finds Это, <code>saranghae</code> finds 사랑해, <code>arigatou</code> finds ありがとう, <code>agapi mou</code> finds Αγάπη μου.</p>
+        </div>
+        <div class="columns">
+          <figure class="shot">
+            <img src="/learn/shots/search-card.jpg" width="678" height="752" loading="lazy" alt="A single search match shown as a large card with its cover.">
+            <figcaption>One match: a big card.</figcaption>
+          </figure>
+          <figure class="shot">
+            <img src="/learn/shots/search-covers.jpg" width="678" height="752" loading="lazy" alt="Several search matches, each with a small cover beside the song name.">
+            <figcaption>A few matches: small covers.</figcaption>
+          </figure>
+        </div>
+        <div class="prose">
+          <h3>Filters</h3>
+          <p>Hover the funnel icon in the search box. Each row is Yes, Any or No: <strong>Favourite</strong>, <strong>Lyrics</strong> (has lyrics saved) and <strong>Downloaded</strong> (has a local file). <strong>Language</strong> guesses each song's language from the letters in its title, so you can show only Korean songs, say. Filters combine with the search text.</p>
+        </div>
+        <figure class="shot shot--narrow">
+          <img src="/learn/shots/library-filter.jpg" width="678" height="752" loading="lazy" alt="The library filter panel with Favourite, Lyrics, Downloaded and Language rows.">
+          <figcaption>The filter panel opens when you hover the funnel.</figcaption>
+        </figure>
+        <div class="prose">
+          <h3>Song rows</h3>
+          <p>Each song in a list has a star (favourite), play, edit and delete button. Small icons after the name show that it has lyrics, a local file or a star. Clicking the name also plays it.</p>
+          <p><span class="tag">Hidden</span> Right-click a song's play button to queue it.</p>
+          <p><span class="tag">Hidden</span> Drag an audio file from your computer onto a song to play that song from the file from then on.</p>
+          <p>By default the list is alphabetical with favourites on top. <strong>Settings, Additional</strong> can switch it to the order you added songs, or reverse it.</p>
+        </div>
+      </section>
+
+      <section id="editing">
+        <div class="prose">
+          <h2>Editing a song</h2>
+          <p>The edit (pencil) button opens <strong>Edit Song Details</strong>:</p>
+          <ul>
+            <li>Change the name and artist.</li>
+            <li>The <strong>circular arrows</strong> next to the URL re-search YouTube for this song and let you pick a better video, for when the one you have is a live version or got taken down.</li>
+            <li>The <strong>share</strong> button copies a <code>/song/…</code> link. Pasted into Discord or most chat apps it shows a preview card.</li>
+            <li><strong>Link local file</strong> picks an audio file to play instead of YouTube (Chrome and Edge only). The × unlinks it.</li>
+            <li>The lyrics box takes one line per lyric, each ending in a timestamp like <code>[0:33]</code>. Lyrics with no timestamps at all still show, they just don't highlight. Once any line has one, lines without a timestamp are left out.</li>
+          </ul>
+        </div>
+        <figure class="shot shot--small">
+          <img src="/learn/shots/song-edit.jpg" width="560" height="688" loading="lazy" alt="The Edit Song Details dialog with name, author, YouTube URL, local file and timed lyrics.">
+        </figure>
+      </section>
+
+      <section id="playback">
+        <div class="prose">
+          <h2>Playback controls</h2>
+          <p>The control bar, left to right: previous, play/pause, next, <strong>loop</strong> (repeat this song), <strong>autoplay</strong> (keep going when the song ends), the <strong>list</strong> button for the <a href="#side-panel">playlist side panel</a>, and speed (0.25x to 2x). Click anywhere on the progress bar to jump there.</p>
+          <p>Under the song name is <strong>Next:</strong>, which tells you what comes after this. It takes the queue, skipped songs and loop settings into account.</p>
+          <p><span class="tag">Hidden</span> Hover over next or previous to see the three songs on that side.</p>
+        </div>
+        <figure class="shot shot--small">
+          <img src="/learn/shots/transport-preview.jpg" width="600" height="360" loading="lazy" alt="A popup above the next button listing the next three songs.">
+        </figure>
+        <div class="prose">
+          <p><span class="tag">Hidden</span> Right-click the song name in the control bar to copy it.</p>
+          <h3>Now Playing tab</h3>
+          <p>Once a song is playing, a <strong>Now Playing</strong> tab appears with a large cover and its own set of controls. Clicking the Now Playing card in Music Explorer also takes you there. <kbd>Q</kbd> cycles through the tabs.</p>
+        </div>
+        <figure class="shot">
+          <img src="/learn/shots/now-playing.jpg" width="1280" height="800" loading="lazy" alt="The Now Playing tab with a large cover, progress bar, controls and volume.">
+        </figure>
+        <div class="prose">
+          <h3>Video mode and the miniplayer</h3>
+          <p><span class="tag">Hidden</span> <kbd>U</kbd> fills the window with the YouTube video. Press <kbd>U</kbd> again to go back.</p>
+          <p><span class="tag">Hidden</span> <kbd>I</kbd> pops the player out into a small always-on-top window with the cover and controls, so you can keep it on screen while you work in another app. This uses Document Picture-in-Picture, so it needs Chrome or Edge on a computer.</p>
+        </div>
+        <figure class="shot">
+          <img src="/learn/shots/video-mode.jpg" width="1280" height="800" loading="lazy" alt="Video mode with the YouTube video filling the window above the control bar.">
+          <figcaption>Video mode. The hint in the corner fades after a few seconds.</figcaption>
+        </figure>
+        <p class="note prose">If you try to close or reload the tab while music is playing, the browser asks first. Trackpad back swipes, mouse side buttons and <kbd>Alt</kbd> + arrow keys are blocked so you don't lose your place.</p>
+      </section>
+
+      <section id="queue">
+        <div class="prose">
+          <h2>The queue</h2>
+          <p>The queue is a list of songs that play next, before the playlist carries on. It doesn't have a button. <span class="tag">Hidden</span> Press <kbd>Y</kbd> to open it.</p>
+          <p><span class="tag">Hidden</span> To add a song, right-click its play button anywhere: in a library list, in Music Explorer, in the favourites strip or the song grid. A note pops up at the bottom to confirm it. Right-click the same song twice in a row and it's set to play twice instead of appearing twice. Right-click a playlist's <strong>Play</strong> button to queue every song in it.</p>
+        </div>
+        <figure class="shot shot--narrow">
+          <img src="/learn/shots/queue.jpg" width="750" height="388" loading="lazy" alt="The queue panel listing six entries with repeat counts, a Loop Previous Song Forever block and a Stop Autoplay block.">
+          <figcaption>"Hello" will play twice, the loop block repeats "Numb" until you skip it, and the stop block pauses at the end.</figcaption>
+        </figure>
+        <div class="prose">
+          <p>Inside the queue:</p>
+          <ul>
+            <li>The search box adds any library song. Use the arrow keys and <kbd>Enter</kbd> to pick one.</li>
+            <li><strong>−</strong> and <strong>+</strong> set how many times a song plays, up to 99.</li>
+            <li>Drag the grip on the left to reorder. Each row also has duplicate and remove buttons.</li>
+            <li>The header buttons are shuffle, <strong>add a stop block</strong> (playback stops when it gets there), <strong>add a loop block</strong> (the song before it repeats forever), clear, and close.</li>
+          </ul>
+          <p>The queue is saved, so it's still there after a reload.</p>
+        </div>
+      </section>
+
+      <section id="playlists">
+        <div class="prose">
+          <h2>Playlists</h2>
+          <p>The <strong>Playlists</strong> tab lists every playlist with its song count and rough length. A <strong>Favorites</strong> playlist keeps itself in sync with your starred songs.</p>
+          <ul>
+            <li>Click a playlist, or its <strong>Play</strong> button, to play it.</li>
+            <li>The <strong>+</strong> button makes a new one.</li>
+            <li><strong>Edit</strong> switches the buttons on every card to <strong>Edit</strong> and <strong>Delete</strong>.</li>
+            <li>Typing in the search box filters the list, and <kbd>Enter</kbd> plays the top match.</li>
+            <li><span class="tag">Hidden</span> Press and hold a playlist for half a second, then drag it to reorder.</li>
+          </ul>
+        </div>
+        <figure class="shot shot--narrow">
+          <img src="/learn/shots/playlists-tab.jpg" width="678" height="391" loading="lazy" alt="The Playlists tab listing five playlists with song counts, durations and Play buttons.">
+        </figure>
+        <div class="prose">
+          <h3>Editing a playlist</h3>
+          <p>In Edit mode, the Edit button opens the playlist editor. Search on the left to add songs, drag the handles on the right to reorder, and Remove to take one out.</p>
+          <ul>
+            <li><span class="tag">Hidden</span> Click the playlist's name at the top to rename it.</li>
+            <li>The circular arrows at the top of the song list shuffle the order permanently.</li>
+            <li><strong>Duplicates Allowed / Banned</strong> decides whether the same song can be added twice. <strong>Clear Duplicates</strong> removes repeats that are already there. <strong>Reverse Position</strong> flips the order.</li>
+          </ul>
+        </div>
+        <figure class="shot shot--small">
+          <img src="/learn/shots/playlist-edit.jpg" width="560" height="640" loading="lazy" alt="The playlist editor with a search list on the left and the playlist's songs on the right.">
+        </figure>
+      </section>
+
+      <section id="side-panel">
+        <div class="prose">
+          <h2>Playlist side panel</h2>
+          <p>While a playlist is playing, the list button in the control bar (or <kbd>M</kbd>, or <kbd>Tab</kbd>) opens its songs on the right. Click a song to jump to it. The search box filters the panel, the green arrows loop the playlist, and the expand arrows switch to a wider panel with covers that pushes the page over instead of covering it.</p>
+          <p><span class="tag">Hidden</span> Long-press a song in the panel to skip it. It's struck through and won't play until you long-press it again or reload the page. Nothing is removed from the playlist. If you skip the song that's playing, it moves on straight away.</p>
+        </div>
+        <figure class="shot">
+          <img src="/learn/shots/sidebar.jpg" width="1280" height="800" loading="lazy" alt="The playlist side panel listing six songs, with Happy struck through as skipped.">
+          <figcaption>"Happy" has been long-pressed, so it's skipped for this session.</figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="/learn/shots/sidebar-expanded.jpg" width="1280" height="800" loading="lazy" alt="The expanded side panel on the left with covers and per-song play and skip buttons.">
+          <figcaption>The expanded panel. Each song gets its own play and skip button.</figcaption>
+        </figure>
+      </section>
+
+      <section id="explorer">
+        <div class="prose">
+          <h2>Music Explorer</h2>
+          <p>The left column. <kbd>O</kbd> hides and shows it. From the top:</p>
+          <ul>
+            <li><strong>Now Playing</strong>: click it to open the Now Playing tab.</li>
+            <li><strong>Recently Listened To</strong>: songs and playlists you played last. <span class="tag">Hidden</span> Click the heading for the whole history, where you can remove entries and set how many are kept.</li>
+            <li><strong>Suggested</strong> and <strong>Your Picks</strong>: songs from your library to play next. <span class="tag">Hidden</span> Click either heading to reshuffle it.</li>
+            <li><strong>Recently Played Playlists</strong>.</li>
+          </ul>
+          <p>Click to play, right-click to queue. <strong>Settings, Recommendation</strong> sets how many items each section shows, sets 0 to hide one, and changes their order.</p>
+        </div>
+        <figure class="shot shot--small">
+          <img src="/learn/shots/recently-played.jpg" width="720" height="587" loading="lazy" alt="The Recently Listened To dialog listing songs with how long ago each was played.">
+          <figcaption>The full history, opened from the "Recently Listened To" heading.</figcaption>
+        </figure>
+      </section>
+
+      <section id="lyrics">
+        <div class="prose">
+          <h2>Lyrics</h2>
+          <p>The <strong>Lyrics</strong> tab shows the current song's lyrics and highlights each line as it's sung. The three round buttons in the corner keep the current line centred, copy a <a href="#karaoke">karaoke link</a>, and open <a href="#fullscreen-lyrics">fullscreen lyrics</a>.</p>
+          <p><span class="tag">Hidden</span> Right-click the Lyrics tab to list every song in your library that has lyrics. Click one to open it in the editor.</p>
+        </div>
+        <figure class="shot shot--narrow">
+          <img src="/learn/shots/lyrics-tab.jpg" width="678" height="511" loading="lazy" alt="The Lyrics tab with the current line highlighted in green.">
+        </figure>
+        <div class="prose">
+          <h3>Getting lyrics for a song</h3>
+          <p>If a song has none, the tab offers two buttons.</p>
+          <p><strong>Transcribe lyrics</strong> opens the Lyrics Maker, which works in three steps:</p>
+          <ol>
+            <li><strong>Setup</strong>: paste the words, or use Auto-Fetch to pull them from Genius. There are also buttons that search AZLyrics, Letras, Genius and Google for you. Then Prepare Lyrics.</li>
+            <li><strong>Record</strong>: press Start Recording, then <strong>Mark Line</strong> the moment each line begins. Redo and Skip fix mistakes as you go.</li>
+            <li><strong>Export</strong>: check the result, then Save to Song, or copy it.</li>
+          </ol>
+        </div>
+        <figure class="shot">
+          <img src="/learn/shots/lyrics-maker.jpg" width="1248" height="768" loading="lazy" alt="The Lyrics Maker on its Setup step, with buttons to fetch lyrics from several sites.">
+        </figure>
+        <div class="prose">
+          <p><strong>Import subtitles as lyrics</strong> uses the video's YouTube captions instead. Auto-Fetch Transcript grabs them (pick a language if there are several). Otherwise, open the video, copy its transcript, and paste it in. Convert to Lyrics turns it into timed lines you can tidy up before saving.</p>
+        </div>
+        <figure class="shot shot--narrow">
+          <img src="/learn/shots/import-subtitles.jpg" width="720" height="653" loading="lazy" alt="The Import Subtitles dialog with Auto-Fetch Transcript, a language picker and a paste box.">
+        </figure>
+      </section>
+
+      <section id="fullscreen-lyrics">
+        <div class="prose">
+          <h2>Fullscreen lyrics</h2>
+          <p>The expand button on the Lyrics tab asks which style you want, then hides everything except the lyrics, the bottom bar and the visualizer. <kbd>Esc</kbd> leaves, and the layers button in the corner switches style without leaving.</p>
+          <ul>
+            <li><strong>Verse</strong>: music-video style lines that roll upward.</li>
+            <li><strong>Cards</strong>: each line is a card that rises and lands as the line starts.</li>
+            <li><strong>Mirror</strong>: the cover in the middle, with lines trading sides.</li>
+            <li><strong>Lyric Video</strong>: three lines at a time, the oldest swapped for the next.</li>
+            <li><strong>Flow</strong>: the whole song scrolls past. This is the only style that works with lyrics that have no timestamps.</li>
+          </ul>
+        </div>
+        <figure class="shot">
+          <img src="/learn/shots/lyrics-styles.jpg" width="1280" height="800" loading="lazy" alt="The style picker for fullscreen lyrics: Verse, Cards, Mirror, Lyric Video and Flow.">
+        </figure>
+        <div class="columns">
+          <figure class="shot">
+            <img src="/learn/shots/lyrics-stage-verse.jpg" width="1280" height="800" loading="lazy" alt="Fullscreen lyrics in the Verse style.">
+            <figcaption>Verse.</figcaption>
+          </figure>
+          <figure class="shot">
+            <img src="/learn/shots/lyrics-stage-mirror.jpg" width="1280" height="800" loading="lazy" alt="Fullscreen lyrics in the Mirror style.">
+            <figcaption>Mirror.</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section id="karaoke">
+        <div class="prose">
+          <h2>Karaoke links</h2>
+          <p>The share button on the Lyrics tab copies a link that holds the song and its timed lyrics. Nothing is uploaded, the lyrics are packed into the address itself. Whoever opens it gets a karaoke page with the video, synced lyrics, a speed control and its own fullscreen mode. <strong>Save to Library</strong> adds the song, lyrics included, to their library.</p>
+        </div>
+        <figure class="shot">
+          <img src="/learn/shots/karaoke-page.jpg" width="1280" height="1000" loading="lazy" alt="The karaoke share page with the video, playback controls and a lyrics panel.">
+        </figure>
+      </section>
+
+      <section id="identify">
+        <div class="prose">
+          <h2>Identify a song</h2>
+          <p>The magnifier icon. Choose where the sound comes from:</p>
+          <ul>
+            <li><strong>Tab / System audio</strong>: share a browser tab or your whole screen's audio, for a song playing in a video or another app.</li>
+            <li><strong>Microphone</strong>: hold your device near the music. Turn up <strong>Input gain</strong> if it's quiet.</li>
+            <li><strong>Upload clip</strong>: an audio or video file.</li>
+          </ul>
+          <p>Once there's a recording you can play it back and drag across the waveform to pick the best part. <strong>Identify selection</strong> or <strong>Identify clip</strong> sends it off. A match shows the cover and links to Shazam, YouTube Music, YouTube and Spotify, and the + button searches for it so you can add it.</p>
+        </div>
+        <figure class="shot shot--narrow">
+          <img src="/learn/shots/identify.jpg" width="720" height="245" loading="lazy" alt="The Identify Song dialog with Tab or System audio, Microphone and Upload clip buttons and an input gain slider.">
+        </figure>
+      </section>
+
+      <section id="download">
+        <div class="prose">
+          <h2>Downloads and local files</h2>
+          <p>The download arrow opens a small download manager with three tabs: <strong>Current song</strong>, <strong>Search library</strong> and <strong>YouTube URL</strong>. Add songs to its list, then download them one by one or with <strong>Download all</strong>. Files are MP3s.</p>
+          <p>There's also a stand-alone page at <a href="/download">/download</a> that does the same on a phone, without opening the player.</p>
+          <p>To play a downloaded file instead of YouTube, drag it onto the song in your library, or use <strong>Link local file</strong> in the song's edit dialog. Local files keep playing with no connection, and the <a href="#visualizer">visualizer</a> reacts to their actual sound.</p>
+        </div>
+        <figure class="shot shot--narrow">
+          <img src="/learn/shots/download.jpg" width="720" height="240" loading="lazy" alt="The Download dialog with Current song, Search library and YouTube URL tabs.">
+        </figure>
+      </section>
+
+      <section id="stats">
+        <div class="prose">
+          <h2>Listening statistics</h2>
+          <p>Statistics are off until you switch on <strong>Track Listening Statistics</strong> in Settings, Additional. After that, a song counts as played once you've heard a third of it, or ten seconds, whichever is shorter.</p>
+          <p>The bar chart icon shows the last 30 days or all time: time listened, plays, number of songs, your top artist and your top songs. Click any song for its own history: plays per day or per month, its best day and when you last played it, as a chart or a table.</p>
+          <p class="note">Switching statistics off deletes everything they've recorded.</p>
+        </div>
+        <figure class="shot">
+          <img src="/learn/shots/stats.jpg" width="1080" height="632" loading="lazy" alt="Listening statistics with summary tiles, the most played song and a ranked top ten.">
+        </figure>
+        <figure class="shot shot--narrow">
+          <img src="/learn/shots/stats-song.jpg" width="720" height="685" loading="lazy" alt="One song's play history with a bar chart of plays per day.">
+        </figure>
+      </section>
+
+      <section id="appearance">
+        <div class="prose">
+          <h2>Themes and glass</h2>
+          <p>The moon icon (<kbd>P</kbd>) cycles light, dark and custom. Settings, Theme has the rest:</p>
+          <ul>
+            <li><strong>Surface Style</strong>: Solid, or <strong>Glass</strong>, which makes panels see-through over a blurred background. Glass has sliders for transparency, blur and vibrancy, plus presets.</li>
+            <li><strong>Album Art Background</strong>: in glass mode, fills the background with a soft, slowly drifting copy of the current song's cover.</li>
+            <li><strong>Background</strong>: your own image, or one of the built-in gradients, with fit, dim and blur. The image stays on your device.</li>
+            <li><strong>Visualizer Colour</strong>: your theme colour, any colour you pick, or Auto, which takes it from the album cover.</li>
+            <li><strong>Customize Colors</strong>: set all twelve theme colours by hand. <strong>Export Theme to Clipboard</strong> gives you a code to share, <strong>Import Theme</strong> takes one, and <strong>Saved Themes</strong> keeps several to switch between.</li>
+          </ul>
+        </div>
+        <figure class="shot">
+          <img src="/learn/shots/glass-mode.jpg" width="1280" height="800" loading="lazy" alt="Glass mode with the album cover as a blurred background behind translucent panels.">
+          <figcaption>Glass mode with the album art background on.</figcaption>
+        </figure>
+        <div class="columns">
+          <figure class="shot">
+            <img src="/learn/shots/settings-theme.jpg" width="900" height="688" loading="lazy" alt="Settings, Theme tab with theme mode, surface style and background options.">
+            <figcaption>Settings, Theme.</figcaption>
+          </figure>
+          <figure class="shot">
+            <img src="/learn/shots/light-theme.jpg" width="1280" height="800" loading="lazy" alt="The player in the light theme on the Playlists tab.">
+            <figcaption>The light theme.</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section id="visualizer">
+        <div class="prose">
+          <h2>Visualizer</h2>
+          <p>The bars at the sides of the screen. Turn it on or off, and pick one of six designs (Bars, Levels, Wave, Ribbon, Radial, Glow), in Settings, Additional. <strong>Magnitude</strong> makes it bigger or smaller.</p>
+          <p>It reads the real audio for songs playing from a local file. YouTube's player doesn't let pages read its sound, so for YouTube songs it moves in time with the music but isn't measuring it.</p>
+        </div>
+        <figure class="shot">
+          <img src="/learn/shots/settings-additional.jpg" width="900" height="688" loading="lazy" alt="Settings, Additional tab with the visualizer designs, magnitude slider and library sorting toggles.">
+        </figure>
+      </section>
+
+      <section id="shortcuts">
+        <div class="prose">
+          <h2>Keyboard shortcuts</h2>
+          <p>Shortcuts don't fire while you're typing in a box. Every one of these can be changed in <strong>Settings, Keybinds</strong>: click a key, press the new one. <strong>Reset All</strong> puts the defaults back.</p>
+        </div>
+        <table class="keys">
+          <thead>
+            <tr><th>Key</th><th>Does</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><kbd>Space</kbd> or <kbd>K</kbd></td><td>Play or pause</td></tr>
+            <tr><td><kbd>←</kbd> or <kbd>A</kbd></td><td>Previous song</td></tr>
+            <tr><td><kbd>→</kbd> or <kbd>D</kbd></td><td>Next song</td></tr>
+            <tr><td><kbd>F</kbd> / <kbd>G</kbd></td><td>Back / forward 5 seconds</td></tr>
+            <tr><td><kbd>R</kbd></td><td>Restart the song</td></tr>
+            <tr><td><kbd>L</kbd></td><td>Loop this song</td></tr>
+            <tr><td><kbd>↑</kbd> / <kbd>↓</kbd></td><td>Volume up / down by 10%</td></tr>
+            <tr><td><kbd>=</kbd> / <kbd>-</kbd></td><td>Volume up / down by 1%</td></tr>
+            <tr><td><kbd>Y</kbd></td><td>Open the queue</td></tr>
+            <tr><td><kbd>M</kbd> or <kbd>Tab</kbd></td><td>Playlist side panel</td></tr>
+            <tr><td><kbd>Q</kbd></td><td>Next tab</td></tr>
+            <tr><td><kbd>O</kbd></td><td>Show or hide Music Explorer</td></tr>
+            <tr><td><kbd>H</kbd></td><td>Show or hide the control bar</td></tr>
+            <tr><td><kbd>U</kbd></td><td>Video mode</td></tr>
+            <tr><td><kbd>I</kbd></td><td>Miniplayer</td></tr>
+            <tr><td><kbd>P</kbd></td><td>Next theme</td></tr>
+            <tr><td><kbd>T</kbd></td><td>Sleep timer</td></tr>
+            <tr><td><kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>G</kbd></td><td>Guide mode (this one can't be changed)</td></tr>
+          </tbody>
+        </table>
+        <figure class="shot">
+          <img src="/learn/shots/settings-keybinds.jpg" width="900" height="688" loading="lazy" alt="Settings, Keybinds tab listing actions with their keys.">
+        </figure>
+      </section>
+
+      <section id="timer">
+        <div class="prose">
+          <h2>Sleep timer</h2>
+          <p>The clock icon or <kbd>T</kbd>. First choose what happens when it runs out, <strong>Stop Music</strong> or <strong>Close App</strong>. Then pick a preset from 30 seconds to 15 minutes, type any number of minutes, or set a clock time. The countdown shows next to the clock icon, and <strong>Cancel Timer</strong> stops it.</p>
+        </div>
+        <figure class="shot shot--small">
+          <img src="/learn/shots/timer.jpg" width="480" height="567" loading="lazy" alt="The App Timer dialog with Stop Music and Close App, preset times, a custom minutes box and a specific stop time.">
+        </figure>
+      </section>
+
+      <section id="disguise">
+        <div class="prose">
+          <h2>Disguise</h2>
+          <p>The mask icon. <strong>Tab disguise</strong> on the left changes the browser tab's icon and title to look like Google Docs, Gmail, Classroom, Desmos and about twenty others. It stays until you pick <strong>Original</strong>.</p>
+          <p><strong>Page disguise</strong> on the right covers the whole player with a real website, a preset one or any address you type, while the music keeps playing. <kbd>Esc</kbd> or the × in the corner brings the player back.</p>
+        </div>
+        <figure class="shot shot--narrow">
+          <img src="/learn/shots/disguise.jpg" width="720" height="688" loading="lazy" alt="The Disguise dialog with tab icons on the left and websites to embed on the right.">
+        </figure>
+      </section>
+
+      <section id="discord">
+        <div class="prose">
+          <h2>Discord</h2>
+          <p>Shows what you're listening to on your Discord profile. A browser can't talk to Discord directly, so this needs a small helper program running on your computer. The download link is in the dialog. Turn on <strong>Enable Rich Presence</strong>, and the three steps on the left go green once the helper and Discord are connected.</p>
+          <p>The right side shows what's being sent. You can overwrite the song, artist or picture, Reset to go back to automatic, or Send Now to push an update immediately.</p>
+        </div>
+        <figure class="shot shot--narrow">
+          <img src="/learn/shots/discord.jpg" width="720" height="619" loading="lazy" alt="The Discord Rich Presence dialog with connection steps and editable song, artist and thumbnail fields.">
+        </figure>
+      </section>
+
+      <section id="backup">
+        <div class="prose">
+          <h2>Backup and sharing</h2>
+          <p><strong>Modify Library, Import/Export</strong>. <strong>Export Songs</strong> lets you export the library, the library with every playlist, or a single playlist. It's plain text, so you can keep it anywhere and read it.</p>
+          <p><strong>Import Songs</strong> takes the same text. One song per line as <code>Name, YouTube URL</code> or <code>Name, YouTube URL, Artist</code>. Playlists go in braces:</p>
+<pre><code>Road Trip{
+Take On Me, https://www.youtube.com/watch?v=djV11Xbc914, a-ha
+Africa, https://www.youtube.com/watch?v=FTQbiNvZqaY, TOTO
+}</code></pre>
+          <p>Songs already in your library are skipped, and commas inside song names are fine.</p>
+          <p>To share one song, use the share button in its edit dialog. To share a song with its lyrics, use a <a href="#karaoke">karaoke link</a>.</p>
+        </div>
+        <figure class="shot shot--small">
+          <img src="/learn/shots/import-songs.jpg" width="560" height="688" loading="lazy" alt="The Import Songs dialog explaining the simple and playlist formats.">
+        </figure>
+      </section>
+
+      <section id="settings">
+        <div class="prose">
+          <h2>Other settings</h2>
+          <ul>
+            <li><strong>Recommendation</strong>: how many recently played songs to remember, and the order and size of each Music Explorer section.</li>
+            <li><strong>Feedback</strong>: send a note to the developer.</li>
+            <li><strong>Additional</strong>: ads (off by default), the visualizer, library sort order, and listening statistics.</li>
+          </ul>
+        </div>
+        <figure class="shot">
+          <img src="/learn/shots/settings-recommendation.jpg" width="900" height="688" loading="lazy" alt="Settings, Recommendation tab with section order and display limits.">
+        </figure>
+      </section>
+
+      <section id="guide">
+        <div class="prose">
+          <h2>Guide mode</h2>
+          <p>Press <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>G</kbd> anywhere in the player. On a Mac that's <kbd>Option</kbd> + <kbd>Shift</kbd> + <kbd>G</kbd>. You can also <a href="/?guide">open the player with guide mode on</a>.</p>
+          <p>Guide mode has two parts. The <strong>tour</strong> dims the screen and steps through each area with a short note, including the hidden gestures on this page. Use the arrow keys or the buttons, and <kbd>Esc</kbd> to stop. <strong>Point and ask</strong> lets you hover over, or tap, anything on the screen to find out what it is.</p>
+          <p>The guide is downloaded only when you ask for it, and never cached, so it doesn't slow down the player for anyone who doesn't use it.</p>
+        </div>
+      </section>
+
+      <section id="hidden">
+        <div class="prose">
+          <h2>Every hidden gesture</h2>
+          <p>All in one place:</p>
+          <ul>
+            <li>Right-click a song's play button, a Music Explorer song, a favourite, or a cover in the song grid: add it to the queue.</li>
+            <li>Right-click a playlist's Play button: queue the whole playlist.</li>
+            <li><kbd>Y</kbd>: open the queue.</li>
+            <li>Long-press a song in the playlist side panel: skip it for this session.</li>
+            <li>Press and hold a playlist card, then drag: reorder playlists.</li>
+            <li>Click a playlist's name in its editor: rename it.</li>
+            <li>Right-click the Lyrics tab: every song with lyrics.</li>
+            <li>Click "Recently Listened To": full history. Click "Suggested" or "Your Picks": reshuffle.</li>
+            <li>Click "Billboard Hot 100" in the Global library: the full chart.</li>
+            <li>Hover next or previous: the next or previous three songs.</li>
+            <li>Right-click the song name in the control bar: copy it.</li>
+            <li>Hover Autofill: preview the cleaned-up name and artist.</li>
+            <li>Paste a YouTube link into the library search and press <kbd>Enter</kbd>: add it.</li>
+            <li>Drag an audio file onto a song: play it from that file.</li>
+            <li>Click the version number: the changelog.</li>
+            <li><kbd>U</kbd>: video mode. <kbd>I</kbd>: miniplayer.</li>
+          </ul>
+        </div>
+      </section>
+    </article>
+  </main>
+
+  <footer class="footer">
+    <div class="footer__inner">
+      <span>SweetEscape, made by <a href="https://github.com/fish-aimf">fish-aimf</a></span>
+      <a href="/">Player</a>
+      <a href="/introduction">Introduction</a>
+      <a href="/download">Download page</a>
+      <a href="/changelog.md">Changelog</a>
+    </div>
+  </footer>
+</body>
+</html>

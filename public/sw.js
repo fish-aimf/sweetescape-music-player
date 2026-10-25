@@ -19,6 +19,8 @@ async function getActiveCacheName() {
   return activeCacheName;
 }
 
+const NETWORK_ONLY_PREFIXES = [ "/api/", "/guide/", "/learn/", "/introduction", "/tutorial" ];
+
 const STATIC_ASSETS = [ "/", "/index.html", "/style.css", "/ui-system.css", "/all.min.css", "/script.js", "/karaoke-encoder.js", "/favicon.svg" ];
 
 function timeout(ms) {
@@ -118,7 +120,7 @@ self.addEventListener("fetch", event => {
     }
     return;
   }
-  if (url.pathname.startsWith("/api/")) {
+  if (NETWORK_ONLY_PREFIXES.some(prefix => url.pathname.startsWith(prefix))) {
     return;
   }
   if (url.pathname === "/current-version.txt") {

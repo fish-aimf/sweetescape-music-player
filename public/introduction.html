@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SweetEscape: a free music player that runs in your browser</title>
+  <meta name="description" content="A free music player in your browser. Search any song, keep a library and playlists on your device, queue songs and sing along to synced lyrics. No account.">
+  <link rel="canonical" href="https://sweetescape.vercel.app/introduction">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <meta name="theme-color" content="#121212">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="SweetEscape">
+  <meta property="og:title" content="SweetEscape: a free music player that runs in your browser">
+  <meta property="og:description" content="Search any song, keep your own library and playlists, queue things up, and sing along with synced lyrics. No account, nothing to install.">
+  <meta property="og:url" content="https://sweetescape.vercel.app/introduction">
+  <meta property="og:image" content="https://sweetescape.vercel.app/learn/shots/overview.jpg">
+  <meta property="og:image:width" content="1280">
+  <meta property="og:image:height" content="800">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="SweetEscape: a free music player that runs in your browser">
+  <meta name="twitter:description" content="Search any song, keep your own library and playlists, queue things up, and sing along with synced lyrics. No account, nothing to install.">
+  <meta name="twitter:image" content="https://sweetescape.vercel.app/learn/shots/overview.jpg">
+  <link rel="stylesheet" href="/learn/learn.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "@id": "https://sweetescape.vercel.app/#app",
+        "name": "SweetEscape",
+        "alternateName": "SweetEscape Music Player",
+        "url": "https://sweetescape.vercel.app/",
+        "applicationCategory": "MultimediaApplication",
+        "operatingSystem": "Any modern web browser",
+        "browserRequirements": "Requires JavaScript. Chrome or Edge for local file linking and the miniplayer.",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "description": "A free music player that runs in the browser. Songs, playlists and settings are stored on your own device.",
+        "screenshot": [
+          "https://sweetescape.vercel.app/learn/shots/overview.jpg",
+          "https://sweetescape.vercel.app/learn/shots/lyrics-stage-cards.jpg",
+          "https://sweetescape.vercel.app/learn/shots/queue.jpg"
+        ],
+        "featureList": [
+          "Search any song on YouTube and add it to a personal library",
+          "Playlists with drag to reorder, shuffle, loop and temporary skip",
+          "Song queue with repeat counts, loop and stop blocks",
+          "Synced lyrics, a lyrics timing tool and shareable karaoke links",
+          "Fullscreen lyrics in five styles",
+          "Song identification from tab audio, microphone or a clip",
+          "MP3 downloads and local audio file playback",
+          "Listening statistics per song",
+          "Light, dark, custom and glass themes with a music visualizer",
+          "Rebindable keyboard shortcuts",
+          "Discord Rich Presence",
+          "Sleep timer, tab disguise and a picture-in-picture miniplayer",
+          "Import and export of the whole library as plain text"
+        ],
+        "author": { "@type": "Person", "name": "FishAreSmart", "url": "https://github.com/fish-aimf" }
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Is SweetEscape free?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes. There is no paid tier and no account. The site has an optional advertisement setting that is off by default." }
+          },
+          {
+            "@type": "Question",
+            "name": "Where are my songs and playlists stored?",
+            "acceptedAnswer": { "@type": "Answer", "text": "In your own browser, in IndexedDB. Nothing is uploaded to a server. Clearing site data for sweetescape.vercel.app deletes it, so export your library from Modify Library, Import/Export if you want a backup." }
+          },
+          {
+            "@type": "Question",
+            "name": "Does SweetEscape work offline?",
+            "acceptedAnswer": { "@type": "Answer", "text": "The app itself loads offline after your first visit. Songs stream from YouTube, so they need a connection, unless you link a downloaded audio file to the song." }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I use it on my phone?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes, it works in mobile browsers. On Android a long press does what right-click does on desktop. A few features, like linking local files and the miniplayer, need desktop Chrome or Edge." }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I move my library to another computer?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Open Modify Library, go to Import/Export, export your songs (optionally with every playlist), and paste the text into Import Songs on the other computer." }
+          },
+          {
+            "@type": "Question",
+            "name": "Is the source code available?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes. It is on GitHub at github.com/fish-aimf/sweetescape-music-player under the CC BY-NC 4.0 license." }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar__inner">
+      <a class="brand" href="/introduction"><img src="/favicon.svg" alt="" width="26" height="26"><span class="brand__name">SweetEscape</span></a>
+      <nav aria-label="Site">
+        <a href="/introduction" aria-current="page">Introduction</a>
+        <a href="/tutorial">Tutorial</a>
+        <a class="hide-sm" href="https://github.com/fish-aimf/sweetescape-music-player">GitHub</a>
+        <a class="button" href="/">Open the player</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="intro-head">
+      <div>
+        <h1>SweetEscape is a free music player that runs in your browser.</h1>
+        <p class="lede">Search for any song, keep the ones you like in your own library, and build playlists around them. There's no account and nothing to install. Your songs, playlists and settings stay on your device.</p>
+        <div class="actions">
+          <a class="button" href="/">Open the player</a>
+          <a class="button button--quiet" href="/tutorial">Read the tutorial</a>
+        </div>
+      </div>
+      <figure class="shot">
+        <img src="/learn/shots/overview.jpg" width="1280" height="800" alt="The SweetEscape player: Music Explorer on the left, the Library tab with favourites, playlists and a song grid in the middle, and the control bar at the bottom.">
+      </figure>
+    </div>
+
+    <section class="prose">
+      <h2>What it is</h2>
+      <p>SweetEscape started as a small side project and grew into a full music player. One person builds it, in plain HTML, CSS and JavaScript, and it's updated often. Every change is listed in the <a href="/changelog.md">changelog</a>.</p>
+      <p>Songs play through YouTube's embedded player. Your library is a list of songs saved in your browser's own storage (IndexedDB), with their names, artists, lyrics and covers. Nothing is sent to a server. Once you've visited once, the app itself loads without a connection. You can also link a downloaded audio file to any song so it plays straight from your disk.</p>
+      <p>The catch is that a lot of it is tucked away. Most things can be right-clicked, long-pressed or dragged, and a few features have no button at all, only a key. That's what the <a href="/tutorial">tutorial</a> and guide mode are for.</p>
+    </section>
+
+    <section>
+      <h2>What it can do</h2>
+      <dl class="facts">
+        <div>
+          <dt>Library</dt>
+          <dd>Search across names and artists as you type, including Russian, Korean, Japanese and Greek songs typed in Latin letters. Filter by favourite, lyrics, downloaded, or by the language the title is written in. Favourites stay on top.</dd>
+        </div>
+        <div>
+          <dt>Finding new songs</dt>
+          <dd>Type a song that isn't in your library and press <kbd>Enter</kbd> to search YouTube, preview a result, and add it. The Global library shows the current Billboard Hot 100, artist pages, premade playlists and random picks.</dd>
+        </div>
+        <div>
+          <dt>Playlists</dt>
+          <dd>Drag to reorder, randomize, reverse, allow or ban duplicates. While a playlist plays, its side panel lets you search it, loop it, and long-press a song to skip it just for now.</dd>
+        </div>
+        <div>
+          <dt>Queue</dt>
+          <dd>Right-click any play button to queue a song. The queue (<kbd>Y</kbd>) lets you set how many times each song repeats, reorder by dragging, and drop in "loop forever" or "stop here" blocks.</dd>
+        </div>
+        <div>
+          <dt>Lyrics and karaoke</dt>
+          <dd>Synced lyrics that highlight as the song plays. Get them from Genius or YouTube subtitles, or time them yourself by tapping along in the Lyrics Maker. Share a karaoke link that carries the lyrics inside the URL.</dd>
+        </div>
+        <div>
+          <dt>Fullscreen lyrics</dt>
+          <dd>Five styles: Verse, Cards, Mirror, Lyric Video and Flow.</dd>
+        </div>
+        <div>
+          <dt>Identify a song</dt>
+          <dd>Capture a browser tab or your system audio, use the microphone, or upload a clip. Trim it on the waveform, then open the match in Shazam, YouTube Music, YouTube or Spotify, or add it to your library.</dd>
+        </div>
+        <div>
+          <dt>Downloads and local files</dt>
+          <dd>Download songs as MP3s, one at a time or as a batch. Drop an audio file onto a song to play it from disk instead of YouTube.</dd>
+        </div>
+        <div>
+          <dt>Statistics</dt>
+          <dd>Time listened, plays, top songs and top artist for the last 30 days or all time, and a per-day play chart for every song. It's off until you turn it on.</dd>
+        </div>
+        <div>
+          <dt>Looks</dt>
+          <dd>Light, dark or fully custom colours, saved and shared as theme codes. A glass mode with your own background image or the current album cover. Six visualizer designs.</dd>
+        </div>
+        <div>
+          <dt>Everything else</dt>
+          <dd>Every shortcut can be rebound, there's a sleep timer, Discord Rich Presence, a picture-in-picture miniplayer, a video mode, playback speed from 0.25x to 2x, a tab disguise, and plain-text import and export of your whole library.</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="missed">
+      <h2>Things most people never find</h2>
+      <ul>
+        <li><strong>Right-click a song's play button</strong> to add it to the queue. This works in the library, Music Explorer, the favourites strip and the song grid. Right-click a playlist's Play button to queue the whole playlist.</li>
+        <li><strong>Press <kbd>Y</kbd></strong> to open the queue. It has no button.</li>
+        <li><strong>Long-press a song in the playlist side panel</strong> to skip it for this session without removing it.</li>
+        <li><strong>Right-click the Lyrics tab</strong> to see every song that has lyrics.</li>
+        <li><strong>Click the "Suggested" or "Your Picks" headings</strong> in Music Explorer to reshuffle them, and "Recently Listened To" to see your full history.</li>
+        <li><strong>Hover the next or previous button</strong> to see the three songs either side.</li>
+        <li><strong>Paste a YouTube link into the library search</strong> and press <kbd>Enter</kbd> to add it.</li>
+        <li><strong>Press <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>G</kbd></strong> inside the player for guide mode, which walks you around the screen and explains each part.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>A closer look</h2>
+      <div class="columns">
+        <figure class="shot">
+          <img src="/learn/shots/lyrics-stage-cards.jpg" width="1280" height="800" loading="lazy" alt="Fullscreen lyrics in the Cards style, with the album cover on the left and the current line highlighted on the right.">
+          <figcaption>Fullscreen lyrics, Cards style.</figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="/learn/shots/glass-mode.jpg" width="1280" height="800" loading="lazy" alt="The player in glass mode, with translucent panels over a blurred copy of the album cover.">
+          <figcaption>Glass mode with the album cover as the background.</figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="/learn/shots/queue.jpg" width="750" height="388" loading="lazy" alt="The queue panel with repeat counts, a loop block and a stop block.">
+          <figcaption>The queue, with a song set to play twice, a loop block and a stop block.</figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="/learn/shots/stats.jpg" width="1080" height="632" loading="lazy" alt="Listening statistics showing time listened, plays, songs, top artist and a ranked list of top songs.">
+          <figcaption>Listening statistics for the last 30 days.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="prose">
+      <h2>Where your data lives</h2>
+      <p>Your library, playlists, queue, lyrics, themes and statistics are stored in your browser for this site. There is no sign-in and no copy on a server. That also means clearing your browser's site data wipes it, so use <strong>Modify Library, Import/Export</strong> now and then to keep a backup. The export is plain text you can read and edit.</p>
+      <p>When you search, fetch lyrics, identify a song or download one, the request goes to the service that does the work (YouTube, Genius, the Global library database and so on), usually through the site's own small API. Your library itself is never part of those requests.</p>
+    </section>
+
+    <section class="faq">
+      <h2>Questions</h2>
+      <details>
+        <summary>Is SweetEscape free?</summary>
+        <p>Yes. There's no paid tier and no account. The site has an optional advertisement setting that is off by default.</p>
+      </details>
+      <details>
+        <summary>Where are my songs and playlists stored?</summary>
+        <p>In your own browser, in IndexedDB. Nothing is uploaded. Clearing site data for sweetescape.vercel.app deletes it, so export your library from Modify Library, Import/Export if you want a backup.</p>
+      </details>
+      <details>
+        <summary>Does it work offline?</summary>
+        <p>The app itself loads offline after your first visit. Songs stream from YouTube, so they need a connection, unless you link a downloaded audio file to the song.</p>
+      </details>
+      <details>
+        <summary>Can I use it on my phone?</summary>
+        <p>Yes, it works in mobile browsers. On Android a long press does what right-click does on desktop. A few features, like linking local files and the miniplayer, need desktop Chrome or Edge.</p>
+      </details>
+      <details>
+        <summary>How do I move my library to another computer?</summary>
+        <p>Open Modify Library, go to Import/Export, export your songs (optionally with every playlist), and paste the text into Import Songs on the other computer.</p>
+      </details>
+      <details>
+        <summary>Why doesn't the visualizer react to every song?</summary>
+        <p>The visualizer reads the real audio only for songs playing from a local file. YouTube's player doesn't let a page read its audio, so for those it moves in time with the music instead of analysing it.</p>
+      </details>
+      <details>
+        <summary>Is the source code available?</summary>
+        <p>Yes, on <a href="https://github.com/fish-aimf/sweetescape-music-player">GitHub</a> under the CC BY-NC 4.0 license.</p>
+      </details>
+    </section>
+
+    <section class="prose">
+      <h2>Getting started</h2>
+      <ol>
+        <li><a href="/">Open the player</a>. With an empty library you get a short welcome.</li>
+        <li>Click <strong>Global library</strong> and add a few songs, or type one into the search box and press <kbd>Enter</kbd>.</li>
+        <li>Press <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>G</kbd> to have guide mode show you around.</li>
+        <li>When you want the details, the <a href="/tutorial">tutorial</a> goes through every feature with screenshots.</li>
+      </ol>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer__inner">
+      <span>SweetEscape, made by <a href="https://github.com/fish-aimf">fish-aimf</a></span>
+      <a href="/">Player</a>
+      <a href="/tutorial">Tutorial</a>
+      <a href="/download">Download page</a>
+      <a href="/changelog.md">Changelog</a>
+    </div>
+  </footer>
+</body>
+</html>

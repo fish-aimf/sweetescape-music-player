@@ -11,6 +11,31 @@
     {
       "source": "/download",
       "destination": "/download.html"
+    },
+    {
+      "source": "/introduction",
+      "destination": "/introduction.html"
+    },
+    {
+      "source": "/tutorial",
+      "destination": "/tutorial.html"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/introduction.html",
+      "destination": "/introduction",
+      "permanent": true
+    },
+    {
+      "source": "/tutorial.html",
+      "destination": "/tutorial",
+      "permanent": true
+    },
+    {
+      "source": "/help.html",
+      "destination": "/tutorial",
+      "permanent": false
     }
   ],
   "functions": {
@@ -20,6 +45,12 @@
     }
   },
   "headers": [
+    {
+      "source": "/guide/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" }
+      ]
+    },
     {
       "source": "/current-version.txt",
       "headers": [

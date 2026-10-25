@@ -580,6 +580,7 @@ class AdvancedMusicPlayer {
     this.debouncedFilterLibrary = this.debounce(this.filterLibrarySongs.bind(this), 96);
     this.currentLyricMakerSongId = null;
     this.lyricMakerCleanup = null;
+    this.guidePromise = null;
     this.elements = {};
     this._initialize();
   }
@@ -629,6 +630,7 @@ class AdvancedMusicPlayer {
     this.initializeAutoplay();
     this.setupKeyboardControls();
     this.setupNavigationGuards();
+    this.setupGuideHotkey();
     this.renderInitialState();
     this.renderAdditionalDetails();
     this.setupLyricsTabContextMenu();
@@ -1218,6 +1220,35 @@ class AdvancedMusicPlayer {
         e.returnValue = '';
       }
     });
+  }
+  setupGuideHotkey() {
+    window.addEventListener('keydown', e => {
+      if (e.code === 'KeyG' && e.altKey && e.shiftKey && !e.ctrlKey && !e.metaKey && !e.repeat) {
+        e.preventDefault();
+        this.openGuide();
+      }
+    });
+    const params = new URLSearchParams(location.search);
+    if (params.has('guide')) {
+      params.delete('guide');
+      const query = params.toString();
+      history.replaceState(history.state, '', location.pathname + (query ? `?${query}` : '') + location.hash);
+      this.openGuide();
+    }
+  }
+  openGuide(mode = 'tour') {
+    if (this.guidePromise) {
+      return this.guidePromise;
+    }
+    this.guidePromise = import('/guide/guide.js').then(guide => guide.start(this, {
+      mode: mode
+    })).catch(error => {
+      console.error('Guide mode failed to load:', error);
+      this.showNotification('Guide mode could not load. Check your connection and try again.', 'error');
+    }).finally(() => {
+      this.guidePromise = null;
+    });
+    return this.guidePromise;
   }
   setupKeyboardControls() {
     document.addEventListener('keydown', e => {

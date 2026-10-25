@@ -13,6 +13,16 @@ const GROUPS = [
     label: 'karaoke',
     css: [ 'public/karaoke-styles.css' ],
     sources: [ 'public/karaoke.html', 'public/karaoke-player.js', 'public/karaoke-encoder.js' ]
+  },
+  {
+    label: 'learn',
+    css: [ 'public/learn/learn.css' ],
+    sources: [ 'public/introduction.html', 'public/tutorial.html' ]
+  },
+  {
+    label: 'guide',
+    css: [ 'public/guide/guide.css' ],
+    sources: [ 'public/guide/guide.js' ]
   }
 ];
 

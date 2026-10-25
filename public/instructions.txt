@@ -4,7 +4,7 @@ Sweetescape, an alternative to spotify and independantly developed music player 
 
 - Please don't sue me. this is just a passion project.
 
-- Oops didnt make any instructions but im sure its pretty straightforward.
+- New here? Press Alt + Shift + G any time for guide mode, which points at each part of the screen and explains it. The full <a href="/tutorial" target="_blank" rel="noopener">tutorial</a> has screenshots of every feature.
 
 - Packed full of features basically almost everything can be double clicked/ rightclicked/ longclicked
 
