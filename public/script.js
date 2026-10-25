@@ -428,7 +428,6 @@ class AdvancedMusicPlayer {
     this.yourPicksDisplayLimit = 2;
     this.recentlyPlayedPlaylistsDisplayLimit = 1;
     this.longPressTimer = null;
-    this.titleScrollInterval = null;
     this.isLongPressing = false;
     this.appTimer = null;
     this.timerEndTime = null;
@@ -5036,11 +5035,6 @@ class AdvancedMusicPlayer {
       if (playerState === YT.PlayerState.PLAYING) {
         this.ytPlayer.pauseVideo();
         this.isPlaying = false;
-        if (this.titleScrollInterval) {
-          clearInterval(this.titleScrollInterval);
-          this.titleScrollInterval = null;
-          document.title = 'Music Player';
-        }
       } else {
         this.ytPlayer.playVideo();
         this.isPlaying = true;
@@ -5609,7 +5603,9 @@ class AdvancedMusicPlayer {
         _lastUpdate = now;
         const current = this.localAudio.currentTime;
         const duration = this.localAudio.duration || 0;
-        if (duration > 0) {
+        if (duration > 0 && !this.isTabVisible) {
+          this._trackPlayStat(current, duration);
+        } else if (duration > 0) {
           const pct = current / duration * 100;
           if (this.elements.progressBar) {
             this.elements.progressBar.value = pct;
@@ -5658,10 +5654,6 @@ class AdvancedMusicPlayer {
         this.updatePlayerUI();
         this.stopListeningTimeTracking();
         this.idleVisualizerAudio();
-        if (this.titleScrollInterval) {
-          clearInterval(this.titleScrollInterval);
-          this.titleScrollInterval = null;
-        }
         this.updatePageTitle();
       });
       this.localAudio.addEventListener('play', () => {
@@ -5943,10 +5935,6 @@ class AdvancedMusicPlayer {
       this.isPlaying = false;
       this.updatePlayerUI();
       this.stopListeningTimeTracking();
-      if (this.titleScrollInterval) {
-        clearInterval(this.titleScrollInterval);
-        this.titleScrollInterval = null;
-      }
       this.updatePageTitle();
       clearInterval(this.progressInterval);
       this.progressInterval = null;
@@ -7371,10 +7359,8 @@ class AdvancedMusicPlayer {
     modal.classList.remove('hidden');
   }
   stopPlaybackTrackingIntervals() {
-    clearInterval(this.titleScrollInterval);
     clearInterval(this.progressInterval);
     clearInterval(this.lyricsInterval);
-    this.titleScrollInterval = null;
     this.progressInterval = null;
     this.lyricsInterval = null;
   }
@@ -9737,42 +9723,17 @@ class AdvancedMusicPlayer {
   }
   updatePageTitle() {
     if (this.priorityModeActive) {
-      clearInterval(this.titleScrollInterval);
-      this.titleScrollInterval = null;
       return;
     }
     const defaultTitle = 'Music';
     const MAX_TITLE_LENGTH = 60;
-    const SCROLL_THRESHOLD = 70;
     if (!this.isPlaying || !this.elements.currentSongName.textContent || this.elements.currentSongName.textContent === 'No Song Playing') {
       document.title = defaultTitle;
-      if (this.titleScrollInterval) {
-        clearInterval(this.titleScrollInterval);
-        this.titleScrollInterval = null;
-      }
       return;
     }
     const songName = this.elements.currentSongName.textContent;
     const fullTitle = `Music - ${songName}`;
-    if (this.titleScrollInterval) {
-      clearInterval(this.titleScrollInterval);
-      this.titleScrollInterval = null;
-    }
-    if (fullTitle.length <= MAX_TITLE_LENGTH) {
-      document.title = fullTitle;
-    } else if (songName.length <= MAX_TITLE_LENGTH + 5) {
-      document.title = songName.length <= MAX_TITLE_LENGTH ? songName : songName.substring(0, MAX_TITLE_LENGTH - 3) + '...';
-    } else if (songName.length > SCROLL_THRESHOLD) {
-      let currentPosition = 0;
-      const scrollTitle = `${songName} • `;
-      this.titleScrollInterval = setInterval(() => {
-        currentPosition = (currentPosition + 1) % scrollTitle.length;
-        const scrolledTitle = scrollTitle.substring(currentPosition) + scrollTitle.substring(0, currentPosition);
-        document.title = scrolledTitle;
-      }, 500);
-    } else {
-      document.title = songName.substring(0, MAX_TITLE_LENGTH - 3) + '...';
-    }
+    document.title = fullTitle.length <= MAX_TITLE_LENGTH ? fullTitle : songName;
   }
   setSpecificTimeTimer(timeString) {
     const [hours, minutes] = timeString.split(':').map(Number);
@@ -9828,11 +9789,6 @@ class AdvancedMusicPlayer {
         this.localAudio.pause();
         this.isPlaying = false;
         this.updatePlayerUI();
-        if (this.titleScrollInterval) {
-          clearInterval(this.titleScrollInterval);
-          this.titleScrollInterval = null;
-          document.title = 'Music Player';
-        }
       } catch (error) {
         console.error('Error stopping local audio:', error);
       }
@@ -9841,11 +9797,6 @@ class AdvancedMusicPlayer {
         this.ytPlayer.pauseVideo();
         this.isPlaying = false;
         this.updatePlayerUI();
-        if (this.titleScrollInterval) {
-          clearInterval(this.titleScrollInterval);
-          this.titleScrollInterval = null;
-          document.title = 'Music Player';
-        }
       } catch (error) {
         console.error('Error stopping music:', error);
       }
@@ -13394,7 +13345,7 @@ class AdvancedMusicPlayer {
     container.innerHTML = songs.map(song => {
       const youtubeUrl = `https://www.youtube.com/watch?v=${song.yt_id}`;
       const thumbnailUrl = `https://i.ytimg.com/vi/${song.yt_id}/mqdefault.jpg`;
-      return `\n\t            <div class="recommendation-song-item" onclick="musicPlayer.samplePlayTemporarySong('${youtubeUrl}')" style="cursor: pointer;" title="Click to preview">\n\t                <img src="${thumbnailUrl}" \n\t                     alt="Thumbnail" \n\t                     class="song-thumbnail" \n\t                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='30' viewBox='0 0 40 30'%3E%3Crect fill='%23ddd' width='40' height='30'/%3E%3Ctext x='20' y='18' text-anchor='middle' font-size='8' fill='%23666'%3E♪%3C/text%3E%3C/svg%3E'">\n\t                <div class="recommendation-song-info">\n\t                    <div class="recommendation-song-name">${song.name}</div>\n\t                    <div class="recommendation-song-author">by ${song.artist || 'Unknown'}</div>\n\t                </div>\n\t            </div>\n\t        `;
+      return `\n\t            <div class="recommendation-song-item" onclick="musicPlayer.samplePlayTemporarySong('${youtubeUrl}')" style="cursor: pointer;" title="Click to preview">\n\t                <img src="${thumbnailUrl}" \n\t                     alt="Thumbnail" \n\t                     class="song-thumbnail" loading="lazy" decoding="async" \n\t                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='30' viewBox='0 0 40 30'%3E%3Crect fill='%23ddd' width='40' height='30'/%3E%3Ctext x='20' y='18' text-anchor='middle' font-size='8' fill='%23666'%3E♪%3C/text%3E%3C/svg%3E'">\n\t                <div class="recommendation-song-info">\n\t                    <div class="recommendation-song-name">${song.name}</div>\n\t                    <div class="recommendation-song-author">by ${song.artist || 'Unknown'}</div>\n\t                </div>\n\t            </div>\n\t        `;
     }).join('');
   }
   async loadBillboardHot100Top3() {
@@ -13499,7 +13450,7 @@ class AdvancedMusicPlayer {
       movementClass = 'billboard-steady-item';
     }
     const thumbnailUrl = this.getYouTubeThumbnail(song.youtube_url);
-    return `\n        <div class="billboard-song-item ${movementClass}">\n            <div class="billboard-position-badge ${isPeakPosition ? 'billboard-peak' : ''}">#${song.this_week}</div>\n            <img src="${thumbnailUrl}" \n                 alt="${this.escapeHtml(song.song)}" \n                 class="billboard-song-thumbnail"\n                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'60\\' height=\\'60\\' viewBox=\\'0 0 60 60\\'%3E%3Crect fill=\\'%23ddd\\' width=\\'60\\' height=\\'60\\'/%3E%3Ctext x=\\'30\\' y=\\'35\\' text-anchor=\\'middle\\' font-size=\\'14\\' fill=\\'%23666\\'%3E♪%3C/text%3E%3C/svg%3E'">\n            <div class="billboard-song-details">\n                <div class="billboard-song-title">${this.escapeHtml(song.song)}</div>\n                <div class="billboard-song-artist">${this.escapeHtml(song.artist)}</div>\n                <div class="billboard-song-stats">\n                    <span class="billboard-stat">Peak: #${song.peak_position}</span>\n                    <span class="billboard-stat">Weeks: ${song.weeks_on_chart}</span>\n                    ${song.last_week ? `<span class="billboard-stat">Last: #${song.last_week}</span>` : ''}\n                </div>\n            </div>\n            <div class="billboard-song-actions">\n                ${movementIndicator}\n                <button class="billboard-add-btn" \n                        onclick="musicPlayer.addBillboardSongToLibrary('${this.escapeJsStringForAttribute(song.song)}', '${this.escapeJsStringForAttribute(song.artist)}', '${song.youtube_url}')"\n                        title="Add to Library">+ Add</button>\n                <button class="billboard-play-btn" \n\t\t\t\t        onclick="musicPlayer.samplePlayTemporarySong('${song.youtube_url}')"\n\t\t\t\t        title="Preview song">▶</button>\n            </div>\n        </div>\n    `;
+    return `\n        <div class="billboard-song-item ${movementClass}">\n            <div class="billboard-position-badge ${isPeakPosition ? 'billboard-peak' : ''}">#${song.this_week}</div>\n            <img src="${thumbnailUrl}" \n                 alt="${this.escapeHtml(song.song)}" \n                 class="billboard-song-thumbnail" loading="lazy" decoding="async"\n                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'60\\' height=\\'60\\' viewBox=\\'0 0 60 60\\'%3E%3Crect fill=\\'%23ddd\\' width=\\'60\\' height=\\'60\\'/%3E%3Ctext x=\\'30\\' y=\\'35\\' text-anchor=\\'middle\\' font-size=\\'14\\' fill=\\'%23666\\'%3E♪%3C/text%3E%3C/svg%3E'">\n            <div class="billboard-song-details">\n                <div class="billboard-song-title">${this.escapeHtml(song.song)}</div>\n                <div class="billboard-song-artist">${this.escapeHtml(song.artist)}</div>\n                <div class="billboard-song-stats">\n                    <span class="billboard-stat">Peak: #${song.peak_position}</span>\n                    <span class="billboard-stat">Weeks: ${song.weeks_on_chart}</span>\n                    ${song.last_week ? `<span class="billboard-stat">Last: #${song.last_week}</span>` : ''}\n                </div>\n            </div>\n            <div class="billboard-song-actions">\n                ${movementIndicator}\n                <button class="billboard-add-btn" \n                        onclick="musicPlayer.addBillboardSongToLibrary('${this.escapeJsStringForAttribute(song.song)}', '${this.escapeJsStringForAttribute(song.artist)}', '${song.youtube_url}')"\n                        title="Add to Library">+ Add</button>\n                <button class="billboard-play-btn" \n\t\t\t\t        onclick="musicPlayer.samplePlayTemporarySong('${song.youtube_url}')"\n\t\t\t\t        title="Preview song">▶</button>\n            </div>\n        </div>\n    `;
   }
   async addBillboardSongToLibrary(songName, artist, youtubeUrl) {
     const videoId = this.extractYouTubeId(youtubeUrl);
@@ -13651,7 +13602,7 @@ class AdvancedMusicPlayer {
     const actionButton = this.getReplaceTargetSong() ? `<button class="youtube-result-replace-btn" data-video-id="${videoId}" title="Use this video for the song">\n                <i class="fas fa-arrows-rotate"></i> Replace\n            </button>` : `<button class="youtube-result-add-btn" data-video-id="${videoId}" data-title="${this.escapeHtml(title)}" data-channel="${this.escapeHtml(channel)}">\n                <i class="fas fa-plus"></i> Add\n            </button>`;
     const card = document.createElement('div');
     card.classList.add('youtube-library-result-card');
-    card.innerHTML = `\n        <img src="${thumbnail}" alt="${this.escapeHtml(title)}" class="youtube-result-thumbnail">\n        <div class="youtube-result-info">\n            <div class="youtube-result-title">${this.escapeHtml(title)}</div>\n            <div class="youtube-result-channel">${this.escapeHtml(channel)}</div>\n            <div class="youtube-result-meta">${meta}</div>\n        </div>\n        <div class="youtube-result-actions">\n            <button class="youtube-result-preview-btn" data-video-id="${videoId}" title="Preview">\n                <i class="fas fa-play"></i> Preview\n            </button>\n            ${actionButton}\n        </div>\n    `;
+    card.innerHTML = `\n        <img src="${thumbnail}" alt="${this.escapeHtml(title)}" class="youtube-result-thumbnail" loading="lazy" decoding="async">\n        <div class="youtube-result-info">\n            <div class="youtube-result-title">${this.escapeHtml(title)}</div>\n            <div class="youtube-result-channel">${this.escapeHtml(channel)}</div>\n            <div class="youtube-result-meta">${meta}</div>\n        </div>\n        <div class="youtube-result-actions">\n            <button class="youtube-result-preview-btn" data-video-id="${videoId}" title="Preview">\n                <i class="fas fa-play"></i> Preview\n            </button>\n            ${actionButton}\n        </div>\n    `;
     return card;
   }
   setupYouTubeLibraryResultsDelegation() {
@@ -16234,9 +16185,6 @@ class AdvancedMusicPlayer {
     }, {
       ref: 'longPressTimer',
       timer: this.longPressTimer
-    }, {
-      ref: 'titleScrollInterval',
-      timer: this.titleScrollInterval
     }, {
       ref: 'appTimer',
       timer: this.appTimer
