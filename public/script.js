@@ -12355,18 +12355,61 @@ class AdvancedMusicPlayer {
     const seed = (this.albumArtKey ? this.pickVibrantColor(this.albumArtSamples) : null) || (this.backgroundSamples && this.appearance?.backgroundKind === 'image' ? this.pickVibrantColor(this.backgroundSamples) : null) || this.readVisualizerColor(accent);
     const blend = (top, bottom, amount) => top.map((channel, i) => channel * amount + bottom[i] * (1 - amount));
     const mean = backdrops.reduce((total, color) => total.map((channel, i) => channel + color[i] / backdrops.length), [ 0, 0, 0 ]);
-    const away = this.relativeLuminance(mean) > 0.179 ? [ 0, 0, 0 ] : [ 255, 255, 255 ];
+    const lighter = this.relativeLuminance(mean) <= 0.179;
     const opacity = Math.min(1, Math.max(0.05, parseFloat(getComputedStyle(v.canvas).opacity) || 0.5));
     const needed = Math.ceil(backdrops.length * 0.8);
-    const visible = color => backdrops.filter(behind => this.contrastRatio(blend(color, behind, opacity), behind) >= 3).length >= needed;
-    let amount = 0;
-    while (amount < 1 && !visible(blend(away, seed, amount))) {
-      amount = Math.min(1, amount + 0.05);
+    const passing = color => backdrops.filter(behind => this.contrastRatio(blend(color, behind, opacity), behind) >= 2).length;
+    const [hue, saturation, lightness] = this.rgbToHsl(seed);
+    const tone = level => this.hslToRgb(hue, Math.max(saturation, 0.6), level).map(Math.round);
+    let best = null;
+    for (let step = 0; step <= 50 && !(best && best.score >= needed); step++) {
+      const offsets = step ? lighter ? [ step, -step ] : [ -step, step ] : [ 0 ];
+      for (const offset of offsets) {
+        const level = lightness + offset * 0.02;
+        if (level < 0 || level > 1) {
+          continue;
+        }
+        const color = tone(level);
+        const score = passing(color);
+        if (!best || score > best.score) {
+          best = {
+            color: color,
+            score: score,
+            away: level >= lightness ? [ 255, 255, 255 ] : [ 0, 0, 0 ]
+          };
+        }
+        if (score >= needed) {
+          break;
+        }
+      }
     }
     return {
-      color: blend(away, seed, amount).map(Math.round),
-      away: away
+      color: best.color,
+      away: best.away
     };
+  }
+  rgbToHsl([r, g, b]) {
+    r /= 255;
+    g /= 255;
+    b /= 255;
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const lightness = (max + min) / 2;
+    const chroma = max - min;
+    if (!chroma) {
+      return [ 0, 0, lightness ];
+    }
+    const saturation = chroma / (1 - Math.abs(2 * lightness - 1));
+    const hue = max === r ? (g - b) / chroma % 6 : max === g ? (b - r) / chroma + 2 : (r - g) / chroma + 4;
+    return [ (hue * 60 + 360) % 360, saturation, lightness ];
+  }
+  hslToRgb(hue, saturation, lightness) {
+    const chroma = (1 - Math.abs(2 * lightness - 1)) * saturation;
+    const channel = n => {
+      const k = (n + hue / 30) % 12;
+      return (lightness - chroma / 2 * Math.max(-1, Math.min(k - 3, 9 - k, 1))) * 255;
+    };
+    return [ channel(0), channel(8), channel(4) ];
   }
   refreshVisualizerPalette() {
     const v = this.visualizer;
