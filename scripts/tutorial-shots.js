@@ -65,6 +65,7 @@ async function boot(ctx, width = 1280, height = 800, query = '') {
   await page.route('**/api/**', async route => {
     const url = new URL(route.request().url());
     if (url.hostname !== 'localhost') return route.continue();
+    if (url.pathname === '/api/count') return route.fulfill({ status: 200, contentType: 'application/json', body: '{"count":0}' });
     try {
       const res = await route.fetch({ url: 'https://sweetescape.vercel.app' + url.pathname + url.search, headers: { ...route.request().headers(), origin: 'https://sweetescape.vercel.app', referer: 'https://sweetescape.vercel.app/' } });
       await route.fulfill({ response: res });
