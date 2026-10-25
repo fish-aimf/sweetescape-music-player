@@ -1,5 +1,7 @@
 const GUIDE_BASE = new URL('./', import.meta.url);
 
+const TOUCH_EVENTS = [ 'pointerdown', 'pointerup', 'touchstart', 'touchend', 'mousedown', 'mouseup', 'click', 'dblclick', 'contextmenu' ];
+
 let session = null;
 
 export function start(player, options = {}) {
@@ -83,10 +85,10 @@ class GuideSession {
     this.index = 0;
     this.target = null;
     this.spot = null;
-    this.pinned = false;
+    this.tapState = null;
     this.lastRect = '';
     this.frame = 0;
-    this.hoverFrame = 0;
+    this.hoverTimer = 0;
     this.pointer = null;
     this.opened = {
       queue: false,
@@ -96,7 +98,7 @@ class GuideSession {
     this.showToken = 0;
     this.onKeyDown = this.onKeyDown.bind(this);
     this.onPointerMove = this.onPointerMove.bind(this);
-    this.onPointerBlock = this.onPointerBlock.bind(this);
+    this.onTouchGesture = this.onTouchGesture.bind(this);
     this.tick = this.tick.bind(this);
     this.ready = Promise.all([ fetchGuideData(), loadGuideStyles() ]).then(([data]) => {
       this.data = data;
@@ -179,15 +181,15 @@ class GuideSession {
     this.tourTab.setAttribute('aria-selected', String(!point));
     this.pointTab.setAttribute('aria-selected', String(point));
     this.card.setAttribute('aria-modal', String(!point));
-    const blocked = [ 'pointerdown', 'pointerup', 'mousedown', 'mouseup', 'click', 'dblclick', 'contextmenu', 'touchstart', 'touchend' ];
     if (point) {
       this.restorePrepared(null);
       window.addEventListener('pointermove', this.onPointerMove, true);
-      blocked.forEach(type => window.addEventListener(type, this.onPointerBlock, true));
+      TOUCH_EVENTS.forEach(type => window.addEventListener(type, this.onTouchGesture, true));
       this.showPoint(null);
     } else {
+      clearTimeout(this.hoverTimer);
       window.removeEventListener('pointermove', this.onPointerMove, true);
-      blocked.forEach(type => window.removeEventListener(type, this.onPointerBlock, true));
+      TOUCH_EVENTS.forEach(type => window.removeEventListener(type, this.onTouchGesture, true));
       this.go(initial ? 0 : this.index);
     }
   }
@@ -273,7 +275,7 @@ class GuideSession {
     this.target = target;
     this.lastRect = '';
     this.title.textContent = spot ? spot.title : 'Point at anything';
-    this.body.textContent = spot ? spot.body : 'Hover over, or tap, any part of the player to see what it does. Nothing you click will run while this is open.';
+    this.body.textContent = spot ? spot.body : 'Hover over any part of the player to see what it does, and keep using it as normal. On a touchscreen, tap something once to read about it and again to use it.';
     this.keys.replaceChildren(...(spot?.keys || []).map(([key, label]) => {
       const item = el('li');
       key.split(' ').forEach(part => item.append(el('kbd', null, part)));
@@ -297,8 +299,8 @@ class GuideSession {
     this.layout(true);
   }
 
-  showPoint(match) {
-    this.count.textContent = this.pinned ? 'Pinned. Tap somewhere else to move on.' : '';
+  showPoint(match, tapped = false) {
+    this.count.textContent = tapped && match ? 'Tap it again to use it.' : '';
     this.render(match?.spot || null, match?.el || null);
   }
 
@@ -325,15 +327,12 @@ class GuideSession {
   }
 
   onPointerMove(event) {
-    if (this.pinned || event.pointerType === 'touch') {
+    if (event.pointerType === 'touch') {
       return;
     }
     this.pointer = event;
-    if (this.hoverFrame) {
-      return;
-    }
-    this.hoverFrame = requestAnimationFrame(() => {
-      this.hoverFrame = 0;
+    clearTimeout(this.hoverTimer);
+    this.hoverTimer = setTimeout(() => {
       const node = document.elementFromPoint(this.pointer.clientX, this.pointer.clientY);
       if (!node || this.root.contains(node)) {
         return;
@@ -342,11 +341,25 @@ class GuideSession {
       if (match?.el !== this.target) {
         this.showPoint(match);
       }
-    });
+    }, 140);
   }
 
-  onPointerBlock(event) {
+  onTouchGesture(event) {
     if (this.root.contains(event.target)) {
+      return;
+    }
+    if (event.type === 'pointerdown') {
+      if (event.pointerType !== 'touch') {
+        this.tapState = null;
+        return;
+      }
+      const match = this.findSpot(event.target);
+      this.tapState = match && match.el !== this.target ? 'explain' : null;
+      if (this.tapState) {
+        this.showPoint(match, true);
+      }
+    }
+    if (this.tapState !== 'explain') {
       return;
     }
     event.stopPropagation();
@@ -354,9 +367,7 @@ class GuideSession {
       event.preventDefault();
     }
     if (event.type === 'click') {
-      const match = this.findSpot(event.target);
-      this.pinned = !!match && event.pointerType !== 'mouse';
-      this.showPoint(match);
+      this.tapState = null;
     }
   }
 
@@ -365,6 +376,14 @@ class GuideSession {
       event.preventDefault();
       event.stopImmediatePropagation();
       this.close();
+      return;
+    }
+    if (this.mode === 'point') {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        this.close();
+      }
       return;
     }
     if (this.root.contains(event.target) && event.key === 'Tab') {
@@ -471,10 +490,10 @@ class GuideSession {
     session = null;
     this.showToken++;
     cancelAnimationFrame(this.frame);
-    cancelAnimationFrame(this.hoverFrame);
+    clearTimeout(this.hoverTimer);
     window.removeEventListener('keydown', this.onKeyDown, true);
     window.removeEventListener('pointermove', this.onPointerMove, true);
-    [ 'pointerdown', 'pointerup', 'mousedown', 'mouseup', 'click', 'dblclick', 'contextmenu', 'touchstart', 'touchend' ].forEach(type => window.removeEventListener(type, this.onPointerBlock, true));
+    TOUCH_EVENTS.forEach(type => window.removeEventListener(type, this.onTouchGesture, true));
     if (this.root) {
       this.restorePrepared(null);
       if (this.startTab && document.querySelector('.tab.active')?.dataset.tab !== this.startTab) {

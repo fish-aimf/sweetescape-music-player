@@ -195,9 +195,11 @@ the player only through existing public methods (`switchTab`, `showQueueOverlay`
 
 `guide.json` holds *spots*: a CSS selector plus what to say about it. The tour walks the ids listed
 in `tour`. Point and ask uses every spot with a target and picks the deepest one under the pointer,
-so a specific spot (`#nextBtn`) wins over a general one (`.player-controls`). While guide mode is
-open it swallows keyboard shortcuts and, in Point and ask, clicks, so exploring never changes
-anything.
+so a specific spot (`#nextBtn`) wins over a general one (`.player-controls`). The tour swallows
+clicks and keyboard shortcuts so stepping through it never changes anything. Point and ask lets
+mouse clicks and keys through, so the player stays usable while it explains things, and only
+retargets after the pointer rests for 140ms so the card can be reached. Touch has no hover, so
+the first tap on a control explains it and the second tap uses it.
 
 ## 🧩 Core Architecture
 
