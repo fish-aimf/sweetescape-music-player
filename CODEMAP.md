@@ -12,7 +12,7 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 | Source | sha256 (first 12) | Lines |
 |---|---|---|
-| `public/script.js` | `2e2917e46ccd` | 16436 |
+| `public/script.js` | `f27261e1567a` | 16450 |
 | `public/index.html` | `95a3f604f412` | 1494 |
 | `public/script/settings.js` | `b1cbbfc3625b` | 561 |
 | `public/karaoke-player.js` | `79175232d973` | 682 |
@@ -38,7 +38,7 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 ---
 
-## `AdvancedMusicPlayer` by topic (622 methods)
+## `AdvancedMusicPlayer` by topic (623 methods)
 
 Names only. `grep -n "^  name(" public/script.js` gives the current line, and a name
 here that you cannot find has been renamed since this file was generated.
@@ -73,7 +73,7 @@ here that you cannot find has been renamed since this file was generated.
 
 ### Appearance & visualizer
 
-`getAppearanceDefaults` · `initializeAppearance` · `setAppearanceBackgroundBlob` · `applyAppearance` · `getAppearanceBackgroundValue` · `sampleAppearanceBackground` · `syncAlbumArtBackdrop` · `getGlassBackdropColors` · `renderAppearanceControls` · `renderVisualizerColorControls` · `handleVisualizerColorModeClick` · `handleVisualizerColorInput` · `renderAppearancePresets` · `updateAppearance` · `handleSurfaceStyleChange` · `handleAppearanceSliderInput` · `setupAppearanceListeners` · `initializeTheme` · `handleSaveCustomTheme` · `handleThemeModeChange` · `toggleTheme` · `updateFaviconThemeFromDB` · `updateThemeIcon` · `exportTheme` · `importTheme` · `applyImportedTheme` · `resetCustomTheme` · `applySavedTheme` · `deleteSavedTheme` · `_getSavedThemesRecord` · `_writeSavedThemes` · `initializeVisualizer` · `buildVisualizerBars` · `buildVisualizerBands` · `attachVisualizerAnalyser` · `resumeVisualizerAudio` · `startVisualizer` · `renderVisualizerFrame` · `sampleVisualizerLevels` · `sampleVisualizerWave` · `readVisualizerColor` · `vividVisualizerColor` · `invalidateVisualizerPalette` · `getVisualizerBackdropColors` · `getAutoVisualizerColor` · `refreshVisualizerPalette` · `buildVisualizerGlowSprites` · `drawVisualizerFrame` · `drawVisualizerBars` · `drawVisualizerLevels` · `drawVisualizerWave` · `drawVisualizerRibbon` · `drawVisualizerRadial` · `drawVisualizerGlow` · `destroyVisualizer` · `refreshVisualizerPower` · `syncVisualizerUI` · `renderVisualizerStyleOptions` · `handleVisualizerStyleClick` · `setVisualizerStyle` · `clampVisualizerGain` · `renderVisualizerGainLabel` · `handleVisualizerGainInput` · `handleVisualizerToggle` · `restorePageAppearance`
+`getAppearanceDefaults` · `initializeAppearance` · `setAppearanceBackgroundBlob` · `applyAppearance` · `getAppearanceBackgroundValue` · `sampleAppearanceBackground` · `syncAlbumArtBackdrop` · `getGlassBackdropColors` · `renderAppearanceControls` · `renderVisualizerColorControls` · `handleVisualizerColorModeClick` · `handleVisualizerColorInput` · `renderAppearancePresets` · `updateAppearance` · `handleSurfaceStyleChange` · `handleAppearanceSliderInput` · `setupAppearanceListeners` · `initializeTheme` · `handleSaveCustomTheme` · `handleThemeModeChange` · `toggleTheme` · `updateFaviconThemeFromDB` · `updateThemeIcon` · `exportTheme` · `importTheme` · `applyImportedTheme` · `resetCustomTheme` · `applySavedTheme` · `deleteSavedTheme` · `_getSavedThemesRecord` · `_writeSavedThemes` · `initializeVisualizer` · `buildVisualizerBars` · `buildVisualizerBands` · `attachVisualizerAnalyser` · `resumeVisualizerAudio` · `idleVisualizerAudio` · `startVisualizer` · `renderVisualizerFrame` · `sampleVisualizerLevels` · `sampleVisualizerWave` · `readVisualizerColor` · `vividVisualizerColor` · `invalidateVisualizerPalette` · `getVisualizerBackdropColors` · `getAutoVisualizerColor` · `refreshVisualizerPalette` · `buildVisualizerGlowSprites` · `drawVisualizerFrame` · `drawVisualizerBars` · `drawVisualizerLevels` · `drawVisualizerWave` · `drawVisualizerRibbon` · `drawVisualizerRadial` · `drawVisualizerGlow` · `destroyVisualizer` · `refreshVisualizerPower` · `syncVisualizerUI` · `renderVisualizerStyleOptions` · `handleVisualizerStyleClick` · `setVisualizerStyle` · `clampVisualizerGain` · `renderVisualizerGainLabel` · `handleVisualizerGainInput` · `handleVisualizerToggle` · `restorePageAppearance`
 
 ### Modals, notifications & UI chrome
 

@@ -5657,6 +5657,7 @@ class AdvancedMusicPlayer {
         this.isPlaying = false;
         this.updatePlayerUI();
         this.stopListeningTimeTracking();
+        this.idleVisualizerAudio();
         if (this.titleScrollInterval) {
           clearInterval(this.titleScrollInterval);
           this.titleScrollInterval = null;
@@ -7175,7 +7176,7 @@ class AdvancedMusicPlayer {
   _startLyricsInterval() {
     clearInterval(this.lyricsInterval);
     this.lyricsInterval = null;
-    if (this.currentTimings?.length && this.ytPlayer) {
+    if (this.currentTimings?.length && this.ytPlayer && this.isTabVisible) {
       this.lyricsInterval = setInterval(() => {
         if (!this.isTabVisible) {
           return;
@@ -12129,10 +12130,20 @@ class AdvancedMusicPlayer {
     }
   }
   resumeVisualizerAudio() {
+    clearTimeout(this._visualizerIdleTimer);
     const ctx = this.visualizer.audioCtx;
     if (ctx && ctx.state === 'suspended') {
       ctx.resume().catch(error => console.warn('Visualizer audio resume failed:', error.message));
     }
+  }
+  idleVisualizerAudio() {
+    clearTimeout(this._visualizerIdleTimer);
+    this._visualizerIdleTimer = setTimeout(() => {
+      const ctx = this.visualizer.audioCtx;
+      if (ctx && ctx.state === 'running' && this.localAudio?.paused) {
+        ctx.suspend().catch(() => {});
+      }
+    }, 5e3);
   }
   startVisualizer() {
     const v = this.visualizer;
@@ -15807,6 +15818,7 @@ class AdvancedMusicPlayer {
       this.isTabVisible = !document.hidden;
       if (!wasVisible && this.isTabVisible) {
         this.startVisualizer();
+        this._startLyricsInterval();
         if (this.isPlaying) {
           this.updateProgressBar();
           this.syncUIWithCurrentState();
@@ -15822,6 +15834,8 @@ class AdvancedMusicPlayer {
       clearInterval(this.progressInterval);
       this.progressInterval = null;
     }
+    clearInterval(this.lyricsInterval);
+    this.lyricsInterval = null;
     const v = this.visualizer;
     if (v && v.animationId !== null) {
       cancelAnimationFrame(v.animationId);

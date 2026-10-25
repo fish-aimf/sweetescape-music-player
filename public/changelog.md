@@ -775,3 +775,4 @@ Added an Album Art Background option for glass mode in Settings, which fills the
 Added Art blur and Art vibrancy sliders to the Album Art Background setting, so you can tune how soft and how colourful the cover background looks v74.9.0
 Added a Visualizer Colour setting to the Theme tab with Primary, Custom and Auto modes, where Auto picks a colour from the album art or background and keeps it visible, and made the album art background and visualizer much lighter on the GPU v74.10.0
 Cut GPU work while music plays: the album art drift now updates five times a second instead of every screen refresh, halving the cost of glass mode with album art, and the visualizer runs at a steady 30fps on high refresh rate screens v74.11.0
+Background tabs and paused music now use less power: synced lyrics stop polling while the tab is hidden, and the visualizer audio engine sleeps after 5 seconds of paused local playback v74.12.0
