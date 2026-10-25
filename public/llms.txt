@@ -1,0 +1,41 @@
+# SweetEscape
+
+> SweetEscape is a free music player that runs in the browser at https://sweetescape.vercel.app/. You search for any song, keep the ones you like in your own library, and build playlists around them. There is no account and nothing to install. The library, playlists, lyrics, settings and statistics are stored on the user's own device (IndexedDB), not on a server. Songs play through YouTube's privacy-enhanced embedded player.
+
+SweetEscape is built by one developer (fish-aimf) in plain HTML, CSS and JavaScript and is updated often. The source is on GitHub under CC BY-NC 4.0.
+
+## Docs
+
+- [Introduction](https://sweetescape.vercel.app/introduction): what SweetEscape is, what it can do, where data is stored, and common questions
+- [Tutorial](https://sweetescape.vercel.app/tutorial): every feature explained with screenshots, keyboard shortcuts, and a quick reference of tips
+- [Changelog](https://sweetescape.vercel.app/changelog.md): every change, newest at the bottom
+
+## Features
+
+- Library: search by name or artist as you type (also matches Russian, Korean, Japanese and Greek songs typed in Latin letters), filters for favourites, lyrics, downloaded and language, favourites kept on top
+- Adding songs: press Enter on a search with no library match to search YouTube with Preview and Add; paste a YouTube link; Modify Library with autofill of name and artist; the Global library with the Billboard Hot 100, artist pages, premade playlists and random picks; plain-text import
+- Playlists: drag to reorder, shuffle, reverse, allow or ban duplicates, rename; a side panel to search, loop, and skip songs for the session
+- Queue (key Y): repeat counts per song, drag to reorder, "loop previous song forever" and "stop" blocks; right-click any play button to queue a song
+- Playback: speed 0.25x to 2x, loop, autoplay, hover preview of the next and previous three songs, video mode (U), picture-in-picture miniplayer (I, Chrome and Edge)
+- Lyrics: synced lyrics fetched from Genius or YouTube captions, or timed by hand in the Lyrics Maker with a draggable timeline
+- Ways to show lyrics: the Lyrics tab, fullscreen lyrics in five styles (Verse, Cards, Mirror, Lyric Video, Flow), and shareable karaoke links whose lyrics are compressed into the URL
+- Sleep timer: stop the music or close the player after a preset, a custom number of minutes, or at a clock time
+- Identify a song from tab or system audio, the microphone or an uploaded clip, with links to Shazam, YouTube Music, YouTube and Spotify
+- Downloads as MP3 (single or batch), local audio files linked to songs for offline playback, and an app that loads offline after the first visit
+- Listening statistics (opt-in): time listened, plays, top songs and artist, per-song play history
+- Appearance: light, dark and custom themes with shareable theme codes, glass mode over a custom image, gradient or the album cover, six visualizer designs
+- Sharing: /song/ links with preview cards, karaoke links, library export
+- Also: rebindable keyboard shortcuts, Discord Rich Presence through a desktop helper, tab and page disguise, guide mode (Alt+Shift+G)
+
+## Privacy
+
+- No account and no server-side copy of the library
+- Songs play through YouTube's privacy-enhanced mode (youtube-nocookie.com), and listening sets no advertising or tracking cookies
+- Optional advertising is off by default; listening statistics are off until turned on
+
+## Common questions
+
+- Is it free? Yes, with no paid tier.
+- Does it work on phones? Yes, in mobile browsers. Local file linking and the miniplayer need desktop Chrome or Edge.
+- How do I move my library? Modify Library, Import/Export: export to text, then import it on the other device.
+- Does it work offline? The app does after the first visit; songs need a connection unless a local audio file is linked.

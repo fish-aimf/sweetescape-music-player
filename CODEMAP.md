@@ -12,10 +12,10 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 | Source | sha256 (first 12) | Lines |
 |---|---|---|
-| `public/script.js` | `ab5ee3adaa5d` | 16519 |
-| `public/index.html` | `cfe807f64ae7` | 1499 |
+| `public/script.js` | `f0dfea42475c` | 16524 |
+| `public/index.html` | `1c9a92f53ead` | 1503 |
 | `public/script/settings.js` | `b1cbbfc3625b` | 561 |
-| `public/karaoke-player.js` | `79175232d973` | 682 |
+| `public/karaoke-player.js` | `ec6846376de2` | 683 |
 | `public/karaoke-encoder.js` | `d277db62d9e9` | 147 |
 | `public/sw.js` | `cec0198433af` | 226 |
 
@@ -115,19 +115,19 @@ The rest match their id exactly.
 
 | id | line | classes |
 |---|---|---|
-| `discordRpcModal` | 286 | `modal discord-rpc-modal-overlay ui-overlay` |
-| `libraryModificationModal` | 419 | `modal ui-overlay` |
-| `importModal` | 455 | `modal ui-overlay` |
-| `playlistEditModal` | 501 | `modal ui-overlay` |
-| `timerModal` | 521 | `modal ui-overlay` |
-| `changelogModal` | 663 | `changelog-modal ui-overlay` |
-| `subtitlesImportModal` | 673 | `subtitles-import-modal-overlay ui-overlay` |
-| `settingsModal` | 742 | `settings-modal ui-overlay` |
-| `recentlyPlayedModal` | 1218 | `recently-played-modal-bg ui-overlay` |
-| `lyricsModal` | 1233 | `lyrics-maker-modal hidden ui-overlay` |
-| `downloadModal` | 1351 | `dl-overlay ui-overlay` |
-| `shazamModal` | 1415 | `sz-overlay ui-overlay` |
-| `statsModal` | 1466 | `ls-overlay ui-overlay` |
+| `discordRpcModal` | 290 | `modal discord-rpc-modal-overlay ui-overlay` |
+| `libraryModificationModal` | 423 | `modal ui-overlay` |
+| `importModal` | 459 | `modal ui-overlay` |
+| `playlistEditModal` | 505 | `modal ui-overlay` |
+| `timerModal` | 525 | `modal ui-overlay` |
+| `changelogModal` | 667 | `changelog-modal ui-overlay` |
+| `subtitlesImportModal` | 677 | `subtitles-import-modal-overlay ui-overlay` |
+| `settingsModal` | 746 | `settings-modal ui-overlay` |
+| `recentlyPlayedModal` | 1222 | `recently-played-modal-bg ui-overlay` |
+| `lyricsModal` | 1237 | `lyrics-maker-modal hidden ui-overlay` |
+| `downloadModal` | 1355 | `dl-overlay ui-overlay` |
+| `shazamModal` | 1419 | `sz-overlay ui-overlay` |
+| `statsModal` | 1470 | `ls-overlay ui-overlay` |
 
 ---
 
@@ -139,7 +139,7 @@ The rest match their id exactly.
 
 ### `public/karaoke-player.js` (40 members)
 
-`initElements` 21 · `setupEventListeners` 47 · `initializeDatabase` 75 · `openDatabase` 85 · `initializeTheme` 111 · `loadCustomTheme` 136 · `applyCustomColors` 205 · `hexToRgba` 223 · `loadKaraokeData` 236 · `showError` 255 · `initYouTubePlayer` 259 · `createPlayer` 269 · `onPlayerReady` 286 · `onPlayerStateChange` 293 · `togglePlayPause` 321 · `updatePlayPauseButton` 331 · `restart` 340 · `toggleLoop` 346 · `toggleCentering` 350 · `changeSpeed` 361 · `seek` 370 · `startProgressTracking` 378 · `stopProgressTracking` 402 · `formatTime` 409 · `renderLyrics` 415 · `startLyricsTracking` 437 · `stopLyricsTracking` 456 · `updateHighlightedLyric` 463 · `enterFullscreen` 495 · `exitFullscreen` 501 · `toggleFullscreen` 506 · `renderFullscreenLyrics` 514 · `updateFullscreenLyric` 529 · `copyURL` 558 · `updateTitle` 572 · `saveToLibrary` 578 · `findSongByVideoId` 605 · `updateSongLyrics` 621 · `addNewSong` 640 · `showToast` 663
+`initElements` 21 · `setupEventListeners` 47 · `initializeDatabase` 75 · `openDatabase` 85 · `initializeTheme` 111 · `loadCustomTheme` 136 · `applyCustomColors` 205 · `hexToRgba` 223 · `loadKaraokeData` 236 · `showError` 255 · `initYouTubePlayer` 259 · `createPlayer` 269 · `onPlayerReady` 287 · `onPlayerStateChange` 294 · `togglePlayPause` 322 · `updatePlayPauseButton` 332 · `restart` 341 · `toggleLoop` 347 · `toggleCentering` 351 · `changeSpeed` 362 · `seek` 371 · `startProgressTracking` 379 · `stopProgressTracking` 403 · `formatTime` 410 · `renderLyrics` 416 · `startLyricsTracking` 438 · `stopLyricsTracking` 457 · `updateHighlightedLyric` 464 · `enterFullscreen` 496 · `exitFullscreen` 502 · `toggleFullscreen` 507 · `renderFullscreenLyrics` 515 · `updateFullscreenLyric` 530 · `copyURL` 559 · `updateTitle` 573 · `saveToLibrary` 579 · `findSongByVideoId` 606 · `updateSongLyrics` 622 · `addNewSong` 641 · `showToast` 664
 
 ### `public/karaoke-encoder.js` (11 members)
 

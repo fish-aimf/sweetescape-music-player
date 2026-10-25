@@ -16,7 +16,8 @@ There is no bundler, no package.json, no test suite. Edit the file, reload the p
 | `public/sw.js` | Service worker. `STATIC_ASSETS` must list any new top-level asset; `NETWORK_ONLY_PREFIXES` lists paths it must never cache |
 | `public/introduction.html`, `public/tutorial.html` | Static SEO pages served at `/introduction` and `/tutorial`, styled by `public/learn/learn.css`, screenshots in `public/learn/shots/` |
 | `public/guide/` | Guide mode (`guide.js` module, `guide.json` content, `guide.css`). Fetched only on Alt+Shift+G or `/?guide`, never cached |
-| `api/` | Vercel serverless functions (`youtube`, `deezer`, `genius`, `shazam`, `download`, `count`, `gemini`, `song/[videoId]`) |
+| `api/` | Vercel serverless functions (`youtube`, `deezer`, `genius`, `shazam`, `download`, `count`, `gemini`, `song/[videoId]`, `youtube-iframe-api`) |
+| `public/llms.txt` | Plain-text summary of the site for AI assistants; keep it in step with `introduction.html` |
 | `vercel.json` | Rewrites + the immutable `Cache-Control` regex for hashed-forever assets |
 | `CODEMAP.md` | **Generated** index of every method, element alias and dialog — read this before searching `script.js` |
 | `ARCHITECTURE.md` | Class overview and the full UI design system reference |
@@ -143,6 +144,19 @@ Notes when driving the page:
 - Check both `data-theme="dark"` (default) and `"light"`, and 400px width for overflow.
 - `page.route('**/youtube.com/oembed**', …)` stubs the metadata fetches, so the add-song
   and autofill paths can be tested without network or API keys.
+
+## Privacy: no YouTube cookies
+
+The intro and tutorial promise that listening sets no advertising or tracking cookies. Keep it true:
+
+- Every `new YT.Player` passes `host: AdvancedMusicPlayer.YOUTUBE_HOST` (`youtube-nocookie.com`), and plain
+  embeds use `youtube-nocookie.com/embed/`. The karaoke page and `api/song/[videoId].js` do the same.
+- Pages load the IFrame API from `/api/youtube-iframe-api`, which re-serves YouTube's loader without its
+  `Set-Cookie` headers. The inline `onerror` fallback to `www.youtube.com/iframe_api` only runs if that
+  function fails. Never point a script tag at `www.youtube.com` directly.
+- Verify with a fresh Playwright context: play a song, then `context.cookies()` should hold nothing for
+  `youtube.com` or `doubleclick.net`. The function does not run under the dev server, so stub
+  `/api/youtube-iframe-api` with `route.fulfill` using the upstream body.
 
 ## Guide mode and the docs pages
 

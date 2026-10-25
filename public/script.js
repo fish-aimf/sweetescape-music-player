@@ -349,6 +349,7 @@ const HTML_ENTITIES = {
 const HTML_ENTITY_PATTERN = /&(#\d{1,7}|#[xX][0-9a-fA-F]{1,6}|[a-zA-Z][a-zA-Z0-9]{1,30});/g;
 class AdvancedMusicPlayer {
   static VISUALIZER_STYLES = new Set([ 'bars', 'levels', 'wave', 'ribbon', 'radial', 'glow' ]);
+  static YOUTUBE_HOST = 'https://www.youtube-nocookie.com';
   static LYRICS_STAGE_MODES = [ {
     id: 'verse',
     name: 'Verse',
@@ -3152,6 +3153,7 @@ class AdvancedMusicPlayer {
     tempPlayer.style.display = 'none';
     document.body.appendChild(tempPlayer);
     const player = new YT.Player('tempYTPlayer', {
+      host: AdvancedMusicPlayer.YOUTUBE_HOST,
       videoId: videoId,
       events: {
         onError: event => {
@@ -5913,6 +5915,7 @@ class AdvancedMusicPlayer {
   }
   initializeYouTubePlayer() {
     this.ytPlayer = new YT.Player('ytPlayer', {
+      host: AdvancedMusicPlayer.YOUTUBE_HOST,
       height: '1',
       width: '1',
       playerVars: {
@@ -7508,6 +7511,7 @@ class AdvancedMusicPlayer {
         this.ytPlayer.pauseVideo();
       }
       player.ytPlayer = new YT.Player(container, {
+        host: AdvancedMusicPlayer.YOUTUBE_HOST,
         height: '288',
         width: '512',
         videoId: videoId,
@@ -16009,6 +16013,7 @@ class AdvancedMusicPlayer {
     }
     this.temporarySongPendingVideoId = videoIdToLoadWhenReady;
     this.tempYtPlayer = new YT.Player('tempYtPlayer', {
+      host: AdvancedMusicPlayer.YOUTUBE_HOST,
       height: '100%',
       width: '100%',
       playerVars: {

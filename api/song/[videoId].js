@@ -274,7 +274,7 @@ function generateHTML(title, author, thumbnail, pageUrl, videoId) {
     <div class="container">
         <div class="video-container">
             <iframe 
-                src="https://www.youtube.com/embed/${videoId}?autoplay=0&controls=1"
+                src="https://www.youtube-nocookie.com/embed/${videoId}?autoplay=0&controls=1"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowfullscreen>
             </iframe>
