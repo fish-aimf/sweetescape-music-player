@@ -23,7 +23,7 @@
     {
       "id": "welcome",
       "title": "Guide mode",
-      "body": "This walks you around the player one part at a time. Use the arrow keys or the buttons below to move, and Esc to stop. If you'd rather explore, switch to Point and ask and hover over anything you're curious about."
+      "body": "This walks you around the player one part at a time, including the shortcuts that make it faster to use. Use the arrow keys or the buttons below to move, and Esc to stop. To explore on your own, switch to Point and ask and hover over anything."
     },
     {
       "id": "tabs",
@@ -31,7 +31,7 @@
       "title": "Tabs",
       "body": "Library holds your songs, Playlists your playlists, and Lyrics the words to whatever's playing. A Now Playing tab with a big cover shows up once a song starts.",
       "keys": [["Q", "next tab"]],
-      "hidden": ["Right-click the Lyrics tab to list every song that has lyrics."]
+      "tips": ["Right-click the Lyrics tab to list every song that has lyrics."]
     },
     {
       "id": "search",
@@ -39,7 +39,7 @@
       "prepare": { "tab": "library" },
       "title": "Search",
       "body": "Filters your library as you type and matches artists too. Enter plays the first match. If nothing matches, Enter searches YouTube instead, with Preview and Add on every result.",
-      "hidden": [
+      "tips": [
         "Paste a YouTube link here and press Enter to add that exact video.",
         "Songs in other alphabets match Latin spellings: saranghae finds 사랑해, eto finds Это.",
         "Hover the funnel for filters: favourites, has lyrics, downloaded, and language."
@@ -62,14 +62,14 @@
       "target": "#findSongsBtn",
       "title": "Global library",
       "body": "Somewhere to find new music: the Billboard Hot 100 top three, a few random picks, and a search for artists, songs and premade playlists. Click any song to hear a preview before adding it.",
-      "hidden": ["Click the \"Billboard Hot 100\" heading inside for the full chart."]
+      "tips": ["Click the \"Billboard Hot 100\" heading inside for the full chart."]
     },
     {
       "id": "modify-library",
       "target": "#modifyLibraryBtn",
       "title": "Modify Library",
       "body": "Add a song from a YouTube link. Paste the link and the name fills itself in, and Autofill tidies it into a song name and artist. The Import/Export tab backs up your whole library as plain text.",
-      "hidden": ["Hover Autofill to preview what it'll write before you click."]
+      "tips": ["Hover Autofill to preview what it'll write before you click."]
     },
     {
       "id": "library-home",
@@ -77,7 +77,7 @@
       "prepare": { "tab": "library" },
       "title": "Your library",
       "body": "With the search empty this is your home screen: favourites, playlists, and a shuffled grid of your songs. In a list, every song has favourite, play, edit and delete buttons.",
-      "hidden": [
+      "tips": [
         "Right-click a cover or a play button to add the song to the queue instead of playing it.",
         "Drag an audio file from your computer onto a song to play it from that file."
       ]
@@ -87,7 +87,7 @@
       "target": ".favorites-card",
       "title": "Favourites",
       "body": "Every song you've starred. Scroll it sideways with the mouse wheel. Play plays them all in order, All shows them as a list.",
-      "hidden": ["Right-click a cover to queue it."]
+      "tips": ["Right-click a cover to queue it."]
     },
     {
       "id": "playlist-shelf",
@@ -100,14 +100,14 @@
       "target": ".discovery-card",
       "title": "From your library",
       "body": "A shuffled grid of your own songs, for when you don't know what to play. Shuffle deals a new set, All shows everything.",
-      "hidden": ["Right-click a cover to queue it."]
+      "tips": ["Right-click a cover to queue it."]
     },
     {
       "id": "song-row",
       "target": ".song-item",
       "title": "A song",
       "body": "Click the name to play it. The star favourites it, the pencil edits it (name, artist, a better video, a local file, lyrics), and the bin deletes it. Small icons after the name mean it has lyrics, a local file, or a star.",
-      "hidden": [
+      "tips": [
         "Right-click the play button to add it to the queue.",
         "Drop an audio file on it to play it from your disk."
       ]
@@ -118,7 +118,7 @@
       "title": "Music Explorer",
       "body": "What's playing, what you played recently, and songs to play next. Click to play.",
       "keys": [["O", "hide or show"]],
-      "hidden": [
+      "tips": [
         "Right-click any song here to queue it.",
         "Click the \"Recently Listened To\" heading for your full history.",
         "Click \"Suggested\" or \"Your Picks\" to reshuffle them.",
@@ -136,7 +136,7 @@
       "target": "#additionalDetails .details-item",
       "title": "Music Explorer song",
       "body": "Click to play it.",
-      "hidden": ["Right-click to add it to the queue."]
+      "tips": ["Right-click to add it to the queue."]
     },
     {
       "id": "control-bar",
@@ -144,14 +144,14 @@
       "title": "Control bar",
       "body": "The song that's playing, its progress, and what plays after it. Click anywhere on the progress bar to jump there.",
       "keys": [["H", "hide the bar"], ["F / G", "back / forward 5s"]],
-      "hidden": ["Right-click the song name to copy it."]
+      "tips": ["Right-click the song name to copy it."]
     },
     {
       "id": "song-name",
       "target": "#currentSongName",
       "title": "Song name",
       "body": "What's playing right now.",
-      "hidden": ["Right-click to copy it."]
+      "tips": ["Right-click to copy it."]
     },
     {
       "id": "next-up",
@@ -165,7 +165,7 @@
       "title": "Playback buttons",
       "body": "Previous, play, next, loop this song, autoplay (keep going when a song ends), the playlist side panel, and speed from 0.25x to 2x.",
       "keys": [["Space", "play / pause"], ["← →", "previous / next"], ["L", "loop"], ["R", "restart"]],
-      "hidden": ["Hover next or previous to see the three songs on that side."]
+      "tips": ["Hover next or previous to see the three songs on that side."]
     },
     {
       "id": "prev",
@@ -173,7 +173,7 @@
       "title": "Previous",
       "body": "Goes back a song.",
       "keys": [["←", ""]],
-      "hidden": ["Hover to see the three songs before this one."]
+      "tips": ["Hover to see the three songs before this one."]
     },
     {
       "id": "next",
@@ -181,7 +181,7 @@
       "title": "Next",
       "body": "Skips to the next song. The queue goes first, then the playlist.",
       "keys": [["→", ""]],
-      "hidden": ["Hover to see the next three songs."]
+      "tips": ["Hover to see the next three songs."]
     },
     {
       "id": "play",
@@ -236,9 +236,9 @@
       "fallback": ".player-controls",
       "prepare": { "queue": true },
       "title": "The queue",
-      "body": "Songs that play next, before the playlist carries on. It has no button, so most people never find it. Search to add songs, use − and + to play one several times, and drag to reorder. The header can shuffle, add a stop block (playback stops there), add a loop block (the song before it repeats forever), or clear everything.",
+      "body": "Songs that play next, before the playlist carries on. Open it with Y. Search to add songs, use − and + to play one several times, and drag to reorder. The header can shuffle, add a stop block (playback stops there), add a loop block (the song before it repeats forever), or clear everything.",
       "keys": [["Y", "open the queue"]],
-      "hidden": [
+      "tips": [
         "Right-click a song's play button anywhere to queue it. Right-click it again to make it play twice.",
         "Right-click a playlist's Play button to queue the whole playlist."
       ]
@@ -255,7 +255,7 @@
       "prepare": { "tab": "playlists" },
       "title": "Playlists",
       "body": "Click a playlist to play it. + makes a new one. Edit swaps the Play buttons for Edit and Delete. In the editor you can reorder, shuffle, reverse, clear duplicates, and click the name to rename it.",
-      "hidden": [
+      "tips": [
         "Hold a playlist for half a second, then drag it to reorder.",
         "Right-click its Play button to add the whole playlist to the queue.",
         "Type in the search box and press Enter to play the top match."
@@ -266,7 +266,7 @@
       "target": ".playlist-card",
       "title": "Playlist",
       "body": "Click to play.",
-      "hidden": ["Hold for half a second, then drag to reorder.", "Right-click Play to queue every song in it."]
+      "tips": ["Hold for half a second, then drag to reorder.", "Right-click Play to queue every song in it."]
     },
     {
       "id": "side-panel",
@@ -276,14 +276,14 @@
       "title": "Playlist side panel",
       "body": "The songs of the playlist that's playing. Click one to jump to it. You can search it, loop it, or widen it into an expanded panel with covers. If no playlist is playing yet, this button opens it once one is.",
       "keys": [["M", ""], ["Tab", ""]],
-      "hidden": ["Long-press a song here to skip it for now. It stays in the playlist, and another long-press brings it back."]
+      "tips": ["Long-press a song here to skip it for now. It stays in the playlist, and another long-press brings it back."]
     },
     {
       "id": "side-panel-song",
       "target": ".sidebar-song-item",
       "title": "Song in this playlist",
       "body": "Click to play it.",
-      "hidden": ["Long-press to skip it for this session. Long-press again to bring it back."]
+      "tips": ["Long-press to skip it for this session. Long-press again to bring it back."]
     },
     {
       "id": "lyrics",
@@ -291,14 +291,14 @@
       "prepare": { "tab": "lyrics" },
       "title": "Lyrics",
       "body": "Lines light up as they're sung. The round buttons keep the current line centred, copy a karaoke link with the lyrics inside it, and open fullscreen lyrics in five styles. No lyrics yet? Transcribe lyrics lets you time them by tapping along, and Import subtitles pulls them from the video's captions.",
-      "hidden": ["Right-click the Lyrics tab to see every song that has lyrics."]
+      "tips": ["Right-click the Lyrics tab to see every song that has lyrics."]
     },
     {
       "id": "lyrics-tab",
       "target": ".tab[data-tab=\"lyrics\"]",
       "title": "Lyrics tab",
       "body": "The words to the song that's playing.",
-      "hidden": ["Right-click for a list of every song that has lyrics."]
+      "tips": ["Right-click for a list of every song that has lyrics."]
     },
     {
       "id": "now-playing-tab",
@@ -336,7 +336,7 @@
       "id": "timer-button",
       "target": "#timerButton",
       "title": "Sleep timer",
-      "body": "Stops the music or closes the app after a set time, or at a clock time.",
+      "body": "Stops the music or closes the app after a set time, or at a set clock time. While it runs, the time left shows next to the clock icon.",
       "keys": [["T", ""]]
     },
     {
@@ -391,7 +391,7 @@
     {
       "id": "keys",
       "title": "A few more keys",
-      "body": "Every shortcut can be changed in Settings, Keybinds. These ones have no button at all:",
+      "body": "Every shortcut can be changed in Settings, Keybinds. A few that are worth learning first:",
       "keys": [["Y", "queue"], ["U", "video mode"], ["I", "miniplayer (Chrome, Edge)"], ["O", "hide Music Explorer"], ["Q", "next tab"], ["F / G", "seek 5s"]]
     },
     {

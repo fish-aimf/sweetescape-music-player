@@ -134,10 +134,10 @@ class GuideSession {
     this.title = el('h2', 'sg-title');
     this.body = el('p', 'sg-body');
     this.keys = el('ul', 'sg-keys');
-    this.hidden = el('div', 'sg-hidden');
+    this.tips = el('div', 'sg-tips');
     const live = el('div', 'sg-live');
     live.setAttribute('aria-live', 'polite');
-    live.append(this.count, this.title, this.body, this.keys, this.hidden);
+    live.append(this.count, this.title, this.body, this.keys, this.tips);
 
     this.foot = el('div', 'sg-foot');
     this.backButton = el('button', 'sg-btn sg-btn--ghost', 'Back');
@@ -283,16 +283,16 @@ class GuideSession {
       return item;
     }));
     this.keys.hidden = !this.keys.childElementCount;
-    this.hidden.replaceChildren();
-    if (spot?.hidden?.length) {
-      const label = el('p', 'sg-hidden__label');
-      label.innerHTML = '<i class="fas fa-eye-slash" aria-hidden="true"></i> ';
-      label.append('Hidden');
+    this.tips.replaceChildren();
+    if (spot?.tips?.length) {
+      const label = el('p', 'sg-tips__label');
+      label.innerHTML = '<i class="fas fa-lightbulb" aria-hidden="true"></i> ';
+      label.append(spot.tips.length > 1 ? 'Tips' : 'Tip');
       const list = el('ul');
-      list.append(...spot.hidden.map(text => el('li', null, text)));
-      this.hidden.append(label, list);
+      list.append(...spot.tips.map(text => el('li', null, text)));
+      this.tips.append(label, list);
     }
-    this.hidden.hidden = !spot?.hidden?.length;
+    this.tips.hidden = !spot?.tips?.length;
     this.root.classList.toggle('sg--free', !target);
     this.layout(true);
   }

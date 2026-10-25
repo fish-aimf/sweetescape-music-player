@@ -131,7 +131,7 @@
       <h2>What it is</h2>
       <p>SweetEscape started as a small side project and grew into a full music player. One person builds it, in plain HTML, CSS and JavaScript, and it's updated often. Every change is listed in the <a href="/changelog.md">changelog</a>.</p>
       <p>Songs play through YouTube's embedded player. Your library is a list of songs saved in your browser's own storage (IndexedDB), with their names, artists, lyrics and covers. Nothing is sent to a server. Once you've visited once, the app itself loads without a connection. You can also link a downloaded audio file to any song so it plays straight from your disk.</p>
-      <p>The catch is that a lot of it is tucked away. Most things can be right-clicked, long-pressed or dragged, and a few features have no button at all, only a key. That's what the <a href="/tutorial">tutorial</a> and guide mode are for.</p>
+      <p>Most controls also respond to right-click, long-press or drag, and the everyday actions have keyboard shortcuts. The <a href="/tutorial">tutorial</a> covers every one of them, and guide mode can show you around the player itself.</p>
     </section>
 
     <section>
@@ -143,58 +143,71 @@
         </div>
         <div>
           <dt>Finding new songs</dt>
-          <dd>Type a song that isn't in your library and press <kbd>Enter</kbd> to search YouTube, preview a result, and add it. The Global library shows the current Billboard Hot 100, artist pages, premade playlists and random picks.</dd>
+          <dd>Type a song that isn't in your library and press <kbd>Enter</kbd> to search YouTube, preview a result, and add it. The Global library has the full Billboard Hot 100, artist pages, premade playlists and random picks.</dd>
         </div>
         <div>
           <dt>Playlists</dt>
-          <dd>Drag to reorder, randomize, reverse, allow or ban duplicates. While a playlist plays, its side panel lets you search it, loop it, and long-press a song to skip it just for now.</dd>
+          <dd>Drag to reorder, shuffle, reverse, allow or ban duplicates. While a playlist plays, its side panel lets you search it, loop it, and skip a song for the session without editing the playlist.</dd>
         </div>
         <div>
           <dt>Queue</dt>
-          <dd>Right-click any play button to queue a song. The queue (<kbd>Y</kbd>) lets you set how many times each song repeats, reorder by dragging, and drop in "loop forever" or "stop here" blocks.</dd>
+          <dd>Line up songs to play next, set how many times each one repeats, reorder them by dragging, and add "loop forever" or "stop here" points.</dd>
         </div>
         <div>
-          <dt>Lyrics and karaoke</dt>
-          <dd>Synced lyrics that highlight as the song plays. Get them from Genius or YouTube subtitles, or time them yourself by tapping along in the Lyrics Maker. Share a karaoke link that carries the lyrics inside the URL.</dd>
+          <dt>Playback</dt>
+          <dd>Speed from 0.25x to 2x, loop and autoplay, a preview of the next three songs, a full-window video mode, and a picture-in-picture miniplayer that stays on top of other apps.</dd>
         </div>
         <div>
-          <dt>Fullscreen lyrics</dt>
-          <dd>Five styles: Verse, Cards, Mirror, Lyric Video and Flow.</dd>
+          <dt>Lyrics</dt>
+          <dd>Synced lyrics that highlight as the song plays. Fetch them from Genius or the video's YouTube captions, or time them yourself in the Lyrics Maker by tapping along and fine-tuning each line on a timeline.</dd>
+        </div>
+        <div>
+          <dt>Ways to show lyrics</dt>
+          <dd>Follow along in the Lyrics tab, go fullscreen in one of five styles (Verse, Cards, Mirror, Lyric Video and Flow), or send a karaoke link that opens a sing-along page with the lyrics packed into the address.</dd>
+        </div>
+        <div>
+          <dt>Sleep timer</dt>
+          <dd>Stop the music or close the player after 30 seconds to 15 minutes, any number of minutes, or at a set clock time, with a countdown next to the clock icon.</dd>
         </div>
         <div>
           <dt>Identify a song</dt>
           <dd>Capture a browser tab or your system audio, use the microphone, or upload a clip. Trim it on the waveform, then open the match in Shazam, YouTube Music, YouTube or Spotify, or add it to your library.</dd>
         </div>
         <div>
-          <dt>Downloads and local files</dt>
-          <dd>Download songs as MP3s, one at a time or as a batch. Drop an audio file onto a song to play it from disk instead of YouTube.</dd>
+          <dt>Downloads and offline</dt>
+          <dd>Download songs as MP3s, one at a time or as a batch. Link a downloaded file to a song and it plays from your disk, with no connection needed.</dd>
         </div>
         <div>
           <dt>Statistics</dt>
-          <dd>Time listened, plays, top songs and top artist for the last 30 days or all time, and a per-day play chart for every song. It's off until you turn it on.</dd>
+          <dd>Time listened, plays, top songs and top artist for the last 30 days or all time, and a per-day play chart for every song. Turn it on in Settings when you want it.</dd>
         </div>
         <div>
           <dt>Looks</dt>
-          <dd>Light, dark or fully custom colours, saved and shared as theme codes. A glass mode with your own background image or the current album cover. Six visualizer designs.</dd>
+          <dd>Light, dark or fully custom colours, saved and shared as theme codes. Glass mode turns the panels see-through over your own photo, a gradient or the current album cover. Six visualizer designs.</dd>
+        </div>
+        <div>
+          <dt>Sharing and backup</dt>
+          <dd>Song links that show a preview card in chat apps and open a page to play or save the song, karaoke links with lyrics, and plain-text import and export of your library and playlists.</dd>
         </div>
         <div>
           <dt>Everything else</dt>
-          <dd>Every shortcut can be rebound, there's a sleep timer, Discord Rich Presence, a picture-in-picture miniplayer, a video mode, playback speed from 0.25x to 2x, a tab disguise, and plain-text import and export of your whole library.</dd>
+          <dd>Rebindable keyboard shortcuts, Discord Rich Presence, a tab and page disguise, and a running total of your listening time.</dd>
         </div>
       </dl>
     </section>
 
-    <section class="missed">
-      <h2>Things most people never find</h2>
+    <section class="tips-box">
+      <h2>Tips for getting around faster</h2>
+      <p>A few shortcuts that make everyday use quicker. The tutorial lists them all.</p>
       <ul>
-        <li><strong>Right-click a song's play button</strong> to add it to the queue. This works in the library, Music Explorer, the favourites strip and the song grid. Right-click a playlist's Play button to queue the whole playlist.</li>
-        <li><strong>Press <kbd>Y</kbd></strong> to open the queue. It has no button.</li>
-        <li><strong>Long-press a song in the playlist side panel</strong> to skip it for this session without removing it.</li>
-        <li><strong>Right-click the Lyrics tab</strong> to see every song that has lyrics.</li>
-        <li><strong>Click the "Suggested" or "Your Picks" headings</strong> in Music Explorer to reshuffle them, and "Recently Listened To" to see your full history.</li>
-        <li><strong>Hover the next or previous button</strong> to see the three songs either side.</li>
-        <li><strong>Paste a YouTube link into the library search</strong> and press <kbd>Enter</kbd> to add it.</li>
-        <li><strong>Press <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>G</kbd></strong> inside the player for guide mode, which walks you around the screen and explains each part.</li>
+        <li><strong>Right-click a song's play button</strong> to queue it instead of playing it. This works in the library, Music Explorer, the favourites strip and the song grid, and on a playlist's Play button for the whole playlist.</li>
+        <li><strong>Press <kbd>Y</kbd></strong> to open the queue, where you can reorder songs, set repeat counts and add loop or stop points.</li>
+        <li><strong>Long-press a song in the playlist side panel</strong> to skip it for the session without changing the playlist.</li>
+        <li><strong>Right-click the Lyrics tab</strong> for a list of every song that has lyrics.</li>
+        <li><strong>Click the "Suggested" or "Your Picks" heading</strong> in Music Explorer for a fresh set, or "Recently Listened To" for your full history.</li>
+        <li><strong>Hover over next or previous</strong> to preview the three songs on either side.</li>
+        <li><strong>Paste a YouTube link into the library search</strong> and press <kbd>Enter</kbd> to add it straight away.</li>
+        <li><strong>Press <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>G</kbd></strong> in the player for guide mode, a guided tour of the screen.</li>
       </ul>
     </section>
 
@@ -206,8 +219,8 @@
           <figcaption>Fullscreen lyrics, Cards style.</figcaption>
         </figure>
         <figure class="shot">
-          <img src="/learn/shots/glass-mode.jpg" width="1280" height="800" loading="lazy" alt="The player in glass mode, with translucent panels over a blurred copy of the album cover.">
-          <figcaption>Glass mode with the album cover as the background.</figcaption>
+          <img src="/learn/shots/glass-mode.jpg" width="1280" height="800" loading="lazy" alt="The player in glass mode, with see-through panels over a background of green hills and blue sky.">
+          <figcaption>Glass mode with transparency turned up, over a custom background.</figcaption>
         </figure>
         <figure class="shot">
           <img src="/learn/shots/queue.jpg" width="750" height="388" loading="lazy" alt="The queue panel with repeat counts, a loop block and a stop block.">
@@ -216,6 +229,14 @@
         <figure class="shot">
           <img src="/learn/shots/stats.jpg" width="1080" height="632" loading="lazy" alt="Listening statistics showing time listened, plays, songs, top artist and a ranked list of top songs.">
           <figcaption>Listening statistics for the last 30 days.</figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="/learn/shots/karaoke-fullscreen.jpg" width="1280" height="1000" loading="lazy" alt="The karaoke share page in fullscreen lyrics mode.">
+          <figcaption>A shared karaoke link in fullscreen.</figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="/learn/shots/timer.jpg" width="480" height="611" loading="lazy" alt="The App Timer dialog with a 30 minute timer running.">
+          <figcaption>The sleep timer.</figcaption>
         </figure>
       </div>
     </section>

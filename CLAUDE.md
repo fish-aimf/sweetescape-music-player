@@ -150,7 +150,7 @@ Notes when driving the page:
   and is pulled in with `import()` on demand. Keep it that way: nothing guide-related belongs in the
   always-loaded bundle.
 - Guide text is data. To explain a new control, add a spot to `guide.json` (`target` selector, `title`,
-  `body`, optional `keys`, `hidden`, `prepare`, `fallback`). Put its id in `tour` only if the step-by-step
+  `body`, optional `keys`, `tips`, `prepare`, `fallback`). Put its id in `tour` only if the step-by-step
   tour should stop there; every spot with a `target` is used by Point and ask. `prepare` understands
   `tab`, `queue` and `sidebar` only; add new actions in `GuideSession.prepare`/`restorePrepared`.
 - `vercel.json` sends `/guide/*` with `Cache-Control: no-store` and the service worker skips it, so a

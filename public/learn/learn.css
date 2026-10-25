@@ -296,7 +296,7 @@ kbd {
   color: var(--muted);
 }
 
-.missed {
+.tips-box {
   background: var(--surface);
   border: 1px solid var(--line);
   border-left: 3px solid var(--accent);
@@ -305,7 +305,7 @@ kbd {
   max-width: var(--measure);
 }
 
-.missed h2 {
+.tips-box h2 {
   margin-top: 0;
 }
 

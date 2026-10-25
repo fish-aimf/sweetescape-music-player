@@ -11,35 +11,35 @@ const only = process.argv.slice(2);
 fs.mkdirSync(OUT, { recursive: true });
 
 const IMPORT = `Road Trip{
-Take On Me, https://www.youtube.com/watch?v=djV11Xbc914, a-ha
-Africa, https://www.youtube.com/watch?v=FTQbiNvZqaY, TOTO
-Uptown Funk, https://www.youtube.com/watch?v=OPf0YbXqDm0, Mark Ronson ft. Bruno Mars
-Happy, https://www.youtube.com/watch?v=ZbZSe6N_BXs, Pharrell Williams
-Viva La Vida, https://www.youtube.com/watch?v=dvgZkm1xWPE, Coldplay
-Wake Me Up, https://www.youtube.com/watch?v=IcrbM1l_BoI, Avicii
+Take On Me, https://www.youtube.com/watch?v=HzdD8kbDzZA, a-ha
+Dreams, https://www.youtube.com/watch?v=5oWyMakvQew, Fleetwood Mac
+Uptown Funk, https://www.youtube.com/watch?v=tYvFa2ARD24, Mark Ronson ft. Bruno Mars
+Happy, https://www.youtube.com/watch?v=dJqxQzxLbHM, Pharrell Williams
+Viva La Vida, https://www.youtube.com/watch?v=HGorCGszxZU, Coldplay
+Wake Me Up, https://www.youtube.com/watch?v=2NiyrtYegso, Avicii
 }
 Late Night{
-Blinding Lights, https://www.youtube.com/watch?v=4NRXx6U8ABQ, The Weeknd
-Numb, https://www.youtube.com/watch?v=kXYiU_JCYtU, Linkin Park
-Hello, https://www.youtube.com/watch?v=YQHsXMglC9A, Adele
-See You Again, https://www.youtube.com/watch?v=RgKAFK5djSk, Wiz Khalifa ft. Charlie Puth
+Starboy, https://www.youtube.com/watch?v=3_g2un5M350, The Weeknd
+Numb, https://www.youtube.com/watch?v=Q7cQU86CDB0, Linkin Park
+Hello, https://www.youtube.com/watch?v=yjo_aXygRDI, Adele
+See You Again, https://www.youtube.com/watch?v=Ss3IhUmpCt0, Wiz Khalifa ft. Charlie Puth
 }
 Classics{
-Bohemian Rhapsody, https://www.youtube.com/watch?v=fJ9rUzIMcZQ, Queen
-Billie Jean, https://www.youtube.com/watch?v=Zi_XLOBDo_Y, Michael Jackson
-Smells Like Teen Spirit, https://www.youtube.com/watch?v=hTWKbfoikeg, Nirvana
-Never Gonna Give You Up, https://www.youtube.com/watch?v=dQw4w9WgXcQ, Rick Astley
+Bohemian Rhapsody, https://www.youtube.com/watch?v=BSTsnWoslP4, Queen
+Billie Jean, https://www.youtube.com/watch?v=7CTJcHjkq0E, Michael Jackson
+Smells Like Teen Spirit, https://www.youtube.com/watch?v=7TDeBi34OtE, Nirvana
+Never Gonna Give You Up, https://www.youtube.com/watch?v=lYBUbBu4W08, Rick Astley
 }
 Gym{
-Believer, https://www.youtube.com/watch?v=7wtfhZwyrcc, Imagine Dragons
-Lose Yourself, https://www.youtube.com/watch?v=_Yhyp-_hX2s, Eminem
-Roar, https://www.youtube.com/watch?v=CevxZvSJLk8, Katy Perry
+Believer, https://www.youtube.com/watch?v=Kx7B-XvmFtE, Imagine Dragons
+Lose Yourself, https://www.youtube.com/watch?v=zlJ0Aj9y67c, Eminem
+Roar, https://www.youtube.com/watch?v=6nJuUdc2qNg, Katy Perry
 }`;
 
-const EXTRA = `Despacito, https://www.youtube.com/watch?v=kJQP7kiw5Fk, Luis Fonsi ft. Daddy Yankee
-Shape of You, https://www.youtube.com/watch?v=JGwWNGJdvx8, Ed Sheeran
-Gangnam Style, https://www.youtube.com/watch?v=9bZkp7q19f0, PSY
-Twinkle Twinkle Little Star, https://www.youtube.com/watch?v=yCjJyiqpAuU, Super Simple Songs`;
+const EXTRA = `Despacito, https://www.youtube.com/watch?v=FXovf5dsRTw, Luis Fonsi ft. Daddy Yankee
+Shape of You, https://www.youtube.com/watch?v=xTvyyoF_LZY, Ed Sheeran
+Gangnam Style, https://www.youtube.com/watch?v=4AgDYTuZWOw, PSY
+Twinkle Twinkle Little Star, https://www.youtube.com/watch?v=B_QIsoUIz0c, Super Simple Songs`;
 
 const LYRICS = [
   ['Twinkle, twinkle, little star', '0:09'],
@@ -125,6 +125,64 @@ async function save(page, name, selector, pad = 0) {
   console.log('saved', name);
 }
 
+const HILLS_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+<defs>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#0d47b5"/>
+<stop offset=".38" stop-color="#2f78d8"/>
+<stop offset=".7" stop-color="#7db3ee"/>
+<stop offset="1" stop-color="#cfe5fa"/>
+</linearGradient>
+<radialGradient id="hill" cx=".44" cy=".02" r="1.05">
+<stop offset="0" stop-color="#a6dd4f"/>
+<stop offset=".22" stop-color="#7cc23a"/>
+<stop offset=".55" stop-color="#43952a"/>
+<stop offset=".85" stop-color="#2a7a1f"/>
+<stop offset="1" stop-color="#1c5c15"/>
+</radialGradient>
+<linearGradient id="far" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#6fae62"/>
+<stop offset="1" stop-color="#3f8a3c"/>
+</linearGradient>
+<linearGradient id="haze" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#ffffff" stop-opacity="0"/>
+<stop offset="1" stop-color="#ffffff" stop-opacity=".35"/>
+</linearGradient>
+<filter id="cloud" x="-40%" y="-60%" width="180%" height="220%">
+<feTurbulence type="fractalNoise" baseFrequency=".011" numOctaves="4" seed="11" result="noise"/>
+<feDisplacementMap in="SourceGraphic" in2="noise" scale="70" xChannelSelector="R" yChannelSelector="G" result="shape"/>
+<feGaussianBlur in="shape" stdDeviation="9"/>
+</filter>
+<filter id="grass" x="0" y="0" width="100%" height="100%">
+<feTurbulence type="fractalNoise" baseFrequency=".9 .035" numOctaves="2" seed="4" result="blades"/>
+<feColorMatrix in="blades" type="matrix" values="0 0 0 0 .05  0 0 0 0 .2  0 0 0 0 .02  0 0 0 .55 0"/>
+<feComposite in2="SourceGraphic" operator="in"/>
+</filter>
+</defs>
+<rect width="1920" height="1080" fill="url(#sky)"/>
+<g filter="url(#cloud)" fill="#ffffff">
+<g opacity=".95"><ellipse cx="420" cy="250" rx="190" ry="62"/><ellipse cx="520" cy="215" rx="120" ry="70"/><ellipse cx="330" cy="232" rx="95" ry="48"/></g>
+<g opacity=".9"><ellipse cx="1010" cy="150" rx="230" ry="58"/><ellipse cx="1120" cy="118" rx="125" ry="62"/><ellipse cx="930" cy="128" rx="105" ry="50"/></g>
+<g opacity=".85"><ellipse cx="1560" cy="300" rx="210" ry="56"/><ellipse cx="1650" cy="268" rx="110" ry="58"/></g>
+<g opacity=".8"><ellipse cx="1790" cy="120" rx="150" ry="40"/><ellipse cx="160" cy="470" rx="170" ry="38"/></g>
+<g opacity=".7"><ellipse cx="1240" cy="470" rx="260" ry="36"/><ellipse cx="720" cy="520" rx="180" ry="28"/></g>
+</g>
+<rect y="560" width="1920" height="160" fill="url(#haze)"/>
+<path d="M0 760 C 320 700 620 690 980 720 C 1320 748 1640 700 1920 690 V1080 H0 Z" fill="url(#far)"/>
+<path d="M0 860 C 260 700 560 600 900 590 C 1220 582 1560 660 1920 760 V1080 H0 Z" fill="url(#hill)"/>
+<path d="M0 860 C 260 700 560 600 900 590 C 1220 582 1560 660 1920 760 V1080 H0 Z" fill="#000" filter="url(#grass)"/>
+</svg>`;
+
+async function renderHills(ctx) {
+  const file = path.join(PROFILE, 'hills.jpg');
+  const page = await ctx.newPage();
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.setContent(`<style>html,body{margin:0}</style>${HILLS_SVG}`);
+  await page.screenshot({ path: file, type: 'jpeg', quality: 90 });
+  await page.close();
+  return file;
+}
+
 async function seed(ctx) {
   const page = await ctx.newPage();
   page.on('dialog', d => d.accept());
@@ -137,7 +195,7 @@ async function seed(ctx) {
   await sleep(3000);
   const out = await page.evaluate(async lyrics => {
     const p = musicPlayer;
-    const favs = ['Blinding Lights', 'Take On Me', 'Africa', 'Bohemian Rhapsody', 'Uptown Funk', 'Numb', 'Hello'];
+    const favs = ['Starboy', 'Take On Me', 'Dreams', 'Bohemian Rhapsody', 'Uptown Funk', 'Numb', 'Hello'];
     for (const name of favs) {
       const s = p.songLibrary.find(x => x.name === name);
       if (s && !s.favorite) p.toggleFavorite(s.id);
@@ -146,7 +204,7 @@ async function seed(ctx) {
     tw.lyrics = lyrics;
     await p.saveSingleSong?.(tw);
     p.saveSongLibrary?.();
-    const plays = { 'Blinding Lights': 41, 'Take On Me': 33, 'Africa': 28, 'Bohemian Rhapsody': 24, 'Uptown Funk': 19, 'Numb': 17, 'Believer': 12, 'Hello': 11, 'Viva La Vida': 9, 'Happy': 7, 'Roar': 5, 'Despacito': 4 };
+    const plays = { 'Starboy': 41, 'Take On Me': 33, 'Dreams': 28, 'Bohemian Rhapsody': 24, 'Uptown Funk': 19, 'Numb': 17, 'Believer': 12, 'Hello': 11, 'Viva La Vida': 9, 'Happy': 7, 'Roar': 5, 'Despacito': 4 };
     const tx = p.db.transaction(['listeningStats'], 'readwrite');
     const store = tx.objectStore('listeningStats');
     const now = Date.now();
@@ -180,7 +238,7 @@ async function seed(ctx) {
 const scenes = {
   async overview(ctx) {
     const page = await boot(ctx);
-    await play(page, 'Blinding Lights', 64);
+    await play(page, 'Starboy', 64);
     await page.evaluate(() => musicPlayer.switchTab('library'));
     await sleep(800);
     await save(page, 'overview');
@@ -230,7 +288,7 @@ const scenes = {
     const page = await boot(ctx);
     await page.click('#modifyLibraryBtn');
     await sleep(600);
-    await page.fill('#songUrl', 'https://www.youtube.com/watch?v=HgzGwKwLmgM');
+    await page.fill('#songUrl', 'https://www.youtube.com/watch?v=1UjLFMg18cY');
     await sleep(2500);
     await save(page, 'add-song', '#libraryModificationModal .ui-modal', 0);
     await page.click('#libraryModificationTabImportExport');
@@ -246,6 +304,12 @@ const scenes = {
     await page.fill('#globalLibraryDebouncedSearchBar', 'queen');
     await sleep(4000);
     await save(page, 'global-library-search');
+    await page.click('.global-library-suggestion-artist-card');
+    await sleep(5000);
+    await save(page, 'global-library-artist');
+    await page.evaluate(() => musicPlayer.openBillboardHot100Modal());
+    await sleep(4000);
+    await save(page, 'billboard-chart');
   },
   async playlists(ctx) {
     const page = await boot(ctx);
@@ -287,7 +351,7 @@ const scenes = {
   },
   async queue(ctx) {
     const page = await boot(ctx);
-    await play(page, 'Africa', 80);
+    await play(page, 'Dreams', 80);
     await page.evaluate(() => {
       const p = musicPlayer;
       p.clearQueue?.();
@@ -339,7 +403,7 @@ const scenes = {
     await page.evaluate(() => musicPlayer.openLyricsModePicker());
     await sleep(900);
     await save(page, 'lyrics-styles', '.lyrics-mode-modal', 0);
-    for (const mode of ['verse', 'cards', 'mirror']) {
+    for (const mode of ['verse', 'cards', 'mirror', 'stanza', 'flow']) {
       await page.evaluate(m => { document.querySelectorAll('.lyrics-mode-modal').forEach(x => x.closest('.ui-overlay')?.remove()); musicPlayer.lyricsModeDialog = null; musicPlayer.openLyricsStage(m); }, mode);
       await sleep(2600);
       await save(page, 'lyrics-stage-' + mode);
@@ -349,9 +413,19 @@ const scenes = {
   },
   async lyricsmaker(ctx) {
     const page = await boot(ctx);
-    await page.evaluate(() => musicPlayer.openLyricsMakerModal(musicPlayer.songLibrary.find(s => s.name === 'Hello').id));
+    await page.evaluate(() => musicPlayer.openLyricsMakerModal(musicPlayer.songLibrary.find(s => s.name.startsWith('Twinkle')).id));
     await sleep(1500);
     await save(page, 'lyrics-maker', '#lyricsModal .ui-modal', 0);
+    await page.fill('#lyricsInput', LYRICS.split('\n').map(line => line.replace(/\s*\[[^\]]*\]$/, '')).join('\n'));
+    await page.click('#prepareLyricsBtn');
+    await sleep(3000);
+    await page.click('#startRecording');
+    for (let i = 0; i < 6; i++) {
+      await sleep(i === 0 ? 3000 : 2200);
+      await page.click('#markLine');
+    }
+    await sleep(800);
+    await save(page, 'lyrics-maker-record', '#lyricsModal .ui-modal', 0);
     await page.evaluate(() => { document.getElementById('lyricsModal').classList.add('hidden'); document.getElementById('lyricsModal').style.display = 'none'; });
     await page.evaluate(() => musicPlayer.openImportSubtitlesModal(musicPlayer.songLibrary.find(s => s.name === 'Hello').id));
     await sleep(1200);
@@ -368,6 +442,14 @@ const scenes = {
     await page.click('#settingsButton');
     await sleep(1500);
     await save(page, 'settings-theme', '#settingsModal .ui-modal', 0);
+    await page.selectOption('#themeMode', 'custom');
+    await sleep(800);
+    await page.locator('#customThemeSection').scrollIntoViewIfNeeded();
+    await sleep(400);
+    await save(page, 'settings-colours', '#settingsModal .ui-modal', 0);
+    await page.selectOption('#themeMode', 'dark');
+    await sleep(600);
+    await page.locator('.settings-tab-btn[data-tab="theme"]').scrollIntoViewIfNeeded();
     for (const tab of ['recommendation', 'keybinds', 'additional']) {
       await page.click(`.settings-tab-btn[data-tab="${tab}"]`);
       await sleep(900);
@@ -375,33 +457,31 @@ const scenes = {
     }
   },
   async glass(ctx) {
+    const hills = await renderHills(ctx);
     const page = await boot(ctx);
     await play(page, 'Take On Me', 70);
-    await page.evaluate(async () => {
-      const p = musicPlayer;
-      p.__prevAppearance = JSON.stringify(p.appearance);
-      p.appearance.surfaceStyle = 'glass';
-      p.appearance.backgroundAlbumArt = true;
-      p.applyAppearance();
-      p.switchTab('library');
-    });
+    await page.setInputFiles('#backgroundFileInput', hills);
+    await sleep(1500);
+    await page.evaluate(async tint => {
+      await musicPlayer.updateAppearance({ surfaceStyle: 'glass', glassTint: tint, glassBlur: 12, glassSat: 170, backgroundAlbumArt: false, backgroundDim: 6, backgroundBlur: 0, backgroundFit: 'cover' });
+      musicPlayer.switchTab('library');
+    }, Number(process.env.GLASS_TINT || 12));
     await sleep(3000);
     await save(page, 'glass-mode');
-    await page.evaluate(() => {
-      const p = musicPlayer;
-      Object.assign(p.appearance, JSON.parse(p.__prevAppearance));
-      p.applyAppearance();
-    });
+    await page.evaluate(() => musicPlayer.updateAppearance({ surfaceStyle: 'solid', backgroundKind: 'none' }));
     await sleep(500);
   },
   async modals(ctx) {
     const page = await boot(ctx);
     await play(page, 'Uptown Funk', 45);
     await pause(page);
+    await page.evaluate(() => musicPlayer.setAppTimer(30));
+    await sleep(600);
     await page.click('#timerButton');
     await sleep(800);
     await save(page, 'timer', '#timerModal .ui-modal', 0);
     await page.click('#closeTimerModal');
+    await page.evaluate(() => musicPlayer.clearAppTimer());
     await sleep(400);
     await page.click('#disguiseButton');
     await sleep(900);
@@ -452,6 +532,42 @@ const scenes = {
     await page.keyboard.press('KeyU');
     await sleep(500);
   },
+  async extras(ctx) {
+    const page = await boot(ctx);
+    await page.click('.fav-expand-btn');
+    await sleep(1200);
+    await save(page, 'favourites-all', '.player-area', 8);
+    await page.click('.fav-expand-btn');
+    await sleep(500);
+    await page.click('.tab[data-tab="lyrics"]', { button: 'right' });
+    await sleep(900);
+    await save(page, 'lyrics-library', '.ui-overlay:last-of-type .ui-modal', 0);
+    await page.keyboard.press('Escape');
+    await page.evaluate(() => document.querySelectorAll('.ui-overlay').forEach(o => { if (getComputedStyle(o).display !== 'none' && !o.id) o.remove(); }));
+    await sleep(400);
+    await page.evaluate(() => musicPlayer.samplePlayTemporarySong('https://www.youtube.com/watch?v=1UjLFMg18cY'));
+    await sleep(4000);
+    await save(page, 'preview-player', '#tempSongModal .ui-modal, #tempSongModal > div', 0);
+  },
+  async visualizer(ctx) {
+    const page = await boot(ctx);
+    await play(page, 'Uptown Funk', 60);
+    await page.evaluate(() => musicPlayer.updateAppearance({ surfaceStyle: 'glass', glassTint: 18, glassBlur: 8 }));
+    for (const style of ['radial', 'ribbon']) {
+      await page.evaluate(s => { musicPlayer.setVisualizerStyle(s); musicPlayer.switchTab('nowplaying'); }, style);
+      await sleep(2500);
+      await save(page, 'visualizer-' + style);
+    }
+    await page.evaluate(() => { musicPlayer.setVisualizerStyle('bars'); return musicPlayer.updateAppearance({ surfaceStyle: 'solid' }); });
+    await sleep(300);
+  },
+  async songpage(ctx) {
+    const page = await ctx.newPage();
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('https://sweetescape.vercel.app/song/1UjLFMg18cY');
+    await sleep(5000);
+    await save(page, 'song-page');
+  },
   async karaoke(ctx) {
     const page = await boot(ctx);
     await play(page, 'Twinkle Twinkle Little Star', 5);
@@ -469,6 +585,12 @@ const scenes = {
       await sleep(6000);
       await kp.screenshot({ path: path.join(OUT, 'karaoke-page.jpg'), type: 'jpeg', quality: 80 });
       console.log('saved karaoke-page');
+      await kp.click('#playPauseBtn');
+      await sleep(14000);
+      await kp.click('#fullscreenBtn');
+      await sleep(1500);
+      await kp.screenshot({ path: path.join(OUT, 'karaoke-fullscreen.jpg'), type: 'jpeg', quality: 80 });
+      console.log('saved karaoke-fullscreen');
     }
   }
 };

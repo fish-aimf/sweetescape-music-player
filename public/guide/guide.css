@@ -173,7 +173,7 @@
   color: var(--sg-text);
 }
 
-.sg-hidden {
+.sg-tips {
   margin-top: 12px;
   padding: 8px 10px;
   border-left: 3px solid var(--sg-accent);
@@ -181,7 +181,7 @@
   background: color-mix(in srgb, var(--sg-accent) 12%, transparent);
 }
 
-.sg-hidden__label {
+.sg-tips__label {
   margin: 0 0 4px;
   font-size: 11px;
   font-weight: 700;
@@ -190,16 +190,16 @@
   color: var(--sg-text);
 }
 
-.sg-hidden ul {
+.sg-tips ul {
   margin: 0;
   padding-left: 18px;
 }
 
-.sg-hidden li + li {
+.sg-tips li + li {
   margin-top: 3px;
 }
 
-.sg-keys[hidden], .sg-hidden[hidden] {
+.sg-keys[hidden], .sg-tips[hidden] {
   display: none;
 }
 
