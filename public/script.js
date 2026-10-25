@@ -6785,15 +6785,11 @@ class AdvancedMusicPlayer {
     const content = document.getElementById('recentlyPlayedContent');
     content.innerHTML = '';
     if (this.recentlyPlayedSongs.length === 0) {
-      const emptyMessage = document.createElement('div');
-      emptyMessage.style.cssText = `\n      text-align: center;\n      color: var(--text-secondary);\n      padding: 40px 20px;\n      font-style: italic;\n    `;
-      emptyMessage.textContent = 'No recently played songs';
-      content.appendChild(emptyMessage);
+      content.appendChild(UI.el('div', 'ui-empty', `${UI.icon('fa-clock')}<span>No recently played songs</span>`));
       return;
     }
     this.recentlyPlayedSongs.forEach((song, index) => {
-      const songItem = document.createElement('div');
-      songItem.classList.add('recently-played-item');
+      const songItem = UI.el('div', 'ui-card recently-played-item');
       const thumbnail = document.createElement('img');
       thumbnail.src = song.thumbnailUrl || `https://i.ytimg.com/vi/${song.videoId}/default.jpg`;
       thumbnail.alt = song.name;
@@ -6813,9 +6809,8 @@ class AdvancedMusicPlayer {
       time.classList.add('recently-played-time');
       const timeAgo = this.getTimeAgorecentlyplayedmodel(song.timestamp);
       time.textContent = timeAgo;
-      const removeBtn = document.createElement('button');
-      removeBtn.classList.add('recently-played-remove');
-      removeBtn.innerHTML = '×';
+      const removeBtn = UI.el('button', 'ui-icon-btn', UI.icon('fa-times'));
+      removeBtn.type = 'button';
       removeBtn.title = 'Remove from recently played';
       removeBtn.addEventListener('click', e => {
         e.stopPropagation();
