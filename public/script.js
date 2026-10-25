@@ -628,6 +628,7 @@ class AdvancedMusicPlayer {
     this.setupAppearanceListeners();
     this.initializeAutoplay();
     this.setupKeyboardControls();
+    this.setupNavigationGuards();
     this.renderInitialState();
     this.renderAdditionalDetails();
     this.setupLyricsTabContextMenu();
@@ -1193,6 +1194,28 @@ class AdvancedMusicPlayer {
             }
           }
         }
+      }
+    });
+  }
+  setupNavigationGuards() {
+    const blockSideButtons = e => {
+      if (e.button === 3 || e.button === 4) {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener('mousedown', blockSideButtons);
+    window.addEventListener('mouseup', blockSideButtons);
+    window.addEventListener('keydown', e => {
+      const altArrow = e.altKey && !e.ctrlKey && !e.metaKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight');
+      const cmdBracket = e.metaKey && !e.altKey && !e.ctrlKey && (e.code === 'BracketLeft' || e.code === 'BracketRight');
+      if (altArrow || cmdBracket || e.key === 'BrowserBack' || e.key === 'BrowserForward') {
+        e.preventDefault();
+      }
+    });
+    window.addEventListener('beforeunload', e => {
+      if (this.isPlaying) {
+        e.preventDefault();
+        e.returnValue = '';
       }
     });
   }
@@ -16447,8 +16470,13 @@ function initializeMusicPlayer() {
   musicPlayer = new AdvancedMusicPlayer();
 }
 
-window.addEventListener('beforeunload', () => {
-  if (musicPlayer) {
+window.addEventListener('pagehide', event => {
+  if (!musicPlayer) {
+    return;
+  }
+  if (event.persisted) {
+    musicPlayer.saveCurrentState();
+  } else {
     musicPlayer.cleanup();
   }
 });

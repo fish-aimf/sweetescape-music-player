@@ -100,6 +100,10 @@
   box-sizing: border-box;
   font-family: Arial, sans-serif;
 }
+html,
+body {
+  overscroll-behavior-x: none;
+}
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
