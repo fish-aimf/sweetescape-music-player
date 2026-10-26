@@ -2834,10 +2834,7 @@ class AdvancedMusicPlayer {
         grid.append(...shuffled.slice(grid.children.length, want).map(song => this._buildDiscoverySongItem(song)));
       }
     };
-    const renderGrid = () => {
-      if (shuffled.length === 0 || !grid.clientWidth) {
-        return;
-      }
+    const measureGrid = () => {
       const style = getComputedStyle(grid);
       const cols = style.gridTemplateColumns.split(' ').length;
       const gap = parseFloat(style.rowGap) || 0;
@@ -2846,9 +2843,25 @@ class AdvancedMusicPlayer {
         fillGrid(cols);
       }
       const rowHeight = grid.firstElementChild.offsetHeight;
-      card.style.minHeight = `${card.offsetHeight - grid.offsetHeight + padY + rowHeight}px`;
-      const rows = Math.max(1, Math.floor((grid.clientHeight - padY + gap) / (rowHeight + gap)));
-      fillGrid(cols * rows);
+      return {
+        cols,
+        minHeight: card.offsetHeight - grid.offsetHeight + padY + rowHeight,
+        rows: Math.floor((grid.clientHeight - padY + gap) / (rowHeight + gap))
+      };
+    };
+    const renderGrid = () => {
+      if (shuffled.length === 0 || !grid.clientWidth) {
+        return;
+      }
+      card.style.minHeight = '0px';
+      card.classList.remove('is-condensed');
+      let layout = measureGrid();
+      if (layout.rows < 1) {
+        card.classList.add('is-condensed');
+        layout = measureGrid();
+      }
+      card.style.minHeight = `${layout.minHeight}px`;
+      fillGrid(layout.cols * Math.max(1, layout.rows));
     };
     shuffleBtn.addEventListener('click', () => {
       this._shuffleArray(shuffled);

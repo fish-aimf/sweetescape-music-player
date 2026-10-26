@@ -5537,6 +5537,72 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 .discovery-song-item.is-playing .discovery-song-name {
   color: color-mix(in srgb, var(--accent-color) 60%, var(--text-primary));
 }
+.discovery-card.is-condensed .discovery-grid {
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 8px;
+  padding: 8px 14px;
+}
+.discovery-card.is-condensed .discovery-song-item {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  padding-right: 10px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--bg-primary);
+  transition: background 0.15s;
+}
+.discovery-card.is-condensed .discovery-song-item:hover {
+  background: var(--border-color);
+}
+.discovery-card.is-condensed .discovery-thumb-wrap {
+  flex: 0 0 40px;
+  width: 40px;
+  border-radius: 0;
+  box-shadow: none;
+  transform: none;
+}
+.discovery-card.is-condensed .discovery-song-meta {
+  flex: 1 1 auto;
+}
+.discovery-card.is-condensed .discovery-play-overlay {
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: rgba(0, 0, 0, 0.45);
+}
+.discovery-card.is-condensed .discovery-play-btn {
+  width: auto;
+  height: auto;
+  background: none;
+  box-shadow: none;
+  transform: none;
+}
+.discovery-card.is-condensed .discovery-song-item.is-playing {
+  box-shadow: inset 0 0 0 1px var(--accent-color);
+}
+.discovery-card.is-condensed .discovery-song-item.is-playing .discovery-thumb-wrap {
+  outline: none;
+}
+@media (max-height: 760px) {
+  .compact-library-view {
+    gap: 8px;
+    padding: 0;
+  }
+  .playlists-shelf-row {
+    padding: 10px 12px;
+  }
+  .playlist-shelf-tile {
+    flex-basis: 80px;
+  }
+  .playlist-shelf-name,
+  .playlist-shelf-thumb {
+    width: 80px;
+  }
+  .playlist-shelf-thumb {
+    height: 80px;
+  }
+}
 @keyframes fadeInUp {
   0% {
     opacity: 0;
