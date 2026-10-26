@@ -2777,26 +2777,34 @@ class AdvancedMusicPlayer {
     left.className = 'discovery-header-left';
     const titleSpan = document.createElement('span');
     titleSpan.className = 'discovery-title';
-    const icon = document.createElement('i');
-    icon.className = 'fa fa-music';
-    icon.style.marginRight = '5px';
-    titleSpan.appendChild(icon);
-    titleSpan.appendChild(document.createTextNode('From your library'));
+    titleSpan.innerHTML = `<i class="fas fa-music"></i> From your library`;
     left.appendChild(titleSpan);
+    header.appendChild(left);
     const right = document.createElement('div');
-    right.style.cssText = 'display:flex;gap:6px;align-items:center;';
+    right.className = 'discovery-actions';
     const shuffleBtn = document.createElement('button');
     shuffleBtn.className = 'discovery-shuffle-btn';
-    shuffleBtn.innerHTML = `<i class="fas fa-random"></i> Shuffle`;
+    shuffleBtn.title = 'Show a different selection';
+    shuffleBtn.innerHTML = `<i class="fas fa-random"></i><span>Shuffle</span>`;
     const expandBtn = document.createElement('button');
     expandBtn.className = 'discovery-expand-btn';
-    expandBtn.innerHTML = `<i class="fas fa-chevron-down"></i> All`;
+    expandBtn.innerHTML = `<i class="fas fa-chevron-down"></i>`;
+    const expandLabel = document.createElement('span');
+    expandLabel.textContent = 'Show all';
+    expandBtn.appendChild(expandLabel);
     right.appendChild(shuffleBtn);
     right.appendChild(expandBtn);
-    header.appendChild(left);
-    header.appendChild(right);
     const grid = document.createElement('div');
     grid.className = 'discovery-grid';
+    if (shuffled.length === 0) {
+      grid.innerHTML = `<div class="compact-empty-state"><i class="fas fa-music"></i><span>Your library is empty.</span><small>Add some songs to get started.</small></div>`;
+    } else {
+      const count = document.createElement('span');
+      count.className = 'discovery-count';
+      count.textContent = shuffled.length;
+      left.appendChild(count);
+      header.appendChild(right);
+    }
     grid.addEventListener('click', e => {
       const item = e.target.closest('.discovery-song-item');
       if (!item) {
@@ -2815,54 +2823,42 @@ class AdvancedMusicPlayer {
         this.addToQueue(song);
       }
     });
-    let lastCols = 0;
-    let lastRows = 0;
     let rafId = null;
     let resizeTimer = null;
+    const fillGrid = count => {
+      const want = Math.min(shuffled.length, count);
+      while (grid.children.length > want) {
+        grid.lastElementChild.remove();
+      }
+      if (grid.children.length < want) {
+        grid.append(...shuffled.slice(grid.children.length, want).map(song => this._buildDiscoverySongItem(song)));
+      }
+    };
     const renderGrid = () => {
-      const containerWidth = card.offsetWidth || 300;
-      const cellSize = 80;
-      const rowHeight = 114;
-      const gap = 8;
-      const padding = 24;
-      const cols = Math.max(1, Math.floor((containerWidth - padding + gap) / (cellSize + gap)));
-      const availableHeight = grid.clientHeight || rowHeight * 2;
-      const rows = Math.max(2, Math.floor((availableHeight + gap) / (rowHeight + gap)));
-      if (cols === lastCols && rows === lastRows && grid.children.length > 0) {
+      if (shuffled.length === 0 || !grid.clientWidth) {
         return;
       }
-      lastCols = cols;
-      lastRows = rows;
-      const maxSongs = cols * rows;
-      grid.innerHTML = '';
-      if (shuffled.length === 0) {
-        const msg = document.createElement('div');
-        msg.className = 'compact-empty-state';
-        const msgIcon = document.createElement('i');
-        msgIcon.className = 'fa fa-music';
-        msgIcon.style.cssText = 'font-size:1.8em;opacity:0.3;display:block;margin-bottom:8px;';
-        const msgText = document.createTextNode('Your library is empty.');
-        const msgSmall = document.createElement('small');
-        msgSmall.textContent = 'Add some songs to get started.';
-        msg.appendChild(msgIcon);
-        msg.appendChild(msgText);
-        msg.appendChild(document.createElement('br'));
-        msg.appendChild(msgSmall);
-        grid.appendChild(msg);
-        return;
+      const style = getComputedStyle(grid);
+      const cols = style.gridTemplateColumns.split(' ').length;
+      const gap = parseFloat(style.rowGap) || 0;
+      const padY = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+      if (grid.children.length < cols) {
+        fillGrid(cols);
       }
-      const frag = document.createDocumentFragment();
-      shuffled.slice(0, maxSongs).forEach(song => frag.appendChild(this._buildDiscoverySongItem(song)));
-      grid.appendChild(frag);
+      const rowHeight = grid.firstElementChild.offsetHeight;
+      card.style.minHeight = `${card.offsetHeight - grid.offsetHeight + padY + rowHeight}px`;
+      const rows = Math.max(1, Math.floor((grid.clientHeight - padY + gap) / (rowHeight + gap)));
+      fillGrid(cols * rows);
     };
     shuffleBtn.addEventListener('click', () => {
       this._shuffleArray(shuffled);
-      lastCols = 0;
+      grid.replaceChildren();
       renderGrid();
     });
     expandBtn.addEventListener('click', () => {
       const isExpanded = card.classList.toggle('expanded');
-      expandBtn.innerHTML = isExpanded ? `<i class="fas fa-chevron-up"></i> Less` : `<i class="fas fa-chevron-down"></i> All`;
+      expandBtn.classList.toggle('is-expanded', isExpanded);
+      expandLabel.textContent = isExpanded ? 'Show less' : 'Show all';
       let expList = card.querySelector('.discovery-expanded-list');
       if (isExpanded) {
         if (!expList) {
@@ -2888,8 +2884,9 @@ class AdvancedMusicPlayer {
         const frag = document.createDocumentFragment();
         allSongs.forEach(song => frag.appendChild(this.createSongElement(song)));
         expList.appendChild(frag);
-      } else if (expList) {
-        expList.innerHTML = '';
+      } else {
+        expList?.replaceChildren();
+        renderGrid();
       }
     });
     card.appendChild(header);
@@ -2900,6 +2897,10 @@ class AdvancedMusicPlayer {
         return;
       }
       clearTimeout(resizeTimer);
+      if (!grid.firstElementChild) {
+        renderGrid();
+        return;
+      }
       resizeTimer = setTimeout(renderGrid, 100);
     });
     rafId = requestAnimationFrame(() => {
@@ -2922,6 +2923,7 @@ class AdvancedMusicPlayer {
     const item = document.createElement('div');
     item.className = 'discovery-song-item';
     item.dataset.songId = song.id;
+    item.title = song.author ? `${song.name} · ${song.author}` : song.name;
     if (this.currentSong && this.currentSong.id === song.id) {
       item.classList.add('is-playing');
     }
@@ -2939,15 +2941,29 @@ class AdvancedMusicPlayer {
     };
     const overlay = document.createElement('div');
     overlay.className = 'discovery-play-overlay';
-    overlay.innerHTML = `<i class="fas fa-play"></i>`;
+    overlay.innerHTML = `<span class="discovery-play-btn"><i class="fas fa-play"></i></span>`;
+    const meta = document.createElement('div');
+    meta.className = 'discovery-song-meta';
     const nameEl = document.createElement('div');
     nameEl.className = 'discovery-song-name';
     nameEl.textContent = song.name;
+    const artistEl = document.createElement('div');
+    artistEl.className = 'discovery-song-artist';
+    artistEl.textContent = song.author || '';
+    meta.appendChild(nameEl);
+    meta.appendChild(artistEl);
     wrap.appendChild(img);
     wrap.appendChild(overlay);
     item.appendChild(wrap);
-    item.appendChild(nameEl);
+    item.appendChild(meta);
     return item;
+  }
+  _syncLibraryPlayingState() {
+    const videoId = this.currentSong?.videoId;
+    const playing = videoId ? this.songLibrary.find(s => s.videoId === videoId) : null;
+    document.querySelectorAll('.discovery-song-item, .fav-thumb').forEach(el => {
+      el.classList.toggle('is-playing', !!playing && el.dataset.songId === String(playing.id));
+    });
   }
   _shuffleArray(arr) {
     let i = arr.length;
@@ -6452,6 +6468,7 @@ class AdvancedMusicPlayer {
   }
   updateCurrentSongDisplay() {
     this.syncAlbumArtBackdrop();
+    this._syncLibraryPlayingState();
     if (!this.currentSong) {
       this.hideCurrentSongSection();
       this.hideNowPlayingTab();

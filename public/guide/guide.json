@@ -99,7 +99,7 @@
       "id": "song-grid",
       "target": ".discovery-card",
       "title": "From your library",
-      "body": "A shuffled grid of your own songs, for when you don't know what to play. Shuffle deals a new set, All shows everything.",
+      "body": "A shuffled grid of your own songs, for when you don't know what to play. Shuffle deals a new set, Show all lists everything.",
       "tips": ["Right-click a cover to queue it."]
     },
     {
