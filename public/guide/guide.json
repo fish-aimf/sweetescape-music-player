@@ -69,7 +69,7 @@
       "target": "#mixLab",
       "title": "Mix Lab",
       "body": "Pick up to five songs from your library, or type a mood, genre or artist like \"rainy day\" or \"songs like Daft Punk\", then Create mix. Play runs the whole mix in the player, all songs that aren't in your library yet; click a song to play from there.",
-      "tips": ["Shuffle plays the mix in random order, and New picks makes a fresh one.", "Hover a song for + to add it to your library or x to hide it."]
+      "tips": ["Shuffle plays the mix in random order, and New picks makes a fresh one.", "Import as playlist adds every song to your library and saves the mix as a playlist.", "Hover a song for + to add it to your library or x to hide it."]
     },
     {
       "id": "modify-library",

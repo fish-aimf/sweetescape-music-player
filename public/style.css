@@ -9884,6 +9884,19 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   color: var(--text-primary);
 }
 
+.mix-lab-hero__actions .mix-lab-hero__import:is(.is-busy, .is-saved) {
+  opacity: 1;
+  cursor: default;
+}
+
+.mix-lab-hero__actions .mix-lab-hero__import.is-busy {
+  cursor: progress;
+}
+
+.mix-lab-hero__import.is-saved i {
+  color: var(--accent-color);
+}
+
 .mix-lab-list__head,
 .mix-lab-row {
   display: grid;

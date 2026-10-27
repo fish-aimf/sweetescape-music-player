@@ -13564,6 +13564,8 @@ class AdvancedMusicPlayer {
       rows: new Map(),
       view: null,
       buildController: null,
+      importing: null,
+      importedToken: -1,
       status: 'idle',
       token: 0,
       playlist: null
@@ -13876,6 +13878,8 @@ class AdvancedMusicPlayer {
       this.playMixLab(null, true);
     } else if (mixAction === 'next') {
       this.playNextSong();
+    } else if (mixAction === 'import') {
+      this.importMixLabPlaylist();
     } else if (mixAction === 'add') {
       this.addMixLabTrackToLibrary(key);
     } else if (mixAction === 'hide') {
@@ -14259,9 +14263,126 @@ class AdvancedMusicPlayer {
     const art = (covers.length === 4 ? covers : covers.slice(0, 1)).map(src => `<img src="${this.escapeHtml(src)}" alt="" decoding="async">`).join('');
     const title = this.escapeHtml(this.mixLabTitle(lab.basis));
     const notes = lab.notes.length ? `<p class="mix-lab__note">Nothing found for ${this.escapeHtml(lab.notes.join(', '))}, so ${lab.notes.length === 1 ? 'it was' : 'they were'} left out.</p>` : '';
-    el.innerHTML = `<div class="mix-lab-hero"><div class="mix-lab-hero__art${covers.length === 4 ? ' mix-lab-hero__art--grid' : ''}">${art}</div><div class="mix-lab-hero__info"><span class="mix-lab-hero__eyebrow">Mix</span><h4 class="mix-lab-hero__title">${title}</h4><p class="mix-lab-hero__meta">${this.escapeHtml(this.mixLabBasisText(lab.basis))}<span class="mix-lab-hero__dot" aria-hidden="true">·</span><span class="mix-lab-hero__summary">${this.mixLabSummaryText()}</span></p><div class="mix-lab-hero__actions"><button type="button" class="mix-lab-hero__play" data-mix-action="play" aria-label="Play mix" title="Play"><i class="fas fa-play"></i></button><button type="button" class="mix-lab-hero__next" data-mix-action="next" aria-label="Next song" title="Next song"><i class="fas fa-forward-step"></i></button><button type="button" class="ui-btn ui-btn--ghost ui-btn--sm" data-mix-action="shuffle"><i class="fas fa-shuffle"></i> Shuffle</button><button type="button" class="ui-btn ui-btn--ghost ui-btn--sm" data-mix-action="refresh"><i class="fas fa-rotate-right"></i> New picks</button></div></div></div>${notes}<div class="mix-lab-list__head" aria-hidden="true"><span>#</span><span>Title</span><span>From</span><span><i class="far fa-clock"></i></span><span></span></div><ol class="mix-lab-list"></ol>`;
+    el.innerHTML = `<div class="mix-lab-hero"><div class="mix-lab-hero__art${covers.length === 4 ? ' mix-lab-hero__art--grid' : ''}">${art}</div><div class="mix-lab-hero__info"><span class="mix-lab-hero__eyebrow">Mix</span><h4 class="mix-lab-hero__title">${title}</h4><p class="mix-lab-hero__meta">${this.escapeHtml(this.mixLabBasisText(lab.basis))}<span class="mix-lab-hero__dot" aria-hidden="true">·</span><span class="mix-lab-hero__summary">${this.mixLabSummaryText()}</span></p><div class="mix-lab-hero__actions"><button type="button" class="mix-lab-hero__play" data-mix-action="play" aria-label="Play mix" title="Play"><i class="fas fa-play"></i></button><button type="button" class="mix-lab-hero__next" data-mix-action="next" aria-label="Next song" title="Next song"><i class="fas fa-forward-step"></i></button><button type="button" class="ui-btn ui-btn--ghost ui-btn--sm" data-mix-action="shuffle"><i class="fas fa-shuffle"></i> Shuffle</button><button type="button" class="ui-btn ui-btn--ghost ui-btn--sm" data-mix-action="refresh"><i class="fas fa-rotate-right"></i> New picks</button><button type="button" class="ui-btn ui-btn--ghost ui-btn--sm mix-lab-hero__import" data-mix-action="import"></button></div></div></div>${notes}<div class="mix-lab-list__head" aria-hidden="true"><span>#</span><span>Title</span><span>From</span><span><i class="far fa-clock"></i></span><span></span></div><ol class="mix-lab-list"></ol>`;
     this.appendMixLabRows(lab.results);
+    this.syncMixLabImportButton();
     this.syncMixLabPlayback();
+  }
+  syncMixLabImportButton() {
+    const lab = this.mixLab;
+    const button = lab.resultsEl.querySelector('.mix-lab-hero__import');
+    if (!button) {
+      return;
+    }
+    const importing = lab.importing && lab.importing.token === lab.token ? lab.importing : null;
+    const imported = lab.importedToken === lab.token;
+    button.disabled = Boolean(importing || imported || lab.importing);
+    button.classList.toggle('is-busy', Boolean(importing));
+    button.classList.toggle('is-saved', imported);
+    button.title = imported ? 'This mix is in your playlists' : 'Add every song to your library and save them as a playlist';
+    button.innerHTML = importing ? `<i class="fas fa-circle-notch fa-spin"></i> Importing ${importing.done} of ${importing.total}` : imported ? '<i class="fas fa-check"></i> Saved as playlist' : '<i class="fas fa-file-import"></i> Import as playlist';
+  }
+  uniqueMixLabPlaylistName(base) {
+    const taken = new Set(this.playlists.map(playlist => playlist.name.toLowerCase()));
+    let name = base;
+    for (let n = 2; taken.has(name.toLowerCase()); n++) {
+      name = `${base} ${n}`;
+    }
+    return name;
+  }
+  async importMixLabPlaylist() {
+    const lab = this.mixLab;
+    if (lab.importing || !lab.results.length || lab.importedToken === lab.token) {
+      return;
+    }
+    const token = lab.token;
+    const tracks = lab.results.slice();
+    const title = this.mixLabTitle(lab.basis);
+    lab.importing = {
+      token: token,
+      done: 0,
+      total: tracks.length
+    };
+    this.syncMixLabImportButton();
+    const rows = new Array(tracks.length);
+    let cursor = 0;
+    const worker = async () => {
+      while (cursor < tracks.length) {
+        const index = cursor++;
+        try {
+          rows[index] = await this.resolveMixLabTrack(tracks[index]);
+        } catch (error) {
+          console.warn('Mix Lab could not find a song to import:', tracks[index].title, error);
+        }
+        lab.importing.done += 1;
+        this.syncMixLabImportButton();
+      }
+    };
+    try {
+      await Promise.all([ worker(), worker(), worker() ]);
+      const library = new Map(this.songLibrary.map(song => [ song.videoId, song ]));
+      const ids = new Set(this.songLibrary.map(song => song.id));
+      const seen = new Set();
+      const added = [];
+      const entries = [];
+      rows.forEach((row, index) => {
+        if (!row || !row.yt_id || seen.has(row.yt_id)) {
+          return;
+        }
+        seen.add(row.yt_id);
+        const owned = library.get(row.yt_id);
+        const name = owned ? owned.name : tracks[index].title;
+        const author = owned ? owned.author || '' : tracks[index].artist;
+        if (!owned) {
+          let id = Date.now() + added.length;
+          while (ids.has(id)) {
+            id += 1;
+          }
+          ids.add(id);
+          added.push({
+            id: id,
+            name: name,
+            author: author,
+            videoId: row.yt_id,
+            favorite: false,
+            lyrics: '',
+            addedOn: (new Date()).toISOString()
+          });
+        }
+        entries.push({
+          videoId: row.yt_id,
+          name: name,
+          author: author,
+          entryId: Date.now() + Math.random() * 1e4
+        });
+      });
+      if (!entries.length) {
+        this.showNotification('Couldn’t find any of these songs on YouTube. Try again later.', 'error');
+        return;
+      }
+      const name = this.uniqueMixLabPlaylistName(title);
+      if (added.length) {
+        await this.addImportedSongsOneByOne(added);
+      }
+      await this.createImportedPlaylists([ {
+        name: name,
+        songs: entries
+      } ]);
+      lab.importedToken = token;
+      const searchTerm = this.elements.librarySearch ? this.elements.librarySearch.value.trim() : '';
+      searchTerm === '' ? this.renderLibraryView() : this.renderSongLibrary(searchTerm.toLowerCase());
+      this.updatePlaylistSelection();
+      this.renderPlaylists();
+      const missing = tracks.length - entries.length;
+      this.showNotification(`Saved "${name}" to your playlists with ${entries.length} songs${missing ? `, ${missing} couldn’t be found` : ''}`, 'success');
+    } catch (error) {
+      console.error('Mix Lab import failed:', error);
+      this.showNotification('Couldn’t save this mix. Please try again.', 'error');
+    } finally {
+      lab.importing = null;
+      this.syncMixLabLibraryState();
+      this.syncMixLabImportButton();
+    }
   }
   appendMixLabRows(tracks) {
     const lab = this.mixLab;

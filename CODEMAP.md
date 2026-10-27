@@ -12,7 +12,7 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 | Source | sha256 (first 12) | Lines |
 |---|---|---|
-| `public/script.js` | `e77c502e7364` | 17704 |
+| `public/script.js` | `e6fe99b2fd2c` | 17825 |
 | `public/index.html` | `23d4f3a792fa` | 1524 |
 | `public/script/settings.js` | `b1cbbfc3625b` | 561 |
 | `public/karaoke-player.js` | `ec6846376de2` | 683 |
@@ -38,7 +38,7 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 ---
 
-## `AdvancedMusicPlayer` by topic (691 methods)
+## `AdvancedMusicPlayer` by topic (694 methods)
 
 Names only. `grep -n "^  name(" public/script.js` gives the current line, and a name
 here that you cannot find has been renamed since this file was generated.
@@ -57,7 +57,7 @@ here that you cannot find has been renamed since this file was generated.
 
 ### Playlists
 
-`_refreshPlaylistsShelf` · `_buildPlaylistsShelf` · `_buildPlaylistShelfTile` · `_buildCreatePlaylistShelfTile` · `_openCreatePlaylistFromShelf` · `createPlaylist` · `updatePlaylistEditModeButton` · `renderPlaylists` · `filterPlaylists` · `playTopPlaylistSearchResult` · `toggleCreatePlaylistDiv` · `hideCreatePlaylistDiv` · `openPlaylistEditModal` · `renderCurrentPlaylistSongs` · `searchSongsToAddToPlaylist` · `clearPlaylistDuplicates` · `reversePlaylistOrder` · `randomizePlaylist` · `updatePlaylistSelection` · `removeSongFromPlaylist` · `closePlaylistModal` · `deletePlaylist` · `playPlaylist` · `setupPlaylistNameEditing` · `cancelPlaylistNameEdit` · `handlePlaylistDragStart` · `handlePlaylistDragOver` · `handlePlaylistDrop` · `getPlaylistDragAfterElement` · `getPlaylistDuration` · `getPlaylistDurationText` · `renderPlaylistSidebar` · `renderPlaylistSidebarExpandedMode` · `renderPlaylistSidebarOverlayMode` · `applyPlaylistSidebarMode` · `setupPlaylistSidebarModeListeners` · `filterPlaylistSidebarSongs` · `exportPlaylist` · `showPlaylistSelectionForExport` · `exportSongsWithAllPlaylists` · `createImportedPlaylists` · `searchPremadePlaylistsSupabase` · `extendMixLabPlaylist`
+`_refreshPlaylistsShelf` · `_buildPlaylistsShelf` · `_buildPlaylistShelfTile` · `_buildCreatePlaylistShelfTile` · `_openCreatePlaylistFromShelf` · `createPlaylist` · `updatePlaylistEditModeButton` · `renderPlaylists` · `filterPlaylists` · `playTopPlaylistSearchResult` · `toggleCreatePlaylistDiv` · `hideCreatePlaylistDiv` · `openPlaylistEditModal` · `renderCurrentPlaylistSongs` · `searchSongsToAddToPlaylist` · `clearPlaylistDuplicates` · `reversePlaylistOrder` · `randomizePlaylist` · `updatePlaylistSelection` · `removeSongFromPlaylist` · `closePlaylistModal` · `deletePlaylist` · `playPlaylist` · `setupPlaylistNameEditing` · `cancelPlaylistNameEdit` · `handlePlaylistDragStart` · `handlePlaylistDragOver` · `handlePlaylistDrop` · `getPlaylistDragAfterElement` · `getPlaylistDuration` · `getPlaylistDurationText` · `renderPlaylistSidebar` · `renderPlaylistSidebarExpandedMode` · `renderPlaylistSidebarOverlayMode` · `applyPlaylistSidebarMode` · `setupPlaylistSidebarModeListeners` · `filterPlaylistSidebarSongs` · `exportPlaylist` · `showPlaylistSelectionForExport` · `exportSongsWithAllPlaylists` · `createImportedPlaylists` · `searchPremadePlaylistsSupabase` · `extendMixLabPlaylist` · `uniqueMixLabPlaylistName` · `importMixLabPlaylist`
 
 ### YouTube & search
 
@@ -85,7 +85,7 @@ here that you cannot find has been renamed since this file was generated.
 
 ### Settings, import & export
 
-`disguiseIconUrl` · `applyFaviconDisguise` · `showExportDropdown` · `hideExportDropdown` · `addImportedSongsOneByOne` · `setupExportButtonListeners` · `handleOpenSettings` · `handleCloseSettings` · `initializeSettingsContent` · `getSetting` · `initializeAdvertisementSettings` · `initDiscordConnection` · `closeDiscordConnection` · `sendDiscordRPC` · `updateDiscordButtonUI` · `_discordRefreshSteps` · `_discordShowError` · `_discordShowSuccess` · `_discordSyncPreview` · `_discordSyncFields` · `_discordOnFieldEdit` · `_discordResetFields` · `_discordSendNow` · `_discordScheduleSend` · `_discordGetAuto` · `_discordGetEffective` · `_discordSyncLastUpdate` · `_discordStartLastUpdateTick` · `_discordStopLastUpdateTick` · `_discordRetry`
+`disguiseIconUrl` · `applyFaviconDisguise` · `showExportDropdown` · `hideExportDropdown` · `addImportedSongsOneByOne` · `setupExportButtonListeners` · `handleOpenSettings` · `handleCloseSettings` · `initializeSettingsContent` · `getSetting` · `initializeAdvertisementSettings` · `syncMixLabImportButton` · `initDiscordConnection` · `closeDiscordConnection` · `sendDiscordRPC` · `updateDiscordButtonUI` · `_discordRefreshSteps` · `_discordShowError` · `_discordShowSuccess` · `_discordSyncPreview` · `_discordSyncFields` · `_discordOnFieldEdit` · `_discordResetFields` · `_discordSendNow` · `_discordScheduleSend` · `_discordGetAuto` · `_discordGetEffective` · `_discordSyncLastUpdate` · `_discordStartLastUpdateTick` · `_discordStopLastUpdateTick` · `_discordRetry`
 
 ### Uncategorised
 
