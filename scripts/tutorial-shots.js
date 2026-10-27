@@ -312,6 +312,25 @@ const scenes = {
     await sleep(4000);
     await save(page, 'billboard-chart');
   },
+  async mixlab(ctx) {
+    const page = await boot(ctx);
+    await page.click('#findSongsBtn');
+    await sleep(4000);
+    await page.evaluate(() => {
+      musicPlayer.mixLab.seeds = [ 'Starboy', 'Take On Me' ].map(name => musicPlayer.mixLabSongSeed(musicPlayer.songLibrary.find(s => s.name === name)));
+      musicPlayer.toggleMixLabVibe('Road trip');
+    });
+    await page.click('#mixLabMakeBtn');
+    await page.waitForSelector('.mix-lab-track:not(.mix-lab-track--skeleton)', { timeout: 30000 });
+    await sleep(4000);
+    await page.evaluate(() => {
+      const main = document.querySelector('.find-songs-main-content');
+      main.scrollTop += document.getElementById('mixLab').getBoundingClientRect().top - main.getBoundingClientRect().top - 16;
+    });
+    await page.mouse.move(0, 0);
+    await sleep(600);
+    await save(page, 'mix-lab');
+  },
   async playlists(ctx) {
     const page = await boot(ctx);
     await page.evaluate(() => musicPlayer.switchTab('playlists'));

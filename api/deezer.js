@@ -6,9 +6,9 @@ export default async function handler(req, res) {
     if (req.method === 'OPTIONS') return res.status(200).end();
     if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
-    const { type = 'search', query, artistId, index = 0, limit = 8 } = req.query;
+    const { type = 'search', query, artistId, playlistId, index = 0, limit = 8 } = req.query;
 
-    if (!query && type !== 'artist_top') {
+    if (!query && ['search', 'search_artist', 'search_playlist'].includes(type)) {
         return res.status(400).json({ error: 'Missing query parameter' });
     }
 
@@ -22,6 +22,14 @@ export default async function handler(req, res) {
         } else if (type === 'artist_top') {
             if (!artistId) return res.status(400).json({ error: 'Missing artistId parameter' });
             url = `https://api.deezer.com/artist/${encodeURIComponent(artistId)}/top?limit=${limit}&index=${index}`;
+        } else if (type === 'artist_radio') {
+            if (!artistId) return res.status(400).json({ error: 'Missing artistId parameter' });
+            url = `https://api.deezer.com/artist/${encodeURIComponent(artistId)}/radio?limit=${limit}`;
+        } else if (type === 'search_playlist') {
+            url = `https://api.deezer.com/search/playlist?q=${encodeURIComponent(query)}&limit=${limit}`;
+        } else if (type === 'playlist_tracks') {
+            if (!playlistId) return res.status(400).json({ error: 'Missing playlistId parameter' });
+            url = `https://api.deezer.com/playlist/${encodeURIComponent(playlistId)}/tracks?limit=${limit}&index=${index}`;
         } else {
             return res.status(400).json({ error: 'Invalid type parameter' });
         }
@@ -31,6 +39,10 @@ export default async function handler(req, res) {
 
         if (data && data.error) {
             return res.status(429).json({ data, status: 429 });
+        }
+
+        if (response.ok && (type === 'search_playlist' || type === 'playlist_tracks')) {
+            res.setHeader('Cache-Control', 'public, s-maxage=43200, stale-while-revalidate=86400');
         }
 
         return res.status(response.status).json({ data, status: response.status });

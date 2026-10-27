@@ -61,8 +61,15 @@
       "id": "find-songs",
       "target": "#findSongsBtn",
       "title": "Global library",
-      "body": "Somewhere to find new music: the Billboard Hot 100 top three, a few random picks, and a search for artists, songs and premade playlists. Click any song to hear a preview before adding it.",
+      "body": "Somewhere to find new music: the Billboard Hot 100 top three, a few random picks, a search for artists, songs and premade playlists, and Mix Lab, which builds a mix of new songs from a few of yours. Click any song to hear a preview before adding it.",
       "tips": ["Click the \"Billboard Hot 100\" heading inside for the full chart."]
+    },
+    {
+      "id": "mix-lab",
+      "target": "#mixLab",
+      "title": "Mix Lab",
+      "body": "Pick up to five songs from your library, or type a vibe like \"rainy day\" or \"songs like Daft Punk\", then Make my mix. You get songs that aren't in your library yet: click a cover to preview the official track, + to add it.",
+      "tips": ["New picks deals a fresh set from the same picks.", "The x on a cover hides a song you don't want."]
     },
     {
       "id": "modify-library",

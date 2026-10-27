@@ -350,6 +350,9 @@ const HTML_ENTITY_PATTERN = /&(#\d{1,7}|#[xX][0-9a-fA-F]{1,6}|[a-zA-Z][a-zA-Z0-9
 class AdvancedMusicPlayer {
   static VISUALIZER_STYLES = new Set([ 'bars', 'levels', 'wave', 'ribbon', 'radial', 'glow' ]);
   static YOUTUBE_HOST = 'https://www.youtube-nocookie.com';
+  static MIX_LAB_MAX_SEEDS = 5;
+  static MIX_LAB_PAGE_SIZE = 24;
+  static MIX_LAB_VIBES = [ 'Rainy day', 'Workout', '90s R&B', 'Lofi study', 'Road trip', 'Feel good' ];
   static LYRICS_STAGE_MODES = [ {
     id: 'verse',
     name: 'Verse',
@@ -638,6 +641,7 @@ class AdvancedMusicPlayer {
     this.initializeAdvertisementSettings();
     this.initializeVisualizer();
     this.initGlobalLibraryDebouncedSearch();
+    this.initMixLab();
     this.setupChangelogModal();
     this.loadVersion();
     this.setupYouTubeLibraryResultsDelegation();
@@ -10860,7 +10864,13 @@ class AdvancedMusicPlayer {
   }
   getAlbumArtSong() {
     const state = this.appearance || this.getAppearanceDefaults();
-    if (state.surfaceStyle !== 'glass' || !state.backgroundAlbumArt || !this.currentSong) {
+    if (state.surfaceStyle !== 'glass' || !state.backgroundAlbumArt) {
+      return null;
+    }
+    if (this.temporarySongArt) {
+      return this.temporarySongArt;
+    }
+    if (!this.currentSong) {
       return null;
     }
     return this.songLibrary.find(s => s.videoId === this.currentSong.videoId) || this.currentSong;
@@ -10872,7 +10882,7 @@ class AdvancedMusicPlayer {
     const key = custom || song?.videoId || '';
     root.setAttribute('data-app-art', key ? 'on' : 'off');
     root.setAttribute('data-app-bg', key || this.getAppearanceBackgroundValue() ? 'on' : 'off');
-    root.toggleAttribute('data-art-playing', Boolean(key && this.isPlaying));
+    root.toggleAttribute('data-art-playing', Boolean(key && (this.isPlaying || this.temporarySongArt)));
     if (key === this.albumArtKey) {
       const state = this.appearance || this.getAppearanceDefaults();
       if (key && this.albumArtImage && this.albumArtLook !== state.albumArtBlur + '|' + state.albumArtSat) {
@@ -13321,7 +13331,7 @@ class AdvancedMusicPlayer {
     card.innerHTML = `\n\t        <button id="globalLibrarySongDetailCloseBtn" class="global-library-song-detail-close-btn">×</button>\n\t        <img src="${thumbUrl}" alt="" class="global-library-song-detail-thumb">\n\t        <div class="global-library-song-detail-info">\n\t            <div class="global-library-song-detail-title">${songRow.name}</div>\n\t            <div class="global-library-song-detail-artist">${songRow.artist}</div>\n\t            <div class="global-library-song-detail-meta">${viewsText} · ${dateText}</div>\n\t        </div>\n\t        <div class="global-library-song-detail-actions">\n\t\t\t    <button id="globalLibrarySongDetailListenBtn" class="listen-temp-song-btn" title="Preview this song">▶ Listen</button>\n\t\t\t    <button id="globalLibrarySongDetailAddBtn" class="global-library-song-detail-add-btn">+ Add to local library</button>\n\t\t\t</div>\n\t    `;
     document.getElementById('globalLibrarySongDetailCloseBtn').addEventListener('click', () => this.closeGlobalLibrarySongDetailCard());
     document.getElementById('globalLibrarySongDetailAddBtn').addEventListener('click', () => this.populateAddSongToLibraryModalFromGlobalLibrary(songRow));
-    document.getElementById('globalLibrarySongDetailListenBtn').addEventListener('click', () => this.samplePlayTemporarySong(`https://www.youtube.com/watch?v=${songRow.yt_id}`));
+    document.getElementById('globalLibrarySongDetailListenBtn').addEventListener('click', () => this.samplePlayTemporarySong(`https://www.youtube.com/watch?v=${songRow.yt_id}`, songRow));
   }
   closeGlobalLibrarySongDetailCard() {
     const card = document.getElementById('globalLibrarySongDetailCard');
@@ -13337,20 +13347,26 @@ class AdvancedMusicPlayer {
   async resolveGlobalLibrarySongYouTubeId(songName, artistName) {
     await this.initSupabaseForFindSongs();
     const searchKey = this.normalizeGlobalLibrarySearchKey(songName, artistName);
-    const cached = await this.checkGlobalSongCacheSupabase(searchKey);
+    const cached = await this.checkGlobalSongCacheSupabase(searchKey).catch(error => {
+      console.warn('Global song cache lookup failed:', error);
+      return null;
+    });
     if (cached) {
       return cached;
     }
     const resolvedFromYouTube = await this.fetchGlobalLibrarySongFromYouTube(songName, artistName);
-    const saved = await this.insertGlobalSongCacheSupabase({
+    const row = {
       search_key: searchKey,
       name: songName,
       artist: artistName,
       yt_id: resolvedFromYouTube.yt_id,
       view_count: resolvedFromYouTube.view_count,
       published_at: resolvedFromYouTube.published_at
+    };
+    return this.insertGlobalSongCacheSupabase(row).catch(error => {
+      console.warn('Global song cache write failed:', error);
+      return row;
     });
-    return saved;
   }
   async checkGlobalSongCacheSupabase(searchKey) {
     await this.initSupabaseForFindSongs();
@@ -13413,11 +13429,16 @@ class AdvancedMusicPlayer {
   getRandomYouTubeApiKey() {
     return Math.floor(Math.random() * this.YOUTUBE_API_KEYS_COUNT);
   }
-  populateAddSongToLibraryModalFromGlobalLibrary(songRow) {
+  populateAddSongToLibraryModalFromGlobalLibrary(songRow, onClose) {
     this.elements.songNameInput.value = songRow.name;
     this.elements.songAuthorInput.value = songRow.artist;
     this.elements.songUrlInput.value = `https://www.youtube.com/watch?v=${songRow.yt_id}`;
-    this.onLibraryModalCloseCallback = () => this.returnToGlobalLibraryPreviousView();
+    this.onLibraryModalCloseCallback = () => {
+      this.returnToGlobalLibraryPreviousView();
+      if (onClose) {
+        onClose();
+      }
+    };
     this.closeGlobalLibrarySongDetailCard();
     this.openLibraryModal();
   }
@@ -13446,16 +13467,779 @@ class AdvancedMusicPlayer {
   }
   async openFindSongs() {
     await this.initSupabaseForFindSongs();
+    if (!document.documentElement.classList.contains('global-library-open')) {
+      this.globalLibraryScrollY = window.scrollY;
+      document.documentElement.classList.add('global-library-open');
+    }
     this.elements.findSongsDiv.style.display = 'flex';
+    this.renderMixLab();
     document.getElementById('globalLibraryDebouncedSearchBar')?.focus();
     await this.loadRecommendations();
   }
   closeFindSongs() {
     this.elements.findSongsDiv.style.display = 'none';
+    if (document.documentElement.classList.contains('global-library-open')) {
+      document.documentElement.classList.remove('global-library-open');
+      window.scrollTo(0, this.globalLibraryScrollY || 0);
+    }
     document.getElementById('globalLibraryDebouncedSearchBar').value = '';
     this.closeGlobalLibrarySearchSuggestionsDropdown();
     this.closeGlobalLibrarySongDetailCard();
     this.closeGlobalLibraryArtistSongsGrid();
+    this.closeMixLabSuggestions();
+  }
+  initMixLab() {
+    const root = document.getElementById('mixLab');
+    if (!root) {
+      return;
+    }
+    let saved = [];
+    try {
+      saved = JSON.parse(localStorage.getItem('mixLabSeeds') || '[]');
+    } catch (error) {
+      saved = [];
+    }
+    this.mixLab = {
+      input: document.getElementById('mixLabInput'),
+      suggest: document.getElementById('mixLabSuggest'),
+      seedsEl: document.getElementById('mixLabSeeds'),
+      startersEl: document.getElementById('mixLabStarters'),
+      countEl: document.getElementById('mixLabCount'),
+      makeBtn: document.getElementById('mixLabMakeBtn'),
+      resultsEl: document.getElementById('mixLabResults'),
+      savedSeeds: Array.isArray(saved) ? saved : [],
+      seeds: [],
+      basis: [],
+      sources: new Map(),
+      playlistTracks: new Map(),
+      resolved: new Map(),
+      shown: new Set(),
+      dismissed: new Set(),
+      results: [],
+      notes: [],
+      suggestions: [],
+      activeSuggestion: -1,
+      status: 'idle',
+      token: 0
+    };
+    const lab = this.mixLab;
+    lab.input.addEventListener('input', () => this.renderMixLabSuggestions());
+    lab.input.addEventListener('focus', () => this.renderMixLabSuggestions());
+    lab.input.addEventListener('click', () => {
+      if (lab.suggest.hidden) {
+        this.renderMixLabSuggestions();
+      }
+    });
+    lab.input.addEventListener('keydown', event => this.handleMixLabInputKeydown(event));
+    lab.suggest.addEventListener('mousedown', event => event.preventDefault());
+    root.addEventListener('click', event => this.handleMixLabClick(event));
+    document.addEventListener('click', event => {
+      if (!lab.suggest.hidden && !event.target.closest('.mix-lab__field')) {
+        this.closeMixLabSuggestions();
+      }
+    });
+    this.renderMixLabResults();
+  }
+  renderMixLab() {
+    const lab = this.mixLab;
+    if (!lab) {
+      return;
+    }
+    if (lab.savedSeeds) {
+      lab.seeds = lab.savedSeeds.map(saved => {
+        if (saved && saved.kind === 'vibe' && saved.text) {
+          return this.mixLabVibeSeed(saved.text);
+        }
+        const song = saved && saved.kind === 'song' && this.songLibrary.find(item => item.id === saved.songId);
+        return song ? this.mixLabSongSeed(song) : null;
+      }).filter(Boolean).slice(0, AdvancedMusicPlayer.MIX_LAB_MAX_SEEDS);
+      lab.savedSeeds = null;
+    }
+    lab.seeds = lab.seeds.filter(seed => seed.kind === 'vibe' || this.songLibrary.some(song => song.id === seed.songId));
+    this.renderMixLabSeeds();
+    this.syncMixLabLibraryState();
+  }
+  mixLabSongSeed(song) {
+    return {
+      id: `song:${song.id}`,
+      kind: 'song',
+      songId: song.id,
+      name: song.name,
+      author: this.stripYouTubeTopicSuffix(song.author || ''),
+      thumb: song.thumbnailUrl || (song.videoId ? `https://i.ytimg.com/vi/${song.videoId}/default.jpg` : '')
+    };
+  }
+  mixLabVibeSeed(text) {
+    const clean = String(text).trim().replace(/\s+/g, ' ').slice(0, 60);
+    return {
+      id: `vibe:${clean.toLowerCase()}`,
+      kind: 'vibe',
+      text: clean
+    };
+  }
+  mixLabSeedLabel(seed) {
+    return seed.kind === 'vibe' ? `“${seed.text}”` : seed.name;
+  }
+  mixLabSeedThumbHtml(seed, className) {
+    if (seed.kind === 'song' && seed.thumb) {
+      return `<img class="${className}" src="${this.escapeHtml(seed.thumb)}" alt="" loading="lazy" decoding="async">`;
+    }
+    return `<span class="${className}"><i class="fas ${seed.kind === 'vibe' ? 'fa-wand-magic-sparkles' : 'fa-music'}"></i></span>`;
+  }
+  saveMixLabSeeds() {
+    try {
+      localStorage.setItem('mixLabSeeds', JSON.stringify(this.mixLab.seeds.map(seed => seed.kind === 'song' ? {
+        kind: 'song',
+        songId: seed.songId
+      } : {
+        kind: 'vibe',
+        text: seed.text
+      })));
+    } catch (error) {
+      console.warn('Could not save Mix Lab picks:', error);
+    }
+  }
+  addMixLabSeed(seed) {
+    const lab = this.mixLab;
+    if (lab.seeds.some(existing => existing.id === seed.id)) {
+      return false;
+    }
+    if (lab.seeds.length >= AdvancedMusicPlayer.MIX_LAB_MAX_SEEDS) {
+      this.showNotification(`Mix Lab takes up to ${AdvancedMusicPlayer.MIX_LAB_MAX_SEEDS} picks. Remove one to add another.`, 'error');
+      return false;
+    }
+    lab.seeds.push(seed);
+    this.saveMixLabSeeds();
+    this.renderMixLabSeeds();
+    return true;
+  }
+  removeMixLabSeed(seedId) {
+    const lab = this.mixLab;
+    lab.seeds = lab.seeds.filter(seed => seed.id !== seedId);
+    this.saveMixLabSeeds();
+    this.renderMixLabSeeds();
+  }
+  toggleMixLabVibe(text) {
+    const seed = this.mixLabVibeSeed(text);
+    if (this.mixLab.seeds.some(existing => existing.id === seed.id)) {
+      this.removeMixLabSeed(seed.id);
+    } else {
+      this.addMixLabSeed(seed);
+    }
+  }
+  addMixLabStarter(kind) {
+    const lab = this.mixLab;
+    const picked = new Set(lab.seeds.map(seed => seed.songId));
+    let pool;
+    if (kind === 'favorites') {
+      pool = this._shuffleArray(this.songLibrary.filter(song => song.favorite));
+    } else if (kind === 'recent') {
+      pool = this.recentlyPlayedSongs.map(item => this.songLibrary.find(song => song.id === item.id));
+    } else {
+      pool = this._shuffleArray(this.songLibrary.slice());
+    }
+    const room = Math.min(3, AdvancedMusicPlayer.MIX_LAB_MAX_SEEDS - lab.seeds.length);
+    const songs = [ ...new Set(pool.filter(song => song && !picked.has(song.id))) ].slice(0, room);
+    if (!songs.length) {
+      this.showNotification('Those songs are already in your picks', 'error');
+      return;
+    }
+    songs.forEach(song => lab.seeds.push(this.mixLabSongSeed(song)));
+    this.saveMixLabSeeds();
+    this.renderMixLabSeeds();
+  }
+  renderMixLabSeeds() {
+    const lab = this.mixLab;
+    const max = AdvancedMusicPlayer.MIX_LAB_MAX_SEEDS;
+    const full = lab.seeds.length >= max;
+    lab.seedsEl.innerHTML = lab.seeds.map(seed => {
+      const label = this.escapeHtml(this.mixLabSeedLabel(seed));
+      const tip = this.escapeHtml(seed.kind === 'song' && seed.author ? `${seed.name} · ${seed.author}` : this.mixLabSeedLabel(seed));
+      return `<span class="mix-lab-seed mix-lab-seed--${seed.kind}" title="${tip}">${this.mixLabSeedThumbHtml(seed, 'mix-lab-seed__thumb')}<span class="mix-lab-seed__label">${label}</span><button type="button" class="mix-lab-seed__remove" data-mix-remove="${this.escapeHtml(seed.id)}" aria-label="Remove ${label}" title="Remove"><i class="fas fa-xmark"></i></button></span>`;
+    }).join('');
+    const vibes = new Set(lab.seeds.filter(seed => seed.kind === 'vibe').map(seed => seed.id));
+    const starters = [];
+    if (this.songLibrary.some(song => song.favorite)) {
+      starters.push([ 'favorites', 'fa-heart', 'Favourites' ]);
+    }
+    if (this.recentlyPlayedSongs.length) {
+      starters.push([ 'recent', 'fa-clock-rotate-left', 'Recently played' ]);
+    }
+    if (this.songLibrary.length) {
+      starters.push([ 'random', 'fa-dice', 'Surprise me' ]);
+    }
+    lab.startersEl.innerHTML = starters.map(([kind, icon, label]) => `<button type="button" class="mix-lab__starter" data-mix-starter="${kind}"${full ? ' disabled' : ''}><i class="fas ${icon}"></i>${label}</button>`).join('') + (starters.length ? '<span class="mix-lab__starters-sep" aria-hidden="true"></span>' : '') + AdvancedMusicPlayer.MIX_LAB_VIBES.map(vibe => {
+      const active = vibes.has(this.mixLabVibeSeed(vibe).id);
+      return `<button type="button" class="mix-lab__starter mix-lab__starter--vibe" data-mix-vibe="${this.escapeHtml(vibe)}" aria-pressed="${active}"${full && !active ? ' disabled' : ''}>${this.escapeHtml(vibe)}</button>`;
+    }).join('');
+    lab.countEl.textContent = lab.seeds.length ? `${lab.seeds.length} of ${max} picked` : `Pick up to ${max} songs or vibes`;
+    const loading = lab.status === 'loading';
+    lab.makeBtn.disabled = !lab.seeds.length || loading;
+    lab.makeBtn.innerHTML = loading ? '<i class="fas fa-circle-notch fa-spin"></i> Mixing…' : '<i class="fas fa-wand-magic-sparkles"></i> Make my mix';
+  }
+  renderMixLabSuggestions() {
+    const lab = this.mixLab;
+    const text = lab.input.value.trim();
+    const picked = new Set(lab.seeds.map(seed => seed.id));
+    let songs;
+    if (text) {
+      const folded = this._searchFold(text);
+      songs = folded ? this.songLibrary.filter(song => this._searchFold(song.name).includes(folded) || this._searchFold(song.author || '').includes(folded)).slice(0, 6) : [];
+    } else {
+      const recent = this.recentlyPlayedSongs.map(item => this.songLibrary.find(song => song.id === item.id));
+      songs = [ ...new Set([ ...recent, ...this.songLibrary.filter(song => song.favorite) ].filter(Boolean)) ].slice(0, 6);
+      if (!songs.length) {
+        songs = this.songLibrary.slice(-6).reverse();
+      }
+    }
+    lab.suggestions = songs.map(song => this.mixLabSongSeed(song));
+    if (text.length >= 2) {
+      lab.suggestions.push(this.mixLabVibeSeed(text));
+    }
+    lab.activeSuggestion = lab.suggestions.findIndex(seed => !picked.has(seed.id));
+    let html = '';
+    if (songs.length) {
+      html += `<div class="mix-lab__suggest-label">${text ? 'In your library' : 'Recently played and favourites'}</div>`;
+      html += lab.suggestions.slice(0, songs.length).map((seed, index) => this.mixLabOptionHtml(seed, index, picked.has(seed.id))).join('');
+    } else if (text && this.songLibrary.length) {
+      html += '<div class="mix-lab__suggest-hint">No songs in your library match that</div>';
+    }
+    if (text.length >= 2) {
+      html += '<div class="mix-lab__suggest-label">Describe a vibe</div>';
+      html += this.mixLabOptionHtml(lab.suggestions[songs.length], songs.length, picked.has(lab.suggestions[songs.length].id));
+    } else {
+      html += `<div class="mix-lab__suggest-hint"><i class="fas fa-wand-magic-sparkles"></i> ${songs.length ? 'Or type' : 'Type'} a vibe: a mood, genre, era or artist</div>`;
+    }
+    lab.suggest.innerHTML = html;
+    lab.suggest.hidden = false;
+    lab.input.setAttribute('aria-expanded', 'true');
+    this.syncMixLabActiveSuggestion();
+  }
+  mixLabOptionHtml(seed, index, added) {
+    const vibe = seed.kind === 'vibe';
+    const name = vibe ? `Use “${this.escapeHtml(seed.text)}”` : this.escapeHtml(seed.name);
+    const sub = vibe ? 'Find songs with this feel' : this.escapeHtml(seed.author || 'Unknown artist');
+    return `<button type="button" class="mix-lab__option" role="option" id="mixLabOption${index}" data-mix-option="${index}" aria-selected="false"${added ? ' disabled' : ''}>${this.mixLabSeedThumbHtml(seed, 'mix-lab__option-thumb')}<span class="mix-lab__option-text"><span class="mix-lab__option-name">${name}</span><span class="mix-lab__option-sub">${sub}</span></span><i class="fas ${added ? 'fa-check' : 'fa-plus'} mix-lab__option-icon"></i></button>`;
+  }
+  syncMixLabActiveSuggestion() {
+    const lab = this.mixLab;
+    const options = lab.suggest.querySelectorAll('.mix-lab__option');
+    options.forEach((option, index) => option.setAttribute('aria-selected', String(index === lab.activeSuggestion)));
+    const active = options[lab.activeSuggestion];
+    if (active) {
+      active.scrollIntoView({
+        block: 'nearest'
+      });
+      lab.input.setAttribute('aria-activedescendant', active.id);
+    } else {
+      lab.input.removeAttribute('aria-activedescendant');
+    }
+  }
+  moveMixLabSuggestion(step) {
+    const lab = this.mixLab;
+    const options = [ ...lab.suggest.querySelectorAll('.mix-lab__option') ];
+    if (!options.some(option => !option.disabled)) {
+      return;
+    }
+    let index = lab.activeSuggestion < 0 ? step > 0 ? -1 : 0 : lab.activeSuggestion;
+    do {
+      index = (index + step + options.length) % options.length;
+    } while (options[index].disabled);
+    lab.activeSuggestion = index;
+    this.syncMixLabActiveSuggestion();
+  }
+  closeMixLabSuggestions() {
+    const lab = this.mixLab;
+    if (!lab || lab.suggest.hidden) {
+      return;
+    }
+    lab.suggest.hidden = true;
+    lab.suggest.innerHTML = '';
+    lab.suggestions = [];
+    lab.activeSuggestion = -1;
+    lab.input.setAttribute('aria-expanded', 'false');
+    lab.input.removeAttribute('aria-activedescendant');
+  }
+  pickMixLabSuggestion(index) {
+    const lab = this.mixLab;
+    const seed = lab.suggestions[index];
+    if (seed && this.addMixLabSeed(seed)) {
+      lab.input.value = '';
+    }
+    this.closeMixLabSuggestions();
+  }
+  handleMixLabInputKeydown(event) {
+    const lab = this.mixLab;
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      if (lab.suggest.hidden) {
+        this.renderMixLabSuggestions();
+      } else {
+        this.moveMixLabSuggestion(event.key === 'ArrowDown' ? 1 : -1);
+      }
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      const text = lab.input.value.trim();
+      if (!lab.suggest.hidden && lab.activeSuggestion >= 0) {
+        this.pickMixLabSuggestion(lab.activeSuggestion);
+      } else if (text.length >= 2 && this.addMixLabSeed(this.mixLabVibeSeed(text))) {
+        lab.input.value = '';
+        this.closeMixLabSuggestions();
+      }
+    } else if (event.key === 'Escape' && !lab.suggest.hidden) {
+      event.preventDefault();
+      event.stopPropagation();
+      this.closeMixLabSuggestions();
+    } else if (event.key === 'Backspace' && !lab.input.value && lab.seeds.length) {
+      this.removeMixLabSeed(lab.seeds[lab.seeds.length - 1].id);
+    }
+  }
+  handleMixLabClick(event) {
+    const target = event.target.closest('[data-mix-option], [data-mix-remove], [data-mix-starter], [data-mix-vibe], [data-mix-action]');
+    if (!target || target.disabled) {
+      return;
+    }
+    const {mixOption: mixOption, mixRemove: mixRemove, mixStarter: mixStarter, mixVibe: mixVibe, mixAction: mixAction} = target.dataset;
+    const key = target.closest('.mix-lab-track')?.dataset.mixKey;
+    if (mixOption !== undefined) {
+      this.pickMixLabSuggestion(Number(mixOption));
+    } else if (mixRemove) {
+      this.removeMixLabSeed(mixRemove);
+    } else if (mixStarter) {
+      this.addMixLabStarter(mixStarter);
+    } else if (mixVibe) {
+      this.toggleMixLabVibe(mixVibe);
+    } else if (mixAction === 'make') {
+      this.buildMixLab(false);
+    } else if (mixAction === 'refresh') {
+      this.buildMixLab(true);
+    } else if (mixAction === 'sample') {
+      this.sampleMixLabTrack(key);
+    } else if (mixAction === 'add') {
+      this.addMixLabTrackToLibrary(key);
+    } else if (mixAction === 'dismiss') {
+      this.dismissMixLabTrack(key);
+    }
+  }
+  mixLabKey(text) {
+    return String(text || '').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[([{【].*?[)\]}】]/g, ' ').replace(/\s(?:feat|ft|featuring)\b.*$/, ' ').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+  }
+  cleanMixLabTitle(name) {
+    return String(name || '').split('|')[0].replace(/[([{【].*?[)\]}】]/g, ' ').replace(/\b(?:official|music video|lyric video|lyrics?|audio|video|visualizer|mv|hd|hq|4k)\b/gi, ' ').replace(/\s+/g, ' ').trim();
+  }
+  mixLabArtistMatches(name, key) {
+    const other = this.mixLabKey(name);
+    return Boolean(other && key) && (other === key || other.includes(key) || key.includes(other));
+  }
+  async fetchMixLabDeezer(params) {
+    const response = await fetch(`/api/deezer?${new URLSearchParams(params)}`);
+    const result = await response.json().catch(() => null);
+    const deezerError = result && result.data && result.data.error;
+    if (deezerError) {
+      if (deezerError.code === 800) {
+        return [];
+      }
+      throw new Error(deezerError.message || 'Music catalog request failed');
+    }
+    if (!response.ok || !result) {
+      throw new Error(`Music catalog request failed: ${response.status}`);
+    }
+    return Array.isArray(result.data && result.data.data) ? result.data.data : [];
+  }
+  async findMixLabSource(seed) {
+    if (seed.kind === 'song') {
+      const artist = this.stripYouTubeTopicSuffix(seed.author || '').trim();
+      const artistKey = this.mixLabKey(artist);
+      const tracks = await this.fetchMixLabDeezer({
+        type: 'search',
+        query: `${this.cleanMixLabTitle(seed.name)} ${artist}`.trim(),
+        limit: 10
+      });
+      const match = artistKey ? tracks.find(track => this.mixLabArtistMatches(track.artist && track.artist.name, artistKey)) : tracks[0];
+      let artistId = match && match.artist && match.artist.id;
+      if (!artistId && artist) {
+        const artists = await this.fetchMixLabDeezer({
+          type: 'search_artist',
+          query: artist,
+          limit: 1
+        });
+        artistId = artists[0] && artists[0].id;
+      }
+      return {
+        artistId: artistId || tracks[0] && tracks[0].artist && tracks[0].artist.id || null,
+        playlistIds: []
+      };
+    }
+    const like = seed.text.match(/^(?:(?:songs?|music|tracks?|artists?|stuff)\s+)?(?:like|similar to|sounds? like|inspired by|in the style of)\s+(.+)$/i);
+    if (like) {
+      const artists = await this.fetchMixLabDeezer({
+        type: 'search_artist',
+        query: like[1],
+        limit: 1
+      });
+      if (artists[0]) {
+        return {
+          artistId: artists[0].id,
+          playlistIds: []
+        };
+      }
+    }
+    const [artists, playlists] = await Promise.all([ this.fetchMixLabDeezer({
+      type: 'search_artist',
+      query: seed.text,
+      limit: 1
+    }), this.fetchMixLabDeezer({
+      type: 'search_playlist',
+      query: seed.text,
+      limit: 10
+    }) ]);
+    if (artists[0] && artists[0].nb_fan >= 25000 && this.mixLabKey(artists[0].name) === this.mixLabKey(seed.text)) {
+      return {
+        artistId: artists[0].id,
+        playlistIds: []
+      };
+    }
+    const usable = playlists.filter(playlist => playlist.nb_tracks >= 12);
+    const curated = usable.filter(playlist => /deezer/i.test(playlist.user && playlist.user.name || ''));
+    const ordered = [ ...curated, ...usable.filter(playlist => !curated.includes(playlist)) ];
+    if (!ordered.length && artists[0]) {
+      return {
+        artistId: artists[0].id,
+        playlistIds: []
+      };
+    }
+    return {
+      artistId: null,
+      playlistIds: ordered.slice(0, 2).map(playlist => playlist.id)
+    };
+  }
+  async fetchMixLabSeedTracks(seed) {
+    const lab = this.mixLab;
+    if (!lab.sources.has(seed.id)) {
+      lab.sources.set(seed.id, await this.findMixLabSource(seed));
+    }
+    const source = lab.sources.get(seed.id);
+    if (source.artistId) {
+      return this.fetchMixLabDeezer({
+        type: 'artist_radio',
+        artistId: source.artistId,
+        limit: 50
+      });
+    }
+    const lists = await Promise.all(source.playlistIds.map(async playlistId => {
+      if (!lab.playlistTracks.has(playlistId)) {
+        lab.playlistTracks.set(playlistId, await this.fetchMixLabDeezer({
+          type: 'playlist_tracks',
+          playlistId: playlistId,
+          limit: 80
+        }));
+      }
+      return this._shuffleArray(lab.playlistTracks.get(playlistId).slice());
+    }));
+    const merged = [];
+    const longest = Math.max(0, ...lists.map(list => list.length));
+    for (let i = 0; i < longest; i++) {
+      lists.forEach(list => {
+        if (list[i]) {
+          merged.push(list[i]);
+        }
+      });
+    }
+    return merged;
+  }
+  getMixLabLibraryIndex() {
+    return this.songLibrary.map(song => ({
+      title: this.mixLabKey(song.name),
+      artist: this.mixLabKey(this.stripYouTubeTopicSuffix(song.author || ''))
+    }));
+  }
+  isMixLabTrackInLibrary(library, title, artist) {
+    return library.some(entry => {
+      if (!entry.title || entry.title !== title && !(title.length > 3 && entry.title.includes(title))) {
+        return false;
+      }
+      if (!entry.artist) {
+        return entry.title === title || entry.title.includes(artist);
+      }
+      return entry.artist.includes(artist) || artist.includes(entry.artist);
+    });
+  }
+  rankMixLabTracks(outcomes, exclude) {
+    const lab = this.mixLab;
+    const library = this.getMixLabLibraryIndex();
+    const pool = new Map();
+    outcomes.forEach(({tracks: tracks}, seedIndex) => {
+      tracks.forEach((track, position) => {
+        if (!track || !track.title || !track.artist || !track.artist.name || track.readable === false) {
+          return;
+        }
+        const title = this.decodeHtmlEntities(track.title);
+        const artist = this.decodeHtmlEntities(track.artist.name);
+        const titleKey = this.mixLabKey(title);
+        const artistKey = this.mixLabKey(artist);
+        const key = `${titleKey}|${artistKey}`;
+        if (!titleKey || exclude.has(key) || lab.dismissed.has(key) || /\b(?:sped up|speed up|slowed|reverb|nightcore|8d audio|karaoke)\b/i.test(title)) {
+          return;
+        }
+        let entry = pool.get(key);
+        if (!entry) {
+          if (this.isMixLabTrackInLibrary(library, titleKey, artistKey)) {
+            return;
+          }
+          entry = {
+            key: key,
+            artistKey: artistKey,
+            title: title,
+            artist: artist,
+            cover: track.album && (track.album.cover_medium || track.album.cover) || '',
+            seeds: [],
+            score: Math.random() * 0.6 + Math.min(track.rank || 0, 1e6) / 4e6
+          };
+          pool.set(key, entry);
+        }
+        if (!entry.seeds.includes(seedIndex)) {
+          entry.seeds.push(seedIndex);
+          entry.score += 2.5 - position / Math.max(tracks.length, 1);
+        }
+      });
+    });
+    const ranked = [ ...pool.values() ].sort((a, b) => b.score - a.score);
+    const queues = outcomes.map((outcome, seedIndex) => ranked.filter(entry => entry.seeds.includes(seedIndex)));
+    const picks = [];
+    const taken = new Set();
+    const perArtist = new Map();
+    let progressed = true;
+    while (picks.length < AdvancedMusicPlayer.MIX_LAB_PAGE_SIZE && progressed) {
+      progressed = false;
+      queues.forEach(queue => {
+        while (queue.length && picks.length < AdvancedMusicPlayer.MIX_LAB_PAGE_SIZE) {
+          const entry = queue.shift();
+          const count = perArtist.get(entry.artistKey) || 0;
+          if (taken.has(entry.key) || count >= 2) {
+            continue;
+          }
+          taken.add(entry.key);
+          perArtist.set(entry.artistKey, count + 1);
+          picks.push({
+            key: entry.key,
+            title: entry.title,
+            artist: entry.artist,
+            cover: entry.cover,
+            because: entry.seeds.map(index => outcomes[index].seed),
+            busy: null,
+            inLibrary: false
+          });
+          progressed = true;
+          break;
+        }
+      });
+    }
+    return picks;
+  }
+  async buildMixLab(fresh) {
+    const lab = this.mixLab;
+    const seeds = fresh ? lab.basis.slice() : lab.seeds.slice();
+    if (!seeds.length) {
+      return;
+    }
+    const token = ++lab.token;
+    if (!fresh) {
+      lab.shown = new Set();
+    }
+    lab.status = 'loading';
+    this.closeMixLabSuggestions();
+    this.renderMixLabSeeds();
+    this.renderMixLabResults();
+    this.revealMixLabResults();
+    const outcomes = await Promise.all(seeds.map(seed => this.fetchMixLabSeedTracks(seed).then(tracks => ({
+      seed: seed,
+      tracks: tracks
+    })).catch(error => {
+      console.warn('Mix Lab could not use a pick:', seed, error);
+      return {
+        seed: seed,
+        tracks: [],
+        failed: true
+      };
+    })));
+    if (token !== lab.token) {
+      return;
+    }
+    let picks = this.rankMixLabTracks(outcomes, lab.shown);
+    if (fresh && picks.length < 8 && lab.shown.size) {
+      lab.shown = new Set();
+      picks = this.rankMixLabTracks(outcomes, lab.shown);
+    }
+    picks.forEach(track => lab.shown.add(track.key));
+    lab.results = picks;
+    lab.basis = seeds;
+    lab.notes = outcomes.filter(outcome => !outcome.tracks.length && !outcome.failed).map(outcome => this.mixLabSeedLabel(outcome.seed));
+    lab.status = picks.length ? 'ready' : outcomes.every(outcome => outcome.failed) ? 'error' : 'empty';
+    this.renderMixLabSeeds();
+    this.renderMixLabResults();
+    if (picks.length) {
+      this.prefetchMixLabResolutions(picks, token);
+    }
+  }
+  revealMixLabResults() {
+    const container = this.mixLab.resultsEl.closest('.find-songs-main-content');
+    if (!container) {
+      return;
+    }
+    const offset = this.mixLab.resultsEl.getBoundingClientRect().top - container.getBoundingClientRect().top;
+    if (offset > container.clientHeight * 0.55) {
+      container.scrollBy({
+        top: offset - 16,
+        behavior: 'smooth'
+      });
+    }
+  }
+  renderMixLabResults() {
+    const lab = this.mixLab;
+    const el = lab.resultsEl;
+    if (lab.status === 'idle') {
+      const steps = [ [ 'fa-seedling', 'Pick up to 5', 'Songs from your library, or vibes like “rainy day” or “90s R&B”' ], [ 'fa-wand-magic-sparkles', 'Make your mix', 'Get songs that sound like your picks and aren’t in your library yet' ], [ 'fa-headphones', 'Preview and keep', 'Hear the official track, then add the ones you love' ] ];
+      el.innerHTML = `<ol class="mix-lab__steps">${steps.map(([icon, title, text]) => `<li class="mix-lab__step"><span class="mix-lab__step-icon"><i class="fas ${icon}"></i></span><span class="mix-lab__step-title">${title}</span><span class="mix-lab__step-text">${text}</span></li>`).join('')}</ol>`;
+      return;
+    }
+    if (lab.status === 'loading') {
+      el.innerHTML = `<div class="mix-lab__results-head"><div><h4 class="mix-lab__results-title">Mixing…</h4><p class="mix-lab__results-sub">Finding songs that match your picks</p></div></div><div class="mix-lab__grid" aria-busy="true">${'<div class="mix-lab-track mix-lab-track--skeleton"><span class="mix-lab-track__art"></span><span class="mix-lab-track__line"></span><span class="mix-lab-track__line mix-lab-track__line--short"></span></div>'.repeat(12)}</div>`;
+      return;
+    }
+    if (lab.status === 'error' || lab.status === 'empty') {
+      const error = lab.status === 'error';
+      el.innerHTML = `<div class="ui-empty mix-lab__empty"><i class="fas ${error ? 'fa-circle-exclamation' : 'fa-compact-disc'}"></i><span>${error ? 'Couldn’t reach the music catalog. Check your connection and try again.' : 'Everything we found is already in your library. Try different picks or another vibe.'}</span>${error ? '<button type="button" class="ui-btn ui-btn--sm" data-mix-action="make"><i class="fas fa-rotate-right"></i> Try again</button>' : ''}</div>`;
+      return;
+    }
+    const basis = lab.basis.map(seed => this.escapeHtml(this.mixLabSeedLabel(seed))).join(', ');
+    const notes = lab.notes.length ? `<p class="mix-lab__note"><i class="fas fa-circle-info"></i> Couldn’t find ${lab.notes.map(label => this.escapeHtml(label)).join(', ')} in the music catalog, so ${lab.notes.length === 1 ? 'it was' : 'they were'} skipped.</p>` : '';
+    el.innerHTML = `<div class="mix-lab__results-head"><div><h4 class="mix-lab__results-title">Your mix</h4><p class="mix-lab__results-sub"><span class="mix-lab__results-count">${lab.results.length} songs</span> based on ${basis}</p></div><button type="button" class="ui-btn ui-btn--sm mix-lab__refresh" data-mix-action="refresh"><i class="fas fa-shuffle"></i> New picks</button></div>${notes}<div class="mix-lab__grid">${lab.results.map(track => this.mixLabTrackHtml(track)).join('')}</div>`;
+  }
+  mixLabTrackHtml(track) {
+    const title = this.escapeHtml(track.title);
+    const artist = this.escapeHtml(track.artist);
+    const because = this.escapeHtml(track.because.map(seed => this.mixLabSeedLabel(seed)).join(' + '));
+    const art = track.cover ? `<img src="${this.escapeHtml(track.cover)}" alt="" loading="lazy" decoding="async">` : '<i class="fas fa-compact-disc mix-lab-track__fallback"></i>';
+    return `<article class="mix-lab-track" data-mix-key="${this.escapeHtml(track.key)}"><button type="button" class="mix-lab-track__art" data-mix-action="sample" aria-label="Preview ${title} by ${artist}" title="Preview">${art}<span class="mix-lab-track__play"><i class="fas fa-play"></i></span></button><div class="mix-lab-track__body"><div class="mix-lab-track__text"><div class="mix-lab-track__title" title="${title}">${title}</div><div class="mix-lab-track__artist" title="${artist}">${artist}</div></div><button type="button" class="mix-lab-track__add" data-mix-action="add" aria-label="Add ${title} to your library" title="Add to library"><i class="fas fa-plus"></i></button></div><div class="mix-lab-track__why" title="Because you picked ${because}"><i class="fas fa-seedling"></i><span>${because}</span></div><button type="button" class="mix-lab-track__dismiss" data-mix-action="dismiss" aria-label="Hide ${title}" title="Not for me"><i class="fas fa-xmark"></i></button></article>`;
+  }
+  findMixLabTrack(key) {
+    return this.mixLab && key ? this.mixLab.results.find(track => track.key === key) : null;
+  }
+  updateMixLabTrack(track) {
+    const card = [ ...this.mixLab.resultsEl.querySelectorAll('.mix-lab-track') ].find(item => item.dataset.mixKey === track.key);
+    if (!card) {
+      return;
+    }
+    card.classList.toggle('is-loading', track.busy === 'sample');
+    card.querySelector('.mix-lab-track__play i').className = track.busy === 'sample' ? 'fas fa-circle-notch fa-spin' : 'fas fa-play';
+    const add = card.querySelector('.mix-lab-track__add');
+    add.disabled = track.inLibrary || track.busy === 'add';
+    add.classList.toggle('is-added', track.inLibrary);
+    add.title = track.inLibrary ? 'In your library' : 'Add to library';
+    add.querySelector('i').className = track.busy === 'add' ? 'fas fa-circle-notch fa-spin' : track.inLibrary ? 'fas fa-check' : 'fas fa-plus';
+  }
+  syncMixLabLibraryState() {
+    const lab = this.mixLab;
+    if (!lab || !lab.results.length) {
+      return;
+    }
+    const ids = new Set(this.songLibrary.map(song => song.videoId));
+    lab.results.forEach(track => {
+      const row = lab.resolved.get(this.normalizeGlobalLibrarySearchKey(track.title, track.artist));
+      track.inLibrary = Boolean(row && ids.has(row.yt_id));
+      this.updateMixLabTrack(track);
+    });
+  }
+  async prefetchMixLabResolutions(tracks, token) {
+    const lab = this.mixLab;
+    const keys = tracks.map(track => this.normalizeGlobalLibrarySearchKey(track.title, track.artist)).filter(key => !lab.resolved.has(key));
+    if (!keys.length) {
+      this.syncMixLabLibraryState();
+      return;
+    }
+    try {
+      await this.initSupabaseForFindSongs();
+      const {data: data, error: error} = await this.supabase.from('global_song_cache').select('*').in('search_key', keys);
+      if (error) {
+        throw error;
+      }
+      (data || []).forEach(row => lab.resolved.set(row.search_key, row));
+      if (token === lab.token) {
+        this.syncMixLabLibraryState();
+      }
+    } catch (error) {
+      console.warn('Mix Lab cache lookup failed:', error);
+    }
+  }
+  async resolveMixLabTrack(track) {
+    const lab = this.mixLab;
+    const key = this.normalizeGlobalLibrarySearchKey(track.title, track.artist);
+    if (!lab.resolved.has(key)) {
+      lab.resolved.set(key, await this.resolveGlobalLibrarySongYouTubeId(track.title, track.artist));
+    }
+    return {
+      ...lab.resolved.get(key),
+      name: track.title,
+      artist: track.artist
+    };
+  }
+  async sampleMixLabTrack(key) {
+    const track = this.findMixLabTrack(key);
+    if (!track || track.busy) {
+      return;
+    }
+    track.busy = 'sample';
+    this.updateMixLabTrack(track);
+    try {
+      const row = await this.resolveMixLabTrack(track);
+      this.samplePlayTemporarySong(`https://www.youtube.com/watch?v=${row.yt_id}`, row);
+    } catch (error) {
+      console.error('Mix Lab preview failed:', error);
+      this.showNotification(`Couldn't find "${track.title}" on YouTube`, 'error');
+    } finally {
+      track.busy = null;
+      this.updateMixLabTrack(track);
+    }
+  }
+  async addMixLabTrackToLibrary(key) {
+    const track = this.findMixLabTrack(key);
+    if (!track || track.busy || track.inLibrary) {
+      return;
+    }
+    track.busy = 'add';
+    this.updateMixLabTrack(track);
+    try {
+      const row = await this.resolveMixLabTrack(track);
+      track.busy = null;
+      if (this.songLibrary.some(song => song.videoId === row.yt_id)) {
+        this.syncMixLabLibraryState();
+        this.showNotification(`"${track.title}" is already in your library`, 'success');
+        return;
+      }
+      this.populateAddSongToLibraryModalFromGlobalLibrary(row, () => this.syncMixLabLibraryState());
+    } catch (error) {
+      console.error('Mix Lab add failed:', error);
+      this.showNotification(`Couldn't find "${track.title}" on YouTube`, 'error');
+    } finally {
+      track.busy = null;
+      this.updateMixLabTrack(track);
+    }
+  }
+  dismissMixLabTrack(key) {
+    const lab = this.mixLab;
+    if (!this.findMixLabTrack(key)) {
+      return;
+    }
+    lab.dismissed.add(key);
+    lab.results = lab.results.filter(track => track.key !== key);
+    [ ...lab.resultsEl.querySelectorAll('.mix-lab-track') ].find(item => item.dataset.mixKey === key)?.remove();
+    const count = lab.resultsEl.querySelector('.mix-lab__results-count');
+    if (count) {
+      count.textContent = `${lab.results.length} ${lab.results.length === 1 ? 'song' : 'songs'}`;
+    }
+    if (!lab.results.length) {
+      this.buildMixLab(true);
+    }
   }
   async loadRecommendations() {
     await this.loadBillboardHot100Top3();
@@ -15968,7 +16752,7 @@ class AdvancedMusicPlayer {
       }
     }
   }
-  samplePlayTemporarySong(youtubeUrl) {
+  samplePlayTemporarySong(youtubeUrl, song = null) {
     const videoId = this.extractYouTubeId(youtubeUrl);
     if (!videoId) {
       this.showNotification('Invalid YouTube URL', 'error');
@@ -15976,7 +16760,39 @@ class AdvancedMusicPlayer {
     }
     this.openTemporarySongSampleModal();
     this.updateTemporarySongUrlDisplay(videoId);
+    this.updateTemporarySongDetails(song);
     this.playTemporarySong(videoId);
+    if (this.isPlaying && !this.temporarySongPausedMain) {
+      this.togglePlayPause();
+      this.temporarySongPausedMain = this.currentSong;
+    }
+    this.temporarySongArt = {
+      videoId: videoId
+    };
+    this.syncAlbumArtBackdrop();
+  }
+  updateTemporarySongDetails(song) {
+    this.temporarySongDetails = song && song.yt_id ? song : null;
+    const title = document.getElementById('tempSongTitleText');
+    if (title) {
+      title.textContent = song ? [ song.name, song.artist ].filter(Boolean).join(' · ') : 'Song Preview';
+    }
+    const addBtn = document.getElementById('addTempSongBtn');
+    if (addBtn) {
+      addBtn.hidden = !this.temporarySongDetails;
+    }
+  }
+  addTemporarySongToLibrary() {
+    const song = this.temporarySongDetails;
+    if (!song) {
+      return;
+    }
+    this.closeTemporarySongSampleModal();
+    if (this.songLibrary.some(item => item.videoId === song.yt_id)) {
+      this.showNotification(`"${song.name}" is already in your library`, 'success');
+      return;
+    }
+    this.populateAddSongToLibraryModalFromGlobalLibrary(song, () => this.syncMixLabLibraryState());
   }
   openTemporarySongSampleModal() {
     let modal = document.getElementById('tempSongModal');
@@ -15999,12 +16815,20 @@ class AdvancedMusicPlayer {
       modal.style.display = 'none';
     }
     this.cleanupTemporarySongPlayer();
+    this.temporarySongDetails = null;
+    this.temporarySongArt = null;
+    this.syncAlbumArtBackdrop();
+    const pausedSong = this.temporarySongPausedMain;
+    this.temporarySongPausedMain = null;
+    if (pausedSong && pausedSong === this.currentSong && !this.isPlaying) {
+      this.togglePlayPause();
+    }
   }
   createTemporarySongModal() {
     const modal = document.createElement('div');
     modal.id = 'tempSongModal';
     modal.className = 'temp-song-modal ui-overlay';
-    modal.innerHTML = `\n\t\t<div class="temp-song-modal-content ui-modal ui-modal--lg">\n\t\t\t<div class="ui-modal__header">\n\t\t\t\t<h3 class="temp-song-title ui-modal__title"><i class="fas fa-play"></i> Song Preview</h3>\n\t\t\t\t<button class="temp-song-close-btn ui-modal__close" id="closeTempSongBtn" title="Close"><i class="fas fa-times"></i></button>\n\t\t\t</div>\n\t\t\t<div class="ui-modal__body ui-modal__body--stack">\n\t\t\t<div id="tempYtPlayerContainer" class="temp-song-player-container">\n\t\t\t\t<div id="tempYtPlayer"></div>\n\t\t\t</div>\n\t\t\t<div class="temp-song-url-container">\n\t\t\t\t<input type="text" id="tempSongUrlDisplay" class="temp-song-url-input" readonly>\n\t\t\t\t<button id="copyTempUrlBtn" class="temp-song-action-btn ui-icon-btn" title="Copy URL">\n\t\t\t\t\t<i class="fas fa-copy"></i>\n\t\t\t\t</button>\n\t\t\t\t<button id="openTempUrlBtn" class="temp-song-action-btn ui-icon-btn" title="Open in YouTube">\n\t\t\t\t\t<i class="fas fa-arrow-up-right-from-square"></i>\n\t\t\t\t</button>\n\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\n\t`;
+    modal.innerHTML = `\n\t\t<div class="temp-song-modal-content ui-modal ui-modal--lg">\n\t\t\t<div class="ui-modal__header">\n\t\t\t\t<h3 class="temp-song-title ui-modal__title"><i class="fas fa-play"></i> <span id="tempSongTitleText" class="temp-song-title-text">Song Preview</span></h3>\n\t\t\t\t<button class="temp-song-close-btn ui-modal__close" id="closeTempSongBtn" title="Close"><i class="fas fa-times"></i></button>\n\t\t\t</div>\n\t\t\t<div class="ui-modal__body ui-modal__body--stack">\n\t\t\t<div id="tempYtPlayerContainer" class="temp-song-player-container">\n\t\t\t\t<div id="tempYtPlayer"></div>\n\t\t\t</div>\n\t\t\t<div class="temp-song-url-container">\n\t\t\t\t<input type="text" id="tempSongUrlDisplay" class="temp-song-url-input" readonly>\n\t\t\t\t<button id="copyTempUrlBtn" class="temp-song-action-btn ui-icon-btn" title="Copy URL">\n\t\t\t\t\t<i class="fas fa-copy"></i>\n\t\t\t\t</button>\n\t\t\t\t<button id="openTempUrlBtn" class="temp-song-action-btn ui-icon-btn" title="Open in YouTube">\n\t\t\t\t\t<i class="fas fa-arrow-up-right-from-square"></i>\n\t\t\t\t</button>\n\t\t\t\t<button id="addTempSongBtn" class="temp-song-add-btn ui-btn ui-btn--primary" hidden>\n\t\t\t\t\t<i class="fas fa-plus"></i> Add to library\n\t\t\t\t</button>\n\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\n\t`;
     document.body.appendChild(modal);
     document.getElementById('closeTempSongBtn').addEventListener('click', () => {
       this.closeTemporarySongSampleModal();
@@ -16015,6 +16839,7 @@ class AdvancedMusicPlayer {
       document.execCommand('copy');
       this.showNotification('URL copied to clipboard!', 'success');
     });
+    document.getElementById('addTempSongBtn').addEventListener('click', () => this.addTemporarySongToLibrary());
     document.getElementById('openTempUrlBtn').addEventListener('click', () => {
       const url = document.getElementById('tempSongUrlDisplay').value;
       if (url) {
