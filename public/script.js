@@ -1285,7 +1285,6 @@ class AdvancedMusicPlayer {
     }
     this.elements.speedBtn.textContent = this.currentSpeed + 'x';
     const controlBarVisible = localStorage.getItem('controlBarVisible');
-    const spacerDiv = document.getElementById('controlBarSpacer');
     if (controlBarVisible === 'false') {
       requestAnimationFrame(() => {
         const controlBar = document.querySelector('.player-controls').closest('.player-container') || document.querySelector('.player-controls').parentElement;
@@ -1294,14 +1293,7 @@ class AdvancedMusicPlayer {
           controlBar.style.position = 'absolute';
           controlBar.style.pointerEvents = 'none';
         }
-        if (spacerDiv) {
-          spacerDiv.style.display = 'none';
-        }
       });
-    } else {
-      if (spacerDiv) {
-        spacerDiv.style.display = 'block';
-      }
     }
     this.updateDiscordButtonUI();
     if (this.discordEnabled) {
@@ -2849,19 +2841,30 @@ class AdvancedMusicPlayer {
         rows: Math.floor((grid.clientHeight - padY + gap) / (rowHeight + gap))
       };
     };
+    const layOutGrid = (snug, condensed) => {
+      card.parentElement?.classList.toggle('is-snug', snug);
+      card.style.minHeight = '0px';
+      card.classList.toggle('is-condensed', condensed);
+      let layout = measureGrid();
+      if (layout.rows < 1 && !condensed) {
+        card.classList.add('is-condensed');
+        layout = measureGrid();
+      }
+      layout.condensed = card.classList.contains('is-condensed');
+      layout.shown = layout.cols * Math.max(1, layout.rows);
+      return layout;
+    };
     const renderGrid = () => {
       if (shuffled.length === 0 || !grid.clientWidth) {
         return;
       }
-      card.style.minHeight = '0px';
-      card.classList.remove('is-condensed');
-      let layout = measureGrid();
-      if (layout.rows < 1) {
-        card.classList.add('is-condensed');
-        layout = measureGrid();
+      let layout = layOutGrid(false, false);
+      if (layout.shown < shuffled.length) {
+        const snug = layOutGrid(true, layout.condensed);
+        layout = snug.shown > layout.shown ? snug : layOutGrid(false, false);
       }
       card.style.minHeight = `${layout.minHeight}px`;
-      fillGrid(layout.cols * Math.max(1, layout.rows));
+      fillGrid(layout.shown);
     };
     shuffleBtn.addEventListener('click', () => {
       this._shuffleArray(shuffled);
@@ -6328,22 +6331,15 @@ class AdvancedMusicPlayer {
       this.lyricsInterval = null;
     }
     const nowPlaying = document.querySelector('.now-playing');
-    const spacer = document.getElementById('controlBarSpacer');
     if (tabName === 'nowplaying') {
       if (nowPlaying) {
         nowPlaying.style.display = 'none';
-      }
-      if (spacer) {
-        spacer.style.display = 'none';
       }
       this.isOnNowPlayingTab = true;
       this.hideCurrentSongSection();
     } else {
       if (nowPlaying) {
         nowPlaying.style.display = '';
-      }
-      if (spacer) {
-        spacer.style.display = '';
       }
       this.isOnNowPlayingTab = false;
       if (this.currentSong) {
@@ -10067,7 +10063,6 @@ class AdvancedMusicPlayer {
     const isVisible = targetElement.style.visibility !== 'hidden';
     const leftBanner = document.querySelector('.left-advertisement-banner');
     const rightBanner = document.querySelector('.right-advertisement-banner');
-    const spacerDiv = document.getElementById('controlBarSpacer');
     const overlayModeSpacer = document.getElementById('overlayModeSpacer');
     const expandedModeSpacer = document.getElementById('expandedModeSpacer');
     if (isVisible) {
@@ -10087,9 +10082,6 @@ class AdvancedMusicPlayer {
         layoutToggleBtn.style.position = '';
         layoutToggleBtn.style.pointerEvents = 'auto';
       }
-      if (spacerDiv) {
-        spacerDiv.style.display = 'none';
-      }
       if (overlayModeSpacer) {
         overlayModeSpacer.style.display = 'none';
       }
@@ -10107,9 +10099,6 @@ class AdvancedMusicPlayer {
       }
       if (rightBanner) {
         rightBanner.classList.remove('expanded');
-      }
-      if (spacerDiv) {
-        spacerDiv.style.display = 'block';
       }
       if (overlayModeSpacer) {
         overlayModeSpacer.style.display = 'block';

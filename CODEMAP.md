@@ -12,8 +12,8 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 | Source | sha256 (first 12) | Lines |
 |---|---|---|
-| `public/script.js` | `0dbb34b78f66` | 16554 |
-| `public/index.html` | `1c9a92f53ead` | 1503 |
+| `public/script.js` | `f567a98c6aec` | 16543 |
+| `public/index.html` | `6cae17fc6031` | 1502 |
 | `public/script/settings.js` | `b1cbbfc3625b` | 561 |
 | `public/karaoke-player.js` | `ec6846376de2` | 683 |
 | `public/karaoke-encoder.js` | `d277db62d9e9` | 147 |
@@ -121,13 +121,13 @@ The rest match their id exactly.
 | `playlistEditModal` | 505 | `modal ui-overlay` |
 | `timerModal` | 525 | `modal ui-overlay` |
 | `changelogModal` | 667 | `changelog-modal ui-overlay` |
-| `subtitlesImportModal` | 677 | `subtitles-import-modal-overlay ui-overlay` |
-| `settingsModal` | 746 | `settings-modal ui-overlay` |
-| `recentlyPlayedModal` | 1222 | `recently-played-modal-bg ui-overlay` |
-| `lyricsModal` | 1237 | `lyrics-maker-modal hidden ui-overlay` |
-| `downloadModal` | 1355 | `dl-overlay ui-overlay` |
-| `shazamModal` | 1419 | `sz-overlay ui-overlay` |
-| `statsModal` | 1470 | `ls-overlay ui-overlay` |
+| `subtitlesImportModal` | 676 | `subtitles-import-modal-overlay ui-overlay` |
+| `settingsModal` | 745 | `settings-modal ui-overlay` |
+| `recentlyPlayedModal` | 1221 | `recently-played-modal-bg ui-overlay` |
+| `lyricsModal` | 1236 | `lyrics-maker-modal hidden ui-overlay` |
+| `downloadModal` | 1354 | `dl-overlay ui-overlay` |
+| `shazamModal` | 1418 | `sz-overlay ui-overlay` |
+| `statsModal` | 1469 | `ls-overlay ui-overlay` |
 
 ---
 
