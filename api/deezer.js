@@ -6,7 +6,9 @@ export default async function handler(req, res) {
     if (req.method === 'OPTIONS') return res.status(200).end();
     if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
-    const { type = 'search', query, artistId, playlistId, index = 0, limit = 8 } = req.query;
+    const { type = 'search', query, artistId, playlistId } = req.query;
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 8, 1), 100);
+    const index = Math.max(parseInt(req.query.index, 10) || 0, 0);
 
     if (!query && ['search', 'search_artist', 'search_playlist'].includes(type)) {
         return res.status(400).json({ error: 'Missing query parameter' });
@@ -41,7 +43,7 @@ export default async function handler(req, res) {
             return res.status(429).json({ data, status: 429 });
         }
 
-        if (response.ok && (type === 'search_playlist' || type === 'playlist_tracks')) {
+        if (response.ok && type !== 'artist_radio') {
             res.setHeader('Cache-Control', 'public, s-maxage=43200, stale-while-revalidate=86400');
         }
 

@@ -325,7 +325,9 @@ class DownloadPage {
     this.results = [];
     this.nextPageToken = null;
     this.effectiveQuery = this.topicKeywordEnabled ? `${query} "topic"` : query;
-    this.keyIndex = Math.floor(Math.random() * 5);
+    let hash = 0;
+    for (const ch of this.effectiveQuery) hash = (hash * 31 + ch.charCodeAt(0)) | 0;
+    this.keyIndex = Math.abs(hash) % 5;
     this.elements.showMoreBtn.classList.remove('visible');
     this.elements.searchBtn.disabled = true;
     this.elements.searchBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Searching…';

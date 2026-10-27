@@ -12,10 +12,10 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 | Source | sha256 (first 12) | Lines |
 |---|---|---|
-| `public/script.js` | `e6fe99b2fd2c` | 17825 |
-| `public/index.html` | `23d4f3a792fa` | 1524 |
-| `public/script/settings.js` | `b1cbbfc3625b` | 561 |
-| `public/karaoke-player.js` | `ec6846376de2` | 683 |
+| `public/script.js` | `d576e3b2b877` | 17763 |
+| `public/index.html` | `50488c29dc03` | 1527 |
+| `public/script/settings.js` | `3bc48cfe84cc` | 560 |
+| `public/karaoke-player.js` | `3e6bb16779a4` | 682 |
 | `public/karaoke-encoder.js` | `d277db62d9e9` | 147 |
 | `public/sw.js` | `cec0198433af` | 226 |
 
@@ -38,7 +38,7 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 ---
 
-## `AdvancedMusicPlayer` by topic (694 methods)
+## `AdvancedMusicPlayer` by topic (695 methods)
 
 Names only. `grep -n "^  name(" public/script.js` gives the current line, and a name
 here that you cannot find has been renamed since this file was generated.
@@ -61,7 +61,7 @@ here that you cannot find has been renamed since this file was generated.
 
 ### YouTube & search
 
-`_searchFold` · `_buildSearchFoldTables` · `autofillFromUrl` · `showYouTubeSearchSuggestion` · `hideYouTubeSearchSuggestion` · `searchYouTube` · `validateYouTubeUrl` · `showYouTubeThumbnailPreview` · `removeYouTubeThumbnailPreview` · `handleAutofill` · `undoAutofill` · `showGhostPreview` · `createGhostPreview` · `createGhostElement` · `positionGhost` · `setupGhostEventListeners` · `updateGhostPositions` · `removeGhostPreview` · `extractYouTubeId` · `fetchYouTubeTitle` · `stripYouTubeTopicSuffix` · `fetchYouTubeChannel` · `setupYouTubePlayer` · `initializeYouTubePlayer` · `getRandomYouTubeApiKey` · `getYouTubeThumbnail` · `replaceSongVideoFromSearch` · `formatYouTubeViewCount` · `autofillYouTubeVideoFromSearch` · `formatYouTubeUploadDate` · `_trackYouTubePlayStat` · `_handleStatsSearchInput`
+`_searchFold` · `_buildSearchFoldTables` · `autofillFromUrl` · `showYouTubeSearchSuggestion` · `hideYouTubeSearchSuggestion` · `searchYouTube` · `validateYouTubeUrl` · `showYouTubeThumbnailPreview` · `removeYouTubeThumbnailPreview` · `handleAutofill` · `undoAutofill` · `showGhostPreview` · `createGhostPreview` · `createGhostElement` · `positionGhost` · `setupGhostEventListeners` · `updateGhostPositions` · `removeGhostPreview` · `extractYouTubeId` · `fetchYouTubeTitle` · `stripYouTubeTopicSuffix` · `fetchYouTubeChannel` · `setupYouTubePlayer` · `initializeYouTubePlayer` · `getRandomYouTubeApiKey` · `youtubeKeyIndexFor` · `getYouTubeThumbnail` · `replaceSongVideoFromSearch` · `formatYouTubeViewCount` · `autofillYouTubeVideoFromSearch` · `formatYouTubeUploadDate` · `_trackYouTubePlayStat` · `_handleStatsSearchInput`
 
 ### Lyrics & karaoke
 
@@ -115,19 +115,19 @@ The rest match their id exactly.
 
 | id | line | classes |
 |---|---|---|
-| `discordRpcModal` | 290 | `modal discord-rpc-modal-overlay ui-overlay` |
-| `libraryModificationModal` | 423 | `modal ui-overlay` |
-| `importModal` | 459 | `modal ui-overlay` |
-| `playlistEditModal` | 505 | `modal ui-overlay` |
-| `timerModal` | 525 | `modal ui-overlay` |
-| `changelogModal` | 667 | `changelog-modal ui-overlay` |
-| `subtitlesImportModal` | 676 | `subtitles-import-modal-overlay ui-overlay` |
-| `settingsModal` | 745 | `settings-modal ui-overlay` |
-| `recentlyPlayedModal` | 1221 | `recently-played-modal-bg ui-overlay` |
-| `lyricsModal` | 1236 | `lyrics-maker-modal hidden ui-overlay` |
-| `downloadModal` | 1376 | `dl-overlay ui-overlay` |
-| `shazamModal` | 1440 | `sz-overlay ui-overlay` |
-| `statsModal` | 1491 | `ls-overlay ui-overlay` |
+| `discordRpcModal` | 293 | `modal discord-rpc-modal-overlay ui-overlay` |
+| `libraryModificationModal` | 426 | `modal ui-overlay` |
+| `importModal` | 462 | `modal ui-overlay` |
+| `playlistEditModal` | 508 | `modal ui-overlay` |
+| `timerModal` | 528 | `modal ui-overlay` |
+| `changelogModal` | 670 | `changelog-modal ui-overlay` |
+| `subtitlesImportModal` | 679 | `subtitles-import-modal-overlay ui-overlay` |
+| `settingsModal` | 748 | `settings-modal ui-overlay` |
+| `recentlyPlayedModal` | 1224 | `recently-played-modal-bg ui-overlay` |
+| `lyricsModal` | 1239 | `lyrics-maker-modal hidden ui-overlay` |
+| `downloadModal` | 1379 | `dl-overlay ui-overlay` |
+| `shazamModal` | 1443 | `sz-overlay ui-overlay` |
+| `statsModal` | 1494 | `ls-overlay ui-overlay` |
 
 ---
 
@@ -135,11 +135,11 @@ The rest match their id exactly.
 
 ### `public/script/settings.js` (37 members)
 
-`handleCloseSettings` 3 · `handleSettingsModalClick` 8 · `initializeSettingsContent` 14 · `setupTabs` 26 · `handleTabSwitch` 35 · `loadThemeMode` 43 · `handleThemeModeChange` 54 · `loadCustomThemeColors` 67 · `handleSaveCustomTheme` 80 · `resetCustomTheme` 123 · `handleColorChange` 142 · `updateColorPickerByKey` 156 · `updateColorPickerValues` 171 · `exportTheme` 187 · `importTheme` 219 · `applyImportedTheme` 235 · `hexToRgba` 263 · `loadAdvertisementSettingsInModal` 271 · `handleAdsToggle` 275 · `handleVisualizerToggle` 281 · `handleLibrarySortToggle` 295 · `loadLibrarySortSetting` 301 · `handleLibraryReverseToggle` 317 · `loadLibraryReverseSetting` 323 · `saveDiscordSettings` 339 · `saveKeybinds` 349 · `loadKeybindsSettings` 360 · `getKeyDisplayName` 374 · `getActionDisplayName` 390 · `startKeybindRecording` 417 · `recordKeybind` 433 · `cancelKeybindRecording` 457 · `stopKeybindRecording` 465 · `resetKeybindsToDefault` 475 · `loadDiscoverMoreSettings` 482 · `setDefaultDiscoverMoreValues` 495 · `handleSaveDiscoverMoreSettings` 509
+`handleCloseSettings` 3 · `handleSettingsModalClick` 8 · `initializeSettingsContent` 14 · `setupTabs` 25 · `handleTabSwitch` 34 · `loadThemeMode` 42 · `handleThemeModeChange` 53 · `loadCustomThemeColors` 66 · `handleSaveCustomTheme` 79 · `resetCustomTheme` 122 · `handleColorChange` 141 · `updateColorPickerByKey` 155 · `updateColorPickerValues` 170 · `exportTheme` 186 · `importTheme` 218 · `applyImportedTheme` 234 · `hexToRgba` 262 · `loadAdvertisementSettingsInModal` 270 · `handleAdsToggle` 274 · `handleVisualizerToggle` 280 · `handleLibrarySortToggle` 294 · `loadLibrarySortSetting` 300 · `handleLibraryReverseToggle` 316 · `loadLibraryReverseSetting` 322 · `saveDiscordSettings` 338 · `saveKeybinds` 348 · `loadKeybindsSettings` 359 · `getKeyDisplayName` 373 · `getActionDisplayName` 389 · `startKeybindRecording` 416 · `recordKeybind` 432 · `cancelKeybindRecording` 456 · `stopKeybindRecording` 464 · `resetKeybindsToDefault` 474 · `loadDiscoverMoreSettings` 481 · `setDefaultDiscoverMoreValues` 494 · `handleSaveDiscoverMoreSettings` 508
 
 ### `public/karaoke-player.js` (40 members)
 
-`initElements` 21 · `setupEventListeners` 47 · `initializeDatabase` 75 · `openDatabase` 85 · `initializeTheme` 111 · `loadCustomTheme` 136 · `applyCustomColors` 205 · `hexToRgba` 223 · `loadKaraokeData` 236 · `showError` 255 · `initYouTubePlayer` 259 · `createPlayer` 269 · `onPlayerReady` 287 · `onPlayerStateChange` 294 · `togglePlayPause` 322 · `updatePlayPauseButton` 332 · `restart` 341 · `toggleLoop` 347 · `toggleCentering` 351 · `changeSpeed` 362 · `seek` 371 · `startProgressTracking` 379 · `stopProgressTracking` 403 · `formatTime` 410 · `renderLyrics` 416 · `startLyricsTracking` 438 · `stopLyricsTracking` 457 · `updateHighlightedLyric` 464 · `enterFullscreen` 496 · `exitFullscreen` 502 · `toggleFullscreen` 507 · `renderFullscreenLyrics` 515 · `updateFullscreenLyric` 530 · `copyURL` 559 · `updateTitle` 573 · `saveToLibrary` 579 · `findSongByVideoId` 606 · `updateSongLyrics` 622 · `addNewSong` 641 · `showToast` 664
+`initElements` 21 · `setupEventListeners` 47 · `initializeDatabase` 75 · `openDatabase` 85 · `initializeTheme` 111 · `loadCustomTheme` 136 · `applyCustomColors` 205 · `hexToRgba` 223 · `loadKaraokeData` 236 · `showError` 255 · `initYouTubePlayer` 259 · `createPlayer` 269 · `onPlayerReady` 287 · `onPlayerStateChange` 293 · `togglePlayPause` 321 · `updatePlayPauseButton` 331 · `restart` 340 · `toggleLoop` 346 · `toggleCentering` 350 · `changeSpeed` 361 · `seek` 370 · `startProgressTracking` 378 · `stopProgressTracking` 402 · `formatTime` 409 · `renderLyrics` 415 · `startLyricsTracking` 437 · `stopLyricsTracking` 456 · `updateHighlightedLyric` 463 · `enterFullscreen` 495 · `exitFullscreen` 501 · `toggleFullscreen` 506 · `renderFullscreenLyrics` 514 · `updateFullscreenLyric` 529 · `copyURL` 558 · `updateTitle` 572 · `saveToLibrary` 578 · `findSongByVideoId` 605 · `updateSongLyrics` 621 · `addNewSong` 640 · `showToast` 663
 
 ### `public/karaoke-encoder.js` (11 members)
 

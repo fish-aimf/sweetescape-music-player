@@ -20,7 +20,6 @@ export const settingsMethods = {
     this.loadLibrarySortSetting();
     this.loadLibraryReverseSetting();
     this.loadKeybindsSettings();
-    console.log("Settings modal opened - all settings loaded");
   },
 
   setupTabs() {

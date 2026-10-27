@@ -1,6 +1,8 @@
 const KEYS = [process.env.RAPIDAPI_KEY_1, process.env.RAPIDAPI_KEY_2].filter(Boolean);
 
 const RAPIDAPI_HOST = 'geniuslyrics-api.p.rapidapi.com';
+const FOUND_CACHE = 'public, s-maxage=604800, stale-while-revalidate=2592000';
+const MISSING_CACHE = 'public, s-maxage=86400';
 const RAPIDAPI_URL = `https://${RAPIDAPI_HOST}/get_lyrics`;
 
 function buildRequestUrl(song, artist) {
@@ -100,6 +102,7 @@ module.exports = async function handler(req, res) {
       }
 
       const meta = extractMeta(payload);
+      res.setHeader('Cache-Control', FOUND_CACHE);
       res.status(200).json({ status: 200, lyrics, ...meta });
       return;
     } catch (error) {
@@ -110,6 +113,7 @@ module.exports = async function handler(req, res) {
   try {
     const fallback = await fetchFromLyricsOvh(song, artist);
     if (fallback) {
+      res.setHeader('Cache-Control', FOUND_CACHE);
       res.status(200).json({ status: 200, ...fallback });
       return;
     }
@@ -118,6 +122,7 @@ module.exports = async function handler(req, res) {
   }
 
   if (foundButEmpty) {
+    res.setHeader('Cache-Control', MISSING_CACHE);
     res.status(404).json({ status: 404, error: 'No lyrics found for this song' });
     return;
   }

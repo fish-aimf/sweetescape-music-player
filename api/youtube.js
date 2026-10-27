@@ -1,3 +1,6 @@
+const SEARCH_CACHE = 'public, s-maxage=86400, stale-while-revalidate=604800';
+const SHORT_CACHE = 'public, s-maxage=3600, stale-while-revalidate=86400';
+
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', 'https://sweetescape.vercel.app');
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -31,6 +34,7 @@ export default async function handler(req, res) {
             const items = searchData.items || [];
             const nextPageToken = searchData.nextPageToken || null;
             if (items.length === 0) {
+                res.setHeader('Cache-Control', SHORT_CACHE);
                 return res.status(200).json({ data: { items: [], nextPageToken: null }, status: 200 });
             }
             const videoIds = items.map(item => item.id.videoId).join(',');
@@ -45,6 +49,9 @@ export default async function handler(req, res) {
                 ...item,
                 statistics: statsMap[item.id.videoId] || null
             }));
+            if (statsResponse.ok) {
+                res.setHeader('Cache-Control', SEARCH_CACHE);
+            }
             return res.status(200).json({
                 data: { items: enrichedItems, nextPageToken },
                 status: 200
@@ -54,6 +61,9 @@ export default async function handler(req, res) {
         }
         const response = await fetch(youtubeUrl);
         const data = await response.json();
+        if (response.ok) {
+            res.setHeader('Cache-Control', type === 'statistics' ? SHORT_CACHE : SEARCH_CACHE);
+        }
         return res.status(response.status).json({ data, status: response.status });
     } catch (error) {
         return res.status(500).json({ error: error.message });

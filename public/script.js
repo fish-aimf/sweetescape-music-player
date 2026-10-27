@@ -512,6 +512,7 @@ class AdvancedMusicPlayer {
       audioGraphFailed: false
     };
     this.YOUTUBE_API_KEYS_COUNT = 20;
+    this.exhaustedYouTubeKeys = new Set();
     this.youtubeLibrarySearchResults = [];
     this.YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3/search';
     this.topicKeywordEnabled = true;
@@ -1458,9 +1459,6 @@ class AdvancedMusicPlayer {
           };
         }
         transaction.oncomplete = () => {
-          if (!singleSong) {
-            console.log(`Saved ${this.songLibrary.length} songs to library`);
-          }
           resolve();
         };
         transaction.onerror = event => {
@@ -1474,7 +1472,6 @@ class AdvancedMusicPlayer {
     });
   }
   saveSingleSong(song) {
-    console.log(`%csaveSingleSong → 1 record: "${song?.name}"`, 'color:#4caf50;font-weight:bold');
     return new Promise((resolve, reject) => {
       if (!this.db) {
         reject(new Error('Database not initialized'));
@@ -1491,7 +1488,6 @@ class AdvancedMusicPlayer {
     });
   }
   deleteSingleSong(songId) {
-    console.log(`%cdeleteSingleSong → 1 record: "${songId}"`, 'color:#e53935;font-weight:bold');
     return new Promise((resolve, reject) => {
       if (!this.db) {
         reject(new Error('Database not initialized'));
@@ -1578,10 +1574,6 @@ class AdvancedMusicPlayer {
           }
         };
         transaction.oncomplete = () => {
-          console.log('Successfully loaded recently played items:', {
-            songs: this.recentlyPlayedSongs.length,
-            playlists: this.recentlyPlayedPlaylists.length
-          });
           resolve();
         };
         transaction.onerror = event => {
@@ -5093,11 +5085,9 @@ class AdvancedMusicPlayer {
       return;
     }
     if (!this.ytPlayerReady) {
-      console.log('Player not ready yet, please wait a moment...');
       return;
     }
     try {
-      console.log('Loading video:', videoId);
       this.ytPlayer.loadVideoById({
         videoId: videoId,
         suggestedQuality: 'small'
@@ -5581,7 +5571,6 @@ class AdvancedMusicPlayer {
         console.error('Error saving autoplay setting:', error);
       });
     }
-    console.log('Autoplay toggled:', this.isAutoplayEnabled);
   }
   initializeAutoplay() {
     if (!this.db) {
@@ -5600,7 +5589,6 @@ class AdvancedMusicPlayer {
       if (this.elements.autoplayBtn) {
         this.elements.autoplayBtn.classList.toggle('active', this.isAutoplayEnabled);
       }
-      console.log('Autoplay initialized:', this.isAutoplayEnabled);
     };
     request.onerror = event => {
       console.error('Error loading autoplay setting:', event.target.error);
@@ -5984,7 +5972,6 @@ class AdvancedMusicPlayer {
         onReady: event => {
           this.onPlayerReady(event);
           this.ytPlayerReady = true;
-          console.log('YouTube player is ready');
         },
         onStateChange: this.onPlayerStateChange.bind(this),
         onError: this.onPlayerError.bind(this)
@@ -5992,13 +5979,11 @@ class AdvancedMusicPlayer {
     });
   }
   onPlayerReady(event) {
-    console.log('YouTube player is ready');
     try {
       const qualities = this.ytPlayer.getAvailableQualityLevels();
       if (qualities && qualities.length > 0) {
         const lowestQuality = qualities[qualities.length - 1];
         this.ytPlayer.setPlaybackQuality(lowestQuality);
-        console.log(`Set to lowest quality: ${lowestQuality}`);
       }
     } catch (error) {
       console.warn('Could not set video quality:', error);
@@ -6037,7 +6022,6 @@ class AdvancedMusicPlayer {
       return;
     }
     if (event.data === YT.PlayerState.ENDED) {
-      console.log('Song ended - taking immediate action');
       setTimeout(() => {
         if (this.isLooping) {
           if (this.ytPlayer) {
@@ -8806,14 +8790,12 @@ class AdvancedMusicPlayer {
     const transcriptInput = document.getElementById('transcriptInput');
     const langSelect = document.getElementById('transcriptLangSelect');
     const selectedLang = langSelect?.value || 'auto';
-    console.log('autoFetchTranscript called with lang:', selectedLang);
     try {
       loadingIndicator.style.display = 'flex';
       autoFetchBtn.disabled = true;
       autoFetchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Fetching...';
       const videoUrl = `https://www.youtube.com/watch?v=${this.currentSongForSubtitlesImport.videoId}`;
       const apiUrl = selectedLang === 'auto' ? `https://api.supadata.ai/v1/youtube/transcript?url=${encodeURIComponent(videoUrl)}&text=false` : `https://api.supadata.ai/v1/youtube/transcript?url=${encodeURIComponent(videoUrl)}&text=false&lang=${selectedLang}`;
-      console.log('Fetching:', apiUrl);
       const response = await fetch(apiUrl, {
         method: 'GET',
         headers: {
@@ -8825,7 +8807,6 @@ class AdvancedMusicPlayer {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      console.log('Supadata response lang:', data.lang, 'availableLangs:', data.availableLangs);
       if (data.availableLangs && data.availableLangs.length > 0) {
         this.populateTranscriptLangDropdown(data.availableLangs, data.lang);
       }
@@ -8869,7 +8850,6 @@ class AdvancedMusicPlayer {
     }
   }
   populateTranscriptLangDropdown(langs, currentLang) {
-    console.log('populateTranscriptLangDropdown called', langs, currentLang);
     const langSelect = document.getElementById('transcriptLangSelect');
     const switchBtn = document.getElementById('switchLangBtn');
     if (!langSelect) {
@@ -8917,7 +8897,6 @@ class AdvancedMusicPlayer {
       newSelect.appendChild(option);
     });
     newSelect.addEventListener('change', e => {
-      console.log('Language changed to:', e.target.value);
       this.autoFetchTranscript();
     });
     if (switchBtn) {
@@ -9352,6 +9331,7 @@ class AdvancedMusicPlayer {
     backdrop.appendChild(panel);
     document.body.appendChild(backdrop);
     this._queueRenderRows();
+    this._queueBindDrag(document.getElementById('qv2-rows'));
     this._queueBindSearch(document.getElementById('qv2-search-input'), document.getElementById('qv2-dropdown'));
     document.getElementById('qv2-shuffle').addEventListener('click', () => this.shuffleQueue());
     document.getElementById('qv2-add-stop').addEventListener('click', () => this.addStopBlock());
@@ -9413,7 +9393,6 @@ class AdvancedMusicPlayer {
     this.songQueue.forEach((block, idx) => frag.appendChild(this._queueBuildRow(block, idx)));
     container.innerHTML = '';
     container.appendChild(frag);
-    this._queueBindDrag(container);
   }
   _queueBuildRow(block, idx) {
     const row = document.createElement('div');
@@ -9615,12 +9594,9 @@ class AdvancedMusicPlayer {
         items[idx].classList.add('qv2-result--focused');
       }
     });
-    document.addEventListener('mousedown', e => {
-      if (!input.contains(e.target) && !dropdown.contains(e.target)) {
-        dropdown.hidden = true;
-      }
-    }, {
-      passive: true
+    input.addEventListener('blur', () => {
+      clearTimeout(_debounce);
+      dropdown.hidden = true;
     });
   }
   addQueueStyles() {
@@ -9922,12 +9898,12 @@ class AdvancedMusicPlayer {
       window.close();
       window.open('', '_self').close();
     } catch (error) {
-      console.log('Standard window close failed:', error);
+      console.warn('Standard window close failed:', error);
     }
     try {
       window.location.replace('about:blank');
     } catch (error) {
-      console.log('Navigation redirect failed:', error);
+      console.warn('Navigation redirect failed:', error);
     }
     document.body.innerHTML = '<div style="text-align: center; padding: 50px; background: #1a1a1a; color: #fff; position: fixed; top: 0; left: 0; right: 0; bottom: 0;"><h1>Session Ended</h1><p>Your music session has ended. The app has been closed.</p><button onclick="window.location.reload()" style="padding: 10px 20px; margin-top: 20px; background: #3498db; border: none; color: white; border-radius: 4px; cursor: pointer;">Restart App</button></div>';
     const scripts = document.getElementsByTagName('script');
@@ -10461,7 +10437,7 @@ class AdvancedMusicPlayer {
       }
       if (failedImports.length > 0) {
         message += `Failed to import ${failedImports.length} songs.`;
-        console.log('Failed imports:', failedImports);
+        console.warn('Failed imports:', failedImports);
       }
       if (!message) {
         message = 'No new content was imported.';
@@ -10648,7 +10624,6 @@ class AdvancedMusicPlayer {
     this.loadLibraryReverseSetting();
     this.loadKeybindsSettings();
     this.loadSavedThemesList();
-    console.log('Settings modal opened - all settings loaded');
   }
   setupTabs() {
     const firstTab = document.querySelector('.settings-tab-btn');
@@ -11418,7 +11393,6 @@ class AdvancedMusicPlayer {
     document.documentElement.setAttribute('data-theme', 'custom');
     const savePromises = [ this.saveSetting('customPrimary', customColors.primary), this.saveSetting('customBackground', customColors.background), this.saveSetting('customSecondary', customColors.secondary), this.saveSetting('customTextPrimary', customColors.textPrimary), this.saveSetting('customTextSecondary', customColors.textSecondary), this.saveSetting('customHover', customColors.hover), this.saveSetting('customBorder', customColors.border), this.saveSetting('customAccent', customColors.accent), this.saveSetting('customButtonText', customColors.buttonText), this.saveSetting('customShadow', customColors.shadow), this.saveSetting('customError', customColors.error), this.saveSetting('customErrorHover', customColors.errorHover), this.saveSetting('customYoutubeRed', customColors.youtubeRed), this.saveSetting('themeMode', 'custom') ];
     Promise.all(savePromises).then(() => {
-      console.log('Custom theme saved successfully');
       this.showNotification('Custom theme saved!', 'success');
     }).catch(error => {
       console.error('Error saving custom theme:', error);
@@ -11589,7 +11563,7 @@ class AdvancedMusicPlayer {
     const currentTheme = document.documentElement.getAttribute('data-theme');
     if (currentTheme === 'custom') {
       if (!this.db) {
-        console.log('Database not available');
+        console.warn('Database not available');
         return;
       }
       const transaction = this.db.transaction([ 'settings' ], 'readonly');
@@ -11597,23 +11571,19 @@ class AdvancedMusicPlayer {
       const request = store.get('customAccent');
       request.onsuccess = () => {
         const accentColor = request.result?.value || '#3b82f6';
-        console.log('Using accent color from DB for favicon:', accentColor);
         const finalColor = this.lightenDarkColor(accentColor);
-        console.log('Final favicon color:', finalColor);
         this.updateFaviconColor(finalColor);
       };
       request.onerror = () => {
-        console.log('Failed to load accent color from DB, using fallback');
+        console.warn('Failed to load accent color from DB, using fallback');
         this.updateFaviconColor('#3b82f6');
       };
     } else {
       const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim().replace(/`/g, '');
       if (!accentColor) {
-        console.log('No accent color found for preset theme');
         return;
       }
       const finalColor = this.lightenDarkColor(accentColor);
-      console.log('Using preset theme color for favicon:', finalColor);
       this.updateFaviconColor(finalColor);
     }
   }
@@ -11631,7 +11601,6 @@ class AdvancedMusicPlayer {
       const favicon = document.querySelector('link[rel="icon"]');
       if (favicon && !this.activeFaviconDisguise) {
         favicon.href = url;
-        console.log('Favicon updated successfully with color:', color);
       }
     }).catch(error => console.error('Favicon update failed:', error));
   }
@@ -11660,7 +11629,6 @@ class AdvancedMusicPlayer {
     }
   }
   showNotification(message, type = 'info') {
-    console.log(`${type.toUpperCase()}: ${message}`);
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
     notification.textContent = message;
@@ -11953,7 +11921,6 @@ class AdvancedMusicPlayer {
   async loadAdvertisementSettings() {
     try {
       if (!this.db || !this.db.objectStoreNames.contains('settings')) {
-        console.log('Settings store not found, using default advertisement settings');
         this.adsEnabled = false;
         this.updateAdvertisementDisplay();
         return;
@@ -11973,7 +11940,7 @@ class AdvancedMusicPlayer {
           resolve();
         };
         request.onerror = () => {
-          console.log('Error reading advertisement settings, using default');
+          console.warn('Error reading advertisement settings, using default');
           this.adsEnabled = false;
           this.updateAdvertisementDisplay();
           resolve();
@@ -12005,7 +11972,6 @@ class AdvancedMusicPlayer {
       const request = store.put(settingsData);
       return new Promise((resolve, reject) => {
         request.onsuccess = () => {
-          console.log('Advertisement settings saved successfully:', this.adsEnabled);
           resolve();
         };
         request.onerror = event => {
@@ -12021,7 +11987,6 @@ class AdvancedMusicPlayer {
     this.adsEnabled = event.target.checked;
     this.updateAdvertisementDisplay();
     this.saveAdvertisementSettings();
-    console.log(`Advertisements ${this.adsEnabled ? 'enabled' : 'disabled'}`);
   }
   updateAdvertisementDisplay() {
     const leftBanner = document.querySelector('.left-advertisement-banner');
@@ -13070,7 +13035,7 @@ class AdvancedMusicPlayer {
       return Promise.resolve(this.supabase);
     }
     if (!this.supabaseReadyPromise) {
-      this.supabaseReadyPromise = loadScriptOnce('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2').then(() => {
+      this.supabaseReadyPromise = loadScriptOnce('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0').then(() => {
         const supabaseUrl = 'https://cwhxanbpymkngzpbsshh.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3aHhhbmJweW1rbmd6cGJzc2hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4NTQzMTksImV4cCI6MjA2OTQzMDMxOX0.6K3eM1XoWaPmyMHsLYgw0mAnSxYjME4clflL4PxQalQ';
         this.supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
@@ -13421,13 +13386,14 @@ class AdvancedMusicPlayer {
   async runGlobalLibraryYouTubeSearch(query) {
     const MAX_RETRIES = 5;
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-      const keyIndex = this.getRandomYouTubeApiKey();
+      const keyIndex = this.youtubeKeyIndexFor(query, attempt);
       try {
         const url = `/api/youtube?query=${encodeURIComponent(query)}&maxResults=1&type=combined&keyIndex=${keyIndex}`;
         const response = await fetch(url);
         const result = await response.json();
         if (result.status !== 200) {
           if (result.status === 403) {
+            this.exhaustedYouTubeKeys.add(keyIndex);
             console.warn(`API key index ${keyIndex} quota exceeded, retrying with a different key`);
             continue;
           }
@@ -13442,6 +13408,30 @@ class AdvancedMusicPlayer {
   }
   getRandomYouTubeApiKey() {
     return Math.floor(Math.random() * this.YOUTUBE_API_KEYS_COUNT);
+  }
+  youtubeKeyIndexFor(query, attempt) {
+    const count = this.YOUTUBE_API_KEYS_COUNT;
+    const open = [];
+    for (let i = 0; i < count; i++) {
+      if (!this.exhaustedYouTubeKeys.has(i)) {
+        open.push(i);
+      }
+    }
+    if (!open.length) {
+      return this.getRandomYouTubeApiKey();
+    }
+    if (attempt > 0) {
+      return open[Math.floor(Math.random() * open.length)];
+    }
+    let hash = 0;
+    for (let i = 0; i < query.length; i++) {
+      hash = hash * 31 + query.charCodeAt(i) | 0;
+    }
+    let index = Math.abs(hash) % count;
+    while (this.exhaustedYouTubeKeys.has(index)) {
+      index = (index + 1) % count;
+    }
+    return index;
   }
   populateAddSongToLibraryModalFromGlobalLibrary(songRow, onClose) {
     this.elements.songNameInput.value = songRow.name;
@@ -14870,7 +14860,7 @@ class AdvancedMusicPlayer {
     const effectiveSearchTerm = this.topicKeywordEnabled ? `${searchTerm} "topic"` : searchTerm;
     const MAX_RETRIES = 5;
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-      const keyIndex = this.getRandomYouTubeApiKey();
+      const keyIndex = this.youtubeKeyIndexFor(effectiveSearchTerm, attempt);
       try {
         let url = `/api/youtube?query=${encodeURIComponent(effectiveSearchTerm)}&maxResults=${maxResults}&type=combined&keyIndex=${keyIndex}`;
         if (pageToken) {
@@ -14880,6 +14870,7 @@ class AdvancedMusicPlayer {
         const result = await response.json();
         if (result.status !== 200) {
           if (result.status === 403) {
+            this.exhaustedYouTubeKeys.add(keyIndex);
             console.warn(`API key index ${keyIndex} quota exceeded, retrying with a different key`);
             continue;
           }
@@ -14887,6 +14878,7 @@ class AdvancedMusicPlayer {
         }
         const data = result.data;
         if (data.error && data.error.code === 403) {
+          this.exhaustedYouTubeKeys.add(keyIndex);
           console.warn(`API key index ${keyIndex} quota exceeded, retrying with a different key`);
           continue;
         }
@@ -16571,7 +16563,6 @@ class AdvancedMusicPlayer {
     }
     const transaction = this.db.transaction([ 'listeningStats' ], 'readwrite');
     transaction.objectStore('listeningStats').clear();
-    console.log('Listening stats cleared');
   }
   _statsDayKey(date = new Date()) {
     return date.toISOString().slice(0, 10);
@@ -17428,7 +17419,6 @@ class AdvancedMusicPlayer {
     }
   }
   cleanup() {
-    console.log('Starting cleanup process');
     this.saveCurrentState();
     this.clearTimersAndIntervals();
     this.cleanupYouTubePlayer();
@@ -17447,7 +17437,6 @@ class AdvancedMusicPlayer {
     }
     this.closeDiscordConnection();
     this.gracefulDatabaseClose();
-    console.log('Cleanup process completed successfully');
   }
   cleanupLocalAudio() {
     if (!this.localAudio) {
@@ -17462,7 +17451,6 @@ class AdvancedMusicPlayer {
       }
       this.localAudio.removeAttribute('src');
       this.localAudio.load();
-      console.log('Local audio cleaned up');
     } catch (error) {
       console.warn('Error cleaning up local audio:', error.message);
     }
@@ -17509,7 +17497,6 @@ class AdvancedMusicPlayer {
         v.ctx = null;
         v.canvas = null;
       }
-      console.log('Visualizer cleaned up');
     } catch (error) {
       console.warn('Error cleaning up visualizer:', error.message);
     }
@@ -17526,7 +17513,6 @@ class AdvancedMusicPlayer {
         this._vsContainer.style.overflowY = '';
         this._vsContainer = null;
       }
-      console.log('Virtual scroll cleaned up');
     } catch (error) {
       console.warn('Error cleaning up virtual scroll:', error.message);
     }
@@ -17544,7 +17530,6 @@ class AdvancedMusicPlayer {
         clearTimeout(this._discordSendTimer);
         clearInterval(this._discordSendTimer);
         this._discordSendTimer = null;
-        console.log('Discord send timer cleared');
       }
       if (this.temporarilySkippedSongs) {
         this.temporarilySkippedSongs.clear();
@@ -17552,44 +17537,36 @@ class AdvancedMusicPlayer {
       if (this.elements?.saveCustomTheme) {
         this.elements.saveCustomTheme.onclick = null;
       }
-      console.log('Misc state cleaned up');
     } catch (error) {
       console.warn('Error cleaning up misc state:', error.message);
     }
   }
   saveCurrentState() {
     try {
-      console.log('Saving current application state');
       if (this.listeningTime > 0) {
         localStorage.setItem('musicPlayer_listeningTime', this.listeningTime.toString());
-        console.log(`Listening time persisted: ${this.listeningTime} seconds`);
       }
       if (this.elements?.volumeSlider?.value) {
         localStorage.setItem('musicPlayer_volume', this.elements.volumeSlider.value);
-        console.log(`Volume level persisted: ${this.elements.volumeSlider.value}`);
       }
       if (this.currentSpeed !== 1) {
         localStorage.setItem('musicPlayer_speed', this.currentSpeed.toString());
-        console.log(`Playback speed persisted: ${this.currentSpeed}x`);
       }
       if (this.ytPlayer && this.isPlaying) {
         try {
           const currentTime = this.ytPlayer.getCurrentTime();
           if (currentTime > 0) {
             localStorage.setItem('musicPlayer_lastPosition', currentTime.toString());
-            console.log(`Current position persisted: ${currentTime} seconds`);
           }
         } catch (error) {
           console.warn('Failed to persist current playback position:', error.message);
         }
       }
-      console.log('Application state saved successfully');
     } catch (error) {
       console.error('Critical error during state persistence:', error);
     }
   }
   clearTimersAndIntervals() {
-    console.log('Clearing active timers and intervals');
     const timers = [ {
       ref: 'progressInterval',
       timer: this.progressInterval
@@ -17609,87 +17586,64 @@ class AdvancedMusicPlayer {
       ref: 'discordReconnectTimer',
       timer: this.discordReconnectTimer
     } ];
-    let clearedCount = 0;
     timers.forEach(({ref: ref, timer: timer}) => {
       if (timer) {
         clearInterval(timer);
         clearTimeout(timer);
         this[ref] = null;
-        clearedCount++;
-        console.log(`Timer cleared: ${ref}`);
       }
     });
-    console.log(`Successfully cleared ${clearedCount} active timers`);
   }
   cleanupYouTubePlayer() {
     this.destroyVisualizer();
-    console.log('Initiating YouTube player cleanup');
     if (this.ytPlayer) {
       try {
         if (typeof this.ytPlayer.pauseVideo === 'function') {
           this.ytPlayer.pauseVideo();
-          console.log('YouTube player paused');
         }
         if (typeof this.ytPlayer.destroy === 'function') {
           this.ytPlayer.destroy();
-          console.log('YouTube player instance destroyed');
         }
         this.ytPlayer = null;
         this.isPlaying = false;
-        console.log('YouTube player cleanup completed');
       } catch (error) {
         console.warn('Error during YouTube player cleanup:', error.message);
         this.ytPlayer = null;
         this.isPlaying = false;
       }
-    } else {
-      console.log('No YouTube player instance found for cleanup');
     }
   }
   restorePageAppearance() {
-    console.log('Restoring original page appearance');
     try {
       if (this.originalTitle && document.title !== this.originalTitle) {
         document.title = this.originalTitle;
-        console.log(`Page title restored: ${this.originalTitle}`);
       }
       const faviconLink = document.querySelector('link[rel="icon"]');
       if (faviconLink && this.originalFavicon && faviconLink.href !== this.originalFavicon) {
         faviconLink.href = this.originalFavicon;
-        console.log(`Favicon restored: ${this.originalFavicon}`);
       }
       if (this.isWebEmbedVisible) {
         this.closeWebEmbed();
-        console.log('Web embed overlay destroyed');
       }
-      console.log('Page appearance restoration completed');
     } catch (error) {
       console.warn('Error during page appearance restoration:', error.message);
     }
   }
   disconnectObservers() {
-    console.log('Disconnecting mutation observers');
     if (this.titleObserver) {
       try {
         this.titleObserver.disconnect();
         this.titleObserver = null;
-        console.log('Title observer disconnected successfully');
       } catch (error) {
         console.warn('Error disconnecting title observer:', error.message);
       }
-    } else {
-      console.log('No active observers found for disconnection');
     }
   }
   removeDynamicEventListeners() {
-    console.log('Removing dynamic event listeners');
-    let removedCount = 0;
     try {
       const contextMenuHandler = this.contextMenuHandler;
       if (contextMenuHandler) {
         document.removeEventListener('contextmenu', contextMenuHandler);
-        removedCount++;
-        console.log('Context menu event listener removed');
       }
     } catch (error) {
       console.warn('Error removing context menu listener:', error.message);
@@ -17698,8 +17652,6 @@ class AdvancedMusicPlayer {
       const keyboardHandler = this.keyboardHandler;
       if (keyboardHandler) {
         document.removeEventListener('keydown', keyboardHandler);
-        removedCount++;
-        console.log('Global keyboard event listener removed');
       }
     } catch (error) {
       console.warn('Error removing keyboard listener:', error.message);
@@ -17707,8 +17659,6 @@ class AdvancedMusicPlayer {
     try {
       if (this.elements?.autoplayBtn && this.handleToggleAutoplay) {
         this.elements.autoplayBtn.removeEventListener('click', this.handleToggleAutoplay);
-        removedCount++;
-        console.log('Autoplay button event listener removed');
       }
     } catch (error) {
       console.warn('Error removing autoplay button listener:', error.message);
@@ -17717,41 +17667,30 @@ class AdvancedMusicPlayer {
       const playlistItems = document.querySelectorAll(".playlist-item[draggable='true']");
       playlistItems.forEach(item => {
         item.draggable = false;
-        removedCount++;
       });
-      if (playlistItems.length > 0) {
-        console.log(`Drag functionality removed from ${playlistItems.length} playlist items`);
-      }
     } catch (error) {
       console.warn('Error removing drag functionality:', error.message);
     }
-    console.log(`Dynamic event listener removal completed: ${removedCount} listeners processed`);
   }
   gracefulDatabaseClose() {
-    console.log('Initiating graceful database connection closure');
     if (this.db) {
       try {
         setTimeout(() => {
           if (this.db) {
             this.db.close();
             this.db = null;
-            console.log('Database connection closed successfully');
           }
         }, 100);
       } catch (error) {
         console.warn('Error during database closure:', error.message);
         this.db = null;
       }
-    } else {
-      console.log('No active database connection found');
     }
   }
   cleanupBillboardAndGlobalLibrary() {
-    console.log('Cleaning up Billboard and Global Library resources');
     const billboardModal = document.getElementById('billboardHot100Modal');
     if (billboardModal) {
       billboardModal.remove();
-      console.log('Billboard Hot 100 modal removed');
     }
     this.closeGlobalLibrarySearchSuggestionsDropdown();
     this.closeGlobalLibrarySongDetailCard();
@@ -17764,7 +17703,6 @@ class AdvancedMusicPlayer {
     }
     this.watchGlobalLibraryInset(false);
     this.cleanupMixLab();
-    console.log('Billboard and Global Library cleanup complete');
   }
 }
 

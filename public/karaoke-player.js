@@ -286,7 +286,6 @@ class KaraokePlayer {
 
   onPlayerReady(event) {
     this.ytPlayerReady = true;
-    console.log('Player ready');
     this.renderLyrics();
     this.updateTitle();
   }

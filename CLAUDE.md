@@ -47,6 +47,23 @@ There is no bundler, no package.json, no test suite. Edit the file, reload the p
   by hand is fine but not required.
 - Commit on `main`. Attribution trailer per the session reminder.
 - Regenerate `CODEMAP.md` when you add, remove or rename a method.
+- **No `console.log`** in shipped code. Use `console.warn` / `console.error` only for a real
+  problem the user or a developer should see.
+
+## API caching and quota
+
+YouTube search quota is the scarcest resource, so repeats are served from Vercel's edge:
+
+- `api/youtube.js`, `api/deezer.js` and `api/genius.js` set `s-maxage` on successful
+  responses only. Errors, quota failures and Deezer's `artist_radio` (random on purpose, it
+  powers Mix Lab's New picks) are never cached. Keep that split when adding a type.
+- The edge cache keys on the full URL, so a cacheable request must be deterministic.
+  YouTube calls take their first key from `youtubeKeyIndexFor(query, attempt)` (a hash of
+  the query) and only randomise retries. Never put `Math.random()` or a timestamp in a
+  cacheable API URL.
+- A key that answers 403 goes into `exhaustedYouTubeKeys` and is skipped for the session.
+- Third-party scripts are pinned to exact versions (`@supabase/supabase-js@2.118.0`,
+  `pako@2.1.0`), which jsDelivr serves `immutable`. Don't use a range like `@2`.
 
 ## Editing: the files are CRLF
 
