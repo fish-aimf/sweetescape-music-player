@@ -2653,9 +2653,9 @@ body:has(#ytPlayer.fullscreen-video) {
 .find-songs-container {
   position: fixed;
   top: 0;
+  bottom: var(--global-library-inset, 0px);
   left: 0;
   width: 100%;
-  height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 1000;
   display: flex;
@@ -2666,7 +2666,7 @@ body:has(#ytPlayer.fullscreen-video) {
   background-color: var(--bg-secondary);
   border-radius: 0;
   width: 100vw;
-  height: 100vh;
+  height: 100%;
   box-shadow: none;
   display: flex;
   flex-direction: column;
@@ -8978,10 +8978,15 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   color: var(--text-secondary);
 }
 .lyrics-stage-open .app-container > :not(.now-playing, .ui-overlay),
-.lyrics-stage-open :is(.watermark, .version-display, .left-advertisement-banner, .right-advertisement-banner),
-.global-library-open .app-container > :not(.ui-overlay),
-.global-library-open :is(.watermark, .version-display, .left-advertisement-banner, .right-advertisement-banner) {
+.global-library-open .app-container > :not(.now-playing, .playlist-sidebar, .ui-overlay),
+:is(.lyrics-stage-open, .global-library-open) :is(.watermark, .version-display, .left-advertisement-banner, .right-advertisement-banner) {
   display: none;
+}
+.global-library-open .playlist-sidebar {
+  z-index: 1001;
+}
+.global-library-open .now-playing {
+  z-index: 1002;
 }
 .lyrics-stage {
   --lyrics-stage-inset: 0px;
@@ -9928,6 +9933,8 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 .mix-lab-row {
   counter-increment: mix-lab-row;
   min-height: 56px;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 56px;
   border-radius: var(--ui-radius-sm);
   cursor: pointer;
   transition: background-color 0.12s ease;
