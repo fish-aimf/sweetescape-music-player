@@ -2830,41 +2830,30 @@ class AdvancedMusicPlayer {
       const style = getComputedStyle(grid);
       const cols = style.gridTemplateColumns.split(' ').length;
       const gap = parseFloat(style.rowGap) || 0;
-      const padY = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+      const padTop = parseFloat(style.paddingTop);
       if (grid.children.length < cols) {
         fillGrid(cols);
       }
       const rowHeight = grid.firstElementChild.offsetHeight;
       return {
         cols,
-        minHeight: card.offsetHeight - grid.offsetHeight + padY + rowHeight,
-        rows: Math.floor((grid.clientHeight - padY + gap) / (rowHeight + gap))
+        minHeight: card.offsetHeight - grid.offsetHeight + padTop + 4 + rowHeight,
+        rows: Math.floor((grid.clientHeight - padTop - 4 + gap) / (rowHeight + gap))
       };
-    };
-    const layOutGrid = (snug, condensed) => {
-      card.parentElement?.classList.toggle('is-snug', snug);
-      card.style.minHeight = '0px';
-      card.classList.toggle('is-condensed', condensed);
-      let layout = measureGrid();
-      if (layout.rows < 1 && !condensed) {
-        card.classList.add('is-condensed');
-        layout = measureGrid();
-      }
-      layout.condensed = card.classList.contains('is-condensed');
-      layout.shown = layout.cols * Math.max(1, layout.rows);
-      return layout;
     };
     const renderGrid = () => {
       if (shuffled.length === 0 || !grid.clientWidth) {
         return;
       }
-      let layout = layOutGrid(false, false);
-      if (layout.shown < shuffled.length) {
-        const snug = layOutGrid(true, layout.condensed);
-        layout = snug.shown > layout.shown ? snug : layOutGrid(false, false);
+      card.style.minHeight = '0px';
+      card.classList.remove('is-condensed');
+      let layout = measureGrid();
+      if (layout.rows < 2) {
+        card.classList.add('is-condensed');
+        layout = measureGrid();
       }
       card.style.minHeight = `${layout.minHeight}px`;
-      fillGrid(layout.shown);
+      fillGrid(layout.cols * Math.max(1, layout.rows));
     };
     shuffleBtn.addEventListener('click', () => {
       this._shuffleArray(shuffled);

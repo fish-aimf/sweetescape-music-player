@@ -260,7 +260,7 @@ body {
   overflow-y: auto;
 }
 .song-list.is-compact-view {
-  height: clamp(340px, calc(100vh - 320px), 820px);
+  height: clamp(340px, calc(100vh - 296px), 844px);
   max-height: none;
   display: flex;
 }
@@ -4976,7 +4976,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 4px 0;
+  padding: 4px 0 0;
   min-height: 0;
   animation: 0.22s fadeInUp;
 }
@@ -4998,7 +4998,7 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   flex: 1 1 0%;
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: min-content;
+  grid-auto-columns: 88px;
   grid-template-rows: 1fr;
   overflow: auto hidden;
   overscroll-behavior-x: contain;
@@ -5579,36 +5579,6 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 }
 .discovery-card.is-condensed .discovery-song-item.is-playing .discovery-thumb-wrap {
   outline: none;
-}
-.compact-library-view.is-snug .favorites-card-inner {
-  height: 70px;
-}
-.compact-library-view.is-snug .fav-thumb {
-  width: 64px;
-  height: 64px;
-}
-.compact-library-view.is-snug .favorites-panel {
-  width: 124px;
-  padding: 6px 10px;
-}
-.compact-library-view.is-snug .favorites-panel-bottom {
-  flex-direction: row;
-}
-.compact-library-view.is-snug .playlists-shelf-row {
-  padding: 8px 12px;
-}
-.compact-library-view.is-snug .playlist-shelf-tile {
-  flex-basis: 64px;
-}
-.compact-library-view.is-snug .playlist-shelf-name,
-.compact-library-view.is-snug .playlist-shelf-thumb {
-  width: 64px;
-}
-.compact-library-view.is-snug .playlist-shelf-thumb {
-  height: 64px;
-}
-.compact-library-view.is-snug .playlist-shelf-create-tile .playlist-shelf-name {
-  overflow: visible;
 }
 @media (max-height: 760px) {
   .compact-library-view {
