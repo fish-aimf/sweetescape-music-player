@@ -68,8 +68,8 @@
       "id": "mix-lab",
       "target": "#mixLab",
       "title": "Mix Lab",
-      "body": "Pick up to five songs from your library, or type a vibe like \"rainy day\" or \"songs like Daft Punk\", then Make my mix. You get songs that aren't in your library yet: click a cover to preview the official track, + to add it.",
-      "tips": ["New picks deals a fresh set from the same picks.", "The x on a cover hides a song you don't want."]
+      "body": "Pick up to five songs from your library, or type a mood, genre or artist like \"rainy day\" or \"songs like Daft Punk\", then Create mix. Play runs the whole mix in the player, all songs that aren't in your library yet; click a song to play from there.",
+      "tips": ["Shuffle plays the mix in random order, and New picks makes a fresh one.", "Hover a song for + to add it to your library or x to hide it."]
     },
     {
       "id": "modify-library",

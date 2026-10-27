@@ -318,10 +318,10 @@ const scenes = {
     await sleep(4000);
     await page.evaluate(() => {
       musicPlayer.mixLab.seeds = [ 'Starboy', 'Take On Me' ].map(name => musicPlayer.mixLabSongSeed(musicPlayer.songLibrary.find(s => s.name === name)));
-      musicPlayer.toggleMixLabVibe('Road trip');
+      musicPlayer.toggleMixLabMood('Road trip');
     });
     await page.click('#mixLabMakeBtn');
-    await page.waitForSelector('.mix-lab-track:not(.mix-lab-track--skeleton)', { timeout: 30000 });
+    await page.waitForSelector('.mix-lab-row[data-mix-key]', { timeout: 30000 });
     await sleep(4000);
     await page.evaluate(() => {
       const main = document.querySelector('.find-songs-main-content');

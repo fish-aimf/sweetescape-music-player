@@ -1823,7 +1823,6 @@ a.ui-btn--block {
 [data-surface="glass"] .settings-tabs,
 [data-surface="glass"] .lyrics-navbar,
 [data-surface="glass"] .lyrics-header,
-[data-surface="glass"] .mix-lab-track,
 [data-surface="glass"] .find-songs-content {
   background-color: var(--bg-secondary);
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
@@ -1835,14 +1834,14 @@ a.ui-btn--block {
     0 6px 22px var(--glass-shade);
 }
 
-[data-surface="glass"] :is(.song-item, .playlist-card, .search-song-item, .playlist-song-item, .sidebar-song-item, .sidebar-song-card, .details-item, .setting-group, .keybind-category, .discovery-card, .favorites-card, .playlists-shelf, .ls-card-large, .ls-card-small, .ls-card-hero, .discord-status-card, .dl-current-card, .ui-card, .np-left, .current-song-section, #additionalDetails, .playlist-sidebar, .now-playing, .music-player, .current-playlist-songs, .recommendations-panel, .favorites-panel, .settings-tabs, .lyrics-navbar, .lyrics-header, .find-songs-content, .ui-modal, .modal-content, .settings-modal-content, .timer-modal-content, .changelog-modal-content, .subtitles-import-modal-content, .discord-rpc-modal, .billboard-modal-content, .qv2-panel, .dl-modal, .sz-modal, .ls-modal-content, .lyrics-maker-content, .temp-song-modal-content, .search-results, .speed-options, .np-speed-options, .qv2-dropdown, .dl-search-results, .lib-filter-panel, .global-library-search-suggestions-dropdown, .mix-lab__suggest, .youtube-search-suggestion, .transport-preview-popup, .drag-link-toast) :is(.song-item, .playlist-card, .search-song-item, .playlist-song-item, .sidebar-song-item, .sidebar-song-card, .details-item, .setting-group, .keybind-category, .discovery-card, .favorites-card, .playlists-shelf, .ls-card-large, .ls-card-small, .ls-card-hero, .discord-status-card, .dl-current-card, .ui-card, .np-left, .current-song-section, #additionalDetails, .playlist-sidebar, .now-playing, .music-player, .current-playlist-songs, .recommendations-panel, .favorites-panel, .settings-tabs, .lyrics-navbar, .lyrics-header, .find-songs-content, .mix-lab-track):not(:hover) {
+[data-surface="glass"] :is(.song-item, .playlist-card, .search-song-item, .playlist-song-item, .sidebar-song-item, .sidebar-song-card, .details-item, .setting-group, .keybind-category, .discovery-card, .favorites-card, .playlists-shelf, .ls-card-large, .ls-card-small, .ls-card-hero, .discord-status-card, .dl-current-card, .ui-card, .np-left, .current-song-section, #additionalDetails, .playlist-sidebar, .now-playing, .music-player, .current-playlist-songs, .recommendations-panel, .favorites-panel, .settings-tabs, .lyrics-navbar, .lyrics-header, .find-songs-content, .ui-modal, .modal-content, .settings-modal-content, .timer-modal-content, .changelog-modal-content, .subtitles-import-modal-content, .discord-rpc-modal, .billboard-modal-content, .qv2-panel, .dl-modal, .sz-modal, .ls-modal-content, .lyrics-maker-content, .temp-song-modal-content, .search-results, .speed-options, .np-speed-options, .qv2-dropdown, .dl-search-results, .lib-filter-panel, .global-library-search-suggestions-dropdown, .mix-lab__suggest, .youtube-search-suggestion, .transport-preview-popup, .drag-link-toast) :is(.song-item, .playlist-card, .search-song-item, .playlist-song-item, .sidebar-song-item, .sidebar-song-card, .details-item, .setting-group, .keybind-category, .discovery-card, .favorites-card, .playlists-shelf, .ls-card-large, .ls-card-small, .ls-card-hero, .discord-status-card, .dl-current-card, .ui-card, .np-left, .current-song-section, #additionalDetails, .playlist-sidebar, .now-playing, .music-player, .current-playlist-songs, .recommendations-panel, .favorites-panel, .settings-tabs, .lyrics-navbar, .lyrics-header, .find-songs-content):not(:hover) {
   background-color: transparent;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   box-shadow: inset 0 0 0 1px var(--glass-sheen);
 }
 
-[data-surface="glass"] :is(.song-item, .playlist-card, .search-song-item, .playlist-song-item, .sidebar-song-item, .sidebar-song-card, .details-item, .setting-group, .keybind-category, .discovery-card, .favorites-card, .playlists-shelf, .ls-card-large, .ls-card-small, .ls-card-hero, .discord-status-card, .dl-current-card, .ui-card, .np-left, .current-song-section, #additionalDetails, .playlist-sidebar, .now-playing, .music-player, .current-playlist-songs, .recommendations-panel, .favorites-panel, .settings-tabs, .lyrics-navbar, .lyrics-header, .find-songs-content, .ui-modal, .modal-content, .settings-modal-content, .timer-modal-content, .changelog-modal-content, .subtitles-import-modal-content, .discord-rpc-modal, .billboard-modal-content, .qv2-panel, .dl-modal, .sz-modal, .ls-modal-content, .lyrics-maker-content, .temp-song-modal-content, .search-results, .speed-options, .np-speed-options, .qv2-dropdown, .dl-search-results, .lib-filter-panel, .global-library-search-suggestions-dropdown, .mix-lab__suggest, .youtube-search-suggestion, .transport-preview-popup, .drag-link-toast) :is(.current-song-thumbnail, .details-item-thumbnail, .playlist-shelf-thumb, .discovery-thumb-wrap, .favorites-thumbnails, .global-library-suggestion-track-thumb, .global-library-suggestion-playlist-icon, .global-library-song-detail-thumb, .global-library-artist-grid-song-thumb, .discord-preview-thumb, .mix-lab-track__art, .mix-lab__option-thumb) {
+[data-surface="glass"] :is(.song-item, .playlist-card, .search-song-item, .playlist-song-item, .sidebar-song-item, .sidebar-song-card, .details-item, .setting-group, .keybind-category, .discovery-card, .favorites-card, .playlists-shelf, .ls-card-large, .ls-card-small, .ls-card-hero, .discord-status-card, .dl-current-card, .ui-card, .np-left, .current-song-section, #additionalDetails, .playlist-sidebar, .now-playing, .music-player, .current-playlist-songs, .recommendations-panel, .favorites-panel, .settings-tabs, .lyrics-navbar, .lyrics-header, .find-songs-content, .ui-modal, .modal-content, .settings-modal-content, .timer-modal-content, .changelog-modal-content, .subtitles-import-modal-content, .discord-rpc-modal, .billboard-modal-content, .qv2-panel, .dl-modal, .sz-modal, .ls-modal-content, .lyrics-maker-content, .temp-song-modal-content, .search-results, .speed-options, .np-speed-options, .qv2-dropdown, .dl-search-results, .lib-filter-panel, .global-library-search-suggestions-dropdown, .mix-lab__suggest, .youtube-search-suggestion, .transport-preview-popup, .drag-link-toast) :is(.current-song-thumbnail, .details-item-thumbnail, .playlist-shelf-thumb, .discovery-thumb-wrap, .favorites-thumbnails, .global-library-suggestion-track-thumb, .global-library-suggestion-playlist-icon, .global-library-song-detail-thumb, .global-library-artist-grid-song-thumb, .discord-preview-thumb, .mix-lab-row__cover, .mix-lab-hero__art, .mix-lab__option-thumb) {
   background-color: transparent;
 }
 
@@ -1939,18 +1938,11 @@ a.ui-btn--block {
 [data-surface="glass"] .sz-btn,
 [data-surface="glass"] .ls-search-input,
 [data-surface="glass"] .global-library-artist-grid-load-more-btn,
-[data-surface="glass"] .mix-lab__starter,
-[data-surface="glass"] .mix-lab-track__add,
 [data-surface="glass"] .temp-song-url-input,
 [data-surface="glass"] #playlistSearch {
   backdrop-filter: blur(10px) saturate(var(--glass-sat));
   -webkit-backdrop-filter: blur(10px) saturate(var(--glass-sat));
   border-color: var(--glass-edge);
-}
-
-[data-surface="glass"] .mix-lab__composer {
-  border-color: var(--glass-edge);
-  background: transparent;
 }
 
 [data-surface="glass"] .mix-lab-seed {

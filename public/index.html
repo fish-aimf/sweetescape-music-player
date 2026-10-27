@@ -1349,24 +1349,23 @@ Another Playlist{
                <div id="globalLibraryArtistSongsGrid" class="global-library-artist-songs-grid"></div>
                <section id="mixLab" class="mix-lab" aria-labelledby="mixLabTitle">
                   <div class="mix-lab__head">
-                     <span class="mix-lab__badge"><i class="fas fa-flask"></i></span>
-                     <div class="mix-lab__intro">
-                        <h3 id="mixLabTitle" class="mix-lab__title">Mix Lab</h3>
-                        <p class="mix-lab__subtitle">Pick a few songs you love or describe a vibe, and get a mix of new songs that aren't in your library yet.</p>
-                     </div>
+                     <h3 id="mixLabTitle" class="mix-lab__title">Mix Lab</h3>
+                     <p class="mix-lab__subtitle">Start from songs you like or a mood, and play a mix of songs that aren't in your library yet.</p>
                   </div>
                   <div class="mix-lab__composer">
-                     <div class="mix-lab__field">
-                        <i class="fas fa-magnifying-glass mix-lab__field-icon"></i>
-                        <input type="text" id="mixLabInput" class="ui-input mix-lab__input" placeholder="Search your library or describe a vibe…" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="mixLabSuggest" aria-label="Add a song from your library or a vibe">
-                        <div id="mixLabSuggest" class="mix-lab__suggest" role="listbox" aria-label="Suggestions" hidden></div>
+                     <div class="mix-lab__bar">
+                        <div class="mix-lab__field">
+                           <i class="fas fa-magnifying-glass mix-lab__field-icon"></i>
+                           <input type="text" id="mixLabInput" class="ui-input mix-lab__input" placeholder="Add a song, mood, genre or artist" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="mixLabSuggest" aria-label="Add a song from your library, or a mood, genre or artist">
+                           <div id="mixLabSuggest" class="mix-lab__suggest" role="listbox" aria-label="Suggestions" hidden></div>
+                        </div>
+                        <button type="button" id="mixLabMakeBtn" class="ui-btn ui-btn--primary mix-lab__make" data-mix-action="make" disabled>Create mix</button>
                      </div>
-                     <div id="mixLabSeeds" class="mix-lab__seeds" aria-live="polite"></div>
-                     <div id="mixLabStarters" class="mix-lab__starters" aria-label="Quick picks"></div>
-                     <div class="mix-lab__actions">
+                     <div id="mixLabPicked" class="mix-lab__picked" hidden>
+                        <div id="mixLabSeeds" class="mix-lab__seeds" aria-live="polite"></div>
                         <span id="mixLabCount" class="mix-lab__count"></span>
-                        <button type="button" id="mixLabMakeBtn" class="ui-btn ui-btn--primary mix-lab__make" data-mix-action="make" disabled><i class="fas fa-wand-magic-sparkles"></i> Make my mix</button>
                      </div>
+                     <div id="mixLabStarters" class="mix-lab__starters" aria-label="Suggestions"></div>
                   </div>
                   <div id="mixLabResults" class="mix-lab__results" aria-live="polite"></div>
                </section>
