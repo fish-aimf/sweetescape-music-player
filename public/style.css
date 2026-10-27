@@ -5552,8 +5552,8 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   background: var(--border-color);
 }
 .discovery-card.is-condensed .discovery-thumb-wrap {
-  flex: 0 0 40px;
-  width: 40px;
+  flex: 0 0 var(--discovery-tile-size, 40px);
+  width: var(--discovery-tile-size, 40px);
   border-radius: 0;
   box-shadow: none;
   transform: none;

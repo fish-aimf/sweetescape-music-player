@@ -2835,10 +2835,13 @@ class AdvancedMusicPlayer {
         fillGrid(cols);
       }
       const rowHeight = grid.firstElementChild.offsetHeight;
+      const space = grid.clientHeight - padTop - 4;
       return {
         cols,
+        gap,
+        space,
         minHeight: card.offsetHeight - grid.offsetHeight + padTop + 4 + rowHeight,
-        rows: Math.floor((grid.clientHeight - padTop - 4 + gap) / (rowHeight + gap))
+        rows: Math.floor((space + gap) / (rowHeight + gap))
       };
     };
     const renderGrid = () => {
@@ -2847,10 +2850,19 @@ class AdvancedMusicPlayer {
       }
       card.style.minHeight = '0px';
       card.classList.remove('is-condensed');
+      grid.style.removeProperty('--discovery-tile-size');
       let layout = measureGrid();
       if (layout.rows < 2) {
         card.classList.add('is-condensed');
         layout = measureGrid();
+        if (layout.rows > 0) {
+          const { gap, space } = layout;
+          if (Math.floor((space - layout.rows * gap) / (layout.rows + 1)) >= 34) {
+            layout.rows++;
+          }
+          const size = Math.min(52, Math.floor((space - (layout.rows - 1) * gap) / layout.rows));
+          grid.style.setProperty('--discovery-tile-size', `${size}px`);
+        }
       }
       card.style.minHeight = `${layout.minHeight}px`;
       fillGrid(layout.cols * Math.max(1, layout.rows));
