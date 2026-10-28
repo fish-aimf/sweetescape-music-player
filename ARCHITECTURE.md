@@ -33,7 +33,7 @@ This document explains the structure and main components of **SweetEscape Music 
   `update-billboard.js` is run by a GitHub Action to refresh the Supabase Hot 100 table.
 
 - **api/**  
-  Vercel serverless functions: `youtube`, `deezer`, `genius`, `shazam`, `download`,
+  Vercel serverless functions: `youtube`, `deezer`, `musixmatch`, `shazam`, `download`,
   `count`, `gemini` and `song/[videoId]` (which renders the Open Graph share page).
 
 ---

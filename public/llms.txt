@@ -17,7 +17,7 @@ SweetEscape is built by one developer (fish-aimf) in plain HTML, CSS and JavaScr
 - Playlists: drag to reorder, shuffle, reverse, allow or ban duplicates, rename; a side panel to search, loop, and skip songs for the session
 - Queue (key Y): repeat counts per song, drag to reorder, "loop previous song forever" and "stop" blocks; right-click any play button to queue a song
 - Playback: speed 0.25x to 2x, loop, autoplay, hover preview of the next and previous three songs, video mode (U), picture-in-picture miniplayer (I, Chrome and Edge)
-- Lyrics: synced lyrics fetched from Genius or YouTube captions, or timed by hand in the Lyrics Maker with a draggable timeline
+- Lyrics: synced lyrics fetched from Musixmatch or YouTube captions, or timed by hand in the Lyrics Maker with a draggable timeline
 - Ways to show lyrics: the Lyrics tab, fullscreen lyrics in five styles (Verse, Cards, Mirror, Lyric Video, Flow), and shareable karaoke links whose lyrics are compressed into the URL
 - Sleep timer: stop the music or close the player after a preset, a custom number of minutes, or at a clock time
 - Identify a song from tab or system audio, the microphone or an uploaded clip, with links to Shazam, YouTube Music, YouTube and Spotify

@@ -16,7 +16,7 @@ There is no bundler, no package.json, no test suite. Edit the file, reload the p
 | `public/sw.js` | Service worker. `STATIC_ASSETS` must list any new top-level asset; `NETWORK_ONLY_PREFIXES` lists paths it must never cache |
 | `public/introduction.html`, `public/tutorial.html` | Static SEO pages served at `/introduction` and `/tutorial`, styled by `public/learn/learn.css`, screenshots in `public/learn/shots/` |
 | `public/guide/` | Guide mode (`guide.js` module, `guide.json` content, `guide.css`). Fetched only on Alt+Shift+G or `/?guide`, never cached |
-| `api/` | Vercel serverless functions (`youtube`, `deezer`, `genius`, `shazam`, `download`, `count`, `gemini`, `song/[videoId]`, `youtube-iframe-api`) |
+| `api/` | Vercel serverless functions (`youtube`, `deezer`, `musixmatch`, `shazam`, `download`, `count`, `gemini`, `song/[videoId]`, `youtube-iframe-api`) |
 | `public/llms.txt` | Plain-text summary of the site for AI assistants; keep it in step with `introduction.html` |
 | `vercel.json` | Rewrites + the immutable `Cache-Control` regex for hashed-forever assets |
 | `CODEMAP.md` | **Generated** index of every method, element alias and dialog — read this before searching `script.js` |
@@ -54,7 +54,7 @@ There is no bundler, no package.json, no test suite. Edit the file, reload the p
 
 YouTube search quota is the scarcest resource, so repeats are served from Vercel's edge:
 
-- `api/youtube.js`, `api/deezer.js` and `api/genius.js` set `s-maxage` on successful
+- `api/youtube.js`, `api/deezer.js` and `api/musixmatch.js` set `s-maxage` on successful
   responses only. Errors, quota failures and Deezer's `artist_radio` (random on purpose, it
   powers Mix Lab's New picks) are never cached. Keep that split when adding a type.
 - The edge cache keys on the full URL, so a cacheable request must be deterministic.

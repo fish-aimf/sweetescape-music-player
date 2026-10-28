@@ -7589,9 +7589,9 @@ class AdvancedMusicPlayer {
       const url = `https://www.google.com/search?q=${songName}${author}%20lyrics`;
       window.open(url, '_blank');
     };
-    const autoFetchGeniusLyrics = async () => {
-      const btn = document.getElementById('autoFetchGeniusLyricsBtn');
-      const loadingIndicator = document.getElementById('geniusFetchLoading');
+    const autoFetchLyrics = async () => {
+      const btn = document.getElementById('autoFetchLyricsBtn');
+      const loadingIndicator = document.getElementById('lyricsFetchLoading');
       const lyricsInput = document.getElementById('lyricsInput');
       if (!song.name) {
         this.showNotification('This song has no title to search with.', 'error');
@@ -7610,7 +7610,7 @@ class AdvancedMusicPlayer {
         if (song.author) {
           params.set('artist', song.author);
         }
-        const response = await fetch(`/api/genius?${params.toString()}`);
+        const response = await fetch(`/api/musixmatch?${params.toString()}`);
         const data = await response.json();
         if (!response.ok || !data.lyrics) {
           throw new Error(data.error || 'No lyrics found');
@@ -7618,9 +7618,9 @@ class AdvancedMusicPlayer {
         if (lyricsInput) {
           lyricsInput.value = this.decodeHtmlEntities(data.lyrics);
         }
-        this.showNotification('Lyrics fetched from Genius!', 'success');
+        this.showNotification('Lyrics fetched from Musixmatch!', 'success');
       } catch (error) {
-        console.error('Genius auto-fetch failed:', error);
+        console.error('Musixmatch auto-fetch failed:', error);
         this.showNotification('Could not auto-fetch lyrics. Try one of the manual search options below.', 'error');
       } finally {
         if (btn) {
@@ -7983,7 +7983,7 @@ class AdvancedMusicPlayer {
     document.getElementById('letrasBtn').addEventListener('click', searchLetras);
     document.getElementById('geniusBtn').addEventListener('click', searchGenius);
     document.getElementById('googleBtn').addEventListener('click', searchGoogle);
-    document.getElementById('autoFetchGeniusLyricsBtn')?.addEventListener('click', autoFetchGeniusLyrics);
+    document.getElementById('autoFetchLyricsBtn')?.addEventListener('click', autoFetchLyrics);
     document.addEventListener('keydown', handleKeyDown);
     this.lyricMakerCleanup = () => {
       document.getElementById('prepareLyricsBtn').removeEventListener('click', prepareLyrics);
@@ -7999,7 +7999,7 @@ class AdvancedMusicPlayer {
       document.getElementById('letrasBtn').removeEventListener('click', searchLetras);
       document.getElementById('geniusBtn').removeEventListener('click', searchGenius);
       document.getElementById('googleBtn').removeEventListener('click', searchGoogle);
-      document.getElementById('autoFetchGeniusLyricsBtn')?.removeEventListener('click', autoFetchGeniusLyrics);
+      document.getElementById('autoFetchLyricsBtn')?.removeEventListener('click', autoFetchLyrics);
       document.removeEventListener('keydown', handleKeyDown);
       tabHandlers.forEach(({element: element, handler: handler}) => {
         element.removeEventListener('click', handler);
