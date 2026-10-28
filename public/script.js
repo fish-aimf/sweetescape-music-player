@@ -5096,6 +5096,9 @@ class AdvancedMusicPlayer {
         return;
       }
     }
+    if (this.isLooping) {
+      this.toggleLoop();
+    }
     const currentSong = playlist.songs[this.currentSongIndex];
     this.currentSong = currentSong;
     this.saveRecentlyPlayedSong(currentSong);
