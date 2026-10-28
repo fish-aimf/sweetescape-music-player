@@ -674,6 +674,10 @@ a.ui-btn--block {
   max-width: var(--ui-modal-w-lg);
 }
 
+.dl-modal.dl-modal--browse {
+  height: min(42rem, var(--ui-modal-max-h));
+}
+
 .settings-modal-content.settings-modal-content {
   max-width: var(--ui-modal-w-xl);
 }

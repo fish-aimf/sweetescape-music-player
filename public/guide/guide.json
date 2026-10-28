@@ -362,7 +362,7 @@
       "id": "download-button",
       "target": "#downloadButton",
       "title": "Downloads",
-      "body": "Download the current song, songs from your library, or any YouTube link as MP3. Drop the file back onto the song to play it from disk."
+      "body": "Download the current song, any song from your library, or any YouTube link as MP3. Search library lists every song A to Z: scroll through them or search in any language the library search understands. Songs you have already downloaded carry a green Downloaded mark. Drop the file back onto the song to play it from disk."
     },
     {
       "id": "settings-button",

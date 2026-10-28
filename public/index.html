@@ -1406,18 +1406,20 @@ Another Playlist{
                 <div class="dl-current-name" id="dlCurrentName">No song playing</div>
                 <div class="dl-current-author" id="dlCurrentAuthor"></div>
               </div>
+              <span class="dl-badge" id="dlCurrentBadge" style="display:none;"><i class="fas fa-circle-check"></i><span class="dl-badge-text">Downloaded</span></span>
               <button class="dl-queue-btn" id="dlCurrentAddBtn" title="Add to queue">
                 <i class="fas fa-plus"></i>
               </button>
             </div>
           </div>
 
-          <div class="dl-panel" id="dlPanelSearch" style="display:none;">
+          <div class="dl-panel dl-search-panel" id="dlPanelSearch" style="display:none;">
             <div class="dl-search-wrap">
               <i class="fas fa-search dl-search-icon"></i>
-              <input type="text" id="dlSearchInput" class="dl-search-input" placeholder="Search songs or artists…" autocomplete="off" />
+              <input type="text" id="dlSearchInput" class="dl-search-input" placeholder="Search songs or artists…" autocomplete="off" spellcheck="false" />
             </div>
-            <div id="dlSearchResults" class="dl-search-results" hidden></div>
+            <div id="dlSearchMeta" class="dl-search-meta"></div>
+            <div id="dlSearchResults" class="dl-search-results ui-scroll"></div>
           </div>
 
           <div class="dl-panel" id="dlPanelUrl" style="display:none;">

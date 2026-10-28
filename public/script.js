@@ -15866,6 +15866,7 @@ class AdvancedMusicPlayer {
   }
   initDownloadModal() {
     const overlay = document.getElementById('downloadModal');
+    const modal = overlay.querySelector('.dl-modal');
     const closeBtn = document.getElementById('dlCloseBtn');
     const modeBtns = document.querySelectorAll('.dl-mode-btn');
     const panels = {
@@ -15873,7 +15874,14 @@ class AdvancedMusicPlayer {
       search: document.getElementById('dlPanelSearch'),
       url: document.getElementById('dlPanelUrl')
     };
+    const currentModeBtn = document.getElementById('dlModeCurrent');
+    const currentName = document.getElementById('dlCurrentName');
+    const currentAuthor = document.getElementById('dlCurrentAuthor');
+    const currentThumb = document.getElementById('dlCurrentThumb');
+    const currentBadge = document.getElementById('dlCurrentBadge');
+    const currentAddBtn = document.getElementById('dlCurrentAddBtn');
     const searchInput = document.getElementById('dlSearchInput');
+    const searchMeta = document.getElementById('dlSearchMeta');
     const searchResults = document.getElementById('dlSearchResults');
     const urlInput = document.getElementById('dlUrlInput');
     const addUrlBtn = document.getElementById('dlAddUrlBtn');
@@ -15881,17 +15889,240 @@ class AdvancedMusicPlayer {
     const queueList = document.getElementById('dlQueueList');
     const downloadAllBtn = document.getElementById('dlDownloadAllBtn');
     const downloadAllLabel = document.getElementById('dlDownloadAllLabel');
-    const escHtml = s => s ? s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
+    const track = document.createElement('div');
+    const rowsEl = document.createElement('div');
+    track.appendChild(rowsEl);
+    searchResults.appendChild(track);
+    const BUFFER = 8;
+    const dateFormat = new Intl.DateTimeFormat(undefined, {
+      dateStyle: 'medium'
+    });
+    let history;
+    try {
+      history = new Map(Object.entries(JSON.parse(localStorage.getItem('downloadHistory') || '{}')).filter(([, at]) => Number.isFinite(at)));
+    } catch (error) {
+      history = new Map();
+    }
+    let index = null;
+    let rows = [];
+    let queued = new Set();
+    let focusIdx = -1;
+    let rowH = 0;
+    let paintedStart = -1;
+    let paintedEnd = -1;
+    let frame = 0;
+    const saveHistory = () => {
+      try {
+        localStorage.setItem('downloadHistory', JSON.stringify(Object.fromEntries(history)));
+      } catch (error) {
+        console.warn('Could not save download history:', error);
+      }
+    };
+    const downloadedTitle = song => {
+      const at = history.get(song.videoId);
+      return at ? `Downloaded ${dateFormat.format(at)}` : song.localFileHandle ? 'Linked to a file on this device' : '';
+    };
+    const badgeHtml = (title, label) => `<span class="dl-badge" title="${this.escapeHtml(title)}"><i class="fas fa-circle-check"></i><span class="dl-badge-text">${label}</span></span>`;
+    const listVisible = () => index !== null && overlay.style.display !== 'none' && panels.search.style.display !== 'none';
+    const buildIndex = () => {
+      const collator = new Intl.Collator(undefined, {
+        sensitivity: 'base',
+        numeric: true
+      });
+      index = this.songLibrary.filter(song => song.videoId).map(song => ({
+        song,
+        lower: `${song.name || ''}\u0000${song.author || ''}`.toLowerCase(),
+        folded: `${this._searchFold(song.name || '')}\u0000${this._searchFold(song.author || '')}`,
+        html: ''
+      })).sort((a, b) => collator.compare(a.song.name || '', b.song.name || ''));
+    };
+    const updateMeta = () => {
+      const total = index.length;
+      if (!total) {
+        searchMeta.textContent = '';
+        return;
+      }
+      const done = rows.reduce((n, entry) => n + (history.has(entry.song.videoId) || entry.song.localFileHandle ? 1 : 0), 0);
+      const shown = rows.length === total ? '' : `${rows.length.toLocaleString()} of `;
+      searchMeta.textContent = `${shown}${total.toLocaleString()} song${total === 1 ? '' : 's'} · ${done.toLocaleString()} downloaded`;
+    };
+    const rowHtml = i => {
+      const entry = rows[i];
+      const song = entry.song;
+      const title = downloadedTitle(song);
+      const inQueue = queued.has(song.videoId);
+      if (!entry.html) {
+        entry.html = `<div class="dl-result-text"><span class="dl-result-name">${this.escapeHtml(song.name)}</span>${song.author ? `<span class="dl-result-author">${this.escapeHtml(song.author)}</span>` : ''}</div>`;
+      }
+      return `<div class="dl-result${i === focusIdx ? ' focused' : ''}" data-i="${i}">${entry.html}${title ? badgeHtml(title, 'Downloaded') : ''}<button class="dl-result-add" type="button" tabindex="-1" title="${inQueue ? 'In queue' : 'Add to queue'}"${inQueue ? ' disabled' : ''}><i class="fas fa-${inQueue ? 'check' : 'plus'}"></i></button></div>`;
+    };
+    const paint = force => {
+      frame = 0;
+      if (index === null) {
+        return;
+      }
+      if (!rows.length) {
+        paintedStart = paintedEnd = -1;
+        track.style.height = '';
+        rowsEl.style.transform = '';
+        rowsEl.innerHTML = `<div class="ui-empty"><i class="fas fa-music"></i>${index.length ? `No songs match “${this.escapeHtml(searchInput.value.trim())}”` : 'Your library has no YouTube songs yet'}</div>`;
+        return;
+      }
+      const h = rowH || 52;
+      const first = Math.floor(searchResults.scrollTop / h);
+      const start = Math.max(0, (Math.floor(first / BUFFER) - 1) * BUFFER);
+      const end = Math.min(rows.length, start + Math.ceil(searchResults.clientHeight / h) + BUFFER * 3);
+      if (!force && start === paintedStart && end === paintedEnd) {
+        return;
+      }
+      paintedStart = start;
+      paintedEnd = end;
+      let html = '';
+      for (let i = start; i < end; i++) {
+        html += rowHtml(i);
+      }
+      track.style.height = `${rows.length * h}px`;
+      rowsEl.style.transform = `translateY(${start * h}px)`;
+      rowsEl.innerHTML = html;
+      if (!rowH && rowsEl.firstElementChild) {
+        rowH = rowsEl.firstElementChild.offsetHeight;
+        if (rowH && rowH !== h) {
+          paint(true);
+        }
+      }
+    };
+    const runSearch = () => {
+      if (index === null) {
+        buildIndex();
+      }
+      const term = searchInput.value.toLowerCase().trim();
+      if (term) {
+        const folded = this._searchFold(term);
+        const exact = [];
+        const loose = [];
+        index.forEach(entry => {
+          if (entry.lower.includes(term)) {
+            exact.push(entry);
+          } else if (folded !== '' && entry.folded.includes(folded)) {
+            loose.push(entry);
+          }
+        });
+        rows = exact.concat(loose);
+      } else {
+        rows = index;
+      }
+      focusIdx = term && rows.length ? 0 : -1;
+      searchResults.scrollTop = 0;
+      updateMeta();
+      paint(true);
+    };
+    const refreshList = () => {
+      if (listVisible()) {
+        updateMeta();
+        paint(true);
+      }
+    };
+    const scrollToFocus = () => {
+      const h = rowH || 52;
+      const top = focusIdx * h;
+      if (top < searchResults.scrollTop) {
+        searchResults.scrollTop = top;
+      } else if (top + h > searchResults.scrollTop + searchResults.clientHeight) {
+        searchResults.scrollTop = top + h - searchResults.clientHeight;
+      }
+      paint(true);
+    };
+    searchResults.addEventListener('scroll', () => {
+      if (!frame) {
+        frame = requestAnimationFrame(() => paint(false));
+      }
+    }, {
+      passive: true
+    });
+    new ResizeObserver(() => {
+      if (listVisible()) {
+        paint(true);
+      }
+    }).observe(searchResults);
+    searchResults.addEventListener('click', e => {
+      const row = e.target.closest('.dl-result');
+      if (row) {
+        addToQueue(rows[+row.dataset.i].song);
+      }
+    });
+    searchInput.addEventListener('input', runSearch);
+    searchInput.addEventListener('keydown', e => {
+      if (e.isComposing || e.keyCode === 229) {
+        return;
+      }
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (rows.length) {
+          focusIdx = e.key === 'ArrowDown' ? Math.min(focusIdx + 1, rows.length - 1) : Math.max(focusIdx - 1, 0);
+          scrollToFocus();
+        }
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (rows[focusIdx]) {
+          addToQueue(rows[focusIdx].song);
+        }
+        if (searchInput.value) {
+          searchInput.value = '';
+          runSearch();
+        }
+      } else if (e.key === 'Escape' && searchInput.value) {
+        e.stopPropagation();
+        searchInput.value = '';
+        runSearch();
+      }
+    });
+    const refreshCurrentPanel = () => {
+      const song = this.currentSong;
+      if (!song) {
+        currentModeBtn.style.display = 'none';
+        return;
+      }
+      currentModeBtn.style.display = '';
+      currentName.textContent = song.name || 'Unknown';
+      currentAuthor.textContent = song.author || '';
+      currentThumb.style.backgroundImage = song.videoId ? `url(https://i.ytimg.com/vi/${song.videoId}/mqdefault.jpg)` : '';
+      const title = downloadedTitle(song);
+      currentBadge.style.display = title ? '' : 'none';
+      currentBadge.title = title;
+      const inQueue = queued.has(song.videoId);
+      currentAddBtn.disabled = inQueue;
+      currentAddBtn.title = inQueue ? 'Already in queue' : title ? 'Add to queue again' : 'Add to queue';
+    };
+    currentAddBtn.addEventListener('click', () => {
+      if (this.currentSong) {
+        addToQueue(this.currentSong);
+      }
+    });
+    const setMode = mode => {
+      modeBtns.forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+      Object.entries(panels).forEach(([k, el]) => el.style.display = k === mode ? '' : 'none');
+      modal.classList.toggle('dl-modal--browse', mode === 'search');
+      if (mode === 'search') {
+        index === null ? runSearch() : refreshList();
+        setTimeout(() => searchInput.focus(), 50);
+      }
+      if (mode === 'url') {
+        setTimeout(() => urlInput.focus(), 50);
+      }
+    };
+    modeBtns.forEach(btn => btn.addEventListener('click', () => setMode(btn.dataset.mode)));
     const open = () => {
       overlay.style.display = 'flex';
+      index = null;
       refreshCurrentPanel();
-      setMode('current');
-      if (!this.currentSong) {
-        setMode('search');
-      }
+      setMode(this.currentSong ? 'current' : 'search');
     };
     const close = () => {
       overlay.style.display = 'none';
+      index = null;
+      rows = [];
+      track.style.height = '';
+      rowsEl.textContent = '';
     };
     overlay.addEventListener('click', e => {
       if (e.target === overlay) {
@@ -15905,102 +16136,6 @@ class AdvancedMusicPlayer {
       }
     });
     document.getElementById('downloadButton').addEventListener('click', open);
-    const setMode = mode => {
-      modeBtns.forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
-      Object.entries(panels).forEach(([k, el]) => el.style.display = k === mode ? '' : 'none');
-      if (mode === 'search') {
-        setTimeout(() => searchInput.focus(), 50);
-      }
-      if (mode === 'url') {
-        setTimeout(() => urlInput.focus(), 50);
-      }
-    };
-    modeBtns.forEach(btn => btn.addEventListener('click', () => setMode(btn.dataset.mode)));
-    const refreshCurrentPanel = () => {
-      const song = this.currentSong;
-      const modeBtn = document.getElementById('dlModeCurrent');
-      if (!song) {
-        modeBtn.style.display = 'none';
-        return;
-      }
-      modeBtn.style.display = '';
-      document.getElementById('dlCurrentName').textContent = song.name || 'Unknown';
-      document.getElementById('dlCurrentAuthor').textContent = song.author || '';
-      const thumb = document.getElementById('dlCurrentThumb');
-      if (song.videoId) {
-        thumb.style.backgroundImage = `url(https://i.ytimg.com/vi/${song.videoId}/mqdefault.jpg)`;
-      }
-      const addBtn = document.getElementById('dlCurrentAddBtn');
-      const alreadyQueued = this.dlQueue.some(q => q.videoId === song.videoId);
-      addBtn.disabled = alreadyQueued;
-      addBtn.title = alreadyQueued ? 'Already in queue' : 'Add to queue';
-      addBtn.onclick = () => {
-        addToQueue({
-          videoId: song.videoId,
-          name: song.name,
-          author: song.author
-        });
-        addBtn.disabled = true;
-      };
-    };
-    let _debounce = null;
-    searchInput.addEventListener('input', () => {
-      clearTimeout(_debounce);
-      _debounce = setTimeout(() => renderSearch(searchInput.value.trim()), 120);
-    });
-    const renderSearch = term => {
-      if (!term) {
-        searchResults.hidden = true;
-        return;
-      }
-      const lower = term.toLowerCase();
-      const results = this.songLibrary.filter(s => s.name.toLowerCase().includes(lower) || s.author && s.author.toLowerCase().includes(lower)).slice(0, 5);
-      if (!results.length) {
-        searchResults.hidden = true;
-        return;
-      }
-      searchResults.hidden = false;
-      searchResults.innerHTML = results.map((s, i) => `\n      <div class="dl-result${i === 0 ? ' focused' : ''}" data-idx="${i}">\n        <div style="flex:1;min-width:0;">\n          <span class="dl-result-name">${escHtml(s.name)}</span>\n          ${s.author ? `<span class="dl-result-author">${escHtml(s.author)}</span>` : ''}\n        </div>\n        <button class="dl-result-add" title="Add to queue"><i class="fas fa-plus"></i></button>\n      </div>`).join('');
-      searchResults.querySelectorAll('.dl-result').forEach((el, i) => {
-        el.querySelector('.dl-result-add').addEventListener('click', e => {
-          e.stopPropagation();
-          addToQueue({
-            videoId: results[i].videoId,
-            name: results[i].name,
-            author: results[i].author
-          });
-        });
-        el.addEventListener('click', () => {
-          addToQueue({
-            videoId: results[i].videoId,
-            name: results[i].name,
-            author: results[i].author
-          });
-        });
-      });
-    };
-    const handleSearchKey = e => {
-      const items = [ ...searchResults.querySelectorAll('.dl-result') ];
-      const focused = searchResults.querySelector('.dl-result.focused');
-      let idx = focused ? items.indexOf(focused) : 0;
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        if (items[idx]) {
-          items[idx].click();
-        }
-        searchInput.value = '';
-        searchResults.hidden = true;
-      } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-        e.preventDefault();
-        focused?.classList.remove('focused');
-        idx = e.key === 'ArrowDown' ? Math.min(idx + 1, items.length - 1) : Math.max(idx - 1, 0);
-        items[idx].classList.add('focused');
-      } else if (e.key === 'Escape') {
-        searchResults.hidden = true;
-        searchInput.value = '';
-      }
-    };
-    searchInput.addEventListener('keydown', handleSearchKey);
     const addFromUrl = () => {
       const id = this.extractYouTubeId(urlInput.value.trim());
       if (!id) {
@@ -16032,58 +16167,73 @@ class AdvancedMusicPlayer {
       }
     });
     const addToQueue = song => {
-      if (this.dlQueue.some(q => q.videoId === song.videoId)) {
+      if (!song.videoId || this.dlQueue.some(q => q.videoId === song.videoId)) {
         return;
       }
-      this.dlQueue.push({
-        ...song,
+      const item = {
+        videoId: song.videoId,
+        name: song.name,
+        author: song.author,
         status: 'idle',
         link: null,
-        opened: false
-      });
+        opened: false,
+        before: !!downloadedTitle(song)
+      };
+      this.dlQueue.push(item);
       renderQueue();
-      convertItem(this.dlQueue[this.dlQueue.length - 1]);
+      convertItem(item);
     };
+    const startDownload = item => {
+      item.opened = true;
+      history.set(item.videoId, Date.now());
+      window.open(item.link, '_blank');
+    };
+    const statusHtml = item => item.status === 'idle' ? 'Waiting…' : item.status === 'converting' ? '<span class="dl-spinner"></span> Converting…' : item.status === 'done' && item.opened ? '<i class="fas fa-check"></i> Downloaded' : item.status === 'done' ? 'Ready' : item._quotaExceeded ? 'API limit reached' : 'Failed — tap retry';
+    const actionHtml = item => item.status === 'done' && item.opened ? '<span class="dl-qi-tick"><i class="fas fa-check-circle"></i></span>' : item.status === 'done' ? '<button class="dl-qi-download" title="Download"><i class="fas fa-download"></i></button>' : item.status === 'error' ? '<button class="dl-qi-download" title="Retry"><i class="fas fa-redo"></i></button>' : '';
     const renderQueue = () => {
+      queued = new Set(this.dlQueue.map(q => q.videoId));
+      if (overlay.style.display !== 'none') {
+        refreshCurrentPanel();
+        refreshList();
+      }
       if (!this.dlQueue.length) {
         queueSection.style.display = 'none';
+        queueList.textContent = '';
         return;
       }
       queueSection.style.display = '';
       const totalDone = this.dlQueue.filter(q => q.status === 'done').length;
       const notOpened = this.dlQueue.filter(q => q.status === 'done' && !q.opened).length;
-      const anyOpened = this.dlQueue.some(q => q.opened);
-      if (anyOpened) {
+      if (this.dlQueue.some(q => q.opened)) {
         downloadAllLabel.textContent = notOpened > 0 ? `Download rest (${notOpened})` : 'All downloaded';
       } else {
         downloadAllLabel.textContent = `Download all (${totalDone}/${this.dlQueue.length})`;
       }
       downloadAllBtn.disabled = notOpened === 0;
-      queueList.innerHTML = this.dlQueue.map((item, i) => `\n      <div class="dl-queue-item${item.opened ? ' dl-qi-opened' : ''}" data-idx="${i}">\n        <div class="dl-qi-thumb" style="${item.videoId ? `background-image:url(https://i.ytimg.com/vi/${item.videoId}/mqdefault.jpg)` : ''}"></div>\n        <div class="dl-qi-info">\n          <div class="dl-qi-name">${escHtml(item.name)}</div>\n          <div class="dl-qi-status ${item.status}">\n            ${item.status === 'idle' ? 'Waiting…' : item.status === 'converting' ? '<span class="dl-spinner"></span> Converting…' : item.status === 'done' && item.opened ? '<i class="fas fa-check"></i> Downloaded' : item.status === 'done' ? 'Ready' : item._quotaExceeded ? 'API limit reached' : 'Failed — tap retry'}\n          </div>\n        </div>\n        <div class="dl-qi-actions">\n          ${item.status === 'done' && item.opened ? `<span class="dl-qi-tick" style="color:#5D9C59"><i class="fas fa-check-circle"></i></span>` : item.status === 'done' ? `<button class="dl-qi-download" title="Download"><i class="fas fa-download"></i></button>` : item.status === 'error' ? `<button class="dl-qi-download" title="Retry"><i class="fas fa-redo"></i></button>` : ''}\n          <button class="dl-qi-remove" title="Remove"><i class="fas fa-times"></i></button>\n        </div>\n      </div>`).join('');
-      queueList.querySelectorAll('.dl-queue-item').forEach((el, i) => {
-        const item = this.dlQueue[i];
-        el.querySelector('.dl-qi-remove')?.addEventListener('click', () => {
-          this.dlQueue.splice(i, 1);
-          renderQueue();
-        });
-        const dlBtn = el.querySelector('.dl-qi-download');
-        if (dlBtn) {
-          dlBtn.addEventListener('click', () => {
-            if (item.status === 'done' && item.link) {
-              item.opened = true;
-              window.open(item.link, '_blank');
-              renderQueue();
-            } else if (item.status === 'error') {
-              item.status = 'idle';
-              renderQueue();
-              convertItem(item);
-            }
-          });
-        }
-      });
+      queueList.innerHTML = this.dlQueue.map((item, i) => `<div class="dl-queue-item${item.opened ? ' dl-qi-opened' : ''}" data-idx="${i}"><div class="dl-qi-thumb" style="background-image:url(https://i.ytimg.com/vi/${item.videoId}/mqdefault.jpg)"></div><div class="dl-qi-info"><div class="dl-qi-name">${this.escapeHtml(item.name)}</div><div class="dl-qi-status ${item.status}">${statusHtml(item)}</div></div><div class="dl-qi-actions">${item.before && !item.opened ? badgeHtml(downloadedTitle(item) || 'Downloaded before', 'Downloaded before') : ''}${actionHtml(item)}<button class="dl-qi-remove" title="Remove"><i class="fas fa-times"></i></button></div></div>`).join('');
     };
+    queueList.addEventListener('click', e => {
+      const btn = e.target.closest('button');
+      const el = btn && btn.closest('.dl-queue-item');
+      const item = el && this.dlQueue[+el.dataset.idx];
+      if (!item) {
+        return;
+      }
+      if (btn.classList.contains('dl-qi-remove')) {
+        this.dlQueue.splice(+el.dataset.idx, 1);
+        renderQueue();
+      } else if (item.status === 'done' && item.link) {
+        startDownload(item);
+        saveHistory();
+        renderQueue();
+      } else if (item.status === 'error') {
+        item.status = 'idle';
+        renderQueue();
+        convertItem(item);
+      }
+    });
     const convertItem = async item => {
-      if (item.status === 'done' || item.status === 'converting') {
+      if (!this.dlQueue.includes(item) || item.status === 'done' || item.status === 'converting') {
         return;
       }
       const activeCount = this.dlQueue.filter(q => q.status === 'converting').length;
@@ -16122,10 +16272,8 @@ class AdvancedMusicPlayer {
       renderQueue();
     };
     downloadAllBtn.addEventListener('click', () => {
-      this.dlQueue.filter(item => item.status === 'done' && item.link && !item.opened).forEach(item => {
-        item.opened = true;
-        window.open(item.link, '_blank');
-      });
+      this.dlQueue.filter(item => item.status === 'done' && item.link && !item.opened).forEach(startDownload);
+      saveHistory();
       renderQueue();
     });
   }

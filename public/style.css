@@ -6532,21 +6532,43 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   color: var(--text-secondary);
 }
 
-.dl-search-results {
+.dl-search-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+}
+.dl-search-meta {
+  min-height: 1rem;
   margin-top: 0.5rem;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+.dl-search-results {
+  margin-top: 0.4rem;
   border-radius: 8px;
   border: 1px solid var(--border-color);
-  overflow: hidden;
   background: var(--bg-primary);
+  flex: 1 1 auto;
+  min-height: 9rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  contain: content;
 }
 .dl-result {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  padding: 0.6rem 0.75rem;
+  height: 3.25rem;
+  box-sizing: border-box;
+  padding: 0 0.75rem;
   cursor: pointer;
   border-bottom: 1px solid var(--border-color);
   transition: background 0.1s;
+}
+.dl-result-text {
+  flex: 1;
+  min-width: 0;
 }
 .dl-result:last-child {
   border-bottom: none;
@@ -6565,8 +6587,12 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   text-overflow: ellipsis;
 }
 .dl-result-author {
+  display: block;
   font-size: 0.75rem;
   color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .dl-result-add {
   margin-left: auto;
@@ -6582,6 +6608,34 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
 }
 .dl-result-add:hover {
   background: var(--border-color);
+}
+.dl-result-add:disabled {
+  color: #5d9c59;
+  background: none;
+  cursor: default;
+}
+
+.dl-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-shrink: 0;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(93, 156, 89, 0.15);
+  color: #5d9c59;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+@media (max-width: 480px) {
+  .dl-badge {
+    padding: 0.3rem;
+  }
+  .dl-badge-text {
+    display: none;
+  }
 }
 
 .dl-add-url-btn {
@@ -6611,6 +6665,10 @@ body.control-bar-hidden .playlist-sidebar.expanded-mode .sidebar-songs-list {
   flex: 1;
   overflow-y: auto;
   min-height: 0;
+}
+.dl-modal--browse .dl-queue-section {
+  flex: 0 1 auto;
+  max-height: 40%;
 }
 .dl-queue-header {
   display: flex;
