@@ -2018,15 +2018,8 @@ class AdvancedMusicPlayer {
       }
       let filteredLibrary = this.songLibrary;
       if (searchTerm && searchTerm !== '') {
-        const folded = this._searchFold(searchTerm);
-        filteredLibrary = this.songLibrary.filter(song => {
-          const name = song.name.toLowerCase();
-          const author = (song.author || '').toLowerCase();
-          if (name.includes(searchTerm) || author.includes(searchTerm)) {
-            return true;
-          }
-          return folded !== '' && (this._searchFold(song.name).includes(folded) || this._searchFold(song.author || '').includes(folded));
-        });
+        const matches = this._searchMatcher(searchTerm);
+        filteredLibrary = this.songLibrary.filter(song => matches(song.name) || matches(song.author));
       }
       if (this._libFilters && Object.values(this._libFilters).some(v => v !== null)) {
         filteredLibrary = this._applyFilters(filteredLibrary);
@@ -2083,6 +2076,32 @@ class AdvancedMusicPlayer {
       console.error('Error rendering song library:', error);
       this.elements.songLibrary.innerHTML = '<div class="error-message">Failed to display song library</div>';
     }
+  }
+  _searchMatcher(term) {
+    const query = String(term || '').toLowerCase().trim();
+    const folded = this._searchFold(query);
+    return text => {
+      const value = String(text || '').toLowerCase();
+      return value.includes(query) || folded !== '' && this._searchFold(value).includes(folded);
+    };
+  }
+  _rankSongs(songs, term) {
+    const query = String(term || '').toLowerCase().trim();
+    const matches = this._searchMatcher(query);
+    const tiers = [ [], [], [], [] ];
+    songs.forEach(song => {
+      const name = (song.name || '').toLowerCase();
+      if (name.startsWith(query)) {
+        tiers[0].push(song);
+      } else if (name.includes(query)) {
+        tiers[1].push(song);
+      } else if ((song.author || '').toLowerCase().includes(query)) {
+        tiers[2].push(song);
+      } else if (matches(song.name) || matches(song.author)) {
+        tiers[3].push(song);
+      }
+    });
+    return tiers.flatMap(tier => tier.sort((a, b) => (a.name || '').localeCompare(b.name || '')));
   }
   _searchFold(text) {
     const cache = this._searchFoldCache || (this._searchFoldCache = new Map());
@@ -4407,16 +4426,8 @@ class AdvancedMusicPlayer {
       });
     });
   }
-  _playlistMatcher(term) {
-    const query = term.toLowerCase();
-    const folded = this._searchFold(query);
-    return text => {
-      const value = String(text || '').toLowerCase();
-      return value.includes(query) || folded !== '' && this._searchFold(value).includes(folded);
-    };
-  }
   _searchPlaylists(term, library) {
-    const matches = this._playlistMatcher(term);
+    const matches = this._searchMatcher(term);
     const query = term.toLowerCase();
     const named = [];
     const bySong = [];
@@ -4695,7 +4706,7 @@ class AdvancedMusicPlayer {
     const list = UI.el('div', 'artist-pick-list');
     const render = () => {
       const term = search.value.trim();
-      const matches = term ? this._playlistMatcher(term) : null;
+      const matches = term ? this._searchMatcher(term) : null;
       const shown = matches ? artists.filter(artist => matches(artist.name)) : artists;
       list.replaceChildren(...shown.map(artist => this._buildArtistRow(artist, dialog.close)));
       if (shown.length === 0) {
@@ -4916,8 +4927,7 @@ class AdvancedMusicPlayer {
       const inPlaylist = new Map();
       playlist.songs.forEach(entry => inPlaylist.set(entry.videoId, (inPlaylist.get(entry.videoId) || 0) + 1));
       const allowAgain = dupToggle.checked;
-      const matches = term ? this._playlistMatcher(term) : null;
-      const found = [ ...this.songLibrary ].filter(song => !matches || matches(song.name) || matches(song.author)).sort((a, b) => a.name.localeCompare(b.name));
+      const found = term ? this._rankSongs(this.songLibrary, term) : [ ...this.songLibrary ].sort((a, b) => a.name.localeCompare(b.name));
       if (this.songLibrary.length === 0) {
         results.replaceChildren(UI.el('div', 'ui-empty ple-empty', `<i class="fas fa-music"></i><span>Your library is empty.</span>`));
         return;
@@ -6364,7 +6374,6 @@ class AdvancedMusicPlayer {
       songCard.classList.add('sidebar-song-card');
       const entryId = song.entryId || 'id_' + song.videoId;
       songCard.dataset.entryId = entryId;
-      songCard.dataset.songName = song.name.toLowerCase();
       if (index === this.currentSongIndex) {
         songCard.classList.add('active');
       }
@@ -6538,15 +6547,14 @@ class AdvancedMusicPlayer {
   filterPlaylistSidebarSongs(searchTerm) {
     clearTimeout(this.sidebarSearchDebounceTimer);
     this.sidebarSearchDebounceTimer = setTimeout(() => {
-      const query = searchTerm.toLowerCase().trim();
-      const songCards = this.elements.sidebarPlaylistSongs.querySelectorAll('.sidebar-song-card');
-      songCards.forEach(card => {
-        const songName = card.dataset.songName;
-        if (!query || songName.includes(query)) {
-          card.style.display = 'flex';
-        } else {
-          card.style.display = 'none';
-        }
+      const term = searchTerm.trim();
+      const matches = term ? this._searchMatcher(term) : null;
+      const library = this._libraryByVideoId();
+      const songs = this.currentPlaylist ? this.currentPlaylist.songs : [];
+      this.elements.sidebarPlaylistSongs.querySelectorAll('.sidebar-song-card').forEach((card, index) => {
+        const entry = songs[index];
+        const song = entry ? library.get(entry.videoId) || entry : null;
+        card.style.display = !matches || song && (matches(song.name) || matches(song.author)) ? 'flex' : 'none';
       });
     }, 50);
   }
@@ -9771,8 +9779,7 @@ class AdvancedMusicPlayer {
         dropdown.hidden = true;
         return;
       }
-      const lower = term.toLowerCase();
-      const results = this.songLibrary.filter(s => s.name.toLowerCase().includes(lower) || s.author && s.author.toLowerCase().includes(lower)).slice(0, 8);
+      const results = this._rankSongs(this.songLibrary, term).slice(0, 8);
       if (!results.length) {
         dropdown.hidden = true;
         return;
@@ -17147,11 +17154,12 @@ class AdvancedMusicPlayer {
       ...r,
       _rank: i + 1
     }));
-    const term = (searchTerm || '').toLowerCase().trim();
+    const term = (searchTerm || '').trim();
     if (!term) {
       return ranked;
     }
-    return ranked.filter(r => r.song.name.toLowerCase().includes(term) || r.song.author && r.song.author.toLowerCase().includes(term));
+    const matches = this._searchMatcher(term);
+    return ranked.filter(r => matches(r.song.name) || matches(r.song.author));
   }
   _songThumbHtml(song, sizeClass) {
     if (song.videoId) {

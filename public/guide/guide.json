@@ -42,7 +42,7 @@
       "body": "Filters your library as you type and matches artists too. Enter plays the first match. If nothing matches, Enter searches YouTube instead, with Preview and Add on every result.",
       "tips": [
         "Paste a YouTube link here and press Enter to add that exact video.",
-        "Songs in other alphabets match Latin spellings: saranghae finds 사랑해, eto finds Это.",
+        "Songs in other alphabets match Latin spellings: saranghae finds 사랑해, eto finds Это. The queue, playlists and statistics searches work the same way.",
         "Hover the funnel for filters: favourites, has lyrics, downloaded, and language."
       ]
     },
