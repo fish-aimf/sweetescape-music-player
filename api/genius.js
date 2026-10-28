@@ -1,9 +1,21 @@
 const KEYS = [process.env.RAPIDAPI_KEY_1, process.env.RAPIDAPI_KEY_2].filter(Boolean);
+const BENCH_MS = 60 * 60 * 1000;
+const benchedUntil = new Map();
 
 const RAPIDAPI_HOST = 'geniuslyrics-api.p.rapidapi.com';
 const FOUND_CACHE = 'public, s-maxage=604800, stale-while-revalidate=2592000';
 const MISSING_CACHE = 'public, s-maxage=86400';
 const RAPIDAPI_URL = `https://${RAPIDAPI_HOST}/get_lyrics`;
+
+function keysInOrder() {
+  const now = Date.now();
+  const ready = KEYS.filter((key) => !(benchedUntil.get(key) > now));
+  return ready.concat(KEYS.filter((key) => !ready.includes(key)));
+}
+
+function bench(key) {
+  benchedUntil.set(key, Date.now() + BENCH_MS);
+}
 
 function buildRequestUrl(song, artist) {
   const params = new URLSearchParams({ song });
@@ -72,7 +84,7 @@ module.exports = async function handler(req, res) {
   let lastError = KEYS.length === 0 ? 'No RapidAPI keys configured' : null;
   let foundButEmpty = false;
 
-  for (const key of KEYS) {
+  for (const key of keysInOrder()) {
     try {
       const response = await fetch(requestUrl, {
         method: 'GET',
@@ -83,7 +95,8 @@ module.exports = async function handler(req, res) {
         },
       });
 
-      if (response.status === 429 || response.status === 403) {
+      if (response.status === 429 || response.status === 403 || response.status === 401) {
+        bench(key);
         lastError = `Key rejected (status ${response.status})`;
         continue;
       }
@@ -93,12 +106,16 @@ module.exports = async function handler(req, res) {
         continue;
       }
 
+      if (response.headers.get('x-ratelimit-requests-remaining') === '0') {
+        bench(key);
+      }
+
       const payload = await response.json();
       const lyrics = extractLyrics(payload);
 
       if (!lyrics) {
         foundButEmpty = true;
-        continue;
+        break;
       }
 
       const meta = extractMeta(payload);
