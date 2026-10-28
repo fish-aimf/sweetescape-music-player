@@ -236,7 +236,7 @@
         </figure>
         <div class="prose">
           <h3>Song rows</h3>
-          <p>Hover over a song in a list to show its buttons: star (favourite), play, edit and delete. Small icons at the end of the row show that it has lyrics, a local file or a star. Clicking the name also plays it.</p>
+          <p>Hover over a song in a list to show its buttons: star (favourite), play, <strong>+</strong> (<a href="#add-to-playlist">add to a playlist</a>), delete and edit. Small icons at the end of the row show that it has lyrics, a local file or a star. Clicking the name also plays it.</p>
           <p><span class="tag">Tip</span> Right-click a song's play button to queue it.</p>
           <p><span class="tag">Tip</span> Drag an audio file from your computer onto a song to play that song from the file from then on.</p>
           <p>By default the list is alphabetical with favourites on top. <strong>Settings, Additional</strong> can switch it to the order you added songs, or reverse it.</p>
@@ -318,7 +318,7 @@
           <p>With the search box empty, the <strong>Playlists</strong> tab shows every playlist as a cover tile with its song count. <strong>Favorites</strong> comes first and keeps itself in sync with your starred songs. The playlist that's playing is outlined.</p>
           <ul>
             <li>Click a tile to play the playlist. An empty playlist opens in the editor instead, so you can add songs.</li>
-            <li>Hover a tile for two buttons: the pencil opens the editor and the bin deletes the playlist. Deleting always asks first, and the songs stay in your library. Favorites has no bin.</li>
+            <li>Hover a tile for two buttons: the pencil opens the editor and the bin deletes the playlist. Deleting asks first, keeps the songs in your library, and shows <strong>Undo</strong> for a few seconds in case you change your mind. Favorites has no bin.</li>
             <li><strong>New playlist</strong> asks for a name, then opens the editor.</li>
             <li>Drag a tile to reorder your playlists. The shelf in the Library tab follows the same order.</li>
           </ul>
@@ -354,13 +354,27 @@
             <li><strong>Rename it</strong> in the <strong>Name</strong> box at the top. The new name is saved when you press <kbd>Enter</kbd> or click away. If another playlist already has that name, you're told and the old name stays.</li>
             <li><strong>Add songs</strong> by searching your library on the right by song or artist, with the same matching as the library search, then click a song. <kbd>Enter</kbd> adds the top result. Songs already in the playlist show a tick.</li>
             <li><strong>Reorder</strong> by dragging a song. Hover a song to play the playlist from it, or to remove it with the cross.</li>
-            <li><strong>Shuffle</strong> and <strong>Reverse</strong> change the saved order. If a song is listed more than once, a bar at the bottom of the list offers <strong>Remove duplicates</strong>, which keeps the first copy.</li>
+            <li><strong>Shuffle</strong>, <strong>Reverse</strong> and <strong>Sort</strong> (by title or by artist) change the saved order. If the playlist is playing, it carries on from the same song. If a song is listed more than once, a bar at the bottom of the list offers <strong>Remove duplicates</strong>, which keeps the first copy.</li>
+            <li>For a playlist made with <strong>From artist</strong>, a bar offers to add any newer songs by that artist in your library.</li>
+            <li><strong>Duplicate</strong> makes a copy you can change without touching the original. <strong>Copy as text</strong> puts the playlist on your clipboard in the Import Songs format, to paste to a friend or keep as a backup.</li>
             <li>To add the same song twice on purpose, turn on <strong>Let a song be added more than once</strong>.</li>
             <li>In <strong>Favorites</strong> the name stays fixed, and adding or removing a song stars or unstars it.</li>
           </ul>
         </div>
         <figure class="shot">
-          <img src="/learn/shots/playlist-edit.jpg" width="900" height="673" loading="lazy" alt="The playlist editor: the Name box and cover at the top, Road Trip's six songs with drag handles on the left and play and remove buttons on the hovered Dreams, and the library to add from on the right.">
+          <img src="/learn/shots/playlist-edit.jpg" width="900" height="673" loading="lazy" alt="The playlist editor: the Name box and cover at the top, Road Trip's six songs with Shuffle, Reverse and Sort above them on the left, the library to add from on the right, and Duplicate, Copy as text, Play and Done along the bottom.">
+        </figure>
+        <div class="prose">
+          <h3 id="add-to-playlist">Adding a song to a playlist from anywhere</h3>
+          <p>Hover a song in a library list and click <strong>+</strong>, or press <strong>+</strong> in the Now Playing tab. A small menu lists your playlists with a tick on the ones the song is already in. Click a playlist to add the song, or a ticked one to take it out again. The menu stays open, so you can pick several.</p>
+          <ul>
+            <li><strong>New playlist</strong> at the top makes a playlist that starts with this song.</li>
+            <li>With more than six playlists the menu gets a search box, and <kbd>Enter</kbd> picks the top match.</li>
+            <li>Ticking Favorites stars the song.</li>
+          </ul>
+        </div>
+        <figure class="shot">
+          <img src="/learn/shots/add-to-playlist.jpg" width="1280" height="800" loading="lazy" alt="The add to playlist menu open under a song in the library, with New playlist at the top and ticks next to Favorites and Late Night.">
         </figure>
       </section>
 
@@ -718,6 +732,7 @@ Dreams, https://www.youtube.com/watch?v=5oWyMakvQew, Fleetwood Mac
             <li><strong>Long-press a song</strong> in the playlist side panel: skip it for this session.</li>
             <li><strong>Drag a playlist tile</strong>: reorder playlists.</li>
             <li><strong>Hover a playlist</strong>: edit or delete it.</li>
+            <li><strong>Hover a song and click +</strong>: add it to a playlist.</li>
             <li><strong>Drag a song</strong> in the playlist editor: reorder the playlist.</li>
             <li><strong>Right-click the Lyrics tab</strong>: every song with lyrics.</li>
             <li><strong>Click a Music Explorer heading</strong>: full history (Recently Listened To) or a fresh set (Suggested, Your Picks).</li>

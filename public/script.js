@@ -1427,6 +1427,7 @@ class AdvancedMusicPlayer {
     });
   }
   saveSongLibrary(singleSong = null) {
+    this._artistIndexCache = null;
     return new Promise((resolve, reject) => {
       if (!this.db) {
         reject(new Error('Database not initialized'));
@@ -1457,6 +1458,7 @@ class AdvancedMusicPlayer {
     });
   }
   saveSingleSong(song) {
+    this._artistIndexCache = null;
     return new Promise((resolve, reject) => {
       if (!this.db) {
         reject(new Error('Database not initialized'));
@@ -1527,6 +1529,18 @@ class AdvancedMusicPlayer {
         console.error('Error saving playlists:', event.target.error);
         reject(new Error('Could not save playlists: ' + event.target.error.message));
       };
+    });
+  }
+  savePlaylist(playlist) {
+    return new Promise((resolve, reject) => {
+      if (!this.db) {
+        reject(new Error('Database not initialized'));
+        return;
+      }
+      const transaction = this.db.transaction([ 'playlists' ], 'readwrite');
+      transaction.objectStore('playlists').put(playlist);
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = event => reject(new Error('Could not save playlist: ' + event.target.error.message));
     });
   }
   loadRecentlyPlayed() {
@@ -2101,7 +2115,14 @@ class AdvancedMusicPlayer {
         tiers[3].push(song);
       }
     });
-    return tiers.flatMap(tier => tier.sort((a, b) => (a.name || '').localeCompare(b.name || '')));
+    return tiers.flatMap(tier => tier.sort((a, b) => this._compareText(a.name, b.name)));
+  }
+  _compareText(a, b) {
+    const collator = this._textCollator || (this._textCollator = new Intl.Collator(undefined, {
+      sensitivity: 'base',
+      numeric: true
+    }));
+    return collator.compare(a || '', b || '');
   }
   _searchFold(text) {
     const cache = this._searchFoldCache || (this._searchFoldCache = new Map());
@@ -2374,7 +2395,7 @@ class AdvancedMusicPlayer {
       const favHtml = isFav ? `<span class="song-fav-indicator"    title="Favourited"><i class="fas fa-star"></i></span>` : '';
       indicatorsHtml = `<div class="song-status-indicators">${lyricsHtml}${dlHtml}${favHtml}</div>`;
     }
-    songElement.innerHTML = `\n\t        <span class="song-name" data-song-id="${song.id}">\n\t            ${art ? `<span class="song-item-title">${this.escapeHtml(song.name)}</span>` : this.escapeHtml(song.name)}\n\t            ${song.author ? `<small class="song-author">by ${this.escapeHtml(song.author)}</small>` : ''}\n\t        </span>\n\t        <div class="song-item-right">\n\t            ${indicatorsHtml}\n\t            <div class="song-actions">\n\t                <button class="song-card-btn favorite-btn" data-song-id="${song.id}" title="${isFav ? 'Unfavourite' : 'Favourite'}">\n\t                    <i class="${isFav ? 'fas fa-star' : 'far fa-star'}"></i>\n\t                </button>\n\t                <button class="song-card-btn play-btn" data-song-id="${song.id}" title="Play">\n\t                    <i class="fas fa-play"></i>\n\t                </button>\n\t                <button class="song-card-btn delete-btn" data-song-id="${song.id}" title="Delete">\n\t                    <i class="fas fa-trash"></i>\n\t                </button>\n\t                <button class="song-card-btn edit-btn" data-song-id="${song.id}" title="Edit">\n\t                    <i class="fas fa-pen"></i>\n\t                </button>\n\t            </div>\n\t        </div>\n\t    `;
+    songElement.innerHTML = `\n\t        <span class="song-name" data-song-id="${song.id}">\n\t            ${art ? `<span class="song-item-title">${this.escapeHtml(song.name)}</span>` : this.escapeHtml(song.name)}\n\t            ${song.author ? `<small class="song-author">by ${this.escapeHtml(song.author)}</small>` : ''}\n\t        </span>\n\t        <div class="song-item-right">\n\t            ${indicatorsHtml}\n\t            <div class="song-actions">\n\t                <button class="song-card-btn favorite-btn" data-song-id="${song.id}" title="${isFav ? 'Unfavourite' : 'Favourite'}">\n\t                    <i class="${isFav ? 'fas fa-star' : 'far fa-star'}"></i>\n\t                </button>\n\t                <button class="song-card-btn play-btn" data-song-id="${song.id}" title="Play">\n\t                    <i class="fas fa-play"></i>\n\t                </button>\n\t                <button class="song-card-btn playlist-add-btn" data-song-id="${song.id}" title="Add to playlist">\n\t                    <i class="fas fa-plus"></i>\n\t                </button>\n\t                <button class="song-card-btn delete-btn" data-song-id="${song.id}" title="Delete">\n\t                    <i class="fas fa-trash"></i>\n\t                </button>\n\t                <button class="song-card-btn edit-btn" data-song-id="${song.id}" title="Edit">\n\t                    <i class="fas fa-pen"></i>\n\t                </button>\n\t            </div>\n\t        </div>\n\t    `;
     if (art) {
       const img = document.createElement('img');
       img.className = 'song-item-art';
@@ -2405,6 +2426,8 @@ class AdvancedMusicPlayer {
       const songIdNum = parseInt(songId, 10);
       if (target.classList.contains('favorite-btn')) {
         this.toggleFavorite(songIdNum);
+      } else if (target.classList.contains('playlist-add-btn')) {
+        this.openAddToPlaylistMenu(this.songLibrary.find(song => song.id === songIdNum), target);
       } else if (target.classList.contains('play-btn')) {
         this.playSong(songIdNum);
       } else if (target.classList.contains('delete-btn')) {
@@ -3132,6 +3155,7 @@ class AdvancedMusicPlayer {
           if (this.currentPlaylist && this.currentPlaylist.id === favoritesPlaylist.id) {
             this.renderPlaylistSidebar();
           }
+          this.renderPlaylists();
           resolve();
         }).catch(resolve);
       } else {
@@ -4250,7 +4274,7 @@ class AdvancedMusicPlayer {
     };
     this.playlists.push(playlist);
     try {
-      await this.savePlaylists();
+      await this.savePlaylist(playlist);
     } catch (error) {
       this.playlists = this.playlists.filter(p => p !== playlist);
       throw error;
@@ -4259,7 +4283,7 @@ class AdvancedMusicPlayer {
     this.updatePlaylistSelection();
     return playlist;
   }
-  openNewPlaylistDialog() {
+  openNewPlaylistDialog({ songs = [] } = {}) {
     const dialog = UI.modal({
       title: 'New playlist',
       icon: 'fa-list',
@@ -4295,9 +4319,13 @@ class AdvancedMusicPlayer {
       }
       create.disabled = true;
       try {
-        const playlist = await this.createPlaylist(input.value.trim());
+        const playlist = await this.createPlaylist(input.value.trim(), songs);
         dialog.close();
-        this.openPlaylistEditModal(playlist.id);
+        if (songs.length) {
+          this.showQueueNotification(`Added to "${playlist.name}"`);
+        } else {
+          this.openPlaylistEditModal(playlist.id);
+        }
       } catch (error) {
         console.error('Error creating playlist:', error);
         showNote('Couldn’t save the playlist. Please try again.');
@@ -4313,6 +4341,11 @@ class AdvancedMusicPlayer {
       }
     });
     dialog.body.append(input, note);
+    if (songs.length) {
+      const start = UI.el('p', 'playlist-dialog-text ple-starts');
+      start.textContent = songs.length === 1 ? `It starts with ${songs[0].name}.` : `It starts with ${this._songCountText(songs.length)}.`;
+      dialog.body.appendChild(start);
+    }
     dialog.addFooter(UI.button('Cancel', {
       variant: 'ghost',
       onClick: dialog.close
@@ -4553,6 +4586,10 @@ class AdvancedMusicPlayer {
     return name.normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^\p{L}\p{N}\p{M}]+/gu, '');
   }
   _artistIndex() {
+    const cached = this._artistIndexCache;
+    if (cached && cached.library === this.songLibrary && cached.length === this.songLibrary.length) {
+      return cached.index;
+    }
     const credits = this.songLibrary.map(song => [ song, this._artistCredits(song.author) ]);
     const known = new Set(credits.flatMap(([, names]) => names.map(name => this._artistKey(name))));
     const artists = new Map();
@@ -4580,11 +4617,17 @@ class AdvancedMusicPlayer {
       });
     });
     const words = text => text.split(' ').length;
-    return [ ...artists.values() ].map(artist => ({
+    const index = [ ...artists.values() ].map(artist => ({
       key: artist.key,
       name: [ ...artist.spellings ].sort((a, b) => b[1] - a[1] || words(b[0]) - words(a[0]))[0][0],
-      songs: [ ...artist.songs ].sort((a, b) => a.name.localeCompare(b.name))
-    })).sort((a, b) => b.songs.length - a.songs.length || a.name.localeCompare(b.name));
+      songs: [ ...artist.songs ].sort((a, b) => this._compareText(a.name, b.name))
+    })).sort((a, b) => b.songs.length - a.songs.length || this._compareText(a.name, b.name));
+    this._artistIndexCache = {
+      library: this.songLibrary,
+      length: this.songLibrary.length,
+      index: index
+    };
+    return index;
   }
   _artistPlaylistState(artist) {
     const playlist = this.playlists.find(p => p.artistKey === artist.key) || null;
@@ -4599,33 +4642,20 @@ class AdvancedMusicPlayer {
     if (missing.length === 0) {
       return playlist;
     }
-    const entries = missing.map(song => ({
-      name: song.name,
-      videoId: song.videoId,
-      author: song.author || '',
-      entryId: Date.now() + Math.random()
-    }));
+    const entries = missing.map(song => this._newPlaylistEntry(song));
+    if (playlist) {
+      const saved = await this._editPlaylistSongs(playlist, [ ...playlist.songs, ...entries ]);
+      if (saved) {
+        this.showNotification(`Added ${this._songCountText(entries.length)} to "${playlist.name}"`, 'success');
+      }
+      return saved ? playlist : null;
+    }
     try {
-      if (!playlist) {
-        const created = await this.createPlaylist(this.uniquePlaylistName(artist.name), entries, {
-          artistKey: artist.key
-        });
-        this.showNotification(`Created "${created.name}" with ${this._songCountText(entries.length)}`, 'success');
-        return created;
-      }
-      playlist.songs.push(...entries);
-      try {
-        await this.savePlaylists();
-      } catch (error) {
-        playlist.songs = playlist.songs.filter(entry => !entries.includes(entry));
-        throw error;
-      }
-      this.renderPlaylists();
-      if (this.currentPlaylist?.id === playlist.id) {
-        this.renderPlaylistSidebar();
-      }
-      this.showNotification(`Added ${this._songCountText(entries.length)} to "${playlist.name}"`, 'success');
-      return playlist;
+      const created = await this.createPlaylist(this.uniquePlaylistName(artist.name), entries, {
+        artistKey: artist.key
+      });
+      this.showNotification(`Created "${created.name}" with ${this._songCountText(entries.length)}`, 'success');
+      return created;
     } catch (error) {
       console.error('Error saving artist playlist:', error);
       this.showNotification('Couldn’t save the playlist. Please try again.', 'error');
@@ -4737,16 +4767,44 @@ class AdvancedMusicPlayer {
       closeOnEscape: true,
       onClose: () => {
         commitName();
-        if (this._playlistEditor?.dialog === dialog) {
-          const starsChanged = this._playlistEditor.starsChanged;
-          this._playlistEditor = null;
-          if (starsChanged) {
-            const term = this.elements.librarySearch ? this.elements.librarySearch.value.trim() : '';
-            term === '' ? this.renderLibraryView() : this.renderSongLibrary(term.toLowerCase());
+        if (this._playlistEditor?.dialog !== dialog) {
+          return;
+        }
+        const { dirty, starsChanged } = this._playlistEditor;
+        this._playlistEditor = null;
+        if (dirty) {
+          this.renderPlaylists();
+          if (this.currentPlaylist?.id === playlist.id) {
+            this.renderPlaylistSidebar();
           }
+        }
+        if (starsChanged) {
+          this._refreshLibraryAfterStars();
         }
       }
     });
+    const libraryState = {
+      ref: null,
+      length: -1,
+      byId: null,
+      sorted: null
+    };
+    const libraryNow = () => {
+      if (libraryState.ref !== this.songLibrary || libraryState.length !== this.songLibrary.length) {
+        libraryState.ref = this.songLibrary;
+        libraryState.length = this.songLibrary.length;
+        libraryState.byId = this._libraryByVideoId();
+        libraryState.sorted = null;
+      }
+      return libraryState;
+    };
+    const sortedLibrary = () => {
+      const state = libraryNow();
+      if (!state.sorted) {
+        state.sorted = [ ...this.songLibrary ].sort((a, b) => this._compareText(a.name, b.name));
+      }
+      return state.sorted;
+    };
     const hero = UI.el('div', 'ple-hero');
     const coverSlot = UI.el('div', 'ple-cover');
     const nameField = UI.el('div', 'ple-name-field');
@@ -4787,7 +4845,7 @@ class AdvancedMusicPlayer {
       }
       const previous = playlist.name;
       playlist.name = name;
-      this.savePlaylists().then(() => {
+      this.savePlaylist(playlist).then(() => {
         this.renderPlaylists();
         this.updatePlaylistSelection();
         if (this.currentPlaylist?.id === playlist.id) {
@@ -4835,6 +4893,16 @@ class AdvancedMusicPlayer {
       onClick: () => this._editPlaylistSongs(playlist, [ ...playlist.songs ].reverse())
     });
     reverseBtn.title = 'Flip the order, last song first';
+    const sortSelect = UI.el('select', 'ui-select ple-sort', `<option value="" selected disabled hidden>Sort</option><option value="name">By title</option><option value="author">By artist</option>`);
+    sortSelect.title = 'Sort the songs';
+    sortSelect.setAttribute('aria-label', 'Sort the songs');
+    sortSelect.addEventListener('change', () => {
+      const key = sortSelect.value;
+      sortSelect.selectedIndex = 0;
+      const byId = libraryNow().byId;
+      const field = (entry, name) => (byId.get(entry.videoId) || entry)[name] || '';
+      this._editPlaylistSongs(playlist, [ ...playlist.songs ].sort((a, b) => this._compareText(field(a, key), field(b, key)) || this._compareText(field(a, 'name'), field(b, 'name'))));
+    });
     const dedupeBtn = UI.button('Remove duplicates', {
       variant: 'ghost',
       size: 'sm',
@@ -4851,13 +4919,31 @@ class AdvancedMusicPlayer {
       }
     });
     dedupeBtn.title = 'Keep the first copy of every song';
-    tools.append(shuffleBtn, reverseBtn);
+    tools.append(shuffleBtn, reverseBtn, sortSelect);
     songsHead.append(songsTitle, tools);
     const list = UI.el('div', 'ple-list');
     const dupeText = UI.el('p', 'ple-hint');
     const dupeBar = UI.el('div', 'ple-dup ple-dupes');
     dupeBar.append(dupeText, dedupeBtn);
-    songsPanel.append(songsHead, list, dupeBar);
+    const artistText = UI.el('p', 'ple-hint');
+    const artistBtn = UI.button('Add them', {
+      variant: 'ghost',
+      size: 'sm',
+      icon: 'fa-plus',
+      onClick: () => {
+        const { missing } = artistGap();
+        if (missing.length) {
+          renderLimit = Math.max(renderLimit, playlist.songs.length + missing.length);
+          this._editPlaylistSongs(playlist, [ ...playlist.songs, ...missing.map(song => this._newPlaylistEntry(song)) ]);
+          list.lastElementChild?.scrollIntoView({
+            block: 'nearest'
+          });
+        }
+      }
+    });
+    const artistBar = UI.el('div', 'ple-dup ple-dupes');
+    artistBar.append(artistText, artistBtn);
+    songsPanel.append(songsHead, list, dupeBar, artistBar);
     const addPanel = UI.el('section', 'ple-panel');
     const addHead = UI.el('div', 'ple-panel-head', `<span class="ui-section-label ple-panel-title">Add from your library</span>`);
     const search = UI.el('input', 'ui-input ple-search');
@@ -4872,7 +4958,7 @@ class AdvancedMusicPlayer {
     dupToggle.addEventListener('change', () => {
       this.allowDuplicates = dupToggle.checked;
       this.saveSetting('allowDuplicates', this.allowDuplicates);
-      renderResults();
+      updateResultRows();
     });
     addPanel.append(addHead, search, results);
     if (!isFavorites) {
@@ -4887,70 +4973,154 @@ class AdvancedMusicPlayer {
         this.playPlaylist(playlist.id);
       }
     });
-    dialog.addFooter(playBtn, UI.button('Done', {
+    const footerStart = UI.el('div', 'ple-footer-start');
+    footerStart.append(UI.button('Duplicate', {
+      variant: 'ghost',
+      icon: 'fa-copy',
+      onClick: () => this.duplicatePlaylist(playlist.id)
+    }), UI.button('Copy as text', {
+      variant: 'ghost',
+      icon: 'fa-file-lines',
+      onClick: () => this.exportPlaylist(playlist.id)
+    }));
+    footerStart.lastChild.title = 'Copy the playlist in the Import Songs format, to share or keep';
+    dialog.addFooter(footerStart, playBtn, UI.button('Done', {
       variant: 'primary',
       onClick: dialog.close
     }));
-    const songRow = (entry, index, library) => {
-      const song = library.get(entry.videoId) || entry;
-      const row = UI.el('div', 'ple-row', `<span class="ple-grip" aria-hidden="true"><i class="fas fa-grip-vertical"></i></span><span class="ple-index">${index + 1}</span><span class="ple-info"><span class="ple-title"></span><span class="ple-artist"></span></span><span class="ple-actions"><button type="button" class="ple-btn ple-play" title="Play from this song"><i class="fas fa-play"></i></button><button type="button" class="ple-btn ple-remove" title="Remove from playlist"><i class="fas fa-xmark"></i></button></span>`);
-      row.draggable = true;
-      row.dataset.index = index;
-      row.classList.toggle('is-playing', this.currentPlaylist?.id === playlist.id && this.currentSongIndex === index);
-      row.querySelector('.ple-title').textContent = song.name;
-      row.querySelector('.ple-artist').textContent = song.author || '';
-      row.querySelector('.ple-info').before(this._buildCoverImage(song, 'ple-art'));
+    const counts = new Map();
+    const artistGap = () => {
+      const artist = playlist.artistKey ? this._artistIndex().find(a => a.key === playlist.artistKey) : null;
+      return {
+        artist: artist,
+        missing: artist ? artist.songs.filter(song => !counts.has(song.videoId)) : []
+      };
+    };
+    const rowTemplate = UI.el('div', 'ple-row', `<span class="ple-grip" aria-hidden="true"><i class="fas fa-grip-vertical"></i></span><span class="ple-index"></span><span class="ple-info"><span class="ple-title"></span><span class="ple-artist"></span></span><span class="ple-actions"><button type="button" class="ple-btn ple-play" title="Play from this song"><i class="fas fa-play"></i></button><button type="button" class="ple-btn ple-remove" title="Remove from playlist"><i class="fas fa-xmark"></i></button></span>`);
+    rowTemplate.draggable = true;
+    const rows = new WeakMap();
+    const buildRow = entry => {
+      const song = libraryNow().byId.get(entry.videoId) || entry;
+      const row = rowTemplate.cloneNode(true);
+      const info = row.children[2];
+      info.firstChild.textContent = song.name;
+      info.lastChild.textContent = song.author || '';
+      info.before(this._buildCoverImage(song, 'ple-art'));
       return row;
     };
-    const renderSongs = () => {
-      const library = this._libraryByVideoId();
-      const count = playlist.songs.length;
-      const copies = new Map();
-      playlist.songs.forEach(entry => copies.set(entry.videoId, (copies.get(entry.videoId) || 0) + 1));
-      const repeated = [ ...copies.values() ].filter(n => n > 1).length;
-      coverSlot.replaceChildren(this._buildPlaylistCover(playlist, library));
-      meta.textContent = [ this._songCountText(count), this._playlistArtistSummary(playlist, library) ].filter(Boolean).join(' · ');
+    const emptyList = UI.el('div', 'ui-empty ple-empty', `<i class="fas fa-music"></i><span>No songs yet. Add some from your library.</span>`);
+    let coverKey = null;
+    let renderLimit = 150;
+    let growTimer = null;
+    const syncMeta = () => {
+      const songs = playlist.songs;
+      const byId = libraryNow().byId;
+      counts.clear();
+      songs.forEach(entry => counts.set(entry.videoId, (counts.get(entry.videoId) || 0) + 1));
+      const count = songs.length;
+      const key = [ ...counts.keys() ].slice(0, 4).join();
+      if (key !== coverKey) {
+        coverKey = key;
+        coverSlot.replaceChildren(this._buildPlaylistCover(playlist, byId));
+      }
+      meta.textContent = [ this._songCountText(count), this._playlistArtistSummary(playlist, byId) ].filter(Boolean).join(' · ');
       songsTitle.lastChild.textContent = count;
       shuffleBtn.disabled = count < 2;
       reverseBtn.disabled = count < 2;
+      sortSelect.disabled = count < 2;
+      playBtn.disabled = count === 0;
+      const repeated = [ ...counts.values() ].filter(n => n > 1).length;
       dupeBar.style.display = repeated ? '' : 'none';
       dupeText.textContent = repeated === 1 ? 'One song is listed more than once.' : `${repeated} songs are listed more than once.`;
-      playBtn.disabled = count === 0;
-      if (count === 0) {
-        list.replaceChildren(UI.el('div', 'ui-empty ple-empty', `<i class="fas fa-music"></i><span>No songs yet. Add some from your library.</span>`));
+      const gap = artistGap();
+      artistBar.style.display = gap.missing.length ? '' : 'none';
+      if (gap.missing.length) {
+        artistText.textContent = gap.missing.length === 1 ? `1 more song in your library is by ${gap.artist.name}.` : `${gap.missing.length} more songs in your library are by ${gap.artist.name}.`;
+      }
+    };
+    const syncRows = () => {
+      const songs = playlist.songs;
+      if (songs.length === 0) {
+        list.replaceChildren(emptyList);
         return;
       }
-      list.replaceChildren(...playlist.songs.map((entry, index) => songRow(entry, index, library)));
+      emptyList.remove();
+      const shown = songs.length > renderLimit ? songs.slice(0, renderLimit) : songs;
+      const used = new Set();
+      const wanted = shown.map(entry => {
+        let row = rows.get(entry);
+        if (!row || used.has(row)) {
+          row = buildRow(entry);
+          rows.set(entry, row);
+        }
+        used.add(row);
+        return row;
+      });
+      [ ...list.children ].forEach(child => {
+        if (!used.has(child)) {
+          child.remove();
+        }
+      });
+      const playing = this.currentPlaylist?.id === playlist.id ? songs[this.currentSongIndex] : null;
+      wanted.forEach((row, index) => {
+        if (list.children[index] !== row) {
+          list.insertBefore(row, list.children[index] || null);
+        }
+        if (row.dataset.index !== String(index)) {
+          row.dataset.index = index;
+          row.children[1].textContent = index + 1;
+        }
+        row.classList.toggle('is-playing', songs[index] === playing);
+      });
+      if (songs.length > renderLimit && !growTimer) {
+        growTimer = setTimeout(() => {
+          growTimer = null;
+          renderLimit += 400;
+          if (this._playlistEditor?.dialog === dialog) {
+            syncRows();
+          }
+        }, 16);
+      }
+    };
+    const resultRow = song => {
+      const copies = counts.get(song.videoId) || 0;
+      const blocked = copies > 0 && !dupToggle.checked;
+      const row = UI.el('div', `ple-row ple-result${blocked ? ' is-added' : ''}`, `<span class="ple-info"><span class="ple-title"></span><span class="ple-artist"></span></span>${blocked ? `<span class="ple-added" title="Already in this playlist"><i class="fas fa-check"></i></span>` : `<span class="ple-actions"><button type="button" class="ple-btn ple-add" title="Add to playlist"><i class="fas fa-plus"></i></button></span>`}`);
+      row.dataset.videoId = song.videoId;
+      row.dataset.state = `${copies}:${blocked}`;
+      row.querySelector('.ple-title').textContent = song.name;
+      row.querySelector('.ple-artist').textContent = [ song.author, copies ? copies > 1 ? `in playlist ${copies} times` : 'in playlist' : '' ].filter(Boolean).join(' · ');
+      row.prepend(this._buildCoverImage(song, 'ple-art'));
+      return row;
     };
     const renderResults = () => {
       const term = search.value.trim();
-      const inPlaylist = new Map();
-      playlist.songs.forEach(entry => inPlaylist.set(entry.videoId, (inPlaylist.get(entry.videoId) || 0) + 1));
-      const allowAgain = dupToggle.checked;
-      const found = term ? this._rankSongs(this.songLibrary, term) : [ ...this.songLibrary ].sort((a, b) => a.name.localeCompare(b.name));
       if (this.songLibrary.length === 0) {
         results.replaceChildren(UI.el('div', 'ui-empty ple-empty', `<i class="fas fa-music"></i><span>Your library is empty.</span>`));
         return;
       }
+      const found = term ? this._rankSongs(this.songLibrary, term) : sortedLibrary();
       if (found.length === 0) {
         const empty = UI.el('div', 'ui-empty ple-empty', `<i class="fas fa-magnifying-glass"></i><span></span>`);
         empty.lastChild.textContent = `Nothing in your library matches "${term}"`;
         results.replaceChildren(empty);
         return;
       }
-      results.replaceChildren(...found.slice(0, RESULT_LIMIT).map(song => {
-        const copies = inPlaylist.get(song.videoId) || 0;
-        const blocked = copies > 0 && !allowAgain;
-        const row = UI.el('div', `ple-row ple-result${blocked ? ' is-added' : ''}`, `<span class="ple-info"><span class="ple-title"></span><span class="ple-artist"></span></span>${blocked ? `<span class="ple-added" title="Already in this playlist"><i class="fas fa-check"></i></span>` : `<span class="ple-actions"><button type="button" class="ple-btn ple-add" title="Add to playlist"><i class="fas fa-plus"></i></button></span>`}`);
-        row.dataset.videoId = song.videoId;
-        row.querySelector('.ple-title').textContent = song.name;
-        row.querySelector('.ple-artist').textContent = [ song.author, copies ? copies > 1 ? `in playlist ${copies} times` : 'in playlist' : '' ].filter(Boolean).join(' · ');
-        row.prepend(this._buildCoverImage(song, 'ple-art'));
-        return row;
-      }));
+      results.replaceChildren(...found.slice(0, RESULT_LIMIT).map(resultRow));
+      results.scrollTop = 0;
       if (found.length > RESULT_LIMIT) {
         results.appendChild(UI.el('p', 'ple-more', `${found.length - RESULT_LIMIT} more. Keep typing to narrow it down.`));
       }
+    };
+    const updateResultRows = () => {
+      const byId = libraryNow().byId;
+      results.querySelectorAll('.ple-result').forEach(row => {
+        const song = byId.get(row.dataset.videoId);
+        const copies = counts.get(row.dataset.videoId) || 0;
+        if (song && row.dataset.state !== `${copies}:${copies > 0 && !dupToggle.checked}`) {
+          row.replaceWith(resultRow(song));
+        }
+      });
     };
     list.addEventListener('click', e => {
       const button = e.target.closest('.ple-btn');
@@ -4971,18 +5141,15 @@ class AdvancedMusicPlayer {
       if (!row || row.classList.contains('is-added')) {
         return;
       }
-      const song = this.songLibrary.find(s => s.videoId === row.dataset.videoId);
+      const song = libraryNow().byId.get(row.dataset.videoId);
       if (!song) {
         return;
       }
-      this._editPlaylistSongs(playlist, [ ...playlist.songs, {
-        name: song.name,
-        videoId: song.videoId,
-        author: song.author || '',
-        entryId: Date.now() + Math.random()
-      } ]).then(() => list.lastElementChild?.scrollIntoView({
+      renderLimit = Math.max(renderLimit, playlist.songs.length + 1);
+      this._editPlaylistSongs(playlist, [ ...playlist.songs, this._newPlaylistEntry(song) ]);
+      list.lastElementChild?.scrollIntoView({
         block: 'nearest'
-      }));
+      });
     });
     let dragged = null;
     let before = '';
@@ -5023,9 +5190,10 @@ class AdvancedMusicPlayer {
       }
       dragged.classList.remove('dragging');
       dragged = null;
-      const order = [ ...list.children ].map(row => row.dataset.index);
+      const order = [ ...list.children ].map(row => Number(row.dataset.index));
       if (order.join() !== before) {
-        this._editPlaylistSongs(playlist, order.map(index => playlist.songs[Number(index)]));
+        const rest = playlist.songs.slice(order.length);
+        this._editPlaylistSongs(playlist, order.map(index => playlist.songs[index]).concat(rest));
       }
     });
     search.addEventListener('input', this.debounce(renderResults, 96));
@@ -5042,19 +5210,30 @@ class AdvancedMusicPlayer {
     this._playlistEditor = {
       dialog: dialog,
       playlistId: playlist.id,
+      dirty: false,
       starsChanged: false,
       refresh: () => {
-        renderSongs();
-        renderResults();
+        syncMeta();
+        syncRows();
+        updateResultRows();
       }
     };
-    this._playlistEditor.refresh();
+    syncMeta();
+    syncRows();
+    renderResults();
     dialog.open();
     search.focus();
   }
   _editPlaylistSongs(playlist, songs) {
     const previous = playlist.songs;
+    const previousIndex = this.currentSongIndex;
     const starred = [];
+    if (this.currentPlaylist?.id === playlist.id) {
+      const index = songs.indexOf(previous[previousIndex]);
+      if (index !== -1) {
+        this.currentSongIndex = index;
+      }
+    }
     playlist.songs = songs;
     if (playlist === this.getFavoritesPlaylist()) {
       const kept = new Set(songs.map(entry => entry.videoId));
@@ -5065,30 +5244,224 @@ class AdvancedMusicPlayer {
         }
       });
     }
-    if (this._playlistEditor?.playlistId === playlist.id) {
+    const editor = this._playlistEditor?.playlistId === playlist.id ? this._playlistEditor : null;
+    if (editor) {
+      editor.dirty = true;
       if (starred.length) {
-        this._playlistEditor.starsChanged = true;
+        editor.starsChanged = true;
       }
-      this._playlistEditor.refresh();
+      editor.refresh();
     }
-    return Promise.all([ this.savePlaylists(), ...starred.map(song => this.saveSingleSong(song)) ]).then(() => {
-      this.renderPlaylists();
-      if (this.currentPlaylist?.id === playlist.id) {
-        this.renderPlaylistSidebar();
+    return Promise.all([ this.savePlaylist(playlist), ...starred.map(song => this.saveSingleSong(song)) ]).then(() => {
+      if (!editor) {
+        this.renderPlaylists();
+        if (this.currentPlaylist?.id === playlist.id) {
+          this.renderPlaylistSidebar();
+        }
+        if (starred.length) {
+          this._refreshLibraryAfterStars();
+        }
       }
+      return true;
     }).catch(error => {
       console.error('Error saving playlist:', error);
       playlist.songs = previous;
+      this.currentSongIndex = previousIndex;
       starred.forEach(song => {
         song.favorite = !song.favorite;
       });
       this._playlistEditor?.refresh();
       this.showNotification('Couldn’t save the playlist. Please try again.', 'error');
+      return false;
     });
+  }
+  _refreshLibraryAfterStars() {
+    const term = this.elements.librarySearch ? this.elements.librarySearch.value.trim() : '';
+    term === '' ? this.renderLibraryView() : this.renderSongLibrary(term.toLowerCase());
   }
   _playlistArtistSummary(playlist, library) {
     const artists = [ ...new Set(playlist.songs.map(entry => this._artistCredits((library.get(entry.videoId) || entry).author)[0]).filter(Boolean)) ];
     return artists.slice(0, 3).join(', ') + (artists.length > 3 ? ` and ${artists.length - 3} more` : '');
+  }
+  _newPlaylistEntry(song) {
+    return {
+      name: song.name,
+      videoId: song.videoId,
+      author: song.author || '',
+      entryId: Date.now() + Math.random()
+    };
+  }
+  async duplicatePlaylist(playlistId) {
+    const source = this.playlists.find(p => p.id === playlistId);
+    if (!source) {
+      return;
+    }
+    try {
+      const copy = await this.createPlaylist(this.uniquePlaylistName(`${source.name} copy`), source.songs.map(entry => ({
+        ...entry,
+        entryId: Date.now() + Math.random()
+      })));
+      this.showQueueNotification(`Made a copy called "${copy.name}"`);
+      this.openPlaylistEditModal(copy.id);
+    } catch (error) {
+      console.error('Error duplicating playlist:', error);
+      this.showNotification('Couldn’t copy the playlist. Please try again.', 'error');
+    }
+  }
+  openAddToPlaylistMenu(song, anchor) {
+    if (this._addMenu) {
+      const sameAnchor = this._addMenu.anchor === anchor;
+      this._addMenu.close();
+      if (sameAnchor) {
+        return;
+      }
+    }
+    if (!song?.videoId || !anchor) {
+      return;
+    }
+    const librarySong = this.songLibrary.find(s => s.videoId === song.videoId) || null;
+    const source = librarySong || song;
+    const favorites = this.getFavoritesPlaylist();
+    const playlists = this._sortedPlaylists().filter(p => p !== favorites);
+    if (favorites) {
+      playlists.unshift(favorites);
+    }
+    const library = this._libraryByVideoId();
+    const menu = UI.el('div', 'atp-menu', `<div class="atp-head"><span class="ui-section-label atp-title">Add to playlist</span><span class="atp-song"></span></div>`);
+    menu.setAttribute('role', 'dialog');
+    menu.setAttribute('aria-label', 'Add to playlist');
+    menu.querySelector('.atp-song').textContent = source.name;
+    const contains = playlist => playlist === favorites && librarySong ? !!librarySong.favorite : playlist.songs.some(entry => entry.videoId === song.videoId);
+    const list = UI.el('div', 'atp-list');
+    const createRow = UI.el('button', 'atp-row atp-new', `<span class="atp-new-icon"><i class="fas fa-plus"></i></span><span class="atp-name">New playlist</span>`);
+    createRow.type = 'button';
+    createRow.addEventListener('click', () => {
+      close();
+      this.openNewPlaylistDialog({
+        songs: [ this._newPlaylistEntry(source) ]
+      });
+    });
+    list.appendChild(createRow);
+    const rowsByPlaylist = playlists.map(playlist => {
+      const row = UI.el('button', 'atp-row', `<span class="atp-text"><span class="atp-name"></span><span class="atp-count"></span></span><i class="fas atp-state"></i>`);
+      row.type = 'button';
+      row.prepend(this._buildPlaylistCover(playlist, library));
+      row.querySelector('.atp-name').textContent = playlist.name;
+      const paint = () => {
+        const inIt = contains(playlist);
+        row.classList.toggle('is-in', inIt);
+        row.querySelector('.atp-state').className = `fas atp-state ${inIt ? 'fa-circle-check' : 'fa-plus'}`;
+        row.querySelector('.atp-count').textContent = this._songCountText(playlist.songs.length);
+        row.title = inIt ? `Remove from ${playlist.name}` : `Add to ${playlist.name}`;
+      };
+      row.addEventListener('click', async () => {
+        if (playlist === favorites && librarySong) {
+          this.toggleFavorite(librarySong.id);
+          this.showQueueNotification(librarySong.favorite ? 'Added to Favorites' : 'Removed from Favorites');
+          paint();
+          return;
+        }
+        const inIt = playlist.songs.some(entry => entry.videoId === song.videoId);
+        const songs = inIt ? playlist.songs.filter(entry => entry.videoId !== song.videoId) : [ ...playlist.songs, this._newPlaylistEntry(source) ];
+        row.disabled = true;
+        const saved = await this._editPlaylistSongs(playlist, songs);
+        row.disabled = false;
+        paint();
+        if (saved) {
+          this.showQueueNotification(inIt ? `Removed from "${playlist.name}"` : `Added to "${playlist.name}"`);
+        }
+      });
+      paint();
+      list.appendChild(row);
+      return [ playlist, row ];
+    });
+    let search = null;
+    if (playlists.length > 6) {
+      search = UI.el('input', 'ui-input atp-search');
+      search.type = 'text';
+      search.placeholder = 'Find a playlist';
+      search.autocomplete = 'off';
+      search.setAttribute('aria-label', 'Find a playlist');
+      search.addEventListener('input', () => {
+        const term = search.value.trim();
+        const matches = term ? this._searchMatcher(term) : null;
+        rowsByPlaylist.forEach(([playlist, row]) => {
+          row.hidden = !!matches && !matches(playlist.name);
+        });
+      });
+      search.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          rowsByPlaylist.find(([, row]) => !row.hidden)?.[1].click();
+        }
+      });
+      menu.appendChild(search);
+    }
+    menu.appendChild(list);
+    document.body.appendChild(menu);
+    const box = anchor.getBoundingClientRect();
+    const left = Math.min(Math.max(8, box.right - menu.offsetWidth), innerWidth - menu.offsetWidth - 8);
+    let top = box.bottom + 6;
+    if (top + menu.offsetHeight > innerHeight - 8) {
+      top = Math.max(8, box.top - menu.offsetHeight - 6);
+    }
+    menu.style.left = `${left}px`;
+    menu.style.top = `${top}px`;
+    const onPointer = e => {
+      if (!menu.contains(e.target) && !anchor.contains(e.target)) {
+        close();
+      }
+    };
+    const onKey = e => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        close();
+      }
+    };
+    const onScroll = e => {
+      if (!menu.contains(e.target)) {
+        close();
+      }
+    };
+    const close = () => {
+      menu.remove();
+      document.removeEventListener('pointerdown', onPointer, true);
+      document.removeEventListener('keydown', onKey, true);
+      window.removeEventListener('scroll', onScroll, true);
+      window.removeEventListener('resize', close);
+      if (this._addMenu?.menu === menu) {
+        this._addMenu = null;
+      }
+    };
+    document.addEventListener('pointerdown', onPointer, true);
+    document.addEventListener('keydown', onKey, true);
+    window.addEventListener('scroll', onScroll, true);
+    window.addEventListener('resize', close);
+    this._addMenu = {
+      menu: menu,
+      anchor: anchor,
+      close: close
+    };
+    (search || createRow).focus();
+  }
+  showUndoToast(message, onUndo) {
+    document.querySelector('.undo-toast')?.remove();
+    clearTimeout(this._undoToastTimer);
+    const toast = UI.el('div', 'undo-toast', `<span class="undo-toast-text"></span><button type="button" class="undo-toast-btn">Undo</button>`);
+    toast.setAttribute('role', 'status');
+    toast.firstChild.textContent = message;
+    const hide = () => {
+      clearTimeout(this._undoToastTimer);
+      toast.classList.remove('undo-toast--in');
+      setTimeout(() => toast.remove(), 250);
+    };
+    toast.lastChild.addEventListener('click', () => {
+      hide();
+      onUndo();
+    });
+    document.body.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('undo-toast--in'));
+    this._undoToastTimer = setTimeout(hide, 8000);
   }
   addSongToSelectedPlaylist() {
     const selectedPlaylistId = parseInt(this.elements.playlistSelectionForSong.value);
@@ -5151,7 +5524,7 @@ class AdvancedMusicPlayer {
     const name = document.createElement('strong');
     name.textContent = playlist.name;
     const text = UI.el('p', 'playlist-dialog-text');
-    text.append(name, ' will be permanently deleted.');
+    text.append(name, ' will be deleted.');
     if (count) {
       text.append(count === 1 ? ' Its song stays in your library.' : ` Its ${count} songs stay in your library.`);
     }
@@ -5175,6 +5548,7 @@ class AdvancedMusicPlayer {
     cancel.focus();
   }
   _removePlaylist(playlistId) {
+    const playlist = this.playlists.find(p => p.id === playlistId);
     if (this.currentPlaylist && this.currentPlaylist.id === playlistId) {
       if (this.isLocalPlayback && this.localAudio) {
         this.localAudio.pause();
@@ -5191,9 +5565,27 @@ class AdvancedMusicPlayer {
     this.savePlaylists().then(() => {
       this.renderPlaylists();
       this.updatePlaylistSelection();
+      if (playlist) {
+        this.showUndoToast(`Deleted "${playlist.name}"`, () => this._restorePlaylist(playlist));
+      }
     }).catch(error => {
       console.error('Error deleting playlist:', error);
       alert('Failed to delete playlist. Please try again.');
+    });
+  }
+  _restorePlaylist(playlist) {
+    if (this.playlists.some(p => p.id === playlist.id)) {
+      return;
+    }
+    this.playlists.push(playlist);
+    this.savePlaylist(playlist).then(() => {
+      this.renderPlaylists();
+      this.updatePlaylistSelection();
+      this.showQueueNotification(`Restored "${playlist.name}"`);
+    }).catch(error => {
+      console.error('Error restoring playlist:', error);
+      this.playlists = this.playlists.filter(p => p !== playlist);
+      this.showNotification('Couldn’t restore the playlist. Please try again.', 'error');
     });
   }
   playPlaylist(playlistId, startIndex = 0) {
@@ -6602,6 +6994,7 @@ class AdvancedMusicPlayer {
     document.getElementById('npLoopBtn')?.addEventListener('click', () => this.toggleLoop());
     document.getElementById('npAutoplayBtn')?.addEventListener('click', () => this.toggleAutoplay());
     document.getElementById('npShowPlaylistBtn')?.addEventListener('click', () => this.togglePlaylistSidebar());
+    document.getElementById('npAddToPlaylistBtn')?.addEventListener('click', e => this.openAddToPlaylistMenu(this.currentSong, e.currentTarget));
     document.getElementById('npProgressBar')?.addEventListener('change', e => {
       if (this.isLocalPlayback && this.localAudio) {
         const duration = this.localAudio.duration || 0;
@@ -10362,7 +10755,7 @@ class AdvancedMusicPlayer {
       exportText += `    ${songName}, https://www.youtube.com/watch?v=${playlistSong.videoId}${authorText}\n`;
     });
     exportText += '}\n';
-    this.copyToClipboardWithFallback(exportText, `"${playlist.name}" playlist exported to clipboard successfully!`, 'Export Playlist');
+    navigator.clipboard.writeText(exportText).then(() => this.showQueueNotification(`Copied "${playlist.name}" as text`)).catch(() => this.showExportModal(exportText, 'Export Playlist'));
   }
   copyToClipboardWithFallback(text, successMessage, modalTitle) {
     navigator.clipboard.writeText(text).then(() => {

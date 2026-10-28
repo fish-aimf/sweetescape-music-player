@@ -84,7 +84,7 @@
       "target": "#songLibrary",
       "prepare": { "tab": "library" },
       "title": "Your library",
-      "body": "With the search empty this is your home screen: favourites, playlists, and a shuffled grid of your songs. In a list, every song has favourite, play, edit and delete buttons.",
+      "body": "With the search empty this is your home screen: favourites, playlists, and a shuffled grid of your songs. In a list, every song has favourite, play, add to playlist, delete and edit buttons.",
       "tips": [
         "Right-click a cover or a play button to add the song to the queue instead of playing it.",
         "Drag an audio file from your computer onto a song to play it from that file."
@@ -262,7 +262,7 @@
       "target": "#playlists",
       "prepare": { "tab": "playlists" },
       "title": "Playlists",
-      "body": "Every playlist as a cover tile, with Favorites first. Click one to play it. Hover it for the pencil (open the editor) and the bin (delete, after you confirm). New playlist starts an empty one. The editor has a Name box for renaming, your songs on the left to drag, shuffle, reverse or remove, and your library on the right to add from. Changes save as you go.",
+      "body": "Every playlist as a cover tile, with Favorites first. Click one to play it. Hover it for the pencil (open the editor) and the bin (delete, after you confirm, with Undo). New playlist starts an empty one. The editor has a Name box for renaming, your songs on the left to drag, shuffle, reverse or remove, and your library on the right to add from. Changes save as you go.",
       "tips": [
         "Drag a tile to reorder your playlists. The library shelf follows the same order.",
         "Right-click a cover to add the whole playlist to the queue.",
@@ -282,6 +282,12 @@
       "prepare": { "tab": "playlists" },
       "title": "Search playlists",
       "body": "Finds playlists by name, then playlists that contain a matching song or artist, then artists you can turn into a playlist. Press Enter to play the top match."
+    },
+    {
+      "id": "add-to-playlist",
+      "target": ".playlist-add-btn, #npAddToPlaylistBtn",
+      "title": "Add to playlist",
+      "body": "Opens a menu of your playlists with a tick on the ones this song is already in. Click one to add or remove the song, or start a new playlist with it."
     },
     {
       "id": "new-playlist",

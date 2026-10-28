@@ -358,6 +358,15 @@ const scenes = {
     await page.hover('.ple-list .ple-row:nth-child(2)');
     await sleep(400);
     await save(page, 'playlist-edit', '.ui-modal', 0);
+    await page.keyboard.press('Escape');
+    await page.evaluate(() => musicPlayer.switchTab('library'));
+    await page.fill('#librarySearch', 'o');
+    await sleep(1200);
+    const card = page.locator('#songLibrary .song-item').nth(2);
+    await card.hover();
+    await card.locator('.playlist-add-btn').click({ force: true });
+    await sleep(1000);
+    await save(page, 'add-to-playlist');
   },
   async sidebar(ctx) {
     const page = await boot(ctx);

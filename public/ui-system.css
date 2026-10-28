@@ -1049,7 +1049,7 @@ a.ui-btn--block {
   padding: 0.5rem 0.65rem;
   border: var(--ui-border);
   border-radius: var(--ui-radius-md);
-  background: var(--ui-surface-sunken);
+  background-color: var(--ui-surface-sunken);
   color: var(--text-primary);
   font-family: inherit;
   font-size: var(--ui-font-md);
@@ -1869,7 +1869,9 @@ a.ui-btn--block {
 [data-surface="glass"] .mix-lab__suggest,
 [data-surface="glass"] .youtube-search-suggestion,
 [data-surface="glass"] .transport-preview-popup,
-[data-surface="glass"] .drag-link-toast {
+[data-surface="glass"] .drag-link-toast,
+[data-surface="glass"] .atp-menu,
+[data-surface="glass"] .undo-toast {
   background-color: color-mix(in srgb, var(--bg-secondary-base) max(min(calc(var(--glass-tint) * var(--glass-float-ratio) * 1%), var(--glass-float-cap)), var(--glass-float-floor)), transparent);
   backdrop-filter: blur(calc(var(--glass-blur) * 1.4)) saturate(var(--glass-sat));
   -webkit-backdrop-filter: blur(calc(var(--glass-blur) * 1.4)) saturate(var(--glass-sat));
