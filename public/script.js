@@ -15878,7 +15878,7 @@ class AdvancedMusicPlayer {
     const currentName = document.getElementById('dlCurrentName');
     const currentAuthor = document.getElementById('dlCurrentAuthor');
     const currentThumb = document.getElementById('dlCurrentThumb');
-    const currentBadge = document.getElementById('dlCurrentBadge');
+    const currentDownloaded = document.getElementById('dlCurrentDownloaded');
     const currentAddBtn = document.getElementById('dlCurrentAddBtn');
     const searchInput = document.getElementById('dlSearchInput');
     const searchMeta = document.getElementById('dlSearchMeta');
@@ -15922,7 +15922,7 @@ class AdvancedMusicPlayer {
       const at = history.get(song.videoId);
       return at ? `Downloaded ${dateFormat.format(at)}` : song.localFileHandle ? 'Linked to a file on this device' : '';
     };
-    const badgeHtml = (title, label) => `<span class="dl-badge" title="${this.escapeHtml(title)}"><i class="fas fa-circle-check"></i><span class="dl-badge-text">${label}</span></span>`;
+    const downloadedHtml = title => `<span class="song-dl-indicator" title="${this.escapeHtml(title)}"><i class="fas fa-download"></i></span>`;
     const listVisible = () => index !== null && overlay.style.display !== 'none' && panels.search.style.display !== 'none';
     const buildIndex = () => {
       const collator = new Intl.Collator(undefined, {
@@ -15954,7 +15954,7 @@ class AdvancedMusicPlayer {
       if (!entry.html) {
         entry.html = `<div class="dl-result-text"><span class="dl-result-name">${this.escapeHtml(song.name)}</span>${song.author ? `<span class="dl-result-author">${this.escapeHtml(song.author)}</span>` : ''}</div>`;
       }
-      return `<div class="dl-result${i === focusIdx ? ' focused' : ''}" data-i="${i}">${entry.html}${title ? badgeHtml(title, 'Downloaded') : ''}<button class="dl-result-add" type="button" tabindex="-1" title="${inQueue ? 'In queue' : 'Add to queue'}"${inQueue ? ' disabled' : ''}><i class="fas fa-${inQueue ? 'check' : 'plus'}"></i></button></div>`;
+      return `<div class="dl-result${i === focusIdx ? ' focused' : ''}" data-i="${i}">${entry.html}${title ? downloadedHtml(title) : ''}<button class="dl-result-add" type="button" tabindex="-1" title="${inQueue ? 'In queue' : 'Add to queue'}"${inQueue ? ' disabled' : ''}><i class="fas fa-${inQueue ? 'check' : 'plus'}"></i></button></div>`;
     };
     const paint = force => {
       frame = 0;
@@ -16087,10 +16087,11 @@ class AdvancedMusicPlayer {
       currentAuthor.textContent = song.author || '';
       currentThumb.style.backgroundImage = song.videoId ? `url(https://i.ytimg.com/vi/${song.videoId}/mqdefault.jpg)` : '';
       const title = downloadedTitle(song);
-      currentBadge.style.display = title ? '' : 'none';
-      currentBadge.title = title;
+      currentDownloaded.style.display = title ? '' : 'none';
+      currentDownloaded.title = title;
       const inQueue = queued.has(song.videoId);
       currentAddBtn.disabled = inQueue;
+      currentAddBtn.firstElementChild.className = inQueue ? 'fas fa-check' : 'fas fa-plus';
       currentAddBtn.title = inQueue ? 'Already in queue' : title ? 'Add to queue again' : 'Add to queue';
     };
     currentAddBtn.addEventListener('click', () => {
@@ -16188,8 +16189,8 @@ class AdvancedMusicPlayer {
       history.set(item.videoId, Date.now());
       window.open(item.link, '_blank');
     };
-    const statusHtml = item => item.status === 'idle' ? 'Waiting…' : item.status === 'converting' ? '<span class="dl-spinner"></span> Converting…' : item.status === 'done' && item.opened ? '<i class="fas fa-check"></i> Downloaded' : item.status === 'done' ? 'Ready' : item._quotaExceeded ? 'API limit reached' : 'Failed — tap retry';
-    const actionHtml = item => item.status === 'done' && item.opened ? '<span class="dl-qi-tick"><i class="fas fa-check-circle"></i></span>' : item.status === 'done' ? '<button class="dl-qi-download" title="Download"><i class="fas fa-download"></i></button>' : item.status === 'error' ? '<button class="dl-qi-download" title="Retry"><i class="fas fa-redo"></i></button>' : '';
+    const statusHtml = item => item.status === 'idle' ? 'Waiting…' : item.status === 'converting' ? '<span class="dl-spinner"></span> Converting…' : item.status === 'done' && item.opened ? 'Downloaded' : item.status === 'done' ? 'Ready' : item._quotaExceeded ? 'API limit reached' : 'Failed — tap retry';
+    const actionHtml = item => item.status === 'done' && !item.opened ? '<button class="dl-qi-download" title="Download"><i class="fas fa-download"></i></button>' : item.status === 'error' ? '<button class="dl-qi-download" title="Retry"><i class="fas fa-redo"></i></button>' : '';
     const renderQueue = () => {
       queued = new Set(this.dlQueue.map(q => q.videoId));
       if (overlay.style.display !== 'none') {
@@ -16210,7 +16211,7 @@ class AdvancedMusicPlayer {
         downloadAllLabel.textContent = `Download all (${totalDone}/${this.dlQueue.length})`;
       }
       downloadAllBtn.disabled = notOpened === 0;
-      queueList.innerHTML = this.dlQueue.map((item, i) => `<div class="dl-queue-item${item.opened ? ' dl-qi-opened' : ''}" data-idx="${i}"><div class="dl-qi-thumb" style="background-image:url(https://i.ytimg.com/vi/${item.videoId}/mqdefault.jpg)"></div><div class="dl-qi-info"><div class="dl-qi-name">${this.escapeHtml(item.name)}</div><div class="dl-qi-status ${item.status}">${statusHtml(item)}</div></div><div class="dl-qi-actions">${item.before && !item.opened ? badgeHtml(downloadedTitle(item) || 'Downloaded before', 'Downloaded before') : ''}${actionHtml(item)}<button class="dl-qi-remove" title="Remove"><i class="fas fa-times"></i></button></div></div>`).join('');
+      queueList.innerHTML = this.dlQueue.map((item, i) => `<div class="dl-queue-item${item.opened ? ' dl-qi-opened' : ''}" data-idx="${i}"><div class="dl-qi-thumb" style="background-image:url(https://i.ytimg.com/vi/${item.videoId}/mqdefault.jpg)"></div><div class="dl-qi-info"><div class="dl-qi-name">${this.escapeHtml(item.name)}</div><div class="dl-qi-status ${item.status}">${statusHtml(item)}${item.before || item.opened ? ` ${downloadedHtml(downloadedTitle(item) || 'Downloaded')}` : ''}</div></div><div class="dl-qi-actions">${actionHtml(item)}<button class="dl-qi-remove" title="Remove"><i class="fas fa-times"></i></button></div></div>`).join('');
     };
     queueList.addEventListener('click', e => {
       const btn = e.target.closest('button');

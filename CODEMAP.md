@@ -12,8 +12,8 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 | Source | sha256 (first 12) | Lines |
 |---|---|---|
-| `public/script.js` | `5b63e85ae67f` | 17911 |
-| `public/index.html` | `213175810418` | 1529 |
+| `public/script.js` | `2cb006b639db` | 17912 |
+| `public/index.html` | `d1bc74eaffc5` | 1529 |
 | `public/script/settings.js` | `3bc48cfe84cc` | 560 |
 | `public/karaoke-player.js` | `3e6bb16779a4` | 682 |
 | `public/karaoke-encoder.js` | `d277db62d9e9` | 147 |
@@ -23,7 +23,7 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 ## Reading `public/script.js` cheaply
 
-- 82 lines are longer than 300 characters (the machine-formatted
+- 81 lines are longer than 300 characters (the machine-formatted
   `innerHTML` template literals; the longest is ~3.9 KB). A single `grep -n` that hits
   several of them dumps tens of kilobytes. Search with `grep -o`, or pipe through
   `cut -c1-200`, and only widen once you know which line you want.
