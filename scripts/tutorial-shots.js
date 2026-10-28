@@ -355,7 +355,9 @@ const scenes = {
     await page.keyboard.press('Escape');
     await page.evaluate(() => musicPlayer.openPlaylistEditModal(musicPlayer.playlists.find(p => p.name === 'Road Trip').id));
     await sleep(1200);
-    await save(page, 'playlist-edit', '#playlistEditModal .ui-modal', 0);
+    await page.hover('.ple-list .ple-row:nth-child(2)');
+    await sleep(400);
+    await save(page, 'playlist-edit', '.ui-modal', 0);
   },
   async sidebar(ctx) {
     const page = await boot(ctx);

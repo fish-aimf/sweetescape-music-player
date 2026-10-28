@@ -262,7 +262,7 @@
       "target": "#playlists",
       "prepare": { "tab": "playlists" },
       "title": "Playlists",
-      "body": "Every playlist as a cover tile, with Favorites first. Click one to play it. Hover it for the pencil (open the editor) and the bin (delete, after you confirm). New playlist starts an empty one. In the editor you can add songs, reorder, shuffle, reverse, clear duplicates, and click the name to rename it.",
+      "body": "Every playlist as a cover tile, with Favorites first. Click one to play it. Hover it for the pencil (open the editor) and the bin (delete, after you confirm). New playlist starts an empty one. The editor has a Name box for renaming, your songs on the left to drag, shuffle, reverse or remove, and your library on the right to add from. Changes save as you go.",
       "tips": [
         "Drag a tile to reorder your playlists. The library shelf follows the same order.",
         "Right-click a cover to add the whole playlist to the queue.",
