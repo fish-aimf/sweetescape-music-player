@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SweetEscape tutorial: every feature, with screenshots</title>
-  <meta name="description" content="How to use SweetEscape: adding songs, playlists, the queue, synced lyrics, fullscreen and karaoke lyrics, the sleep timer, themes, shortcuts and time-saving tips.">
+  <meta name="description" content="How to use SweetEscape: adding songs, playlists (including one per artist), the queue, synced lyrics, fullscreen and karaoke lyrics, the sleep timer, themes, shortcuts and time-saving tips.">
   <link rel="canonical" href="https://sweetescape.vercel.app/tutorial">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <meta name="theme-color" content="#121212">
@@ -203,7 +203,7 @@
           <p>With the search box empty, the Library tab is a home screen with three shelves:</p>
           <ul>
             <li><strong>Favourites</strong>: every song you've starred. Scroll it sideways with the mouse wheel or a swipe, and click a cover to play it. <strong>Play</strong> plays them all in order, and <strong>All</strong> opens them as a list.</li>
-            <li><strong>Playlists</strong>: your playlists as cover tiles, plus a tile for making a new one.</li>
+            <li><strong>Playlists</strong>: your playlists as cover tiles, plus a <strong>New playlist</strong> tile. Hover a tile to edit or delete that playlist.</li>
             <li><strong>From your library</strong>: a shuffled grid of your songs with their artists, sized to fit the space: big covers on tall screens, compact tiles on shorter ones. <strong>Shuffle</strong> deals a new set and <strong>Show all</strong> shows the full list.</li>
           </ul>
           <p><span class="tag">Tip</span> Right-click any cover on these shelves to add the song to the <a href="#queue">queue</a> instead of playing it straight away.</p>
@@ -294,7 +294,7 @@
         <div class="prose">
           <h2>The queue</h2>
           <p>The queue holds songs to play next, before the playlist carries on. Press <kbd>Y</kbd> to open it.</p>
-          <p>To add a song, right-click its play button: in a library list, in Music Explorer, in the favourites strip or the song grid. A short note at the bottom of the screen confirms it. Right-clicking the same song twice in a row sets it to play twice rather than listing it twice. Right-click a playlist's <strong>Play</strong> button to queue every song in it.</p>
+          <p>To add a song, right-click its play button: in a library list, in Music Explorer, in the favourites strip or the song grid. A short note at the bottom of the screen confirms it. Right-clicking the same song twice in a row sets it to play twice rather than listing it twice. Right-click a playlist's cover to queue every song in it.</p>
         </div>
         <figure class="shot shot--narrow">
           <img src="/learn/shots/queue.jpg" width="750" height="388" loading="lazy" alt="The queue panel listing six entries with repeat counts, a Loop Previous Song Forever block and a Stop Autoplay block.">
@@ -315,21 +315,41 @@
       <section id="playlists">
         <div class="prose">
           <h2>Playlists</h2>
-          <p>The <strong>Playlists</strong> tab lists every playlist with its song count and approximate length. A <strong>Favorites</strong> playlist keeps itself in sync with your starred songs.</p>
+          <p>With the search box empty, the <strong>Playlists</strong> tab shows every playlist as a cover tile with its song count. <strong>Favorites</strong> comes first and keeps itself in sync with your starred songs. The playlist that's playing is outlined.</p>
           <ul>
-            <li>Click a playlist, or its <strong>Play</strong> button, to play it.</li>
-            <li>The <strong>+</strong> button makes a new one.</li>
-            <li><strong>Edit</strong> swaps the button on every card for <strong>Edit</strong> and <strong>Delete</strong>.</li>
-            <li>Typing in the search box filters the list, and <kbd>Enter</kbd> plays the top match.</li>
+            <li>Click a tile to play the playlist. An empty playlist opens in the editor instead, so you can add songs.</li>
+            <li>Hover a tile for two buttons: the pencil opens the editor and the bin deletes the playlist. Deleting always asks first, and the songs stay in your library. Favorites has no bin.</li>
+            <li><strong>New playlist</strong> asks for a name, then opens the editor.</li>
+            <li>Drag a tile to reorder your playlists. The shelf in the Library tab follows the same order.</li>
           </ul>
-          <p><span class="tag">Tip</span> Press and hold a playlist for half a second, then drag it to reorder.</p>
+          <p><span class="tag">Tip</span> Right-click a cover to add the whole playlist to the <a href="#queue">queue</a>.</p>
         </div>
         <figure class="shot shot--narrow">
-          <img src="/learn/shots/playlists-tab.jpg" width="678" height="391" loading="lazy" alt="The Playlists tab listing five playlists with song counts, durations and Play buttons.">
+          <img src="/learn/shots/playlists-tab.jpg" width="678" height="581" loading="lazy" alt="The Playlists tab: five playlists as cover tiles with Favorites first, and the edit and delete buttons showing on the hovered Road Trip tile.">
+        </figure>
+        <div class="prose">
+          <h3>Searching playlists</h3>
+          <p>Type in the search box and the grid turns into a list in up to three groups: playlists whose name matches, playlists that contain a matching song or artist (with the songs named), and artists from your library. Hover a playlist for play, delete and edit. <kbd>Enter</kbd> plays the top playlist.</p>
+        </div>
+        <figure class="shot shot--narrow">
+          <img src="/learn/shots/playlists-search.jpg" width="678" height="316" loading="lazy" alt="Searching the Playlists tab for queen: Classics and Favorites listed because they include Bohemian Rhapsody, and Queen listed under Artists.">
+        </figure>
+        <div class="prose">
+          <h3 id="artist-playlists">A playlist from an artist</h3>
+          <p><strong>From artist</strong> lists every artist in your library with how many of their songs you have, most first. Click one, or the <strong>Create playlist</strong> button that appears when you hover it, and all their songs go into one playlist named after them, sorted by title.</p>
+          <ul>
+            <li>Featured artists count, so <em>Mark Ronson ft. Bruno Mars</em> goes into both artists' playlists. Channel names like <em>ArtistVEVO</em> and <em>Artist - Topic</em> are matched to the artist.</li>
+            <li>Duos and bands stay together: <em>Simon &amp; Garfunkel</em> is one artist unless you also have songs credited to Simon alone.</li>
+            <li>Add more of their songs later and the row offers <strong>Add</strong> with the number of new songs, which tops up the same playlist even if you've renamed it. Once it's up to date, the button plays it.</li>
+            <li>Artists also appear when you search the Playlists tab, with the same button.</li>
+          </ul>
+        </div>
+        <figure class="shot shot--small">
+          <img src="/learn/shots/artist-playlist.jpg" width="560" height="613" loading="lazy" alt="The Playlist from an artist dialog listing Adele, Imagine Dragons, Queen and The Weeknd with two songs each, and a Create playlist button on the hovered Adele row.">
         </figure>
         <div class="prose">
           <h3>Editing a playlist</h3>
-          <p>In Edit mode, the Edit button opens the playlist editor. Search on the left to add songs (artists match too), drag the handles on the right to reorder, and Remove to take one out.</p>
+          <p>The pencil on a playlist opens the playlist editor. Search on the left to add songs (artists match too), drag the handles on the right to reorder, and Remove to take one out.</p>
           <ul>
             <li>Click the playlist's name at the top to rename it.</li>
             <li>The circular arrows at the top of the song list shuffle the order permanently.</li>
@@ -691,9 +711,10 @@ Dreams, https://www.youtube.com/watch?v=5oWyMakvQew, Fleetwood Mac
           <h3>Mouse and touch</h3>
           <ul>
             <li><strong>Right-click a song's play button</strong>, a Music Explorer song, a favourite or a cover in the song grid: add it to the queue.</li>
-            <li><strong>Right-click a playlist's Play button</strong>: queue the whole playlist.</li>
+            <li><strong>Right-click a playlist's cover</strong>: queue the whole playlist.</li>
             <li><strong>Long-press a song</strong> in the playlist side panel: skip it for this session.</li>
-            <li><strong>Hold and drag a playlist</strong>: reorder playlists.</li>
+            <li><strong>Drag a playlist tile</strong>: reorder playlists.</li>
+            <li><strong>Hover a playlist</strong>: edit or delete it.</li>
             <li><strong>Click a playlist's name</strong> in its editor: rename it.</li>
             <li><strong>Right-click the Lyrics tab</strong>: every song with lyrics.</li>
             <li><strong>Click a Music Explorer heading</strong>: full history (Recently Listened To) or a fresh set (Suggested, Your Picks).</li>

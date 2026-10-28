@@ -70,7 +70,7 @@ The file has four layers, in order:
 - Icons are Font Awesome 6 with an explicit style prefix (`fas` / `far` / `fab`).
   Close buttons are `<i class="fas fa-times">`; titles take one accent-coloured icon.
 - JS-built dialogs use the `UI` factory at the top of `script.js`:
-  `UI.modal({ title, icon, size, className, bodyClassName })` returns
+  `UI.modal({ title, icon, size, className, bodyClassName, closeOnEscape })` returns
   `{ overlay, shell, header, heading, body, footer, close, addFooter, open }`, and
   `UI.button(label, { variant, size, icon, block, onClick })` builds a `.ui-btn`.
   Prefer these over hand-rolling `document.createElement` chains and inline styles.

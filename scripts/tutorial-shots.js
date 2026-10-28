@@ -39,7 +39,11 @@ Roar, https://www.youtube.com/watch?v=6nJuUdc2qNg, Katy Perry
 const EXTRA = `Despacito, https://www.youtube.com/watch?v=FXovf5dsRTw, Luis Fonsi ft. Daddy Yankee
 Shape of You, https://www.youtube.com/watch?v=xTvyyoF_LZY, Ed Sheeran
 Gangnam Style, https://www.youtube.com/watch?v=4AgDYTuZWOw, PSY
-Twinkle Twinkle Little Star, https://www.youtube.com/watch?v=B_QIsoUIz0c, Super Simple Songs`;
+Twinkle Twinkle Little Star, https://www.youtube.com/watch?v=B_QIsoUIz0c, Super Simple Songs
+Blinding Lights, https://www.youtube.com/watch?v=4NRXx6U8ABQ, The Weeknd
+Rolling in the Deep, https://www.youtube.com/watch?v=rYEDA3JcQqw, Adele
+Thunder, https://www.youtube.com/watch?v=fKopy74weus, Imagine Dragons
+We Will Rock You, https://www.youtube.com/watch?v=-tJYN-eG1zk, Queen`;
 
 const LYRICS = [
   ['Twinkle, twinkle, little star', '0:09'],
@@ -334,8 +338,21 @@ const scenes = {
   async playlists(ctx) {
     const page = await boot(ctx);
     await page.evaluate(() => musicPlayer.switchTab('playlists'));
-    await sleep(800);
+    await sleep(1200);
+    await page.hover('#playlistContainer .playlist-shelf-tile:nth-child(2)');
+    await sleep(500);
     await save(page, 'playlists-tab', '.player-area', 8);
+    await page.fill('#playlistSearch', 'queen');
+    await page.mouse.move(0, 0);
+    await sleep(1200);
+    await save(page, 'playlists-search', '#playlists', 8);
+    await page.fill('#playlistSearch', '');
+    await page.click('#artistPlaylistBtn');
+    await sleep(1500);
+    await page.hover('.artist-pick-list .artist-row');
+    await sleep(500);
+    await save(page, 'artist-playlist', '.ui-modal', 0);
+    await page.keyboard.press('Escape');
     await page.evaluate(() => musicPlayer.openPlaylistEditModal(musicPlayer.playlists.find(p => p.name === 'Road Trip').id));
     await sleep(1200);
     await save(page, 'playlist-edit', '#playlistEditModal .ui-modal', 0);

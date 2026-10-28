@@ -87,7 +87,7 @@ Read the "UI Design System" section of `ARCHITECTURE.md` first. Short version:
 - Build dialogs from `.ui-overlay` / `.ui-modal` / `.ui-modal__header|__title|__close|__body|__footer`,
   `.ui-btn` (+`--primary|ghost|danger|sm|block`), `.ui-input`, `.ui-card`, `.ui-tab`, `.ui-chip`.
 - In JS use the `UI` factory at the top of `script.js`:
-  `UI.modal({title, icon, size, className, bodyClassName})` →
+  `UI.modal({title, icon, size, className, bodyClassName, closeOnEscape})` →
   `{overlay, shell, header, heading, body, footer, close, addFooter, open}`,
   and `UI.button(label, {variant, size, icon, block, onClick})`.
 - Overlays open with `display: flex` (inline style, or an existing `.active` /

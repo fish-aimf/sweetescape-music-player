@@ -224,14 +224,16 @@
                   </div>
                   <div class="tab-pane" id="playlists">
                      <div class="playlist-manager">
-                        <div class="playlist-search-bar">
-                           <input type="text" id="playlistSearch" placeholder="Search playlists...">
-                           <button id="togglePlaylistEditModeBtn" class="playlist-edit-mode-btn">Edit</button>
-                           <button id="toggleCreatePlaylistBtn" class="add-playlist-btn">+</button>
-                        </div>
-                        <div class="create-playlist" id="createPlaylistDiv" style="display: none;">
-                           <input type="text" id="newPlaylistName" placeholder="New Playlist Name">
-                           <button id="createPlaylistBtn">Create Playlist</button>
+                        <div class="search-section">
+                           <div class="library-search-wrap">
+                              <input type="text" id="playlistSearch" placeholder="Search playlists, songs or artists..." autocomplete="off">
+                           </div>
+                           <button id="newPlaylistBtn" class="playlist-tool-btn" title="Make an empty playlist">
+                           <i class="fas fa-plus"></i><span>New playlist</span>
+                           </button>
+                           <button id="artistPlaylistBtn" class="playlist-tool-btn" title="Make a playlist of every song by one artist">
+                           <i class="fas fa-microphone-lines"></i><span>From artist</span>
+                           </button>
                         </div>
                         <div id="playlistContainer" class="playlist-container">
                         </div>

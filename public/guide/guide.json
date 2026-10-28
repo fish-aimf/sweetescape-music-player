@@ -12,6 +12,7 @@
     "transport",
     "queue",
     "playlists",
+    "artist-playlist",
     "side-panel",
     "lyrics",
     "toolbar",
@@ -98,9 +99,9 @@
     },
     {
       "id": "playlist-shelf",
-      "target": ".playlists-shelf",
+      "target": "#playlistsShelf",
       "title": "Playlists shelf",
-      "body": "Your playlists as cover tiles. Click one to play it, or the + tile to make a new one."
+      "body": "Your playlists as cover tiles. Click one to play it, hover it to edit or delete it, or click the New playlist tile to make one."
     },
     {
       "id": "song-grid",
@@ -247,7 +248,7 @@
       "keys": [["Y", "open the queue"]],
       "tips": [
         "Right-click a song's play button anywhere to queue it. Right-click it again to make it play twice.",
-        "Right-click a playlist's Play button to queue the whole playlist."
+        "Right-click a playlist's cover to queue the whole playlist."
       ]
     },
     {
@@ -261,19 +262,40 @@
       "target": "#playlists",
       "prepare": { "tab": "playlists" },
       "title": "Playlists",
-      "body": "Click a playlist to play it. + makes a new one. Edit swaps the Play buttons for Edit and Delete. In the editor you can reorder, shuffle, reverse, clear duplicates, and click the name to rename it.",
+      "body": "Every playlist as a cover tile, with Favorites first. Click one to play it. Hover it for the pencil (open the editor) and the bin (delete, after you confirm). New playlist starts an empty one. In the editor you can add songs, reorder, shuffle, reverse, clear duplicates, and click the name to rename it.",
       "tips": [
-        "Hold a playlist for half a second, then drag it to reorder.",
-        "Right-click its Play button to add the whole playlist to the queue.",
-        "Type in the search box and press Enter to play the top match."
+        "Drag a tile to reorder your playlists. The library shelf follows the same order.",
+        "Right-click a cover to add the whole playlist to the queue.",
+        "The search box also finds playlists by the songs and artists in them. Enter plays the top match."
       ]
     },
     {
       "id": "playlist-card",
-      "target": ".playlist-card",
+      "target": ".playlist-shelf-tile, .playlist-card",
       "title": "Playlist",
-      "body": "Click to play.",
-      "tips": ["Hold for half a second, then drag to reorder.", "Right-click Play to queue every song in it."]
+      "body": "Click to play it. An empty playlist opens in the editor instead so you can add songs. Hover for edit and delete.",
+      "tips": ["Drag a tile to reorder.", "Right-click the cover to queue every song in it."]
+    },
+    {
+      "id": "playlist-search",
+      "target": "#playlistSearch",
+      "prepare": { "tab": "playlists" },
+      "title": "Search playlists",
+      "body": "Finds playlists by name, then playlists that contain a matching song or artist, then artists you can turn into a playlist. Press Enter to play the top match."
+    },
+    {
+      "id": "new-playlist",
+      "target": "#newPlaylistBtn",
+      "prepare": { "tab": "playlists" },
+      "title": "New playlist",
+      "body": "Name it and the editor opens, ready for you to add songs from your library."
+    },
+    {
+      "id": "artist-playlist",
+      "target": "#artistPlaylistBtn",
+      "prepare": { "tab": "playlists" },
+      "title": "Playlist from an artist",
+      "body": "Pick an artist and every song of theirs in your library becomes one playlist named after them. Featured artists count too, so a song by A ft. B lands in both. Open it again after adding more of their songs and the row offers to add just the new ones."
     },
     {
       "id": "side-panel",

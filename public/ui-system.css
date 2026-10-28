@@ -1902,7 +1902,6 @@ a.ui-btn--block {
   box-shadow: inset 0 1px 0 var(--glass-sheen);
 }
 
-[data-surface="glass"] .create-playlist input,
 [data-surface="glass"] .search-section input,
 [data-surface="glass"] .add-song-section .input-group input,
 [data-surface="glass"] .search-library-section input,
@@ -1918,6 +1917,7 @@ a.ui-btn--block {
 [data-surface="glass"] .lyrics-section textarea,
 [data-surface="glass"] .lyricmaker-progress-bar-wrapper,
 [data-surface="glass"] .find-songs-btn,
+[data-surface="glass"] .playlist-tool-btn,
 [data-surface="glass"] .subtitles-import-lyrics-textarea,
 [data-surface="glass"] .subtitles-import-transcript-textarea,
 [data-surface="glass"] #importSongsTextarea,
@@ -1942,11 +1942,14 @@ a.ui-btn--block {
 [data-surface="glass"] .sz-btn,
 [data-surface="glass"] .ls-search-input,
 [data-surface="glass"] .global-library-artist-grid-load-more-btn,
-[data-surface="glass"] .temp-song-url-input,
-[data-surface="glass"] #playlistSearch {
+[data-surface="glass"] .temp-song-url-input {
   backdrop-filter: blur(10px) saturate(var(--glass-sat));
   -webkit-backdrop-filter: blur(10px) saturate(var(--glass-sat));
   border-color: var(--glass-edge);
+}
+
+[data-surface="glass"] .playlist-shelf-thumb.is-empty:not(.is-create) {
+  box-shadow: inset 0 0 0 1px var(--glass-sheen);
 }
 
 [data-surface="glass"] .mix-lab-seed {
@@ -1974,7 +1977,8 @@ a.ui-btn--block {
   pointer-events: none;
 }
 
-[data-surface="glass"] #librarySearch {
+[data-surface="glass"] #librarySearch,
+[data-surface="glass"] #playlistSearch {
   background: var(--bg-primary);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;

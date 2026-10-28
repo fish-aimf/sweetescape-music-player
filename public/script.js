@@ -34,7 +34,7 @@ const UI = {
     }
     return node;
   },
-  modal({ title = '', icon = '', size = 'md', className = '', bodyClassName = '', dismissible = true, onClose } = {}) {
+  modal({ title = '', icon = '', size = 'md', className = '', bodyClassName = '', dismissible = true, closeOnEscape = false, onClose } = {}) {
     const overlay = this.el('div', `modal ui-overlay${className ? ' ' + className : ''}`);
     overlay.style.display = 'flex';
     const shell = this.el('div', `modal-content ui-modal ui-modal--${this.SIZES.includes(size) ? size : 'md'}`);
@@ -49,8 +49,14 @@ const UI = {
     header.append(heading, closeBtn);
     shell.append(header, body, footer);
     overlay.append(shell);
+    const onKey = event => {
+      if (event.key === 'Escape') {
+        close();
+      }
+    };
     const close = () => {
       overlay.remove();
+      document.removeEventListener('keydown', onKey);
       if (onClose) {
         onClose();
       }
@@ -78,6 +84,9 @@ const UI = {
       },
       open(parent = document.body) {
         parent.appendChild(overlay);
+        if (closeOnEscape) {
+          document.addEventListener('keydown', onKey);
+        }
         return overlay;
       }
     };
@@ -416,7 +425,6 @@ class AdvancedMusicPlayer {
     this.isAdditionalDetailsHidden = false;
     this.currentLayout = 'center';
     this.playlistSidebarMode = 'overlay';
-    this.playlistEditModeActive = false;
     this.currentTabIndex = 0;
     this.progressBar = null;
     this.progressInterval = null;
@@ -523,8 +531,6 @@ class AdvancedMusicPlayer {
     this.currentSongForSubtitlesImport = null;
     this.searchTimeout = null;
     this.librarySearchTimeout = null;
-    this.currentSearchTerm = '';
-    this.filteredPlaylists = [];
     this.sidebarSearchDebounceTimer = null;
     this.importModal = null;
     this.closeImportModalBtn = null;
@@ -742,8 +748,6 @@ class AdvancedMusicPlayer {
       librarySearch: document.getElementById('librarySearch'),
       toggleControlBarBtn: document.getElementById('toggleControlBarBtn'),
       additionalDetails: document.getElementById('additionalDetails'),
-      newPlaylistName: document.getElementById('newPlaylistName'),
-      createPlaylistBtn: document.getElementById('createPlaylistBtn'),
       playlistContainer: document.getElementById('playlistContainer'),
       timeDisplay: document.getElementById('timeDisplay'),
       playlistEditModal: document.getElementById('playlistEditModal'),
@@ -871,9 +875,8 @@ class AdvancedMusicPlayer {
       importSongsBtn: document.getElementById('importSongsBtn'),
       importSongsTextarea: document.getElementById('importSongsTextarea'),
       playlistSearch: document.getElementById('playlistSearch'),
-      toggleCreatePlaylistBtn: document.getElementById('toggleCreatePlaylistBtn'),
-      createPlaylistDiv: document.getElementById('createPlaylistDiv'),
-      togglePlaylistEditModeBtn: document.getElementById('togglePlaylistEditModeBtn'),
+      newPlaylistBtn: document.getElementById('newPlaylistBtn'),
+      artistPlaylistBtn: document.getElementById('artistPlaylistBtn'),
       libraryOptionsDropdown: document.getElementById('libraryOptionsDropdown'),
       switchLangBtn: document.getElementById('switchLangBtn'),
       transcriptLangSelect: document.getElementById('transcriptLangSelect'),
@@ -937,7 +940,6 @@ class AdvancedMusicPlayer {
     const handlers = {
       addSong: this.addSongToLibrary.bind(this),
       filterLibrary: this.filterLibrarySongs.bind(this),
-      createPlaylist: this.createPlaylist.bind(this),
       closePlaylistModal: this.closePlaylistModal.bind(this),
       searchSongsToAdd: this.searchSongsToAddToPlaylist.bind(this),
       addSongToPlaylist: this.addSongToSelectedPlaylist.bind(this),
@@ -962,7 +964,6 @@ class AdvancedMusicPlayer {
       togglePlaylistLoop: this.togglePlaylistLoop.bind(this),
       songUrlInput: this.validateYouTubeUrl.bind(this),
       songNameRightClick: this.handleSongNameRightClick.bind(this),
-      togglePlaylistEditMode: this.togglePlaylistEditMode.bind(this),
       closeImportModal: this.closeImportModal.bind(this),
       importSongs: () => {
         this.importLibrary(this.elements.importSongsTextarea.value);
@@ -971,14 +972,15 @@ class AdvancedMusicPlayer {
       discordClick: () => this.openDiscordModal(),
       librarySortToggle: this.handleLibrarySortToggle.bind(this),
       libraryReverseToggle: this.handleLibraryReverseToggle.bind(this),
-      filterPlaylists: this.filterPlaylists.bind(this),
+      filterPlaylists: this.debounce(() => this.renderPlaylists(), 96),
       playlistSearchEnter: e => {
         if (e.key === 'Enter') {
           e.preventDefault();
           this.playTopPlaylistSearchResult();
         }
       },
-      toggleCreatePlaylistDiv: this.toggleCreatePlaylistDiv.bind(this),
+      newPlaylist: () => this.openNewPlaylistDialog(),
+      artistPlaylist: () => this.openArtistPlaylistDialog(),
       openSettings: this.handleOpenSettings.bind(this),
       closeSettings: this.handleCloseSettings.bind(this),
       settingsModalClick: this.handleSettingsModalClick.bind(this),
@@ -1018,11 +1020,6 @@ class AdvancedMusicPlayer {
           this.addSongToLibrary();
         }
       },
-      newPlaylistNameKeydown: e => {
-        if (e.key === 'Enter') {
-          this.createPlaylist();
-        }
-      },
       songUrlPaste: () => {
         setTimeout(() => this.handleUrlPaste(), 10);
       },
@@ -1038,7 +1035,7 @@ class AdvancedMusicPlayer {
       refreshRandomRecommendations: () => this.refreshRandomRecommendations(),
       visualizerToggle: e => this.handleVisualizerToggle(e)
     };
-    const simpleBindings = [ [ this.elements.addSongBtn, 'click', handlers.addSong ], [ this.elements.createPlaylistBtn, 'click', handlers.createPlaylist ], [ this.elements.closePlaylistModalBtn, 'click', handlers.closePlaylistModal ], [ this.elements.addSongToPlaylistBtn, 'click', handlers.addSongToPlaylist ], [ this.elements.playPauseBtn, 'click', handlers.togglePlayPause ], [ this.elements.prevBtn, 'click', handlers.playPrevious ], [ this.elements.nextBtn, 'click', handlers.playNext ], [ this.elements.loopBtn, 'click', handlers.toggleLoop ], [ this.elements.showPlaylistBtn, 'click', handlers.toggleSidebar ], [ this.elements.closeSidebarBtn, 'click', handlers.toggleSidebar ], [ this.elements.themeToggle, 'click', handlers.toggleTheme ], [ this.elements.autoplayBtn, 'click', handlers.toggleAutoplay ], [ this.elements.speedBtn, 'click', handlers.toggleSpeedOptions ], [ this.elements.volumeSlider, 'input', handlers.volumeChange ], [ this.elements.progressBar, 'click', handlers.seekMusic ], [ this.elements.currentSongName, 'contextmenu', handlers.songNameRightClick ], [ this.elements.toggleControlBarBtn, 'click', handlers.toggleControlBar ], [ this.elements.modifyLibraryBtn, 'click', handlers.openLibraryModal ], [ this.elements.closeLibraryModalBtn, 'click', handlers.closeLibraryModal ], [ this.elements.importLibraryBtn, 'click', handlers.importLibrary ], [ this.elements.exportLibraryBtn, 'click', handlers.exportLibrary ], [ this.elements.libraryModificationTabAddSong, 'click', handlers.libraryModificationTabAddSongClick ], [ this.elements.libraryModificationTabImportExport, 'click', handlers.libraryModificationTabImportExportClick ], [ this.elements.loopPlaylistBtn, 'click', handlers.togglePlaylistLoop ], [ this.elements.discordButton, 'click', handlers.discordClick ], [ this.elements.librarySortToggle, 'change', handlers.librarySortToggle ], [ this.elements.libraryReverseToggle, 'change', handlers.libraryReverseToggle ], [ this.elements.closeImportModalBtn, 'click', handlers.closeImportModal ], [ this.elements.importSongsBtn, 'click', handlers.importSongs ], [ this.elements.playlistSearch, 'input', handlers.filterPlaylists ], [ this.elements.playlistSearch, 'keypress', handlers.playlistSearchEnter ], [ this.elements.toggleCreatePlaylistBtn, 'click', handlers.toggleCreatePlaylistDiv ], [ this.elements.togglePlaylistEditModeBtn, 'click', handlers.togglePlaylistEditMode ], [ this.elements.settingsButton, 'click', handlers.openSettings ], [ this.elements.settingsCloseBtn, 'click', handlers.closeSettings ], [ this.elements.settingsModal, 'click', handlers.settingsModalClick ], [ this.elements.themeMode, 'change', handlers.themeModeChange ], [ this.elements.saveCustomTheme, 'click', handlers.saveCustomTheme ], [ this.elements.adsToggle, 'change', handlers.adsToggle ], [ this.elements.saveDiscoverMoreSettings, 'click', handlers.saveDiscoverMoreSettings ], [ this.elements.visualizerToggle, 'change', handlers.visualizerToggle ], [ this.elements.visualizerStyleGrid, 'click', this.handleVisualizerStyleClick.bind(this) ], [ this.elements.visualizerGain, 'input', this.handleVisualizerGainInput.bind(this) ], [ this.elements.findSongsBtn, 'click', handlers.findSongsOpen ], [ this.elements.closeFindSongs, 'click', handlers.findSongsClose ], [ this.elements.searchSongsToAdd, 'input', handlers.searchSongsToAdd ], [ this.elements.statsButton, 'click', this.openStatsModal.bind(this) ], [ this.elements.disguiseButton, 'click', this.openDisguiseModal.bind(this) ], [ this.elements.lsPanel, 'click', this._handleStatsShowAllClick.bind(this) ], [ this.elements.lsPanel, 'input', this._handleStatsSearchInput.bind(this) ], [ this.elements.lsPanel, 'keydown', this._handleStatsRowKeydown.bind(this) ], [ document.getElementById('lsCloseBtn'), 'click', this.closeStatsModal.bind(this) ], [ this.elements.lsRangeTabs, 'click', this._handleStatsRangeToggle.bind(this) ], [ this.elements.listeningStatsToggle, 'change', this.handleListeningStatsToggle.bind(this) ], [ this.elements.libTopicBtn, 'click', handlers.toggleTopicKeyword ] ];
+    const simpleBindings = [ [ this.elements.addSongBtn, 'click', handlers.addSong ], [ this.elements.closePlaylistModalBtn, 'click', handlers.closePlaylistModal ], [ this.elements.addSongToPlaylistBtn, 'click', handlers.addSongToPlaylist ], [ this.elements.playPauseBtn, 'click', handlers.togglePlayPause ], [ this.elements.prevBtn, 'click', handlers.playPrevious ], [ this.elements.nextBtn, 'click', handlers.playNext ], [ this.elements.loopBtn, 'click', handlers.toggleLoop ], [ this.elements.showPlaylistBtn, 'click', handlers.toggleSidebar ], [ this.elements.closeSidebarBtn, 'click', handlers.toggleSidebar ], [ this.elements.themeToggle, 'click', handlers.toggleTheme ], [ this.elements.autoplayBtn, 'click', handlers.toggleAutoplay ], [ this.elements.speedBtn, 'click', handlers.toggleSpeedOptions ], [ this.elements.volumeSlider, 'input', handlers.volumeChange ], [ this.elements.progressBar, 'click', handlers.seekMusic ], [ this.elements.currentSongName, 'contextmenu', handlers.songNameRightClick ], [ this.elements.toggleControlBarBtn, 'click', handlers.toggleControlBar ], [ this.elements.modifyLibraryBtn, 'click', handlers.openLibraryModal ], [ this.elements.closeLibraryModalBtn, 'click', handlers.closeLibraryModal ], [ this.elements.importLibraryBtn, 'click', handlers.importLibrary ], [ this.elements.exportLibraryBtn, 'click', handlers.exportLibrary ], [ this.elements.libraryModificationTabAddSong, 'click', handlers.libraryModificationTabAddSongClick ], [ this.elements.libraryModificationTabImportExport, 'click', handlers.libraryModificationTabImportExportClick ], [ this.elements.loopPlaylistBtn, 'click', handlers.togglePlaylistLoop ], [ this.elements.discordButton, 'click', handlers.discordClick ], [ this.elements.librarySortToggle, 'change', handlers.librarySortToggle ], [ this.elements.libraryReverseToggle, 'change', handlers.libraryReverseToggle ], [ this.elements.closeImportModalBtn, 'click', handlers.closeImportModal ], [ this.elements.importSongsBtn, 'click', handlers.importSongs ], [ this.elements.playlistSearch, 'input', handlers.filterPlaylists ], [ this.elements.playlistSearch, 'keypress', handlers.playlistSearchEnter ], [ this.elements.newPlaylistBtn, 'click', handlers.newPlaylist ], [ this.elements.artistPlaylistBtn, 'click', handlers.artistPlaylist ], [ this.elements.settingsButton, 'click', handlers.openSettings ], [ this.elements.settingsCloseBtn, 'click', handlers.closeSettings ], [ this.elements.settingsModal, 'click', handlers.settingsModalClick ], [ this.elements.themeMode, 'change', handlers.themeModeChange ], [ this.elements.saveCustomTheme, 'click', handlers.saveCustomTheme ], [ this.elements.adsToggle, 'change', handlers.adsToggle ], [ this.elements.saveDiscoverMoreSettings, 'click', handlers.saveDiscoverMoreSettings ], [ this.elements.visualizerToggle, 'change', handlers.visualizerToggle ], [ this.elements.visualizerStyleGrid, 'click', this.handleVisualizerStyleClick.bind(this) ], [ this.elements.visualizerGain, 'input', this.handleVisualizerGainInput.bind(this) ], [ this.elements.findSongsBtn, 'click', handlers.findSongsOpen ], [ this.elements.closeFindSongs, 'click', handlers.findSongsClose ], [ this.elements.searchSongsToAdd, 'input', handlers.searchSongsToAdd ], [ this.elements.statsButton, 'click', this.openStatsModal.bind(this) ], [ this.elements.disguiseButton, 'click', this.openDisguiseModal.bind(this) ], [ this.elements.lsPanel, 'click', this._handleStatsShowAllClick.bind(this) ], [ this.elements.lsPanel, 'input', this._handleStatsSearchInput.bind(this) ], [ this.elements.lsPanel, 'keydown', this._handleStatsRowKeydown.bind(this) ], [ document.getElementById('lsCloseBtn'), 'click', this.closeStatsModal.bind(this) ], [ this.elements.lsRangeTabs, 'click', this._handleStatsRangeToggle.bind(this) ], [ this.elements.listeningStatsToggle, 'change', this.handleListeningStatsToggle.bind(this) ], [ this.elements.libTopicBtn, 'click', handlers.toggleTopicKeyword ] ];
     simpleBindings.forEach(([element, event, handler]) => {
       if (element) {
         element.addEventListener(event, handler);
@@ -1058,9 +1055,6 @@ class AdvancedMusicPlayer {
       this.elements.songUrlInput.addEventListener('keydown', handlers.songUrlKeydown);
       this.elements.songUrlInput.addEventListener('paste', handlers.songUrlPaste);
       this.elements.songUrlInput.addEventListener('input', handlers.urlPasteInput);
-    }
-    if (this.elements.newPlaylistName) {
-      this.elements.newPlaylistName.addEventListener('keydown', handlers.newPlaylistNameKeydown);
     }
     if (this.elements.autofillBtn) {
       this.elements.autofillBtn.addEventListener('click', handlers.autofillClick);
@@ -1514,7 +1508,6 @@ class AdvancedMusicPlayer {
       const request = store.getAll();
       request.onsuccess = () => {
         this.playlists = request.result || [];
-        this.filteredPlaylists = [ ...this.playlists ];
         this.syncFavoritesOnLoad().then(() => resolve()).catch(error => {
           console.error('Error syncing favorites playlist:', error);
           resolve();
@@ -2185,7 +2178,7 @@ class AdvancedMusicPlayer {
     shelf.className = 'playlists-shelf';
     shelf.id = 'playlistsShelf';
     const favPlaylist = this.getFavoritesPlaylist();
-    const playlists = this.playlists.filter(p => p !== favPlaylist);
+    const playlists = this._sortedPlaylists().filter(p => p !== favPlaylist);
     const header = document.createElement('div');
     header.className = 'shelf-header';
     header.innerHTML = `<span class="shelf-title"><i class="fas fa-list"></i> Playlists</span>`;
@@ -2205,72 +2198,88 @@ class AdvancedMusicPlayer {
       empty.innerHTML = `<i class="fas fa-list"></i><span>No playlists yet</span>`;
       row.appendChild(empty);
     } else {
-      const sorted = [ ...playlists ].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+      const library = this._libraryByVideoId();
       const frag = document.createDocumentFragment();
-      sorted.forEach(playlist => frag.appendChild(this._buildPlaylistShelfTile(playlist)));
+      playlists.forEach(playlist => frag.appendChild(this._buildPlaylistTile(playlist, library)));
       row.appendChild(frag);
     }
     row.appendChild(this._buildCreatePlaylistShelfTile());
     shelf.appendChild(row);
     return shelf;
   }
-  _buildPlaylistShelfTile(playlist) {
+  _buildPlaylistTile(playlist, library, isFavorites = false) {
     const tile = document.createElement('div');
     tile.className = 'playlist-shelf-tile';
     tile.dataset.playlistId = playlist.id;
-    const thumb = document.createElement('div');
-    thumb.className = 'playlist-shelf-thumb';
-    const songsForArt = playlist.songs.slice(0, 4);
-    if (songsForArt.length === 0) {
-      thumb.classList.add('is-empty');
-      thumb.innerHTML = `<i class="fas fa-music"></i>`;
-    } else {
-      thumb.classList.add(`has-${Math.min(songsForArt.length, 4)}`);
-      songsForArt.forEach(song => {
-        const img = document.createElement('img');
-        img.alt = '';
-        img.loading = 'lazy';
-        img.decoding = 'async';
-        img.decoding = 'async';
-        img.src = song.thumbnailUrl || `https://i.ytimg.com/vi/${song.videoId}/mqdefault.jpg`;
-        img.onerror = () => {
-          img.onerror = null;
-          img.src = `https://i.ytimg.com/vi/${song.videoId}/default.jpg`;
-        };
-        thumb.appendChild(img);
-      });
-    }
-    const playOverlay = document.createElement('div');
-    playOverlay.className = 'playlist-shelf-play-overlay';
-    playOverlay.innerHTML = `<i class="fas fa-play"></i>`;
-    thumb.appendChild(playOverlay);
+    tile.tabIndex = 0;
+    tile.setAttribute('role', 'button');
+    tile.classList.toggle('is-playing', this.currentPlaylist?.id === playlist.id);
+    const cover = this._buildPlaylistCover(playlist, library);
+    const badge = isFavorites ? '<span class="playlist-tile-badge" title="Favourites"><i class="fas fa-star"></i></span>' : '';
+    const deleteBtn = isFavorites ? '' : '<button type="button" class="playlist-tile-btn delete-btn" title="Delete"><i class="fas fa-trash"></i></button>';
+    cover.insertAdjacentHTML('beforeend', `<div class="playlist-shelf-play-overlay play-btn"><i class="fas ${playlist.songs.length ? 'fa-play' : 'fa-plus'}"></i></div>${badge}<div class="playlist-tile-actions"><button type="button" class="playlist-tile-btn edit-btn" title="Edit"><i class="fas fa-pen"></i></button>${deleteBtn}</div>`);
     const name = document.createElement('div');
     name.className = 'playlist-shelf-name';
     name.textContent = playlist.name;
+    name.title = playlist.name;
     const count = document.createElement('div');
     count.className = 'playlist-shelf-count';
-    count.textContent = `${playlist.songs.length} song${playlist.songs.length !== 1 ? 's' : ''}`;
-    tile.appendChild(thumb);
-    tile.appendChild(name);
-    tile.appendChild(count);
-    tile.addEventListener('click', () => this.playPlaylist(playlist.id));
+    count.textContent = this._songCountText(playlist.songs.length);
+    tile.append(cover, name, count);
+    this._bindPlaylistItem(tile, playlist);
     return tile;
+  }
+  _buildPlaylistCover(playlist, library) {
+    const cover = document.createElement('div');
+    cover.className = 'playlist-shelf-thumb';
+    const picks = [];
+    const seen = new Set();
+    for (const song of playlist.songs) {
+      if (picks.length === 4) {
+        break;
+      }
+      if (!seen.has(song.videoId)) {
+        seen.add(song.videoId);
+        picks.push(library.get(song.videoId) || song);
+      }
+    }
+    if (picks.length === 0) {
+      cover.classList.add('is-empty');
+      cover.innerHTML = `<i class="fas fa-music"></i>`;
+      return cover;
+    }
+    cover.classList.add(`has-${picks.length}`);
+    picks.forEach(song => cover.appendChild(this._buildCoverImage(song)));
+    return cover;
+  }
+  _buildCoverImage(song, className) {
+    const img = document.createElement('img');
+    if (className) {
+      img.className = className;
+    }
+    img.alt = '';
+    img.loading = 'lazy';
+    img.decoding = 'async';
+    img.draggable = false;
+    img.src = song.thumbnailUrl || `https://i.ytimg.com/vi/${song.videoId}/mqdefault.jpg`;
+    img.onerror = () => {
+      img.onerror = null;
+      img.src = `https://i.ytimg.com/vi/${song.videoId}/default.jpg`;
+    };
+    return img;
   }
   _buildCreatePlaylistShelfTile() {
     const tile = document.createElement('div');
     tile.className = 'playlist-shelf-tile playlist-shelf-create-tile';
-    tile.innerHTML = `\n\t        <div class="playlist-shelf-thumb is-empty is-create">\n\t            <i class="fas fa-plus"></i>\n\t        </div>\n\t        <div class="playlist-shelf-name">New Playlist</div>\n\t    `;
-    tile.addEventListener('click', () => this._openCreatePlaylistFromShelf());
+    tile.innerHTML = `<div class="playlist-shelf-thumb is-empty is-create"><i class="fas fa-plus"></i></div><div class="playlist-shelf-name">New playlist</div>`;
+    tile.addEventListener('click', () => this.openNewPlaylistDialog());
     return tile;
   }
-  _openCreatePlaylistFromShelf() {
-    this.switchTab('playlists');
-    const createDiv = this.elements.createPlaylistDiv;
-    if (!createDiv || createDiv.style.display === 'none' || !createDiv.style.display) {
-      this.toggleCreatePlaylistDiv();
-    } else {
-      this.elements.newPlaylistName?.focus();
-    }
+  _libraryByVideoId() {
+    return new Map(this.songLibrary.map(song => [ song.videoId, song ]));
+  }
+  _songCountText(count) {
+    return `${count} song${count === 1 ? '' : 's'}`;
   }
   _mountVirtualScroll(container, songs, art = null) {
     const BUFFER = 5;
@@ -2491,7 +2500,6 @@ class AdvancedMusicPlayer {
         await this.saveSongLibrary();
       }
       if (playlistsChanged) {
-        this.filteredPlaylists = [ ...this.playlists ];
         await this.savePlaylists();
       }
       if (recentChanged && this.db) {
@@ -2976,6 +2984,10 @@ class AdvancedMusicPlayer {
     const playing = videoId ? this.songLibrary.find(s => s.videoId === videoId) : null;
     document.querySelectorAll('.discovery-song-item, .fav-thumb').forEach(el => {
       el.classList.toggle('is-playing', !!playing && el.dataset.songId === String(playing.id));
+    });
+    const playlistId = this.currentPlaylist ? String(this.currentPlaylist.id) : '';
+    document.querySelectorAll('.playlist-shelf-tile[data-playlist-id], .playlist-card[data-playlist-id]').forEach(el => {
+      el.classList.toggle('is-playing', el.dataset.playlistId === playlistId);
     });
   }
   _shuffleArray(arr) {
@@ -4214,219 +4226,502 @@ class AdvancedMusicPlayer {
       instructionsElement.innerHTML = `\n                    <p>Welcome to your music player! Add songs from YouTube, create playlists, and enjoy your music.</p>\n                    <p>Get started by importing a playlist below or add songs manually.</p>\n                `;
     });
   }
-  createPlaylist() {
-    const playlistName = this.elements.newPlaylistName.value.trim();
-    if (!playlistName) {
-      alert('Please enter a playlist name');
-      return;
+  async createPlaylist(name, songs = [], extra = {}) {
+    let id = Date.now();
+    while (this.playlists.some(p => p.id === id)) {
+      id += 1;
     }
-    if (this.playlists.some(p => p.name.toLowerCase() === playlistName.toLowerCase())) {
-      alert('A playlist with this name already exists');
-      return;
-    }
-    const newPlaylist = {
-      id: Date.now(),
-      name: playlistName,
-      songs: [],
-      position: this.playlists.length
+    const playlist = {
+      id: id,
+      name: name,
+      songs: songs,
+      position: this.playlists.reduce((max, p) => Math.max(max, p.position ?? -1), -1) + 1,
+      ...extra
     };
-    this.playlists.push(newPlaylist);
-    this.savePlaylists().then(() => {
-      this.renderPlaylists();
-      this.updatePlaylistSelection();
-      this.elements.newPlaylistName.value = '';
-      this.hideCreatePlaylistDiv();
-      this.filterPlaylists();
-    }).catch(error => {
-      console.error('Error creating playlist:', error);
-      alert('Failed to create playlist. Please try again.');
-    });
-  }
-  togglePlaylistEditMode() {
-    this.playlistEditModeActive = !this.playlistEditModeActive;
-    this.updatePlaylistEditModeButton();
-    this.renderPlaylists();
-  }
-  updatePlaylistEditModeButton() {
-    const button = this.elements.togglePlaylistEditModeBtn;
-    if (this.playlistEditModeActive) {
-      button.textContent = 'Done';
-      button.classList.add('playlist-edit-mode-active');
-    } else {
-      button.textContent = 'Edit';
-      button.classList.remove('playlist-edit-mode-active');
+    this.playlists.push(playlist);
+    try {
+      await this.savePlaylists();
+    } catch (error) {
+      this.playlists = this.playlists.filter(p => p !== playlist);
+      throw error;
     }
+    this.renderPlaylists();
+    this.updatePlaylistSelection();
+    return playlist;
+  }
+  openNewPlaylistDialog() {
+    const dialog = UI.modal({
+      title: 'New playlist',
+      icon: 'fa-list',
+      size: 'sm',
+      closeOnEscape: true
+    });
+    const input = UI.el('input', 'ui-input');
+    input.type = 'text';
+    input.placeholder = 'Playlist name';
+    input.maxLength = 100;
+    input.autocomplete = 'off';
+    input.setAttribute('aria-label', 'Playlist name');
+    const note = UI.el('p', 'playlist-dialog-note');
+    note.hidden = true;
+    const showNote = text => {
+      note.textContent = text;
+      note.hidden = !text;
+    };
+    const create = UI.button('Create', {
+      variant: 'primary'
+    });
+    create.disabled = true;
+    const validate = () => {
+      const name = input.value.trim();
+      const taken = name === '' ? null : this.playlists.find(p => p.name.toLowerCase() === name.toLowerCase());
+      showNote(taken ? `You already have a playlist called "${taken.name}".` : '');
+      create.disabled = name === '' || !!taken;
+      return !create.disabled;
+    };
+    const submit = async () => {
+      if (!validate()) {
+        return;
+      }
+      create.disabled = true;
+      try {
+        const playlist = await this.createPlaylist(input.value.trim());
+        dialog.close();
+        this.openPlaylistEditModal(playlist.id);
+      } catch (error) {
+        console.error('Error creating playlist:', error);
+        showNote('Couldn’t save the playlist. Please try again.');
+        create.disabled = false;
+      }
+    };
+    create.addEventListener('click', submit);
+    input.addEventListener('input', validate);
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        submit();
+      }
+    });
+    dialog.body.append(input, note);
+    dialog.addFooter(UI.button('Cancel', {
+      variant: 'ghost',
+      onClick: dialog.close
+    }), create);
+    dialog.open();
+    input.focus();
   }
   renderPlaylists() {
     this._refreshPlaylistsShelf();
-    this.elements.playlistContainer.innerHTML = '';
-    const playlistsToRender = this.currentSearchTerm ? this.filteredPlaylists : this.playlists;
-    const sortedPlaylists = [ ...playlistsToRender ].sort((a, b) => {
-      if (a.position !== undefined && b.position !== undefined) {
-        return a.position - b.position;
-      }
-      return 0;
-    });
-    if (sortedPlaylists.length === 0 && this.currentSearchTerm) {
-      const noResultsElement = document.createElement('div');
-      noResultsElement.classList.add('no-results-message');
-      noResultsElement.innerHTML = `<p>No playlists found matching "${this.currentSearchTerm}"</p>`;
-      this.elements.playlistContainer.appendChild(noResultsElement);
+    const container = this.elements.playlistContainer;
+    if (!container) {
       return;
     }
-    sortedPlaylists.forEach((playlist, index) => {
-      if (playlist.position === undefined) {
-        playlist.position = index;
+    const term = this.elements.playlistSearch ? this.elements.playlistSearch.value.trim() : '';
+    const library = this._libraryByVideoId();
+    container.replaceChildren(term ? this._buildPlaylistResults(term, library) : this._buildPlaylistsHome(library));
+  }
+  _sortedPlaylists() {
+    return this.playlists.map((playlist, index) => [ playlist, playlist.position ?? this.playlists.length + index ]).sort((a, b) => a[1] - b[1]).map(([playlist]) => playlist);
+  }
+  _buildPlaylistsHome(library) {
+    const card = document.createElement('div');
+    card.className = 'playlists-shelf';
+    const favorites = this.getFavoritesPlaylist();
+    const playlists = this._sortedPlaylists().filter(p => p !== favorites);
+    if (favorites) {
+      playlists.unshift(favorites);
+    }
+    card.innerHTML = `<div class="shelf-header"><div class="discovery-header-left"><span class="shelf-title"><i class="fas fa-list"></i> Playlists</span><span class="discovery-count">${playlists.length}</span></div></div>`;
+    if (playlists.length === 0) {
+      const empty = UI.el('div', 'ui-empty playlists-empty', `<i class="fas fa-list"></i><strong>No playlists yet</strong><span>Start one from scratch, or gather every song by one artist.</span>`);
+      const actions = UI.el('div', 'playlists-empty-actions');
+      actions.append(UI.button('New playlist', {
+        variant: 'primary',
+        size: 'sm',
+        icon: 'fa-plus',
+        onClick: () => this.openNewPlaylistDialog()
+      }), UI.button('From artist', {
+        size: 'sm',
+        icon: 'fa-microphone-lines',
+        onClick: () => this.openArtistPlaylistDialog()
+      }));
+      empty.appendChild(actions);
+      card.appendChild(empty);
+      return card;
+    }
+    const grid = document.createElement('div');
+    grid.className = 'playlist-grid';
+    playlists.forEach(playlist => {
+      const tile = this._buildPlaylistTile(playlist, library, playlist === favorites);
+      tile.draggable = playlist !== favorites;
+      grid.appendChild(tile);
+    });
+    this._bindPlaylistGridDrag(grid);
+    card.appendChild(grid);
+    return card;
+  }
+  _bindPlaylistGridDrag(grid) {
+    let dragged = null;
+    let before = '';
+    const order = () => [ ...grid.children ].map(tile => tile.dataset.playlistId).join();
+    grid.addEventListener('dragstart', e => {
+      dragged = e.target.closest('.playlist-shelf-tile[draggable="true"]');
+      if (!dragged) {
+        return;
       }
-      const duration = this.getPlaylistDuration(playlist);
-      let durationText = '';
-      if (playlist.songs.length > 0) {
-        durationText = ` • ${duration}`;
+      before = order();
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', dragged.dataset.playlistId);
+      requestAnimationFrame(() => dragged?.classList.add('dragging'));
+    });
+    grid.addEventListener('dragover', e => {
+      if (!dragged) {
+        return;
       }
-      const playlistElement = document.createElement('div');
-      playlistElement.classList.add('playlist-card');
-      playlistElement.dataset.playlistId = playlist.id;
-      playlistElement.dataset.position = playlist.position;
-      playlistElement.draggable = false;
-      let playlistActionsHTML = '';
-      if (this.playlistEditModeActive) {
-        playlistActionsHTML = `\n                <div class="playlist-actions">\n                    <button onclick="musicPlayer.openPlaylistEditModal(${playlist.id})">Edit</button>\n                    <button onclick="musicPlayer.deletePlaylist(${playlist.id})">Delete</button>\n                    <button onclick="musicPlayer.playPlaylist(${playlist.id})">Play</button>\n                </div>\n            `;
-      } else {
-        playlistActionsHTML = `\n                <div class="playlist-actions">\n                    <button onclick="musicPlayer.playPlaylist(${playlist.id})">Play</button>\n                </div>\n            `;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      const over = e.target.closest('.playlist-shelf-tile[draggable="true"]');
+      if (!over || over === dragged) {
+        return;
       }
-      playlistElement.innerHTML = `\n            <h3 class="playlist-name">${playlist.name}</h3>\n            <p>${playlist.songs.length} song${playlist.songs.length !== 1 ? 's' : ''}${durationText}</p>\n            ${playlistActionsHTML}\n        `;
-      let holdTimer;
-      let isDragging = false;
-      let isMouseDown = false;
-      let startTime = 0;
-      playlistElement.addEventListener('mousedown', e => {
-        if (e.target.tagName === 'BUTTON') {
-          return;
-        }
-        isMouseDown = true;
-        startTime = Date.now();
-        holdTimer = setTimeout(() => {
-          playlistElement.draggable = true;
-          playlistElement.classList.add('draggable');
-          isDragging = true;
-        }, 500);
-      });
-      playlistElement.addEventListener('mouseup', e => {
-        if (e.target.tagName === 'BUTTON') {
-          return;
-        }
-        clearTimeout(holdTimer);
-        if (isMouseDown && !isDragging) {
-          const endTime = Date.now();
-          const clickDuration = endTime - startTime;
-          if (clickDuration < 300) {
-            this.playPlaylist(playlist.id);
-          }
-        }
-        if (!isDragging) {
-          playlistElement.draggable = false;
-          playlistElement.classList.remove('draggable');
-        }
-        isMouseDown = false;
-      });
-      playlistElement.addEventListener('mouseleave', () => {
-        clearTimeout(holdTimer);
-        isMouseDown = false;
-      });
-      playlistElement.addEventListener('selectstart', e => {
-        if (isDragging) {
-          e.preventDefault();
-        }
-      });
-      playlistElement.addEventListener('touchstart', e => {
-        if (e.target.tagName === 'BUTTON') {
-          return;
-        }
-        isMouseDown = true;
-        startTime = Date.now();
-        holdTimer = setTimeout(() => {
-          playlistElement.draggable = true;
-          playlistElement.classList.add('draggable');
-          isDragging = true;
-        }, 500);
-      });
-      playlistElement.addEventListener('touchend', e => {
-        if (e.target.tagName === 'BUTTON') {
-          return;
-        }
-        clearTimeout(holdTimer);
-        if (isMouseDown && !isDragging) {
-          const endTime = Date.now();
-          const clickDuration = endTime - startTime;
-          if (clickDuration < 300) {
-            this.playPlaylist(playlist.id);
-          }
-        }
-        if (!isDragging) {
-          playlistElement.draggable = false;
-          playlistElement.classList.remove('draggable');
-        }
-        isMouseDown = false;
+      const box = over.getBoundingClientRect();
+      const next = e.clientX > box.left + box.width / 2 ? over.nextElementSibling : over;
+      if (next !== dragged && next !== dragged.nextElementSibling) {
+        grid.insertBefore(dragged, next);
+      }
+    });
+    grid.addEventListener('drop', e => {
+      if (dragged) {
         e.preventDefault();
+      }
+    });
+    grid.addEventListener('dragend', () => {
+      if (!dragged) {
+        return;
+      }
+      dragged.classList.remove('dragging');
+      dragged = null;
+      if (order() === before) {
+        return;
+      }
+      [ ...grid.children ].forEach((tile, index) => {
+        const playlist = this.playlists.find(p => String(p.id) === tile.dataset.playlistId);
+        if (playlist) {
+          playlist.position = index;
+        }
       });
-      playlistElement.addEventListener('dragstart', this.handlePlaylistDragStart.bind(this));
-      playlistElement.addEventListener('dragover', this.handlePlaylistDragOver.bind(this));
-      playlistElement.addEventListener('drop', this.handlePlaylistDrop.bind(this));
-      playlistElement.addEventListener('dragend', e => {
-        e.currentTarget.classList.remove('dragging');
-        isDragging = false;
-        setTimeout(() => {
-          playlistElement.draggable = false;
-          playlistElement.classList.remove('draggable');
-        }, 100);
+      this.savePlaylists().then(() => this._refreshPlaylistsShelf()).catch(error => {
+        console.error('Error saving playlist positions:', error);
+        alert('Failed to save playlist order. Please try again.');
       });
-      this.elements.playlistContainer.appendChild(playlistElement);
     });
   }
-  filterPlaylists() {
-    this.currentSearchTerm = this.elements.playlistSearch.value.toLowerCase().trim();
-    if (this.currentSearchTerm === '') {
-      this.filteredPlaylists = [ ...this.playlists ];
-    } else {
-      this.filteredPlaylists = this.playlists.filter(playlist => playlist.name.toLowerCase().includes(this.currentSearchTerm));
+  _playlistMatcher(term) {
+    const query = term.toLowerCase();
+    const folded = this._searchFold(query);
+    return text => {
+      const value = String(text || '').toLowerCase();
+      return value.includes(query) || folded !== '' && this._searchFold(value).includes(folded);
+    };
+  }
+  _searchPlaylists(term, library) {
+    const matches = this._playlistMatcher(term);
+    const query = term.toLowerCase();
+    const named = [];
+    const bySong = [];
+    this._sortedPlaylists().forEach(playlist => {
+      if (matches(playlist.name)) {
+        named.push(playlist);
+        return;
+      }
+      const seen = new Set();
+      const songs = playlist.songs.filter(entry => {
+        if (seen.has(entry.videoId)) {
+          return false;
+        }
+        seen.add(entry.videoId);
+        const song = library.get(entry.videoId) || entry;
+        return matches(song.name) || matches(song.author);
+      });
+      if (songs.length) {
+        bySong.push({
+          playlist: playlist,
+          songs: songs
+        });
+      }
+    });
+    const leading = playlist => playlist.name.toLowerCase().startsWith(query) ? 0 : 1;
+    named.sort((a, b) => leading(a) - leading(b));
+    return {
+      named: named,
+      bySong: bySong,
+      matches: matches
+    };
+  }
+  _buildPlaylistResults(term, library) {
+    const { named, bySong, matches } = this._searchPlaylists(term, library);
+    const artists = this._artistIndex().filter(artist => matches(artist.name)).slice(0, 6);
+    const results = document.createElement('div');
+    results.className = 'playlist-results';
+    const section = (label, rows) => {
+      if (rows.length === 0) {
+        return;
+      }
+      results.append(UI.el('div', 'ui-section-label playlist-results-label', label), ...rows);
+    };
+    section('Playlists', named.map(playlist => this._buildPlaylistRow(playlist, library)));
+    section('Playlists with matching songs', bySong.map(({ playlist, songs }) => {
+      const names = songs.slice(0, 2).map(entry => (library.get(entry.videoId) || entry).name).join(', ');
+      return this._buildPlaylistRow(playlist, library, `includes ${names}${songs.length > 2 ? ` and ${songs.length - 2} more` : ''}`);
+    }));
+    section('Artists', artists.map(artist => this._buildArtistRow(artist)));
+    if (results.childElementCount === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'empty-library-message';
+      empty.textContent = `No playlists, songs or artists match "${term}"`;
+      results.appendChild(empty);
     }
-    this.renderPlaylists();
+    return results;
+  }
+  _buildPlaylistRow(playlist, library, hint = '') {
+    const isFavorites = playlist === this.getFavoritesPlaylist();
+    const row = document.createElement('div');
+    row.className = 'playlist-card';
+    row.dataset.playlistId = playlist.id;
+    row.tabIndex = 0;
+    row.setAttribute('role', 'button');
+    row.classList.toggle('is-playing', this.currentPlaylist?.id === playlist.id);
+    let summary = hint;
+    if (!summary) {
+      const artists = [ ...new Set(playlist.songs.map(entry => this._artistCredits((library.get(entry.videoId) || entry).author)[0]).filter(Boolean)) ];
+      summary = artists.slice(0, 3).join(', ') + (artists.length > 3 ? ` and ${artists.length - 3} more` : '');
+    }
+    const info = UI.el('div', 'playlist-card-info', `<span class="playlist-card-name"></span><small class="playlist-card-meta"></small>`);
+    info.firstChild.textContent = playlist.name;
+    info.lastChild.textContent = [ this._songCountText(playlist.songs.length), summary ].filter(Boolean).join(' · ');
+    const indicators = isFavorites ? `<div class="song-status-indicators"><span class="song-fav-indicator" title="Favourites"><i class="fas fa-star"></i></span></div>` : '';
+    const deleteBtn = isFavorites ? '' : `<button type="button" class="song-card-btn delete-btn" title="Delete"><i class="fas fa-trash"></i></button>`;
+    const right = UI.el('div', 'song-item-right', `${indicators}<div class="song-actions"><button type="button" class="song-card-btn play-btn" title="Play"><i class="fas fa-play"></i></button>${deleteBtn}<button type="button" class="song-card-btn edit-btn" title="Edit"><i class="fas fa-pen"></i></button></div>`);
+    row.append(this._buildPlaylistCover(playlist, library), info, right);
+    this._bindPlaylistItem(row, playlist);
+    return row;
+  }
+  _bindPlaylistItem(element, playlist) {
+    element.addEventListener('click', e => {
+      const action = e.target.closest('.edit-btn, .delete-btn');
+      if (!action) {
+        this._activatePlaylist(playlist.id);
+      } else if (action.classList.contains('edit-btn')) {
+        this.openPlaylistEditModal(playlist.id);
+      } else {
+        this.deletePlaylist(playlist.id);
+      }
+    });
+    element.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && e.target === element) {
+        e.preventDefault();
+        this._activatePlaylist(playlist.id);
+      }
+    });
+  }
+  _activatePlaylist(playlistId) {
+    const playlist = this.playlists.find(p => p.id === playlistId);
+    if (!playlist) {
+      return;
+    }
+    if (playlist.songs.length) {
+      this.playPlaylist(playlistId);
+    } else {
+      this.openPlaylistEditModal(playlistId);
+    }
   }
   playTopPlaylistSearchResult() {
-    const searchTerm = this.elements.playlistSearch.value.toLowerCase().trim();
-    let targetPlaylists;
-    if (searchTerm === '') {
-      targetPlaylists = this.playlists;
+    const term = this.elements.playlistSearch.value.trim();
+    let top;
+    if (term) {
+      const { named, bySong } = this._searchPlaylists(term, this._libraryByVideoId());
+      top = named[0] || bySong[0]?.playlist;
     } else {
-      targetPlaylists = this.playlists.filter(playlist => playlist.name.toLowerCase().includes(searchTerm));
+      top = this.getFavoritesPlaylist() || this._sortedPlaylists()[0];
     }
-    if (targetPlaylists.length === 0) {
-      alert('No playlists found');
-      return;
-    }
-    const topPlaylist = targetPlaylists[0];
-    this.playPlaylist(topPlaylist.id);
-  }
-  toggleCreatePlaylistDiv() {
-    const createDiv = this.elements.createPlaylistDiv;
-    const isVisible = createDiv.style.display !== 'none';
-    if (isVisible) {
-      createDiv.style.display = 'none';
-      this.elements.toggleCreatePlaylistBtn.textContent = '+';
-      this.elements.toggleCreatePlaylistBtn.style.transform = 'rotate(0deg)';
-    } else {
-      createDiv.style.display = 'block';
-      this.elements.toggleCreatePlaylistBtn.textContent = '×';
-      this.elements.toggleCreatePlaylistBtn.style.transform = 'rotate(45deg)';
-      setTimeout(() => {
-        this.elements.newPlaylistName.focus();
-      }, 100);
+    if (top) {
+      this._activatePlaylist(top.id);
     }
   }
-  hideCreatePlaylistDiv() {
-    this.elements.createPlaylistDiv.style.display = 'none';
-    this.elements.toggleCreatePlaylistBtn.textContent = '+';
-    this.elements.toggleCreatePlaylistBtn.style.transform = 'rotate(0deg)';
+  _artistCredits(author) {
+    return this.stripYouTubeTopicSuffix(String(author || '')).replace(/\s*VEVO\s*$/i, '').replace(/\s*[(\[](?:feat\.?|ft\.?|featuring)\s+([^)\]]+)[)\]]/gi, ' feat. $1').split(/\s+(?:feat\.?|ft\.?|featuring|vs\.?)\s+/i).flatMap(part => part.split(/\s+[x×]\s+/)).map(part => part.trim()).filter(Boolean);
+  }
+  _artistKey(name) {
+    return name.normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^\p{L}\p{N}\p{M}]+/gu, '');
+  }
+  _artistIndex() {
+    const credits = this.songLibrary.map(song => [ song, this._artistCredits(song.author) ]);
+    const known = new Set(credits.flatMap(([, names]) => names.map(name => this._artistKey(name))));
+    const artists = new Map();
+    credits.forEach(([song, names]) => {
+      names.flatMap(name => {
+        const parts = name.split(/\s*,\s*|\s+&\s+|\s+and\s+|\s*\+\s*/i).filter(Boolean);
+        const solo = parts.length > 1 ? parts.filter(part => known.has(this._artistKey(part))) : [];
+        return solo.length ? solo : [ name ];
+      }).forEach(name => {
+        const key = this._artistKey(name);
+        if (!key) {
+          return;
+        }
+        let artist = artists.get(key);
+        if (!artist) {
+          artist = {
+            key: key,
+            spellings: new Map(),
+            songs: new Set()
+          };
+          artists.set(key, artist);
+        }
+        artist.songs.add(song);
+        artist.spellings.set(name, (artist.spellings.get(name) || 0) + 1);
+      });
+    });
+    const words = text => text.split(' ').length;
+    return [ ...artists.values() ].map(artist => ({
+      key: artist.key,
+      name: [ ...artist.spellings ].sort((a, b) => b[1] - a[1] || words(b[0]) - words(a[0]))[0][0],
+      songs: [ ...artist.songs ].sort((a, b) => a.name.localeCompare(b.name))
+    })).sort((a, b) => b.songs.length - a.songs.length || a.name.localeCompare(b.name));
+  }
+  _artistPlaylistState(artist) {
+    const playlist = this.playlists.find(p => p.artistKey === artist.key) || null;
+    const have = new Set(playlist ? playlist.songs.map(entry => entry.videoId) : []);
+    return {
+      playlist: playlist,
+      missing: artist.songs.filter(song => !have.has(song.videoId))
+    };
+  }
+  async saveArtistPlaylist(artist) {
+    const { playlist, missing } = this._artistPlaylistState(artist);
+    if (missing.length === 0) {
+      return playlist;
+    }
+    const entries = missing.map(song => ({
+      name: song.name,
+      videoId: song.videoId,
+      author: song.author || '',
+      entryId: Date.now() + Math.random()
+    }));
+    try {
+      if (!playlist) {
+        const created = await this.createPlaylist(this.uniquePlaylistName(artist.name), entries, {
+          artistKey: artist.key
+        });
+        this.showNotification(`Created "${created.name}" with ${this._songCountText(entries.length)}`, 'success');
+        return created;
+      }
+      playlist.songs.push(...entries);
+      try {
+        await this.savePlaylists();
+      } catch (error) {
+        playlist.songs = playlist.songs.filter(entry => !entries.includes(entry));
+        throw error;
+      }
+      this.renderPlaylists();
+      if (this.currentPlaylist?.id === playlist.id) {
+        this.renderPlaylistSidebar();
+      }
+      this.showNotification(`Added ${this._songCountText(entries.length)} to "${playlist.name}"`, 'success');
+      return playlist;
+    } catch (error) {
+      console.error('Error saving artist playlist:', error);
+      this.showNotification('Couldn’t save the playlist. Please try again.', 'error');
+      return null;
+    }
+  }
+  _buildArtistRow(artist, onPlay) {
+    const { playlist, missing } = this._artistPlaylistState(artist);
+    const row = document.createElement('div');
+    row.className = 'playlist-card artist-row';
+    row.tabIndex = 0;
+    row.setAttribute('role', 'button');
+    const info = UI.el('div', 'playlist-card-info', `<span class="playlist-card-name"></span><small class="playlist-card-meta"></small>`);
+    info.firstChild.textContent = artist.name;
+    const count = this._songCountText(artist.songs.length);
+    let meta = `${count} in your library`;
+    let button;
+    if (!playlist) {
+      button = UI.button('Create playlist', {
+        size: 'sm',
+        icon: 'fa-plus'
+      });
+    } else if (missing.length) {
+      meta = `${count} · ${missing.length} not in "${playlist.name}" yet`;
+      button = UI.button(`Add ${missing.length}`, {
+        size: 'sm',
+        icon: 'fa-plus'
+      });
+    } else {
+      meta = `${count} · saved as "${playlist.name}"`;
+      button = UI.button('Play', {
+        variant: 'ghost',
+        size: 'sm',
+        icon: 'fa-play'
+      });
+    }
+    info.lastChild.textContent = meta;
+    const action = UI.el('div', 'artist-row-action');
+    action.appendChild(button);
+    row.append(this._buildCoverImage(artist.songs[0], 'artist-row-avatar'), info, action);
+    row.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && e.target === row) {
+        e.preventDefault();
+        row.click();
+      }
+    });
+    row.addEventListener('click', async () => {
+      if (playlist && missing.length === 0) {
+        onPlay?.();
+        this._activatePlaylist(playlist.id);
+        return;
+      }
+      if (button.disabled) {
+        return;
+      }
+      button.disabled = true;
+      await this.saveArtistPlaylist(artist);
+      if (row.isConnected) {
+        row.replaceWith(this._buildArtistRow(artist, onPlay));
+      }
+    });
+    return row;
+  }
+  openArtistPlaylistDialog() {
+    const dialog = UI.modal({
+      title: 'Playlist from an artist',
+      icon: 'fa-microphone-lines',
+      size: 'md',
+      bodyClassName: 'ui-modal__body--stack',
+      closeOnEscape: true
+    });
+    const artists = this._artistIndex();
+    const search = UI.el('input', 'ui-input');
+    search.type = 'text';
+    search.placeholder = 'Search artists';
+    search.autocomplete = 'off';
+    search.setAttribute('aria-label', 'Search artists');
+    const list = UI.el('div', 'artist-pick-list');
+    const render = () => {
+      const term = search.value.trim();
+      const matches = term ? this._playlistMatcher(term) : null;
+      const shown = matches ? artists.filter(artist => matches(artist.name)) : artists;
+      list.replaceChildren(...shown.map(artist => this._buildArtistRow(artist, dialog.close)));
+      if (shown.length === 0) {
+        const empty = UI.el('div', 'ui-empty', `<i class="fas fa-microphone-lines"></i><span></span>`);
+        empty.lastChild.textContent = artists.length ? `No artist matches "${term}"` : 'Songs in your library have no artist yet.';
+        list.appendChild(empty);
+      }
+    };
+    search.addEventListener('input', render);
+    dialog.body.append(UI.el('p', 'playlist-dialog-text', 'Collects every song by an artist in your library into one playlist named after them. Come back later to add songs you have saved since.'), search, list);
+    render();
+    dialog.open();
+    search.focus();
   }
   openPlaylistEditModal(playlistId) {
     const playlist = this.playlists.find(p => p.id === playlistId);
@@ -4722,10 +5017,41 @@ class AdvancedMusicPlayer {
     if (!playlist) {
       return;
     }
-    const confirmDelete = confirm(`Are you sure you want to delete the playlist "${playlist.name}"?`);
-    if (!confirmDelete) {
-      return;
+    const dialog = UI.modal({
+      title: 'Delete playlist',
+      icon: 'fa-trash',
+      size: 'sm',
+      className: 'playlist-delete-dialog',
+      closeOnEscape: true
+    });
+    const count = playlist.songs.length;
+    const name = document.createElement('strong');
+    name.textContent = playlist.name;
+    const text = UI.el('p', 'playlist-dialog-text');
+    text.append(name, ' will be permanently deleted.');
+    if (count) {
+      text.append(count === 1 ? ' Its song stays in your library.' : ` Its ${count} songs stay in your library.`);
     }
+    if (this.currentPlaylist?.id === playlistId) {
+      text.append(' It is playing now, so playback will stop.');
+    }
+    const cancel = UI.button('Cancel', {
+      variant: 'ghost',
+      onClick: dialog.close
+    });
+    dialog.body.appendChild(text);
+    dialog.addFooter(cancel, UI.button('Delete playlist', {
+      variant: 'danger',
+      icon: 'fa-trash',
+      onClick: () => {
+        dialog.close();
+        this._removePlaylist(playlistId);
+      }
+    }));
+    dialog.open();
+    cancel.focus();
+  }
+  _removePlaylist(playlistId) {
     if (this.currentPlaylist && this.currentPlaylist.id === playlistId) {
       if (this.isLocalPlayback && this.localAudio) {
         this.localAudio.pause();
@@ -4914,78 +5240,6 @@ class AdvancedMusicPlayer {
     }, {
       offset: Number.NEGATIVE_INFINITY
     }).element;
-  }
-  handlePlaylistDragStart(e) {
-    e.currentTarget.classList.add('dragging');
-    e.dataTransfer.setData('text/plain', e.currentTarget.dataset.playlistId);
-    e.dataTransfer.effectAllowed = 'move';
-  }
-  handlePlaylistDragOver(e) {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    const draggingElement = document.querySelector('.playlist-card.dragging');
-    if (draggingElement !== e.currentTarget) {
-      const container = this.elements.playlistContainer;
-      const afterElement = this.getPlaylistDragAfterElement(container, e.clientY);
-      if (afterElement) {
-        container.insertBefore(draggingElement, afterElement);
-      } else {
-        container.appendChild(draggingElement);
-      }
-    }
-  }
-  handlePlaylistDrop(e) {
-    e.preventDefault();
-    const draggedPlaylistId = parseInt(e.dataTransfer.getData('text/plain'));
-    const playlistElements = Array.from(this.elements.playlistContainer.querySelectorAll('.playlist-card'));
-    playlistElements.forEach((element, index) => {
-      const playlistId = parseInt(element.dataset.playlistId);
-      const playlist = this.playlists.find(p => p.id === playlistId);
-      if (playlist) {
-        playlist.position = index;
-      }
-    });
-    this.savePlaylists().catch(error => {
-      console.error('Error saving playlist positions:', error);
-      alert('Failed to save playlist order. Please try again.');
-    });
-  }
-  getPlaylistDragAfterElement(container, y) {
-    const draggableElements = [ ...container.querySelectorAll('.playlist-card:not(.dragging)') ];
-    return draggableElements.reduce((closest, child) => {
-      const box = child.getBoundingClientRect();
-      const offset = y - box.top - box.height / 2;
-      if (offset < 0 && offset > closest.offset) {
-        return {
-          offset: offset,
-          element: child
-        };
-      } else {
-        return closest;
-      }
-    }, {
-      offset: Number.NEGATIVE_INFINITY
-    }).element;
-  }
-  getPlaylistDuration(playlist) {
-    if (!playlist || !playlist.songs || playlist.songs.length === 0) {
-      return '0:00';
-    }
-    let totalSeconds = 0;
-    let hasAnyDuration = false;
-    for (const song of playlist.songs) {
-      if (this.ytPlayer && this.ytPlayer.getVideoData && this.ytPlayer.getVideoData().video_id === song.videoId && this.ytPlayer.getDuration) {
-        const duration = this.ytPlayer.getDuration();
-        if (duration && duration > 0) {
-          totalSeconds += duration;
-          hasAnyDuration = true;
-        }
-      } else {
-        totalSeconds += 180;
-      }
-    }
-    const formatted = this.formatDuration(totalSeconds);
-    return hasAnyDuration ? formatted : `~${formatted}`;
   }
   getPlaylistDurationText() {
     if (!this.currentPlaylist || !this.currentPlaylist.songs.length) {
@@ -14272,7 +14526,7 @@ class AdvancedMusicPlayer {
     button.title = imported ? 'This mix is in your playlists' : 'Add every song to your library and save them as a playlist';
     button.innerHTML = importing ? `<i class="fas fa-circle-notch fa-spin"></i> Importing ${importing.done} of ${importing.total}` : imported ? '<i class="fas fa-check"></i> Saved as playlist' : '<i class="fas fa-file-import"></i> Import as playlist';
   }
-  uniqueMixLabPlaylistName(base) {
+  uniquePlaylistName(base) {
     const taken = new Set(this.playlists.map(playlist => playlist.name.toLowerCase()));
     let name = base;
     for (let n = 2; taken.has(name.toLowerCase()); n++) {
@@ -14350,7 +14604,7 @@ class AdvancedMusicPlayer {
         this.showNotification('Couldn’t find any of these songs on YouTube. Try again later.', 'error');
         return;
       }
-      const name = this.uniqueMixLabPlaylistName(title);
+      const name = this.uniquePlaylistName(title);
       if (added.length) {
         await this.addImportedSongsOneByOne(added);
       }
