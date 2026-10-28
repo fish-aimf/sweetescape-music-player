@@ -425,6 +425,10 @@ class AdvancedMusicPlayer {
     this.isAdditionalDetailsHidden = false;
     this.currentLayout = 'center';
     this.playlistSidebarMode = 'overlay';
+    this.playlistSidebarSides = {
+      overlay: 'right',
+      expanded: 'left'
+    };
     this.currentTabIndex = 0;
     this.progressBar = null;
     this.progressInterval = null;
@@ -635,6 +639,7 @@ class AdvancedMusicPlayer {
     this.loadQueue();
     this.setupEventListeners();
     this.setupPlaylistSidebarModeListeners();
+    this.watchToolbarWidths();
     this.initializeTheme();
     this.initializeAppearance();
     this.setupAppearanceListeners();
@@ -780,6 +785,7 @@ class AdvancedMusicPlayer {
       sidebarPlaylistSongs: document.getElementById('sidebarPlaylistSongs'),
       closeSidebarBtn: document.getElementById('closeSidebarBtn'),
       sidebarModeToggleBtn: document.getElementById('sidebarModeToggleBtn'),
+      sidebarSideToggleBtn: document.getElementById('sidebarSideToggleBtn'),
       sidebarSearchInput: document.getElementById('sidebarSearchInput'),
       youtubeSearchSuggestion: document.getElementById('youtubeSearchSuggestion'),
       listeningTimeDisplay: document.getElementById('listeningTime'),
@@ -6730,6 +6736,7 @@ class AdvancedMusicPlayer {
     this.elements.currentPlaylistSidebar.classList.remove('visible');
     this.isSidebarVisible = false;
     document.body.classList.remove('playlist-expanded-active');
+    delete document.body.dataset.playlistPanel;
     if (this.elements.sidebarSearchInput) {
       this.elements.sidebarSearchInput.value = '';
     }
@@ -6758,31 +6765,34 @@ class AdvancedMusicPlayer {
         });
       }
     }
+    const term = this.elements.sidebarSearchInput ? this.elements.sidebarSearchInput.value.trim() : '';
+    if (term) {
+      this.filterPlaylistSidebarSongs(term);
+    }
   }
   renderPlaylistSidebarExpandedMode() {
     const fragment = document.createDocumentFragment();
+    const library = this._libraryByVideoId();
     this.currentPlaylist.songs.forEach((song, index) => {
+      const source = library.get(song.videoId) || song;
       const songCard = document.createElement('div');
       songCard.classList.add('sidebar-song-card');
       const entryId = song.entryId || 'id_' + song.videoId;
+      const skipped = this.temporarilySkippedSongs.has(entryId);
       songCard.dataset.entryId = entryId;
-      if (index === this.currentSongIndex) {
-        songCard.classList.add('active');
-      }
-      if (this.temporarilySkippedSongs.has(entryId)) {
-        songCard.classList.add('temporarily-skipped');
-      }
-      const thumbnailUrl = song.thumbnailUrl || `https://i.ytimg.com/vi/${song.videoId}/mqdefault.jpg`;
-      songCard.innerHTML = `\n\t\t\t<img src="${this.escapeHtml(thumbnailUrl)}" alt="${this.escapeHtml(song.name)}" class="song-card-thumbnail" loading="lazy">\n\t\t\t<div class="song-card-info">\n\t\t\t\t<div class="song-card-index">#${index + 1}</div>\n\t\t\t\t<div class="song-card-title">${this.escapeHtml(song.name)}</div>\n\t\t\t</div>\n\t\t\t<div class="song-card-actions">\n\t\t\t\t<button class="song-card-btn play-btn" title="Play this song">\n\t\t\t\t\t<i class="fas fa-play"></i>\n\t\t\t\t</button>\n\t\t\t\t<button class="song-card-btn skip-btn ${this.temporarilySkippedSongs.has(entryId) ? 'active' : ''}" title="Temporarily skip">\n\t\t\t\t\t<i class="fas fa-ban"></i>\n\t\t\t\t</button>\n\t\t\t</div>\n\t\t`;
-      const playBtn = songCard.querySelector('.play-btn');
-      playBtn.addEventListener('click', e => {
+      songCard.classList.toggle('active', index === this.currentSongIndex);
+      songCard.classList.toggle('temporarily-skipped', skipped);
+      songCard.innerHTML = `<div class="song-card-info"><div class="song-card-title"></div><div class="song-card-meta"></div></div><div class="song-card-actions"><button type="button" class="song-card-btn play-btn" title="Play this song"><i class="fas fa-play"></i></button><button type="button" class="song-card-btn skip-btn${skipped ? ' active' : ''}" title="${skipped ? 'Stop skipping' : 'Skip for now'}"><i class="fas fa-ban"></i></button></div>`;
+      songCard.prepend(this._buildCoverImage(source, 'song-card-thumbnail'));
+      songCard.querySelector('.song-card-title').textContent = source.name;
+      songCard.querySelector('.song-card-meta').textContent = [ `#${index + 1}`, source.author ].filter(Boolean).join(' · ');
+      songCard.querySelector('.play-btn').addEventListener('click', e => {
         e.stopPropagation();
         if (!this.temporarilySkippedSongs.has(entryId)) {
           this.playSongFromPlaylist(index);
         }
       });
-      const skipBtn = songCard.querySelector('.skip-btn');
-      skipBtn.addEventListener('click', e => {
+      songCard.querySelector('.skip-btn').addEventListener('click', e => {
         e.stopPropagation();
         this.temporarilySkipSong(entryId);
       });
@@ -6793,35 +6803,28 @@ class AdvancedMusicPlayer {
       });
       fragment.appendChild(songCard);
     });
-    const isControlBarVisible = localStorage.getItem('controlBarVisible') !== 'false';
-    if (isControlBarVisible) {
-      const spacer = document.createElement('div');
-      spacer.classList.add('playlist-sidebar-spacer');
-      spacer.id = 'expandedModeSpacer';
-      fragment.appendChild(spacer);
-    }
     this.elements.sidebarPlaylistSongs.appendChild(fragment);
   }
   renderPlaylistSidebarOverlayMode() {
+    const fragment = document.createDocumentFragment();
+    const library = this._libraryByVideoId();
     this.currentPlaylist.songs.forEach((song, index) => {
+      const source = library.get(song.videoId) || song;
       const songElement = document.createElement('div');
       songElement.classList.add('sidebar-song-item');
       const entryId = song.entryId || 'id_' + song.videoId;
       songElement.dataset.entryId = entryId;
-      if (index === this.currentSongIndex) {
-        songElement.classList.add('active');
-      }
-      if (this.temporarilySkippedSongs.has(entryId)) {
-        songElement.classList.add('temporarily-skipped');
-      }
-      songElement.innerHTML = `\n\t\t\t<span>${index + 1}. ${this.escapeHtml(song.name)}</span>\n\t\t`;
-      let clickHandler = e => {
+      songElement.classList.toggle('active', index === this.currentSongIndex);
+      songElement.classList.toggle('temporarily-skipped', this.temporarilySkippedSongs.has(entryId));
+      songElement.innerHTML = `<span class="sidebar-song-index">${index + 1}</span><span class="sidebar-song-text"><span class="sidebar-song-title"></span><span class="sidebar-song-artist"></span></span>`;
+      songElement.querySelector('.sidebar-song-title').textContent = source.name;
+      songElement.querySelector('.sidebar-song-artist').textContent = source.author || '';
+      songElement.addEventListener('click', () => {
         if (!this.isLongPressing) {
           this.playSongFromPlaylist(index);
         }
-      };
-      songElement.addEventListener('click', clickHandler);
-      songElement.addEventListener('mousedown', e => {
+      });
+      songElement.addEventListener('mousedown', () => {
         clearTimeout(this.longPressTimer);
         this.isLongPressing = false;
         this.longPressTimer = setTimeout(() => {
@@ -6851,90 +6854,86 @@ class AdvancedMusicPlayer {
       });
       songElement.addEventListener('touchend', cancelLongPress);
       songElement.addEventListener('touchcancel', cancelLongPress);
-      this.elements.sidebarPlaylistSongs.appendChild(songElement);
+      fragment.appendChild(songElement);
     });
-    const isControlBarVisible = localStorage.getItem('controlBarVisible') !== 'false';
-    if (isControlBarVisible) {
-      const spacer = document.createElement('div');
-      spacer.classList.add('playlist-sidebar-spacer');
-      spacer.id = 'overlayModeSpacer';
-      this.elements.sidebarPlaylistSongs.appendChild(spacer);
-    }
+    this.elements.sidebarPlaylistSongs.appendChild(fragment);
   }
   applyPlaylistSidebarMode() {
     const sidebar = this.elements.currentPlaylistSidebar;
-    const modeToggleBtn = this.elements.sidebarModeToggleBtn;
-    const modeIcon = modeToggleBtn?.querySelector('i');
-    if (this.playlistSidebarMode === 'expanded') {
-      sidebar.classList.add('expanded-mode');
-      document.body.classList.add('playlist-expanded-active');
-      if (modeIcon) {
-        modeIcon.classList.remove('fa-expand-alt');
-        modeIcon.classList.add('fa-compress-alt');
-      }
-      modeToggleBtn?.classList.add('expanded');
-      modeToggleBtn?.setAttribute('title', 'Switch to Overlay Mode');
+    const expanded = this.playlistSidebarMode === 'expanded';
+    const side = this.playlistSidebarSides[this.playlistSidebarMode];
+    sidebar.classList.toggle('expanded-mode', expanded);
+    sidebar.dataset.side = side;
+    document.body.classList.toggle('playlist-expanded-active', expanded && this.isSidebarVisible);
+    if (this.isSidebarVisible) {
+      document.body.dataset.playlistPanel = side;
     } else {
-      sidebar.classList.remove('expanded-mode');
-      document.body.classList.remove('playlist-expanded-active');
-      if (modeIcon) {
-        modeIcon.classList.remove('fa-compress-alt');
-        modeIcon.classList.add('fa-expand-alt');
-      }
-      modeToggleBtn?.classList.remove('expanded');
-      modeToggleBtn?.setAttribute('title', 'Switch to Expanded Mode');
+      delete document.body.dataset.playlistPanel;
+    }
+    const modeBtn = this.elements.sidebarModeToggleBtn;
+    if (modeBtn) {
+      modeBtn.querySelector('i').className = `fas ${expanded ? 'fa-minimize' : 'fa-maximize'}`;
+      modeBtn.title = expanded ? 'Switch to the overlay panel' : 'Switch to the expanded panel';
+    }
+    if (this.elements.sidebarSideToggleBtn) {
+      this.elements.sidebarSideToggleBtn.title = side === 'left' ? 'Move to the right' : 'Move to the left';
     }
     if (this.elements.sidebarSearchInput) {
       this.elements.sidebarSearchInput.value = '';
     }
   }
   togglePlaylistSidebarMode() {
-    if (this.playlistSidebarMode === 'overlay') {
-      this.playlistSidebarMode = 'expanded';
-    } else {
-      this.playlistSidebarMode = 'overlay';
-    }
+    this.playlistSidebarMode = this.playlistSidebarMode === 'overlay' ? 'expanded' : 'overlay';
     localStorage.setItem('playlistSidebarMode', this.playlistSidebarMode);
     this.applyPlaylistSidebarMode();
     if (this.isSidebarVisible) {
       this.renderPlaylistSidebar();
     }
   }
+  togglePlaylistSidebarSide() {
+    const mode = this.playlistSidebarMode;
+    this.playlistSidebarSides[mode] = this.playlistSidebarSides[mode] === 'left' ? 'right' : 'left';
+    localStorage.setItem('playlistSidebarSides', JSON.stringify(this.playlistSidebarSides));
+    this.applyPlaylistSidebarMode();
+  }
   setupPlaylistSidebarModeListeners() {
-    if (this.elements.sidebarModeToggleBtn) {
-      this.elements.sidebarModeToggleBtn.addEventListener('click', () => {
-        this.togglePlaylistSidebarMode();
-      });
-    }
-    if (this.elements.sidebarSearchInput) {
-      this.elements.sidebarSearchInput.addEventListener('input', e => {
-        this.filterPlaylistSidebarSongs(e.target.value);
-      });
-    }
+    this.elements.sidebarModeToggleBtn?.addEventListener('click', () => this.togglePlaylistSidebarMode());
+    this.elements.sidebarSideToggleBtn?.addEventListener('click', () => this.togglePlaylistSidebarSide());
+    this.elements.sidebarSearchInput?.addEventListener('input', e => this.filterPlaylistSidebarSongs(e.target.value));
     const savedMode = localStorage.getItem('playlistSidebarMode');
     if (savedMode === 'expanded' || savedMode === 'overlay') {
       this.playlistSidebarMode = savedMode;
-      this.updateSidebarModeToggleIcon();
     }
+    try {
+      const savedSides = JSON.parse(localStorage.getItem('playlistSidebarSides') || '{}');
+      [ 'overlay', 'expanded' ].forEach(mode => {
+        if (savedSides[mode] === 'left' || savedSides[mode] === 'right') {
+          this.playlistSidebarSides[mode] = savedSides[mode];
+        }
+      });
+    } catch (error) {
+      console.warn('Ignoring unreadable playlist panel sides:', error);
+    }
+    this.applyPlaylistSidebarMode();
+    this.watchControlBarInset();
   }
-  updateSidebarModeToggleIcon() {
-    const modeToggleBtn = this.elements.sidebarModeToggleBtn;
-    const modeIcon = modeToggleBtn?.querySelector('i');
-    if (this.playlistSidebarMode === 'expanded') {
-      if (modeIcon) {
-        modeIcon.classList.remove('fa-expand-alt');
-        modeIcon.classList.add('fa-compress-alt');
-      }
-      modeToggleBtn?.classList.add('expanded');
-      modeToggleBtn?.setAttribute('title', 'Switch to Overlay Mode');
-    } else {
-      if (modeIcon) {
-        modeIcon.classList.remove('fa-compress-alt');
-        modeIcon.classList.add('fa-expand-alt');
-      }
-      modeToggleBtn?.classList.remove('expanded');
-      modeToggleBtn?.setAttribute('title', 'Switch to Expanded Mode');
+  watchToolbarWidths() {
+    const observer = new ResizeObserver(entries => entries.forEach(entry => {
+      entry.target.classList.toggle('is-compact', entry.contentRect.width > 0 && entry.contentRect.width < 540);
+    }));
+    document.querySelectorAll('.search-section').forEach(section => observer.observe(section));
+  }
+  watchControlBarInset() {
+    const sync = () => document.documentElement.style.setProperty('--control-bar-inset', this.getControlBarInset() + 'px');
+    const bar = document.querySelector('.now-playing');
+    if (bar) {
+      new ResizeObserver(sync).observe(bar);
     }
+    new MutationObserver(sync).observe(document.body, {
+      attributes: true,
+      attributeFilter: [ 'class' ]
+    });
+    sync();
   }
   filterPlaylistSidebarSongs(searchTerm) {
     clearTimeout(this.sidebarSearchDebounceTimer);
@@ -6943,10 +6942,10 @@ class AdvancedMusicPlayer {
       const matches = term ? this._searchMatcher(term) : null;
       const library = this._libraryByVideoId();
       const songs = this.currentPlaylist ? this.currentPlaylist.songs : [];
-      this.elements.sidebarPlaylistSongs.querySelectorAll('.sidebar-song-card').forEach((card, index) => {
+      this.elements.sidebarPlaylistSongs.querySelectorAll('.sidebar-song-card, .sidebar-song-item').forEach((row, index) => {
         const entry = songs[index];
         const song = entry ? library.get(entry.videoId) || entry : null;
-        card.style.display = !matches || song && (matches(song.name) || matches(song.author)) ? 'flex' : 'none';
+        row.style.display = !matches || song && (matches(song.name) || matches(song.author)) ? '' : 'none';
       });
     }, 50);
   }
@@ -10631,14 +10630,6 @@ class AdvancedMusicPlayer {
       }
     });
   }
-  adjustLayoutTogglePosition() {
-    const playlistSidebar = document.getElementById('currentPlaylistSidebar');
-    if (playlistSidebar.classList.contains('open')) {
-      document.querySelector('.layout-toggle').style.left = '300px';
-    } else {
-      document.querySelector('.layout-toggle').style.left = '15px';
-    }
-  }
   setupLayoutEventListeners() {
     const layoutToggleBtn = document.getElementById('layoutToggleBtn');
     const nowPlayingSection = document.querySelector('.now-playing');
@@ -10667,15 +10658,6 @@ class AdvancedMusicPlayer {
     } else {
       nowPlayingSection.classList.add('controls-center');
     }
-    const showPlaylistBtn = document.getElementById('showPlaylistBtn');
-    const closeSidebarBtn = document.getElementById('closeSidebarBtn');
-    showPlaylistBtn.addEventListener('click', () => {
-      setTimeout(() => this.adjustLayoutTogglePosition(), 10);
-    });
-    closeSidebarBtn.addEventListener('click', () => {
-      setTimeout(() => this.adjustLayoutTogglePosition(), 10);
-    });
-    this.adjustLayoutTogglePosition();
   }
   toggleControlBar() {
     const controlBarContainer = document.querySelector('.player-controls').closest('.player-container');
@@ -10684,8 +10666,6 @@ class AdvancedMusicPlayer {
     const isVisible = targetElement.style.visibility !== 'hidden';
     const leftBanner = document.querySelector('.left-advertisement-banner');
     const rightBanner = document.querySelector('.right-advertisement-banner');
-    const overlayModeSpacer = document.getElementById('overlayModeSpacer');
-    const expandedModeSpacer = document.getElementById('expandedModeSpacer');
     if (isVisible) {
       targetElement.style.visibility = 'hidden';
       targetElement.style.position = 'absolute';
@@ -10703,12 +10683,6 @@ class AdvancedMusicPlayer {
         layoutToggleBtn.style.position = '';
         layoutToggleBtn.style.pointerEvents = 'auto';
       }
-      if (overlayModeSpacer) {
-        overlayModeSpacer.style.display = 'none';
-      }
-      if (expandedModeSpacer) {
-        expandedModeSpacer.style.display = 'none';
-      }
     } else {
       targetElement.style.visibility = 'visible';
       targetElement.style.position = '';
@@ -10721,15 +10695,6 @@ class AdvancedMusicPlayer {
       if (rightBanner) {
         rightBanner.classList.remove('expanded');
       }
-      if (overlayModeSpacer) {
-        overlayModeSpacer.style.display = 'block';
-      }
-      if (expandedModeSpacer) {
-        expandedModeSpacer.style.display = 'block';
-      }
-    }
-    if (this.isSidebarVisible && this.currentPlaylist) {
-      this.renderPlaylistSidebar();
     }
   }
   exportLibrary() {

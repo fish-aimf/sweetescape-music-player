@@ -309,15 +309,15 @@
       "fallback": "#showPlaylistBtn",
       "prepare": { "sidebar": true },
       "title": "Playlist side panel",
-      "body": "The songs of the playlist that's playing. Click one to jump to it. You can search it, loop it, or widen it into an expanded panel with covers. If no playlist is playing yet, this button opens it once one is.",
+      "body": "The songs of the playlist that's playing. Click one to jump to it. The top buttons swap it between the left and right side, switch between the floating overlay and an expanded panel with covers that moves the page aside, loop the playlist, and close it. Each mode remembers its own side. If no playlist is playing yet, this button opens it once one is.",
       "keys": [["M", ""], ["Tab", ""]],
       "tips": ["Long-press a song here to skip it for now. It stays in the playlist, and another long-press brings it back."]
     },
     {
       "id": "side-panel-song",
-      "target": ".sidebar-song-item",
+      "target": ".sidebar-song-item, .sidebar-song-card",
       "title": "Song in this playlist",
-      "body": "Click to play it.",
+      "body": "Click to play it. In the expanded panel, hover it for play and skip buttons.",
       "tips": ["Long-press to skip it for this session. Long-press again to bring it back."]
     },
     {

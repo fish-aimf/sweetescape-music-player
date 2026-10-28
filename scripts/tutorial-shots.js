@@ -394,7 +394,19 @@ const scenes = {
     await page.evaluate(() => musicPlayer.togglePlaylistSidebarMode());
     await sleep(1200);
     await save(page, 'sidebar-expanded');
-    await page.evaluate(() => musicPlayer.togglePlaylistSidebarMode());
+    await page.evaluate(() => {
+      musicPlayer.appearance.surfaceStyle = 'glass';
+      musicPlayer.applyAppearance();
+      musicPlayer.togglePlaylistSidebarSide();
+    });
+    await sleep(1200);
+    await save(page, 'sidebar-glass');
+    await page.evaluate(() => {
+      musicPlayer.togglePlaylistSidebarSide();
+      musicPlayer.appearance.surfaceStyle = 'solid';
+      musicPlayer.applyAppearance();
+      musicPlayer.togglePlaylistSidebarMode();
+    });
     await sleep(400);
   },
   async queue(ctx) {

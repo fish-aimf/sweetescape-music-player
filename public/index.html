@@ -201,13 +201,13 @@
                                    <div class="lib-filter-lang-list" id="libFilterLangList" hidden></div>
                                </div>
                            </div>
-                           <button id="findSongsBtn" class="action-button find-songs-btn">
-                           <i class="fas fa-search"></i> Global library
+                           <button id="findSongsBtn" class="action-button find-songs-btn" title="Global library">
+                           <i class="fas fa-search"></i><span>Global library</span>
                            </button>
                            <div class="modify-library-container">
                               <button id="modifyLibraryBtn" class="action-button"
                                  title="Click here to add songs via YouTube URL or import/export">
-                              <i class="fas fa-edit"></i> Modify Library
+                              <i class="fas fa-edit"></i><span>Modify Library</span>
                               </button>
                            </div>
                         </div>
@@ -552,32 +552,20 @@ Another Playlist{
                </div>
             </div>
          </div>
-         <div id="currentPlaylistSidebar" class="playlist-sidebar">
+         <div id="currentPlaylistSidebar" class="playlist-sidebar" data-side="right">
              <div class="sidebar-header">
                  <div class="sidebar-title-section">
                      <h3 id="sidebarPlaylistName">Now Playing</h3>
                      <span id="playlistTotalDuration" class="playlist-duration">0 songs</span>
                  </div>
                  <div class="sidebar-controls">
-                     <button id="sidebarModeToggleBtn" class="sidebar-mode-toggle-btn" title="Toggle Expanded Mode">
-                         <i class="fas fa-expand-alt"></i>
-                     </button>
-                     <button id="loopPlaylistBtn" class="loop-playlist-btn" title="Loop Playlist">
-                         <i class="fas fa-sync-alt"></i>
-                     </button>
-                     <button id="closeSidebarBtn"><i class="fas fa-times"></i></button>
+                     <button id="sidebarSideToggleBtn" class="ui-icon-btn" title="Move to the left"><i class="fas fa-arrow-right-arrow-left"></i></button>
+                     <button id="sidebarModeToggleBtn" class="ui-icon-btn" title="Switch to the expanded panel"><i class="fas fa-maximize"></i></button>
+                     <button id="loopPlaylistBtn" class="ui-icon-btn" title="Loop playlist"><i class="fas fa-repeat"></i></button>
+                     <button id="closeSidebarBtn" class="ui-icon-btn" title="Close"><i class="fas fa-xmark"></i></button>
                  </div>
              </div>
-
-             <div class="sidebar-search-container">
-                 <input
-                     type="text"
-                     id="sidebarSearchInput"
-                     class="sidebar-search-input"
-                     placeholder="Search songs in playlist..."
-                 >
-             </div>
-
+             <input type="text" id="sidebarSearchInput" class="ui-input" placeholder="Search this playlist" autocomplete="off" aria-label="Search this playlist">
              <div id="sidebarPlaylistSongs" class="sidebar-songs-list">
              </div>
          </div>
