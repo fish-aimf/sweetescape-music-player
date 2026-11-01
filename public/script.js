@@ -611,6 +611,7 @@ class AdvancedMusicPlayer {
       if (shouldShowWelcome) {
         this.showWelcomeModal();
       }
+      this.checkIncomingPlaylistShare();
     } catch (error) {
       console.error('Error initializing music player:', error);
       this._handleInitializationError(error);
@@ -1547,6 +1548,231 @@ class AdvancedMusicPlayer {
       transaction.objectStore('playlists').put(playlist);
       transaction.oncomplete = () => resolve();
       transaction.onerror = event => reject(new Error('Could not save playlist: ' + event.target.error.message));
+    });
+  }
+  _getAllStoreRows(storeName) {
+    return new Promise((resolve, reject) => {
+      if (!this.db) {
+        reject(new Error('Database not initialized'));
+        return;
+      }
+      const transaction = this.db.transaction([ storeName ], 'readonly');
+      const request = transaction.objectStore(storeName).getAll();
+      request.onsuccess = () => resolve(request.result || []);
+      request.onerror = event => reject(new Error(`Could not read ${storeName}: ` + event.target.error.message));
+    });
+  }
+  _putAllStoreRows(storeName, rows) {
+    return new Promise((resolve, reject) => {
+      if (!this.db) {
+        reject(new Error('Database not initialized'));
+        return;
+      }
+      const transaction = this.db.transaction([ storeName ], 'readwrite');
+      const store = transaction.objectStore(storeName);
+      store.clear();
+      rows.forEach(row => store.put(row));
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = event => reject(new Error(`Could not write ${storeName}: ` + event.target.error.message));
+    });
+  }
+  async exportFullBackup() {
+    try {
+      await loadPako();
+      const [ settingsRows, userSettingsRows ] = await Promise.all([ this._getAllStoreRows('settings'), this._getAllStoreRows('userSettings') ]);
+      const payload = {
+        v: 1,
+        songLibrary: this.songLibrary,
+        playlists: this.playlists,
+        settings: settingsRows,
+        userSettings: userSettingsRows
+      };
+      const code = encodeTransferPayload(payload);
+      this.showExportModal(code, 'Backup Code');
+    } catch (error) {
+      console.error('Error building backup code:', error);
+      alert('Could not create a backup code. Please try again.');
+    }
+  }
+  showImportBackupModal() {
+    const dialog = UI.modal({
+      title: 'Import Backup',
+      icon: 'fa-file-import',
+      size: 'md',
+      bodyClassName: 'ui-modal__body--stack'
+    });
+    const instructions = UI.el('p', 'instructions', 'Paste a backup code to restore your library, playlists and settings on this device. This replaces what is currently here.');
+    const textarea = UI.el('textarea', 'ui-textarea');
+    textarea.placeholder = 'Paste your backup code here';
+    dialog.body.append(instructions, textarea);
+    dialog.addFooter(UI.button('Import', {
+      variant: 'primary',
+      icon: 'fa-file-import',
+      onClick: () => {
+        const code = textarea.value.trim();
+        if (!code) {
+          return;
+        }
+        dialog.close();
+        this.importFullBackup(code);
+      }
+    }));
+    dialog.open();
+  }
+  async importFullBackup(code) {
+    let payload;
+    try {
+      await loadPako();
+      payload = decodeTransferPayload(code);
+    } catch (error) {
+      alert('That backup code is invalid or corrupted.');
+      return;
+    }
+    if (!payload || payload.v !== 1) {
+      alert('This backup code is not recognized by this version of the app.');
+      return;
+    }
+    if (!confirm('Importing this backup will replace your current library, playlists and settings on this device. Continue?')) {
+      return;
+    }
+    try {
+      this.songLibrary = Array.isArray(payload.songLibrary) ? payload.songLibrary : [];
+      this.playlists = Array.isArray(payload.playlists) ? payload.playlists : [];
+      await this.saveSongLibrary();
+      await this.savePlaylists();
+      await Promise.all([ this._putAllStoreRows('settings', Array.isArray(payload.settings) ? payload.settings : []), this._putAllStoreRows('userSettings', Array.isArray(payload.userSettings) ? payload.userSettings : []) ]);
+      alert('Backup imported. Reloading…');
+      location.reload();
+    } catch (error) {
+      console.error('Error importing backup:', error);
+      alert('Something went wrong while importing the backup.');
+    }
+  }
+  async sharePlaylist(playlistId) {
+    const playlist = this.playlists.find(p => p.id === playlistId);
+    if (!playlist) {
+      alert('Playlist not found');
+      return;
+    }
+    try {
+      await loadPako();
+      const songs = playlist.songs.map(playlistSong => {
+        const libraryMatch = this.songLibrary.find(s => s.videoId === playlistSong.videoId);
+        return [ playlistSong.videoId, (libraryMatch ? libraryMatch.name : playlistSong.name) || '', (libraryMatch ? libraryMatch.author : playlistSong.author) || '' ];
+      });
+      const code = encodeTransferPayload({
+        v: 1,
+        n: playlist.name,
+        s: songs
+      });
+      const url = `${window.location.origin}/playlist/${code}`;
+      navigator.clipboard.writeText(url).then(() => this.showQueueNotification(`Copied share link for "${playlist.name}"`)).catch(() => this.showExportModal(url, 'Share Playlist'));
+    } catch (error) {
+      console.error('Error building playlist share link:', error);
+      alert('Could not create a share link. Please try again.');
+    }
+  }
+  async checkIncomingPlaylistShare() {
+    const match = window.location.pathname.match(/^\/playlist\/(.+)$/);
+    if (!match) {
+      return;
+    }
+    const encoded = match[1];
+    history.replaceState(null, '', '/');
+    let payload;
+    try {
+      await loadPako();
+      payload = decodeTransferPayload(encoded);
+    } catch (error) {
+      console.error('Failed to decode shared playlist:', error);
+      alert('This playlist link is invalid or corrupted.');
+      return;
+    }
+    if (!payload || payload.v !== 1 || !Array.isArray(payload.s)) {
+      alert('This playlist link is invalid or corrupted.');
+      return;
+    }
+    this.showSharedPlaylistPrompt(payload);
+  }
+  showSharedPlaylistPrompt(payload) {
+    const songCount = payload.s.length;
+    const playlistName = payload.n || 'Shared Playlist';
+    const dialog = UI.modal({
+      title: 'Shared Playlist',
+      icon: 'fa-share-nodes',
+      size: 'sm'
+    });
+    dialog.body.append(UI.el('p', '', `Add "${this.escapeHtml(playlistName)}" (${songCount} song${songCount === 1 ? '' : 's'}) to your library?`));
+    dialog.addFooter(UI.button('Cancel', {
+      variant: 'ghost',
+      onClick: dialog.close
+    }), UI.button('Add to Library', {
+      variant: 'primary',
+      icon: 'fa-plus',
+      onClick: () => {
+        dialog.close();
+        this.importSharedPlaylist(payload);
+      }
+    }));
+    dialog.open();
+  }
+  importSharedPlaylist(payload) {
+    const playlistName = payload.n || 'Shared Playlist';
+    const existingIds = new Set(this.songLibrary.map(song => song.id));
+    const generateUniqueId = () => {
+      let newId;
+      do {
+        newId = Date.now() + Math.floor(Math.random() * 1e4);
+      } while (existingIds.has(newId));
+      existingIds.add(newId);
+      return newId;
+    };
+    const importedSongs = [];
+    const playlistSongs = [];
+    const seenVideoIds = new Set();
+    payload.s.forEach(entry => {
+      const [ videoId, name, author ] = Array.isArray(entry) ? entry : [];
+      if (!videoId || seenVideoIds.has(videoId)) {
+        return;
+      }
+      seenVideoIds.add(videoId);
+      const existingSong = this.songLibrary.find(song => song.videoId === videoId);
+      if (!existingSong) {
+        importedSongs.push({
+          id: generateUniqueId(),
+          name: name || videoId,
+          author: author || '',
+          videoId: videoId,
+          favorite: false,
+          lyrics: '',
+          addedOn: (new Date()).toISOString()
+        });
+      }
+      playlistSongs.push({
+        videoId: videoId,
+        name: existingSong ? existingSong.name : name || videoId,
+        author: existingSong ? existingSong.author || '' : author || '',
+        entryId: Date.now() + Math.random() * 1e4
+      });
+    });
+    const processPromises = [];
+    if (importedSongs.length > 0) {
+      processPromises.push(this.addImportedSongsOneByOne(importedSongs));
+    }
+    processPromises.push(this.createImportedPlaylists([ {
+      name: playlistName,
+      songs: playlistSongs
+    } ]));
+    Promise.all(processPromises).then(() => {
+      this.renderSongLibrary();
+      if (typeof this.updatePlaylistSelection === 'function') {
+        this.updatePlaylistSelection();
+      }
+      this.renderPlaylists();
+      this.showQueueNotification(`Added "${playlistName}" to your library`);
+    }).catch(error => {
+      console.error('Error importing shared playlist:', error);
+      alert('An error occurred while importing the shared playlist.');
     });
   }
   loadRecentlyPlayed() {
@@ -4988,8 +5214,13 @@ class AdvancedMusicPlayer {
       variant: 'ghost',
       icon: 'fa-file-lines',
       onClick: () => this.exportPlaylist(playlist.id)
+    }), UI.button('Share Link', {
+      variant: 'ghost',
+      icon: 'fa-share-nodes',
+      onClick: () => this.sharePlaylist(playlist.id)
     }));
-    footerStart.lastChild.title = 'Copy the playlist in the Import Songs format, to share or keep';
+    footerStart.children[1].title = 'Copy the playlist in the Import Songs format, to share or keep';
+    footerStart.lastChild.title = 'Copy a link that adds this playlist to anyone\'s library';
     dialog.addFooter(footerStart, playBtn, UI.button('Done', {
       variant: 'primary',
       onClick: dialog.close
@@ -10779,6 +11010,20 @@ class AdvancedMusicPlayer {
       this.exportSongsWithAllPlaylists();
       this.hideExportDropdown();
     };
+    const exportBackupBtn = document.createElement('button');
+    exportBackupBtn.className = 'dropdown-item';
+    exportBackupBtn.textContent = 'Export Backup Code';
+    exportBackupBtn.onclick = () => {
+      this.exportFullBackup();
+      this.hideExportDropdown();
+    };
+    const importBackupBtn = document.createElement('button');
+    importBackupBtn.className = 'dropdown-item';
+    importBackupBtn.textContent = 'Import Backup Code';
+    importBackupBtn.onclick = () => {
+      this.showImportBackupModal();
+      this.hideExportDropdown();
+    };
     const exportPlaylistBtn = document.createElement('button');
     exportPlaylistBtn.className = 'dropdown-item';
     exportPlaylistBtn.textContent = 'Export Playlist';
@@ -10789,6 +11034,8 @@ class AdvancedMusicPlayer {
     dropdown.appendChild(exportSongsBtn);
     dropdown.appendChild(exportSongsWithPlaylistBtn);
     dropdown.appendChild(exportPlaylistBtn);
+    dropdown.appendChild(exportBackupBtn);
+    dropdown.appendChild(importBackupBtn);
     document.body.appendChild(dropdown);
     requestAnimationFrame(() => {
       dropdown.style.opacity = '1';
@@ -18486,6 +18733,46 @@ function loadKaraokeShareDependencies() {
     });
   }
   return karaokeShareDepsPromise;
+}
+
+let pakoLoadPromise = null;
+
+function loadPako() {
+  if (typeof pako !== 'undefined') {
+    return Promise.resolve();
+  }
+  if (!pakoLoadPromise) {
+    pakoLoadPromise = loadScriptOnce('https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js').catch(err => {
+      pakoLoadPromise = null;
+      throw err;
+    });
+  }
+  return pakoLoadPromise;
+}
+
+function encodeTransferPayload(obj) {
+  const utf8 = new TextEncoder().encode(JSON.stringify(obj));
+  const compressed = pako.deflate(utf8, {
+    level: 9
+  });
+  let binary = '';
+  for (let i = 0; i < compressed.length; i++) {
+    binary += String.fromCharCode(compressed[i]);
+  }
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+
+function decodeTransferPayload(encoded) {
+  let base64 = encoded.replace(/-/g, '+').replace(/_/g, '/');
+  while (base64.length % 4) {
+    base64 += '=';
+  }
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return JSON.parse(new TextDecoder().decode(pako.inflate(bytes)));
 }
 
 let musicPlayer;

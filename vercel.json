@@ -5,6 +5,10 @@
       "destination": "/karaoke.html"
     },
     {
+      "source": "/playlist/:hash",
+      "destination": "/index.html"
+    },
+    {
       "source": "/song/:videoId",
       "destination": "/api/song/:videoId"
     },
