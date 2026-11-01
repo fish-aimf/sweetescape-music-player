@@ -1700,9 +1700,19 @@ class AdvancedMusicPlayer {
     const dialog = UI.modal({
       title: 'Shared Playlist',
       icon: 'fa-share-nodes',
-      size: 'sm'
+      size: 'sm',
+      bodyClassName: 'ui-modal__body--stack'
     });
     dialog.body.append(UI.el('p', '', `Add "${this.escapeHtml(playlistName)}" (${songCount} song${songCount === 1 ? '' : 's'}) to your library?`));
+    const list = UI.el('div', 'qv2-rows');
+    list.style.maxHeight = '260px';
+    list.style.border = '1px solid var(--border-color)';
+    list.style.borderRadius = '8px';
+    payload.s.forEach(entry => {
+      const [ , name, author ] = Array.isArray(entry) ? entry : [];
+      list.appendChild(UI.el('div', 'qv2-result', `<span class="qv2-result-name">${this.escapeHtml(name || 'Unknown title')}</span>${author ? `<span class="qv2-result-author">${this.escapeHtml(author)}</span>` : ''}`));
+    });
+    dialog.body.appendChild(list);
     dialog.addFooter(UI.button('Cancel', {
       variant: 'ghost',
       onClick: dialog.close
