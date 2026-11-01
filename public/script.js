@@ -11005,7 +11005,7 @@ class AdvancedMusicPlayer {
     dropdown.style.top = rect.bottom + window.scrollY + 'px';
     dropdown.style.left = rect.left + 'px';
     dropdown.style.minWidth = rect.width + 'px';
-    dropdown.style.zIndex = '1000';
+    dropdown.style.zIndex = '10000';
     const exportSongsBtn = document.createElement('button');
     exportSongsBtn.className = 'dropdown-item';
     exportSongsBtn.textContent = 'Export Songs';
