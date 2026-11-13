@@ -809,3 +809,4 @@ The playlist side panel can now sit on either side of the screen in both of its 
 Added a Backup Code to export and re-import your whole library, playlists and settings as one compressed code, and a Share Link for individual playlists (/playlist/...) that lets anyone add it to their own library in one click v76.12.0
 Shared playlist links now show every song before you add them, and the Export Songs dropdown finally gets the blurred glass look in Glass mode instead of a flat solid panel v76.13.0
 Fixed the Export Songs dropdown rendering behind the library modification modal it opens from, so hovering Export Songs there now actually shows a usable menu v76.14.0
+Fixed the playlist sidebar in glass mode: the overlay panel (floating over the page) is now more transparent with heavier blur so it no longer turns into an unreadable block when it sits above other text, while the expanded panel (which pushes content aside) keeps its original glass look v76.15.0
