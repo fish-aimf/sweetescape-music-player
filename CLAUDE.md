@@ -136,7 +136,7 @@ No test suite. Do this instead:
 node --check public/script.js public/script/settings.js public/sw.js public/karaoke-player.js public/karaoke-encoder.js
 node scripts/audit-css.js      # unused selectors + orphan @keyframes; clean baseline is 0/0
 node scripts/codemap.js        # refresh CODEMAP.md
-node scripts/dev-server.js     # serves public/ on http://localhost:4173
+node scripts/dev-server.js     # serves public/ on http://localhost:4173 with the site-wide headers from vercel.json (CSP included)
 ```
 
 Then drive the page with Playwright — the only way to catch cascade regressions.

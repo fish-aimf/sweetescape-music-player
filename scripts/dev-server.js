@@ -4,6 +4,8 @@ const path = require('path');
 
 const root = path.join(__dirname, '..', 'public');
 const port = Number(process.argv[2] || process.env.PORT || 4173);
+const vercel = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'vercel.json'), 'utf8'));
+const siteHeaders = Object.fromEntries((vercel.headers || []).filter(rule => rule.source === '/(.*)').flatMap(rule => rule.headers).map(header => [ header.key, header.value ]));
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -58,6 +60,7 @@ const server = http.createServer((req, res) => {
     return;
   }
   res.writeHead(200, {
+    ...siteHeaders,
     'Content-Type': TYPES[path.extname(file).toLowerCase()] || 'application/octet-stream',
     'Cache-Control': 'no-store'
   });
