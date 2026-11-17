@@ -16,7 +16,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 import pystray
-from PIL import Image, ImageDraw
+from PIL import Image
 from pypresence import Presence
 from pypresence.types import ActivityType, StatusDisplayType
 from websockets.asyncio.server import serve
@@ -78,6 +78,9 @@ def setup_logging():
     logging.basicConfig(level=logging.INFO, handlers=handlers)
     logging.getLogger("websockets").setLevel(logging.WARNING)
     logging.getLogger("asyncio").setLevel(logging.WARNING)
+    threading.excepthook = lambda args: log.error(
+        "Unhandled error in %s", args.thread.name, exc_info=(args.exc_type, args.exc_value, args.exc_traceback)
+    )
 
 
 class Settings:
@@ -87,7 +90,7 @@ class Settings:
         try:
             stored = json.loads(self.path.read_text(encoding="utf-8"))
             if isinstance(stored, dict):
-                self.values.update({k: v for k, v in stored.items() if k in self.values})
+                self.values.update({k: v for k, v in stored.items() if k in self.values and isinstance(v, bool)})
         except (OSError, ValueError):
             pass
 
@@ -220,7 +223,8 @@ class DiscordLink:
         self._stopping = False
         self.sharing = True
         self.branding = True
-        self.status = "starting"
+        self.status = "idle"
+        self.tabs = 0
         self.on_status = lambda status: None
         self.on_track = lambda: None
 
@@ -255,6 +259,11 @@ class DiscordLink:
             self._cond.notify()
         self.on_track()
 
+    def set_tabs(self, tabs):
+        with self._cond:
+            self.tabs = tabs
+            self._cond.notify()
+
     def connect_soon(self):
         with self._cond:
             self._connect_now = True
@@ -274,7 +283,7 @@ class DiscordLink:
                 connect_now = self._connect_now
                 self._connect_now = False
             now = time.monotonic()
-            if self._rpc is None and (connect_now or now >= self._retry_at):
+            if self._rpc is None and (connect_now or (self.tabs and now >= self._retry_at)):
                 self._connect()
             if self._rpc is not None and self._dirty and now - self._sent_at >= MIN_UPDATE_GAP:
                 self._push()
@@ -284,7 +293,7 @@ class DiscordLink:
         if self._stopping or self._connect_now:
             return 0
         if self._rpc is None:
-            return max(0.0, self._retry_at - time.monotonic())
+            return max(0.0, self._retry_at - time.monotonic()) if self.tabs else None
         if self._dirty:
             return max(0.0, self._sent_at + MIN_UPDATE_GAP - time.monotonic())
         return None
@@ -369,6 +378,7 @@ class Bridge:
 
     async def handle(self, ws):
         self.clients[ws] = None
+        self.link.set_tabs(len(self.clients))
         log.info("Browser tab connected (%d open)", len(self.clients))
         try:
             await ws.send(json.dumps({
@@ -389,6 +399,7 @@ class Bridge:
             pass
         finally:
             del self.clients[ws]
+            self.link.set_tabs(len(self.clients))
             if self.owner is ws:
                 self.owner = None
                 self.link.show(None)
@@ -420,7 +431,7 @@ class Bridge:
     async def receive(self, ws, raw):
         try:
             data = json.loads(raw)
-        except ValueError:
+        except (ValueError, RecursionError):
             return
         if not isinstance(data, dict):
             return
@@ -591,9 +602,7 @@ def tray_image():
     try:
         return Image.open(resource("icon.png")).convert("RGBA").resize((64, 64), Image.LANCZOS)
     except OSError:
-        image = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
-        ImageDraw.Draw(image).ellipse([8, 8, 56, 56], fill=(93, 156, 89, 255))
-        return image
+        return Image.new("RGBA", (64, 64), (93, 156, 89, 255))
 
 
 def open_folder(path):
@@ -638,7 +647,11 @@ class Tray:
         )
 
     def discord_state(self):
-        return {"connected": "connected", "no-discord": "not running"}.get(self.link.status, "connecting\u2026")
+        return {
+            "connected": "connected",
+            "no-discord": "not running",
+            "idle": "waiting for SweetEscape",
+        }.get(self.link.status, "connecting\u2026")
 
     def discord_line(self):
         return f"Discord: {self.discord_state()}"

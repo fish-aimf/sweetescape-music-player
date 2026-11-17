@@ -5,7 +5,7 @@ A small tray app that puts the song you're playing on SweetEscape into your Disc
 Browsers aren't allowed to talk to Discord, so the website sends the song to this app over a
 local WebSocket and the app passes it on to the Discord client running on the same PC.
 
-The whole program is [`sweetescape_rpc.pyw`](sweetescape_rpc.pyw), about 700 lines of Python.
+The whole program is [`sweetescape_rpc.pyw`](sweetescape_rpc.pyw), about 800 lines of Python.
 If you're deciding whether to trust it, that file is the thing to read. This page tells you
 where to look.
 
@@ -35,6 +35,7 @@ On macOS and Linux use `python3`. The tray icon and Discord status work there to
 | | |
 |---|---|
 | Network | Listens on `localhost:9112` only. Nothing outside your PC can reach it. |
+| Resources | About 25 MB of memory. No CPU while idle: it only looks for Discord while a SweetEscape tab is open. |
 | Internet | None. It makes no web requests, has no telemetry, and never updates itself. |
 | Discord | Talks to the Discord app through Discord's local IPC pipe, the same way games do. |
 | Files | `%LOCALAPPDATA%\SweetEscape RPC\rpc.log` (connection events and errors, no song titles, capped at 400 KB) and `settings.json` there. |
@@ -126,8 +127,9 @@ In order, top to bottom:
 - **Settings and logging:** `data_dir`, `setup_logging`, `Settings`.
 - **Input checking:** `clean_text`, `https_url`, `seconds`, `video_id`, `build_activity`.
   This is the part to read closely.
-- **Discord:** `DiscordLink`. One thread owns the Discord connection, reconnects every 10 s if
-  Discord isn't running, and pushes the latest wanted status.
+- **Discord:** `DiscordLink`. One thread owns the Discord connection, and while a SweetEscape tab is
+  open, retries every 10 s if Discord isn't running. With no tab open it sleeps. It pushes the latest
+  wanted status.
 - **WebSocket:** `Bridge`. Accepts tabs, replies with status messages, hands songs to `DiscordLink`.
 - **Windows registry:** `register_protocol`, `set_start_with_windows`, `remove_everything`.
   Only these functions write to the registry. `forget_this_pc` deletes the app's own folder.

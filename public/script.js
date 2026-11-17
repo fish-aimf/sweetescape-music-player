@@ -16586,8 +16586,15 @@ class AdvancedMusicPlayer {
       el('discordPreviewUrl').textContent = d.url || '—';
       el('discordPreviewUrl').href = d.url || '#';
     }
-    if (el('discordPreviewThumb')) {
-      el('discordPreviewThumb').innerHTML = d.thumbnail ? `<img src="${d.thumbnail}" onerror="this.parentElement.innerHTML='<i class=\\'fas fa-music\\'></i>'" alt="">` : '<i class="fas fa-music"></i>';
+    const thumb = el('discordPreviewThumb');
+    if (thumb) {
+      thumb.innerHTML = '<i class="fas fa-music"></i>';
+      if (d.thumbnail) {
+        const img = document.createElement('img');
+        img.alt = '';
+        img.onload = () => thumb.replaceChildren(img);
+        img.src = d.thumbnail;
+      }
     }
   }
   async _discordSyncFields() {

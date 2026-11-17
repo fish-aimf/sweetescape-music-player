@@ -4,14 +4,15 @@ on:
   push:
     tags: ['rpc-v*']
 
-permissions:
-  contents: write
-  id-token: write
-  attestations: write
+permissions: {}
 
 jobs:
   build:
     runs-on: windows-2022
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -39,8 +40,12 @@ jobs:
         run: |
           export SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)
           export PYTHONHASHSEED=0
+          unused="ssl _ssl _hashlib lzma _lzma bz2 _bz2 xml pyexpat _elementtree unittest pydoc
+            PIL._avif PIL.AvifImagePlugin PIL._webp PIL.WebPImagePlugin PIL._imagingft PIL.ImageFont
+            PIL.ImageDraw PIL.ImageText PIL._imagingcms PIL.ImageCms"
           pyinstaller --noconfirm --clean --onefile --windowed --name SweetEscape-RPC \
-            --icon icon.png --add-data "icon.png:." sweetescape_rpc.pyw
+            --icon icon.png --add-data "icon.png:." \
+            $(printf -- '--exclude-module %s ' $unused) sweetescape_rpc.pyw
           cd dist
           sha256sum SweetEscape-RPC.exe > SHA256SUMS.txt
           cat SHA256SUMS.txt
@@ -49,12 +54,33 @@ jobs:
         with:
           subject-path: rpc/dist/SweetEscape-RPC.exe
 
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: release
+          path: |
+            rpc/dist/SweetEscape-RPC.exe
+            rpc/dist/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 1
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          name: release
+          path: dist
+
       - name: Publish release
-        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          hash=$(cut -d' ' -f1 rpc/dist/SHA256SUMS.txt)
+          cd dist
+          sha256sum --check SHA256SUMS.txt
+          hash=$(cut -d' ' -f1 SHA256SUMS.txt)
           cat > notes.md <<EOF
           Built by [this workflow run]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID) from commit $GITHUB_SHA.
 
@@ -73,5 +99,6 @@ jobs:
 
           What the app does and how to read through it: [rpc/README.md]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/blob/$GITHUB_SHA/rpc/README.md)
           EOF
-          gh release create "$GITHUB_REF_NAME" rpc/dist/SweetEscape-RPC.exe rpc/dist/SHA256SUMS.txt \
-            --title "Desktop RPC ${GITHUB_REF_NAME#rpc-v}" --notes-file notes.md --latest
+          gh release create "$GITHUB_REF_NAME" SweetEscape-RPC.exe SHA256SUMS.txt \
+            --repo "$GITHUB_REPOSITORY" --title "Desktop RPC ${GITHUB_REF_NAME#rpc-v}" \
+            --notes-file notes.md --latest
