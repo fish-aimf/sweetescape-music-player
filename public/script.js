@@ -359,7 +359,9 @@ const HTML_ENTITY_PATTERN = /&(#\d{1,7}|#[xX][0-9a-fA-F]{1,6}|[a-zA-Z][a-zA-Z0-9
 class AdvancedMusicPlayer {
   static VISUALIZER_STYLES = new Set([ 'bars', 'levels', 'wave', 'ribbon', 'radial', 'glow' ]);
   static YOUTUBE_HOST = 'https://www.youtube-nocookie.com';
-  static DISCORD_APP_VERSION = '2.1.1';
+  static DISCORD_APP_VERSION = '2.2.0';
+  static BACKUP_STORES = [ 'settings', 'userSettings', 'recentlyPlayed', 'listeningStats' ];
+  static BACKUP_LOCAL_KEYS = [ 'controlBarVisible', 'controlsLayout', 'disguiseCustomUrl', 'downloadHistory', 'faviconDisguise', 'lyricsStageMode', 'mixLabSeeds', 'musicPlayer_lastPosition', 'musicPlayer_listeningTime', 'musicPlayer_speed', 'musicPlayer_volume', 'playlistSidebarMode', 'playlistSidebarSides' ];
   static MIX_LAB_MAX_SEEDS = 5;
   static MIX_LAB_PAGE_SIZE = 24;
   static MIX_LAB_MOODS = [ 'Rainy day', 'Workout', '90s R&B', 'Lofi study', 'Road trip', 'Feel good' ];
@@ -615,6 +617,7 @@ class AdvancedMusicPlayer {
         this.showWelcomeModal();
       }
       this.checkIncomingPlaylistShare();
+      this._offerRelinkAfterRestore();
     } catch (error) {
       console.error('Error initializing music player:', error);
       this._handleInitializationError(error);
@@ -1584,18 +1587,31 @@ class AdvancedMusicPlayer {
       transaction.onerror = event => reject(new Error(`Could not write ${storeName}: ` + event.target.error.message));
     });
   }
+  async _buildBackupCode() {
+    await loadPako();
+    const stores = AdvancedMusicPlayer.BACKUP_STORES;
+    const rows = await Promise.all(stores.map(name => this._getAllStoreRows(name).catch(() => [])));
+    const storage = {};
+    AdvancedMusicPlayer.BACKUP_LOCAL_KEYS.forEach(key => {
+      const value = localStorage.getItem(key);
+      if (value !== null) {
+        storage[key] = value;
+      }
+    });
+    const payload = {
+      v: 2,
+      songLibrary: this.songLibrary,
+      playlists: this.playlists,
+      localStorage: storage
+    };
+    stores.forEach((name, i) => {
+      payload[name] = rows[i];
+    });
+    return encodeTransferPayload(JSON.parse(JSON.stringify(payload, (key, value) => key === 'localFileHandle' ? undefined : value)));
+  }
   async exportFullBackup() {
     try {
-      await loadPako();
-      const [ settingsRows, userSettingsRows ] = await Promise.all([ this._getAllStoreRows('settings'), this._getAllStoreRows('userSettings') ]);
-      const payload = {
-        v: 1,
-        songLibrary: this.songLibrary,
-        playlists: this.playlists,
-        settings: settingsRows,
-        userSettings: userSettingsRows
-      };
-      const code = encodeTransferPayload(payload);
+      const code = await this._buildBackupCode();
       this.showExportModal(code, 'Backup Code');
     } catch (error) {
       console.error('Error building backup code:', error);
@@ -1627,7 +1643,7 @@ class AdvancedMusicPlayer {
     }));
     dialog.open();
   }
-  async importFullBackup(code) {
+  async importFullBackup(code, source = '') {
     let payload;
     try {
       await loadPako();
@@ -1636,25 +1652,144 @@ class AdvancedMusicPlayer {
       alert('That backup code is invalid or corrupted.');
       return;
     }
-    if (!payload || payload.v !== 1) {
+    if (!payload || payload.v !== 1 && payload.v !== 2) {
       alert('This backup code is not recognized by this version of the app.');
       return;
     }
-    if (!confirm('Importing this backup will replace your current library, playlists and settings on this device. Continue?')) {
+    if (!confirm(`${source ? source + '\n\n' : ''}Importing this backup will replace your current library, playlists and settings on this device. Continue?`)) {
       return;
     }
+    const list = value => Array.isArray(value) ? value : [];
     try {
-      this.songLibrary = Array.isArray(payload.songLibrary) ? payload.songLibrary : [];
-      this.playlists = Array.isArray(payload.playlists) ? payload.playlists : [];
+      this.songLibrary = list(payload.songLibrary).map(song => ({
+        ...song,
+        localFileHandle: null
+      }));
+      this.playlists = list(payload.playlists);
       await this.saveSongLibrary();
       await this.savePlaylists();
-      await Promise.all([ this._putAllStoreRows('settings', Array.isArray(payload.settings) ? payload.settings : []), this._putAllStoreRows('userSettings', Array.isArray(payload.userSettings) ? payload.userSettings : []) ]);
+      const stores = payload.v === 2 ? AdvancedMusicPlayer.BACKUP_STORES : [ 'settings', 'userSettings' ];
+      await Promise.all(stores.map(name => this._putAllStoreRows(name, list(payload[name]))));
+      if (payload.v === 2 && payload.localStorage && typeof payload.localStorage === 'object') {
+        AdvancedMusicPlayer.BACKUP_LOCAL_KEYS.forEach(key => {
+          const value = payload.localStorage[key];
+          if (typeof value === 'string') {
+            localStorage.setItem(key, value);
+          } else {
+            localStorage.removeItem(key);
+          }
+        });
+      }
+      if (this.songLibrary.some(song => song.localFileName)) {
+        sessionStorage.setItem('se_relink_after_restore', '1');
+      }
+      this._restoringBackup = true;
       alert('Backup imported. Reloading…');
       location.reload();
     } catch (error) {
       console.error('Error importing backup:', error);
       alert('Something went wrong while importing the backup.');
     }
+  }
+  _offerRelinkAfterRestore() {
+    if (!sessionStorage.getItem('se_relink_after_restore')) {
+      return;
+    }
+    sessionStorage.removeItem('se_relink_after_restore');
+    const missing = this.songLibrary.filter(song => song.localFileName && !song.localFileHandle);
+    if (!missing.length || !window.showDirectoryPicker) {
+      return;
+    }
+    const dialog = UI.modal({
+      title: 'Relink offline songs',
+      icon: 'fa-folder-open',
+      size: 'sm',
+      bodyClassName: 'ui-modal__body--stack'
+    });
+    const status = UI.el('p', '', `${missing.length} song${missing.length === 1 ? ' was' : 's were'} linked to audio files on this computer. Browsers never store where a file lives, so pick the folder your music is in and SweetEscape will relink every file it finds by name, including in subfolders.`);
+    dialog.body.append(status);
+    dialog.addFooter(UI.button('Later', {
+      variant: 'ghost',
+      onClick: () => dialog.close()
+    }));
+    dialog.addFooter(UI.button('Choose folder', {
+      variant: 'primary',
+      icon: 'fa-folder-open',
+      onClick: async () => {
+        try {
+          const folder = await window.showDirectoryPicker({
+            mode: 'read'
+          });
+          status.textContent = 'Looking for your files…';
+          const linked = await this._relinkFromFolder(folder, missing);
+          status.textContent = `Relinked ${linked} of ${missing.length} song${missing.length === 1 ? '' : 's'}.${linked < missing.length ? ' The rest can be linked one by one from each song\'s edit dialog.' : ''}`;
+        } catch (error) {
+          if (error.name !== 'AbortError') {
+            status.textContent = 'Could not read that folder.';
+          }
+        }
+      }
+    }));
+    dialog.open();
+  }
+  async _relinkFromFolder(folder, songs) {
+    const wanted = new Map();
+    songs.forEach(song => {
+      const key = song.localFileName.toLowerCase();
+      wanted.set(key, [ ...wanted.get(key) || [], song ]);
+    });
+    let linked = 0;
+    const walk = async (dir, depth) => {
+      for await (const entry of dir.values()) {
+        if (!wanted.size) {
+          return;
+        }
+        if (entry.kind === 'directory' && depth < 6) {
+          await walk(entry, depth + 1);
+        } else if (entry.kind === 'file' && wanted.has(entry.name.toLowerCase())) {
+          wanted.get(entry.name.toLowerCase()).forEach(song => {
+            song.localFileHandle = entry;
+            linked++;
+          });
+          wanted.delete(entry.name.toLowerCase());
+        }
+      }
+    };
+    await walk(folder, 0);
+    if (linked) {
+      await this.saveSongLibrary();
+      this.renderSongLibrary?.();
+    }
+    return linked;
+  }
+  async _discordSendBackup() {
+    if (this.discordWs?.readyState !== WebSocket.OPEN || !this.db) {
+      return;
+    }
+    if (!this.songLibrary?.length && !this.playlists?.length) {
+      this.discordWs.send(JSON.stringify({
+        action: 'backup',
+        empty: true
+      }));
+      return;
+    }
+    try {
+      const code = await this._buildBackupCode();
+      this.discordWs?.send(JSON.stringify({
+        action: 'backup',
+        code: code
+      }));
+    } catch (error) {
+      console.warn('Desktop backup failed:', error);
+    }
+  }
+  _discordOfferRestore(r) {
+    if (typeof r.code !== 'string') {
+      return;
+    }
+    const when = r.created ? new Date(r.created).toLocaleString() : 'an earlier date';
+    const counts = Number.isFinite(r.songs) ? ` (${r.songs} songs, ${Number(r.playlists) || 0} playlists)` : '';
+    this.importFullBackup(r.code, `SweetEscape RPC wants to restore the backup from ${when}${counts}.`);
   }
   async sharePlaylist(playlistId) {
     const playlist = this.playlists.find(p => p.id === playlistId);
@@ -16323,6 +16458,10 @@ class AdvancedMusicPlayer {
             if (this.currentSong && this.isPlaying) {
               this.sendDiscordRPC();
             }
+          } else if (r.status === 'backup_request') {
+            this._discordSendBackup();
+          } else if (r.status === 'restore') {
+            this._discordOfferRestore(r);
           } else if (r.status === 'success') {
             this._discordLastUpdate = Date.now();
             this._discordStartLastUpdateTick();
@@ -18726,6 +18865,9 @@ class AdvancedMusicPlayer {
     }
   }
   saveCurrentState() {
+    if (this._restoringBackup) {
+      return;
+    }
     try {
       if (this.listeningTime > 0) {
         localStorage.setItem('musicPlayer_listeningTime', this.listeningTime.toString());

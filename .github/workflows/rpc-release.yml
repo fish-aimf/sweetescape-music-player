@@ -40,7 +40,7 @@ jobs:
         run: |
           export SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)
           export PYTHONHASHSEED=0
-          unused="ssl _ssl _hashlib lzma _lzma bz2 _bz2 xml pyexpat _elementtree unittest pydoc
+          unused="ssl _ssl _hashlib bz2 _bz2 xml pyexpat _elementtree unittest pydoc
             PIL._avif PIL.AvifImagePlugin PIL._webp PIL.WebPImagePlugin PIL._imagingft PIL.ImageFont
             PIL.ImageDraw PIL.ImageText PIL._imagingcms PIL.ImageCms"
           pyinstaller --noconfirm --clean --onefile --windowed --name SweetEscape-RPC \

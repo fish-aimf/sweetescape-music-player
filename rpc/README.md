@@ -1,11 +1,12 @@
 # SweetEscape RPC
 
-A small tray app that puts the song you're playing on SweetEscape into your Discord status.
+A small tray app that puts the song you're playing on SweetEscape into your Discord status, and
+keeps compressed backups of your SweetEscape library on your PC.
 
 Browsers aren't allowed to talk to Discord, so the website sends the song to this app over a
 local WebSocket and the app passes it on to the Discord client running on the same PC.
 
-The whole program is [`sweetescape_rpc.pyw`](sweetescape_rpc.pyw), about 800 lines of Python.
+The whole program is [`sweetescape_rpc.pyw`](sweetescape_rpc.pyw), about 1,150 lines of Python.
 If you're deciding whether to trust it, that file is the thing to read. This page tells you
 where to look.
 
@@ -38,7 +39,7 @@ On macOS and Linux use `python3`. The tray icon and Discord status work there to
 | Resources | About 25 MB of memory. No CPU while idle: it only looks for Discord while a SweetEscape tab is open. |
 | Internet | None. It makes no web requests, has no telemetry, and never updates itself. |
 | Discord | Talks to the Discord app through Discord's local IPC pipe, the same way games do. |
-| Files | `%LOCALAPPDATA%\SweetEscape RPC\rpc.log` (connection events and errors, no song titles, capped at 400 KB) and `settings.json` there. |
+| Files | `%LOCALAPPDATA%\SweetEscape RPC\rpc.log` (connection events and errors, no song titles, capped at 400 KB), `settings.json`, and library backups in the `backups` folder there. |
 | Registry | `HKCU\Software\Classes\sweetescape-rpc` (the browser link) and, only if you tick *Start with Windows*, one value under `HKCU\...\CurrentVersion\Run`. Both are per-user; it never asks for admin. |
 
 ## Who can talk to it
@@ -56,8 +57,9 @@ app adds nothing it couldn't already do.
 
 ## What a message can do
 
-A connected page can set your Discord status and nothing else. `build_activity()` is the only
-place a message turns into something Discord sees, and it is strict about it:
+A connected page can do two things: set your Discord status, and hand over a library backup when
+the app asks for one (see below). `build_activity()` is the only place a message turns into
+something Discord sees, and it is strict about it:
 
 - Title and artist are cut to Discord's 128-character limit, with control characters removed.
 - The YouTube button and link are rebuilt from an 11-character video id. A page cannot put an
@@ -65,7 +67,7 @@ place a message turns into something Discord sees, and it is strict about it:
 - The cover image must be an `https://` URL (Discord fetches it, not your PC). Anything else
   falls back to the video thumbnail.
 - Times must be real numbers between 0 and 24 hours.
-- Messages over 4 KB close the connection.
+- Status messages over 4 KB are ignored, and anything over 16 MB closes the connection.
 
 Untick *Show SweetEscape on my status* in the tray menu and the SweetEscape icon and the
 *Open SweetEscape* button are left off (`without_branding()`). The heading above your status
@@ -75,6 +77,34 @@ app reports through.
 Updates are coalesced to at most one every 4 seconds, which keeps inside Discord's rate limit.
 If two tabs are open, the last one to send a song owns the status, and closing the other tab
 doesn't clear it.
+
+## Library backups
+
+Browser storage can be lost: a bug, a browser reset, or clearing site data wipes it. So the app
+keeps its own copies on your PC.
+
+- **What is in one:** everything SweetEscape stores in the browser. Your library, playlists,
+  themes and settings, listening stats, recently played, and player preferences like volume and
+  layout. Not thumbnails (they come from YouTube) and not audio files.
+- **Offline songs:** browsers never tell a site where a file is on disk, so a backup keeps each
+  linked file's name. After a restore the site asks you to pick your music folder and relinks
+  every file it finds by name, in subfolders too.
+- **When:** on the schedule under *Library backups → Back up automatically* (weekly by default),
+  checked when a tab connects and once an hour after that, or straight away with *Back up now*.
+  The app asks the open tab for a backup; a tab can't push one on its own.
+- **Where:** `%LOCALAPPDATA%\SweetEscape RPC\backups`, as `.json.xz` files named with the date and
+  the song and playlist counts. They are plain JSON compressed with xz at its strongest setting,
+  so any xz tool can open them. A 2,000-song library takes about 40 KB.
+- **How many:** the newest 5, 10 or 30 (your choice, 10 by default). The backup with the most songs
+  is never deleted, so a wiped library backing itself up can't push your good copies out. The
+  site also refuses to send a backup of an empty library.
+- **Restoring:** *Library backups → Restore* lists every backup. Pick one and the app hands it to
+  an open SweetEscape tab, opening the site first if needed. The site shows what it is about to
+  restore and replaces nothing until you confirm.
+
+`decode_backup()` checks a backup before it is written: valid base64, a complete zlib stream no
+bigger than 256 MB unpacked, and JSON with the shape SweetEscape exports. Files are written to a
+temporary name and renamed, so a crash never leaves a half-written backup.
 
 ## The "Open app?" link
 
@@ -130,7 +160,9 @@ In order, top to bottom:
 - **Discord:** `DiscordLink`. One thread owns the Discord connection, and while a SweetEscape tab is
   open, retries every 10 s if Discord isn't running. With no tab open it sleeps. It pushes the latest
   wanted status.
-- **WebSocket:** `Bridge`. Accepts tabs, replies with status messages, hands songs to `DiscordLink`.
+- **Backups:** `decode_backup`, `pack`, `Backups`. Reading, checking, compressing and pruning.
+- **WebSocket:** `Bridge`. Accepts tabs, replies with status messages, hands songs to `DiscordLink`,
+  asks for backups and offers restores.
 - **Windows registry:** `register_protocol`, `set_start_with_windows`, `remove_everything`.
   Only these functions write to the registry. `forget_this_pc` deletes the app's own folder.
 - **Tray:** `Tray` and `main`.
@@ -142,8 +174,9 @@ and [Pillow](https://github.com/python-pillow/Pillow) (tray icon).
 ## Removing it
 
 Tray menu → *Remove from this PC and quit*. Or run `SweetEscape-RPC.exe --uninstall`. Either
-deletes the registry entries above and the `%LOCALAPPDATA%\SweetEscape RPC` folder, then opens
-Explorer with the exe selected. The app doesn't delete itself; delete the exe and you're done.
+deletes the registry entries above and the app's settings and log, then opens Explorer with the
+exe selected. Your library backups are kept; delete `%LOCALAPPDATA%\SweetEscape RPC` yourself if
+you don't want them. The app doesn't delete itself; delete the exe and you're done.
 Running it again later sets it up from scratch.
 
 ## Message format
@@ -162,6 +195,11 @@ Only `song` is required. `{"action": "clear"}` removes the status. The older
 The app replies with `{"status": ...}`: `app_ready` (includes `version`), `discord_ready`,
 `success`, `ignored`, or `error` with `"stage": "discord"` when Discord isn't running.
 `discord_ready` is sent again by itself when Discord comes back.
+
+Backups: the app sends `{"status": "backup_request"}` and the tab answers
+`{"action": "backup", "code": "..."}` with the same code the site's own *Export backup* makes, or
+`{"action": "backup", "empty": true}`. The app replies `backup_saved` or `backup_failed`. To
+restore it sends `{"status": "restore", "code": "...", "created": "...", "songs": n, "playlists": n}`.
 
 ## Releasing
 

@@ -25,7 +25,7 @@ SweetEscape is built by one developer (fish-aimf) in plain HTML, CSS and JavaScr
 - Listening statistics (opt-in): time listened, plays, top songs and artist, per-song play history
 - Appearance: light, dark and custom themes with shareable theme codes, glass mode over a custom image, gradient or the album cover, six visualizer designs
 - Sharing: /song/ links with preview cards, karaoke links, library export
-- Also: rebindable keyboard shortcuts, Discord Rich Presence through a desktop helper, tab and page disguise, guide mode (Alt+Shift+G)
+- Also: rebindable keyboard shortcuts, Discord Rich Presence and automatic library backups through a desktop helper, tab and page disguise, guide mode (Alt+Shift+G)
 
 ## Privacy
 
