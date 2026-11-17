@@ -816,3 +816,4 @@ SweetEscape RPC download is less than half the size (17.8 MB to 8.3 MB) and the 
 Your Discord status no longer shows the song title twice: the extra line under the artist is gone (SweetEscape RPC 2.1.1) v76.19.0
 Listening statistics has a plainer look: no icons, no accent-coloured text, the totals sit in one strip and the top 10 is a single ranked list v76.20.0
 SweetEscape RPC 2.2 keeps compressed backups of your whole library on your PC (library, playlists, themes, settings, listening stats and player preferences), weekly by default, with a Library backups tray menu to back up now, pick a schedule and how many to keep, and restore any backup; after a restore the site offers to relink offline songs from your music folder, and the site's own Export backup now covers all of the same data v76.20.0
+The desktop app now only opens when you click Open app in the Discord dialog: removed the automatic launch and its Open the app automatically switch v76.21.0

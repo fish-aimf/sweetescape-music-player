@@ -122,9 +122,8 @@ second copy sees the port is taken and exits.
 The browser asks before following the link, and offers to always allow it for SweetEscape. You
 can turn the link off from the tray menu (*Let the website open this app*).
 
-Once the app has connected to the site at least once, the site starts it by itself when it isn't
-running: on your first click or keypress on the page, because browsers only follow these links
-during one. Turn that off with *Open the app automatically* in the site's Discord dialog.
+The site only follows the link when you click *Open app* in its Discord dialog. It never opens
+the app by itself.
 
 ## Checking a download
 
