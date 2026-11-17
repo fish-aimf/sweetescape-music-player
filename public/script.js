@@ -359,7 +359,7 @@ const HTML_ENTITY_PATTERN = /&(#\d{1,7}|#[xX][0-9a-fA-F]{1,6}|[a-zA-Z][a-zA-Z0-9
 class AdvancedMusicPlayer {
   static VISUALIZER_STYLES = new Set([ 'bars', 'levels', 'wave', 'ribbon', 'radial', 'glow' ]);
   static YOUTUBE_HOST = 'https://www.youtube-nocookie.com';
-  static DISCORD_APP_VERSION = '2.0.0';
+  static DISCORD_APP_VERSION = '2.1.0';
   static MIX_LAB_MAX_SEEDS = 5;
   static MIX_LAB_PAGE_SIZE = 24;
   static MIX_LAB_MOODS = [ 'Rainy day', 'Workout', '90s R&B', 'Lofi study', 'Road trip', 'Feel good' ];
@@ -575,6 +575,8 @@ class AdvancedMusicPlayer {
     this.discordWs = null;
     this.discordConnected = false;
     this.discordEnabled = false;
+    this.discordAutoOpen = true;
+    this.discordAppSeen = false;
     this.discordReconnectTimer = null;
     this.discordReconnectAttempts = 0;
     this.maxDiscordReconnectAttempts = 3;
@@ -1129,6 +1131,10 @@ class AdvancedMusicPlayer {
     document.getElementById('discordResetBtn')?.addEventListener('click', () => this._discordResetFields());
     document.getElementById('discordSendNowBtn')?.addEventListener('click', () => this._discordSendNow());
     document.getElementById('discordLaunchBtn')?.addEventListener('click', () => this._discordLaunchApp());
+    document.getElementById('discordAutoOpenToggle')?.addEventListener('change', e => {
+      this.discordAutoOpen = e.target.checked;
+      this.saveDiscordSettings();
+    });
     document.getElementById('discordRpcModal')?.addEventListener('click', e => {
       if (e.target.id === 'discordRpcModal') {
         this.closeDiscordModal();
@@ -16205,6 +16211,8 @@ class AdvancedMusicPlayer {
         req.onsuccess = () => {
           if (req.result) {
             this.discordEnabled = req.result.enabled || false;
+            this.discordAutoOpen = req.result.autoOpen !== false;
+            this.discordAppSeen = req.result.appSeen === true;
           }
           resolve();
         };
@@ -16217,7 +16225,9 @@ class AdvancedMusicPlayer {
       const tx = this.db.transaction([ 'settings' ], 'readwrite');
       tx.objectStore('settings').put({
         name: 'discordRPC',
-        enabled: this.discordEnabled
+        enabled: this.discordEnabled,
+        autoOpen: this.discordAutoOpen,
+        appSeen: this.discordAppSeen
       });
     } catch (error) {}
   }
@@ -16285,6 +16295,7 @@ class AdvancedMusicPlayer {
         if (!this._discordLaunchTimer) {
           this._discordShowError(this._discordLastError);
         }
+        this._discordArmAutoOpen();
         this._discordRefreshModal();
         this.updateDiscordButtonUI();
       };
@@ -16294,6 +16305,10 @@ class AdvancedMusicPlayer {
           if (r.status === 'app_ready') {
             this._discordAppVersion = typeof r.version === 'string' ? r.version : null;
             this._discordLaunchFailed = false;
+            if (!this.discordAppSeen) {
+              this.discordAppSeen = true;
+              this.saveDiscordSettings();
+            }
             this._discordWsOk = true;
             this._discordAppFound = true;
             this._discordApiOk = false;
@@ -16411,6 +16426,10 @@ class AdvancedMusicPlayer {
     const tog = document.getElementById('discordEnabledToggle');
     if (tog) {
       tog.checked = this.discordEnabled;
+    }
+    const autoOpen = document.getElementById('discordAutoOpenToggle');
+    if (autoOpen) {
+      autoOpen.checked = this.discordAutoOpen;
     }
     const desc = document.getElementById('discordToggleDesc');
     if (desc) {
@@ -16798,6 +16817,27 @@ class AdvancedMusicPlayer {
     } else if (label) {
       label.textContent = outdated ? 'Download update' : 'Download for Windows';
     }
+  }
+  _discordArmAutoOpen() {
+    if (this._discordAutoOpenArmed || !this.discordEnabled || !this.discordAutoOpen || !this.discordAppSeen) {
+      return;
+    }
+    this._discordAutoOpenArmed = true;
+    const open = e => {
+      if (e.type === 'keydown' && (e.key === 'Escape' || e.repeat)) {
+        return;
+      }
+      if (e.target?.closest?.('#discordLaunchBtn, .discord-switch')) {
+        return;
+      }
+      window.removeEventListener('pointerdown', open, true);
+      window.removeEventListener('keydown', open, true);
+      if (this.discordEnabled && this.discordAutoOpen && !this._discordWsOk && !this._discordLaunchTimer) {
+        this._discordLaunchApp();
+      }
+    };
+    window.addEventListener('pointerdown', open, true);
+    window.addEventListener('keydown', open, true);
   }
   _discordLaunchApp() {
     if (!this.discordEnabled) {

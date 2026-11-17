@@ -12,8 +12,8 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 | Source | sha256 (first 12) | Lines |
 |---|---|---|
-| `public/script.js` | `1b938f7ee838` | 18946 |
-| `public/index.html` | `4a6e4aeb6e78` | 1505 |
+| `public/script.js` | `e167815e0412` | 18986 |
+| `public/index.html` | `e501d7caf056` | 1515 |
 | `public/script/settings.js` | `3bc48cfe84cc` | 560 |
 | `public/karaoke-player.js` | `3e6bb16779a4` | 682 |
 | `public/karaoke-encoder.js` | `d277db62d9e9` | 147 |
@@ -38,7 +38,7 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 ---
 
-## `AdvancedMusicPlayer` by topic (713 methods)
+## `AdvancedMusicPlayer` by topic (714 methods)
 
 Names only. `grep -n "^  name(" public/script.js` gives the current line, and a name
 here that you cannot find has been renamed since this file was generated.
@@ -85,7 +85,7 @@ here that you cannot find has been renamed since this file was generated.
 
 ### Settings, import & export
 
-`exportFullBackup` · `importFullBackup` · `disguiseIconUrl` · `applyFaviconDisguise` · `showExportDropdown` · `hideExportDropdown` · `addImportedSongsOneByOne` · `setupExportButtonListeners` · `handleOpenSettings` · `handleCloseSettings` · `initializeSettingsContent` · `getSetting` · `initializeAdvertisementSettings` · `syncMixLabImportButton` · `initDiscordConnection` · `closeDiscordConnection` · `sendDiscordRPC` · `updateDiscordButtonUI` · `_discordRefreshSteps` · `_discordShowError` · `_discordShowSuccess` · `_discordSyncPreview` · `_discordSyncFields` · `_discordOnFieldEdit` · `_discordResetFields` · `_discordSendNow` · `_discordScheduleSend` · `_discordGetAuto` · `_discordGetEffective` · `_discordSyncLastUpdate` · `_discordStartLastUpdateTick` · `_discordStopLastUpdateTick` · `_discordPlayback` · `_discordAppOutdated` · `_discordRefreshInstallHint` · `_discordLaunchApp` · `_discordRetry`
+`exportFullBackup` · `importFullBackup` · `disguiseIconUrl` · `applyFaviconDisguise` · `showExportDropdown` · `hideExportDropdown` · `addImportedSongsOneByOne` · `setupExportButtonListeners` · `handleOpenSettings` · `handleCloseSettings` · `initializeSettingsContent` · `getSetting` · `initializeAdvertisementSettings` · `syncMixLabImportButton` · `initDiscordConnection` · `closeDiscordConnection` · `sendDiscordRPC` · `updateDiscordButtonUI` · `_discordRefreshSteps` · `_discordShowError` · `_discordShowSuccess` · `_discordSyncPreview` · `_discordSyncFields` · `_discordOnFieldEdit` · `_discordResetFields` · `_discordSendNow` · `_discordScheduleSend` · `_discordGetAuto` · `_discordGetEffective` · `_discordSyncLastUpdate` · `_discordStartLastUpdateTick` · `_discordStopLastUpdateTick` · `_discordPlayback` · `_discordAppOutdated` · `_discordRefreshInstallHint` · `_discordArmAutoOpen` · `_discordLaunchApp` · `_discordRetry`
 
 ### Uncategorised
 
@@ -115,17 +115,17 @@ The rest match their id exactly.
 | id | line | classes |
 |---|---|---|
 | `discordRpcModal` | 297 | `modal discord-rpc-modal-overlay ui-overlay` |
-| `libraryModificationModal` | 434 | `modal ui-overlay` |
-| `importModal` | 470 | `modal ui-overlay` |
-| `timerModal` | 516 | `modal ui-overlay` |
-| `changelogModal` | 646 | `changelog-modal ui-overlay` |
-| `subtitlesImportModal` | 655 | `subtitles-import-modal-overlay ui-overlay` |
-| `settingsModal` | 724 | `settings-modal ui-overlay` |
-| `recentlyPlayedModal` | 1200 | `recently-played-modal-bg ui-overlay` |
-| `lyricsModal` | 1215 | `lyrics-maker-modal hidden ui-overlay` |
-| `downloadModal` | 1355 | `dl-overlay ui-overlay` |
-| `shazamModal` | 1421 | `sz-overlay ui-overlay` |
-| `statsModal` | 1472 | `ls-overlay ui-overlay` |
+| `libraryModificationModal` | 444 | `modal ui-overlay` |
+| `importModal` | 480 | `modal ui-overlay` |
+| `timerModal` | 526 | `modal ui-overlay` |
+| `changelogModal` | 656 | `changelog-modal ui-overlay` |
+| `subtitlesImportModal` | 665 | `subtitles-import-modal-overlay ui-overlay` |
+| `settingsModal` | 734 | `settings-modal ui-overlay` |
+| `recentlyPlayedModal` | 1210 | `recently-played-modal-bg ui-overlay` |
+| `lyricsModal` | 1225 | `lyrics-maker-modal hidden ui-overlay` |
+| `downloadModal` | 1365 | `dl-overlay ui-overlay` |
+| `shazamModal` | 1431 | `sz-overlay ui-overlay` |
+| `statsModal` | 1482 | `ls-overlay ui-overlay` |
 
 ---
 

@@ -5,6 +5,7 @@ import logging.handlers
 import math
 import os
 import re
+import shutil
 import signal
 import subprocess
 import sys
@@ -22,7 +23,7 @@ from websockets.asyncio.server import serve
 from websockets.exceptions import ConnectionClosed
 
 APP_NAME = "SweetEscape RPC"
-VERSION = "2.0.0"
+VERSION = "2.1.0"
 CLIENT_ID = "1428031900877983825"
 SITE = "https://sweetescape.vercel.app"
 PORT = 9112
@@ -82,7 +83,7 @@ def setup_logging():
 class Settings:
     def __init__(self):
         self.path = data_dir() / "settings.json"
-        self.values = {"open_from_browser": True}
+        self.values = {"open_from_browser": True, "show_branding": True}
         try:
             stored = json.loads(self.path.read_text(encoding="utf-8"))
             if isinstance(stored, dict):
@@ -185,6 +186,16 @@ def build_activity(data):
     return activity
 
 
+def without_branding(activity):
+    activity = {k: v for k, v in activity.items() if k not in ("small_image", "small_text")}
+    buttons = [b for b in activity.get("buttons", []) if b["url"] != SITE]
+    if buttons:
+        activity["buttons"] = buttons
+    else:
+        activity.pop("buttons", None)
+    return activity
+
+
 def same_activity(a, b):
     if a is None or b is None:
         return a is b
@@ -208,6 +219,7 @@ class DiscordLink:
         self._connect_now = False
         self._stopping = False
         self.sharing = True
+        self.branding = True
         self.status = "starting"
         self.on_status = lambda status: None
         self.on_track = lambda: None
@@ -229,6 +241,12 @@ class DiscordLink:
             self._dirty = True
             self._cond.notify()
         self.on_track()
+
+    def set_branding(self, branding):
+        with self._cond:
+            self.branding = branding
+            self._dirty = True
+            self._cond.notify()
 
     def set_sharing(self, sharing):
         with self._cond:
@@ -302,6 +320,8 @@ class DiscordLink:
     def _push(self):
         with self._cond:
             activity = self._wanted if self.sharing else None
+            if activity is not None and not self.branding:
+                activity = without_branding(activity)
             self._dirty = False
         if same_activity(activity, self._shown):
             return
@@ -551,11 +571,19 @@ def remove_everything():
     set_start_with_windows(False)
 
 
+def forget_this_pc():
+    folder = data_dir()
+    logging.shutdown()
+    shutil.rmtree(folder, ignore_errors=True)
+    if WINDOWS and getattr(sys, "frozen", False):
+        subprocess.Popen(["explorer", f"/select,{sys.executable}"])
+
+
 def message_box(text, ask=False):
     if not WINDOWS:
         log.warning(text)
         return True
-    flags = 0x10000 | (0x21 if ask else 0x40)
+    flags = 0x50000 | (0x121 if ask else 0x40)
     return ctypes.windll.user32.MessageBoxW(None, text, APP_NAME, flags) == 1
 
 
@@ -582,6 +610,8 @@ class Tray:
         self.link = link
         self.bridge = bridge
         self.settings = settings
+        self.removing = False
+        self.removed = False
         self.icon = pystray.Icon("sweetescape-rpc", tray_image(), APP_NAME, self.menu())
 
     def menu(self):
@@ -593,6 +623,7 @@ class Tray:
             pystray.Menu.SEPARATOR,
             item("Open SweetEscape", self.open_site, default=True),
             item("Pause sharing", self.toggle_sharing, checked=lambda _: not self.link.sharing),
+            item("Show SweetEscape on my status", self.toggle_branding, checked=lambda _: self.link.branding),
             item(
                 "Let the website open this app",
                 self.toggle_browser_launch,
@@ -631,6 +662,11 @@ class Tray:
     def toggle_sharing(self):
         self.link.set_sharing(not self.link.sharing)
 
+    def toggle_branding(self):
+        branding = not self.link.branding
+        self.link.set_branding(branding)
+        self.settings["show_branding"] = branding
+
     def toggle_browser_launch(self):
         enabled = not self.settings["open_from_browser"]
         try:
@@ -650,16 +686,30 @@ class Tray:
             message_box(f"Could not change the setting: {error}")
 
     def remove(self):
-        if not message_box(
-            "This removes the sweetescape-rpc:// link and the startup entry, then quits.\n\n"
-            "Afterwards you can delete the program file and this folder:\n"
-            f"{data_dir()}",
-            ask=True,
-        ):
+        if self.removing:
             return
-        remove_everything()
-        self.settings["open_from_browser"] = False
-        self.quit()
+        self.removing = True
+        threading.Thread(target=self._confirm_remove, name="remove", daemon=True).start()
+
+    def _confirm_remove(self):
+        try:
+            confirmed = message_box(
+                "Remove SweetEscape RPC from this PC?\n\n"
+                "This deletes the sweetescape-rpc:// link, the startup entry, and the app's "
+                "settings and log, then quits. Explorer will open with the program file "
+                "selected so you can delete it too.",
+                ask=True,
+            )
+            if confirmed:
+                log.info("Removing registry entries and app data")
+                remove_everything()
+                self.removed = True
+                self.quit()
+        except Exception:
+            log.exception("Remove failed")
+            message_box("Something went wrong while removing. Details are in the log file.")
+        finally:
+            self.removing = False
 
     def quit(self):
         self.icon.stop()
@@ -678,7 +728,7 @@ def main():
     setup_logging()
     if WINDOWS and "--uninstall" in sys.argv:
         remove_everything()
-        Settings()["open_from_browser"] = False
+        forget_this_pc()
         return
 
     link = DiscordLink()
@@ -693,6 +743,7 @@ def main():
 
     log.info("%s %s started%s", APP_NAME, VERSION, " (dev origins allowed)" if DEV else "")
     settings = Settings()
+    link.branding = settings["show_branding"]
     if WINDOWS:
         refresh_registrations(settings)
 
@@ -709,6 +760,8 @@ def main():
         link.stop()
         worker.join(5)
         log.info("Stopped")
+        if tray.removed:
+            forget_this_pc()
 
 
 if __name__ == "__main__":

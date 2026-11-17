@@ -66,6 +66,11 @@ place a message turns into something Discord sees, and it is strict about it:
 - Times must be real numbers between 0 and 24 hours.
 - Messages over 4 KB close the connection.
 
+Untick *Show SweetEscape on my status* in the tray menu and the SweetEscape icon and the
+*Open SweetEscape* button are left off (`without_branding()`). The heading above your status
+still reads "Listening to SweetEscape", because that is the name of the Discord application the
+app reports through.
+
 Updates are coalesced to at most one every 4 seconds, which keeps inside Discord's rate limit.
 If two tabs are open, the last one to send a song owns the status, and closing the other tab
 doesn't clear it.
@@ -83,8 +88,12 @@ There's no `%1` in that command, so whatever comes after `sweetescape-rpc://` in
 passed to the program. A link can start the app and that's all. If the app is already running, the
 second copy sees the port is taken and exits.
 
-The browser asks before following the link the first time. You can turn the link off from the
-tray menu (*Let the website open this app*).
+The browser asks before following the link, and offers to always allow it for SweetEscape. You
+can turn the link off from the tray menu (*Let the website open this app*).
+
+Once the app has connected to the site at least once, the site starts it by itself when it isn't
+running: on your first click or keypress on the page, because browsers only follow these links
+during one. Turn that off with *Open the app automatically* in the site's Discord dialog.
 
 ## Checking a download
 
@@ -121,7 +130,7 @@ In order, top to bottom:
   Discord isn't running, and pushes the latest wanted status.
 - **WebSocket:** `Bridge`. Accepts tabs, replies with status messages, hands songs to `DiscordLink`.
 - **Windows registry:** `register_protocol`, `set_start_with_windows`, `remove_everything`.
-  Only these functions write to the registry.
+  Only these functions write to the registry. `forget_this_pc` deletes the app's own folder.
 - **Tray:** `Tray` and `main`.
 
 Third-party code: [pypresence](https://github.com/qwertyquerty/pypresence) (Discord IPC),
@@ -131,7 +140,9 @@ and [Pillow](https://github.com/python-pillow/Pillow) (tray icon).
 ## Removing it
 
 Tray menu → *Remove from this PC and quit*. Or run `SweetEscape-RPC.exe --uninstall`. Either
-deletes the registry entries above. Then delete the exe and `%LOCALAPPDATA%\SweetEscape RPC`.
+deletes the registry entries above and the `%LOCALAPPDATA%\SweetEscape RPC` folder, then opens
+Explorer with the exe selected. The app doesn't delete itself; delete the exe and you're done.
+Running it again later sets it up from scratch.
 
 ## Message format
 
@@ -154,7 +165,7 @@ The app replies with `{"status": ...}`: `app_ready` (includes `version`), `disco
 
 1. Bump `VERSION` in `sweetescape_rpc.pyw`, and `DISCORD_APP_VERSION` in `public/script.js` so
    the site tells older copies to update.
-2. Commit, then `git tag rpc-v2.0.0 && git push origin rpc-v2.0.0`. The workflow refuses to run if the
+2. Commit, then `git tag rpc-vX.Y.Z && git push origin rpc-vX.Y.Z` with the new version. The workflow refuses to run if the
    tag and `VERSION` disagree.
 
 To refresh the dependency pins, pin the new versions and rerun:
