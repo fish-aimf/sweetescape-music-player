@@ -23,7 +23,7 @@ from websockets.asyncio.server import serve
 from websockets.exceptions import ConnectionClosed
 
 APP_NAME = "SweetEscape RPC"
-VERSION = "2.1.0"
+VERSION = "2.1.1"
 CLIENT_ID = "1428031900877983825"
 SITE = "https://sweetescape.vercel.app"
 PORT = 9112
@@ -164,7 +164,6 @@ def build_activity(data):
         "details": at_least_two(title),
         "large_image": https_url(data.get("image"))
         or (f"https://i.ytimg.com/vi/{video}/hqdefault.jpg" if video else "music_note"),
-        "large_text": at_least_two(title),
         "small_image": "favicon",
         "small_text": "Paused" if paused else "SweetEscape",
         "buttons": [{"label": "Open SweetEscape", "url": SITE}],

@@ -359,7 +359,7 @@ const HTML_ENTITY_PATTERN = /&(#\d{1,7}|#[xX][0-9a-fA-F]{1,6}|[a-zA-Z][a-zA-Z0-9
 class AdvancedMusicPlayer {
   static VISUALIZER_STYLES = new Set([ 'bars', 'levels', 'wave', 'ribbon', 'radial', 'glow' ]);
   static YOUTUBE_HOST = 'https://www.youtube-nocookie.com';
-  static DISCORD_APP_VERSION = '2.1.0';
+  static DISCORD_APP_VERSION = '2.1.1';
   static MIX_LAB_MAX_SEEDS = 5;
   static MIX_LAB_PAGE_SIZE = 24;
   static MIX_LAB_MOODS = [ 'Rainy day', 'Workout', '90s R&B', 'Lofi study', 'Road trip', 'Feel good' ];
