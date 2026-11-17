@@ -755,7 +755,6 @@ a.ui-btn--block {
 .temp-song-title i,
 .dl-title i,
 .sz-title i,
-.ls-title i,
 .modal-content > h2:first-of-type i {
   color: var(--accent-color);
   font-size: 1em;
@@ -1810,9 +1809,8 @@ a.ui-btn--block {
 [data-surface="glass"] .discovery-card,
 [data-surface="glass"] .favorites-card,
 [data-surface="glass"] .playlists-shelf,
-[data-surface="glass"] .ls-tile,
-[data-surface="glass"] .ls-hero,
-[data-surface="glass"] .ls-row,
+[data-surface="glass"] .ls-summary,
+[data-surface="glass"] .ls-list,
 [data-surface="glass"] .ls-chart-card,
 [data-surface="glass"] .discord-status-card,
 [data-surface="glass"] .dl-current-card,

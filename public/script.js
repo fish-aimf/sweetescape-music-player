@@ -17857,11 +17857,11 @@ class AdvancedMusicPlayer {
     const panel = document.getElementById('lsPanel');
     if (!this.listeningStatsEnabled) {
       this._syncStatsRangeTabs();
-      panel.innerHTML = `<div class="ui-empty"><i class="fas fa-chart-simple"></i><span>Listening statistics are off.</span><span class="ls-empty-hint">Turn them on in Settings → Additional.</span></div>`;
+      panel.innerHTML = `<div class="ui-empty"><span>Listening statistics are off.</span><span class="ls-empty-hint">Turn them on in Settings → Additional.</span></div>`;
       return;
     }
     if (!this.db || !this.db.objectStoreNames.contains('listeningStats')) {
-      panel.innerHTML = `<div class="ui-empty"><i class="fas fa-headphones"></i><span>No data yet.</span></div>`;
+      panel.innerHTML = `<div class="ui-empty"><span>No data yet.</span></div>`;
       return;
     }
     const transaction = this.db.transaction([ 'listeningStats' ], 'readonly');
@@ -17931,22 +17931,21 @@ class AdvancedMusicPlayer {
       }
     });
     const topArtist = [ ...byArtist.entries() ].sort((a, b) => b[1] - a[1])[0];
-    const tiles = [ [ 'fa-clock', 'Time listened', this.formatSecondsAsHM(seconds) ], [ 'fa-play', 'Plays', plays.toLocaleString() ], [ 'fa-music', 'Songs', list.length.toLocaleString() ], [ 'fa-microphone', 'Top artist', topArtist ? topArtist[0] : '—' ] ];
+    const tiles = [ [ 'Time listened', this.formatSecondsAsHM(seconds) ], [ 'Plays', plays.toLocaleString() ], [ 'Songs', list.length.toLocaleString() ], [ 'Top artist', topArtist ? topArtist[0] : '—' ] ];
     return `<div class="ls-summary">${this._statsTilesHtml(tiles)}</div>`;
   }
   _statsTilesHtml(tiles) {
-    return `${tiles.map(([icon, label, value]) => `<div class="ls-tile"><span class="ls-tile-icon"><i class="fas ${icon}"></i></span><div class="ls-tile-text"><span class="ls-tile-label">${label}</span><span class="ls-tile-value" title="${this.escapeHtml(value)}">${this.escapeHtml(value)}</span></div></div>`).join('')}`;
+    return tiles.map(([label, value]) => `<div class="ls-tile"><span class="ls-tile-value" title="${this.escapeHtml(value)}">${this.escapeHtml(value)}</span><span class="ls-tile-label">${label}</span></div>`).join('');
   }
   _buildStatsSectionHtml(rangeLabel, list, countKey, showAll) {
     if (!list.length) {
-      return `<section class="ls-section"><div class="ui-empty"><i class="fas fa-headphones"></i><span>No plays recorded ${rangeLabel === 'All time' ? 'yet' : 'in the last 30 days'}.</span><span class="ls-empty-hint">Songs count as played after 10 seconds of listening.</span></div></section>`;
+      return `<section class="ls-section"><div class="ui-empty"><span>No plays recorded ${rangeLabel === 'All time' ? 'yet' : 'in the last 30 days'}.</span><span class="ls-empty-hint">Songs count as played after 10 seconds of listening.</span></div></section>`;
     }
-    const max = list[0][countKey];
     if (showAll) {
-      return `<section class="ls-section"><div class="ls-section-header"><h3 class="ls-section-title">All songs <span class="ls-section-meta">${list.length.toLocaleString()} · ${rangeLabel}</span></h3><button type="button" class="ls-showall-btn ui-btn ui-btn--ghost ui-btn--sm" data-action="collapse"><i class="fas fa-arrow-left"></i> Top 10</button></div><div class="ls-search"><i class="fas fa-search ls-search-icon"></i><input type="text" id="lsSearchInput" class="ls-search-input ui-input" placeholder="Search songs or artists" aria-label="Search songs or artists" autocomplete="off"></div><div id="lsFullListContainer">${this._buildFullListHtml(list, countKey, '', max)}</div></section>`;
+      return `<section class="ls-section"><div class="ls-section-header"><h3 class="ls-section-title">All songs <span class="ls-section-meta">${list.length.toLocaleString()} · ${rangeLabel}</span></h3><button type="button" class="ls-showall-btn ui-btn ui-btn--ghost ui-btn--sm" data-action="collapse">Top 10</button></div><input type="text" id="lsSearchInput" class="ls-search-input ui-input" placeholder="Search songs or artists" aria-label="Search songs or artists" autocomplete="off"><div id="lsFullListContainer">${this._buildFullListHtml(list, countKey, '')}</div></section>`;
     }
-    const rows = list.slice(1, 10).map((r, i) => this._statsRowHtml(r, i + 2, countKey, max)).join('');
-    return `<section class="ls-section"><div class="ls-section-header"><h3 class="ls-section-title">Top songs <span class="ls-section-meta">${rangeLabel}</span></h3>${list.length > 10 ? `<button type="button" class="ls-showall-btn ui-btn ui-btn--ghost ui-btn--sm" data-action="expand">See all ${list.length.toLocaleString()} <i class="fas fa-arrow-right"></i></button>` : ''}</div>${this._heroCardHtml(list[0], countKey)}${rows ? `<ol class="ls-grid">${rows}</ol>` : ''}</section>`;
+    const rows = list.slice(0, 10).map((r, i) => this._statsRowHtml(r, i + 1, countKey)).join('');
+    return `<section class="ls-section"><div class="ls-section-header"><h3 class="ls-section-title">Top songs <span class="ls-section-meta">${rangeLabel}</span></h3>${list.length > 10 ? `<button type="button" class="ls-showall-btn ui-btn ui-btn--ghost ui-btn--sm" data-action="expand">See all ${list.length.toLocaleString()}</button>` : ''}</div><ol class="ls-list">${rows}</ol></section>`;
   }
   filterListeningStatisticsSongResults(list, searchTerm) {
     const ranked = list.map((r, i) => ({
@@ -17964,21 +17963,17 @@ class AdvancedMusicPlayer {
     if (song.videoId) {
       return `<div class="ls-thumb ${sizeClass}" style="background-image:url(https://i.ytimg.com/vi/${encodeURIComponent(song.videoId)}/mqdefault.jpg)"></div>`;
     }
-    return `<div class="ls-thumb ${sizeClass} ls-thumb-fallback"><i class="fas fa-music"></i></div>`;
+    return `<div class="ls-thumb ${sizeClass}"></div>`;
   }
-  _buildFullListHtml(list, countKey, searchTerm, max) {
+  _buildFullListHtml(list, countKey, searchTerm) {
     const filtered = this.filterListeningStatisticsSongResults(list, searchTerm);
     if (!filtered.length) {
-      return `<div class="ui-empty"><i class="fas fa-magnifying-glass"></i><span>No songs match "${this.escapeHtml(searchTerm)}"</span></div>`;
+      return `<div class="ui-empty"><span>No songs match "${this.escapeHtml(searchTerm)}"</span></div>`;
     }
-    return `<ol class="ls-list">${filtered.map(r => this._statsRowHtml(r, r._rank, countKey, max)).join('')}</ol>`;
+    return `<ol class="ls-list">${filtered.map(r => this._statsRowHtml(r, r._rank, countKey)).join('')}</ol>`;
   }
-  _heroCardHtml(r, countKey) {
-    return `<div class="ls-hero" data-stat-id="${this.escapeHtml(r.id)}" role="button" tabindex="0" title="View play history">${this._songThumbHtml(r.song, 'ls-hero-thumb')}<div class="ls-hero-info"><span class="ls-hero-rank"><i class="fas fa-crown"></i> Most played</span><div class="ls-hero-name" title="${this.escapeHtml(r.song.name)}">${this.escapeHtml(r.song.name)}</div>${r.song.author ? `<div class="ls-hero-artist">${this.escapeHtml(r.song.author)}</div>` : ''}</div><div class="ls-hero-count"><strong>${r[countKey].toLocaleString()}</strong><span>${r[countKey] === 1 ? 'play' : 'plays'}</span></div></div>`;
-  }
-  _statsRowHtml(r, rank, countKey, max) {
-    const pct = max > 0 ? Math.max(4, Math.round(r[countKey] / max * 100)) : 0;
-    return `<li class="ls-row" data-stat-id="${this.escapeHtml(r.id)}" role="button" tabindex="0" title="View play history"><span class="ls-row-rank${rank <= 3 ? ' is-podium' : ''}">${rank}</span>${this._songThumbHtml(r.song, 'ls-row-thumb')}<div class="ls-row-info"><div class="ls-row-name" title="${this.escapeHtml(r.song.name)}">${this.escapeHtml(r.song.name)}</div>${r.song.author ? `<div class="ls-row-artist">${this.escapeHtml(r.song.author)}</div>` : ''}<span class="ls-row-bar"><span style="width:${pct}%"></span></span></div><span class="ls-row-count">${this._formatPlayCount(r[countKey])}</span></li>`;
+  _statsRowHtml(r, rank, countKey) {
+    return `<li class="ls-row" data-stat-id="${this.escapeHtml(r.id)}" role="button" tabindex="0" title="View play history"><span class="ls-row-rank">${rank}</span>${this._songThumbHtml(r.song, 'ls-row-thumb')}<div class="ls-row-info"><div class="ls-row-name" title="${this.escapeHtml(r.song.name)}">${this.escapeHtml(r.song.name)}</div>${r.song.author ? `<div class="ls-row-artist">${this.escapeHtml(r.song.author)}</div>` : ''}</div><span class="ls-row-count">${this._formatPlayCount(r[countKey])}</span></li>`;
   }
   _handleStatsRowKeydown(e) {
     if (e.key !== 'Enter' && e.key !== ' ') {
@@ -18023,7 +18018,6 @@ class AdvancedMusicPlayer {
     };
     const modal = UI.modal({
       title: 'Play history',
-      icon: 'fa-chart-column',
       size: 'lg',
       bodyClassName: 'ls-song-body',
       onClose: () => {
@@ -18031,10 +18025,10 @@ class AdvancedMusicPlayer {
         document.removeEventListener('keydown', onKey, true);
       }
     });
-    const tiles = [ [ 'fa-calendar-days', 'Last 30 days', this._formatPlayCount(this.get30DayCount(record)) ], [ 'fa-infinity', 'All time', this._formatPlayCount(lifetime) ], [ 'fa-trophy', 'Best day', best ? `${this._formatPlayCount(days[best])} · ${this._statsDateLabel(best, {
+    const tiles = [ [ 'Last 30 days', this._formatPlayCount(this.get30DayCount(record)) ], [ 'All time', this._formatPlayCount(lifetime) ], [ 'Best day', best ? `${this._formatPlayCount(days[best])} · ${this._statsDateLabel(best, {
       month: 'short',
       day: 'numeric'
-    })}` : '—' ], [ 'fa-clock-rotate-left', 'Last played', last ? this._statsDateLabel(last, {
+    })}` : '—' ], [ 'Last played', last ? this._statsDateLabel(last, {
       month: 'short',
       day: 'numeric',
       year: 'numeric'
@@ -18064,7 +18058,7 @@ class AdvancedMusicPlayer {
       });
       const note = q('.ls-chart-note');
       note.hidden = !(isLifetime && undated > 0);
-      note.innerHTML = `<i class="fas fa-circle-info"></i> ${this._formatPlayCount(undated)} from before daily history was kept ${undated === 1 ? 'is' : 'are'} counted in the all-time total but not shown on the graph.`;
+      note.textContent = `${this._formatPlayCount(undated)} from before daily history was kept ${undated === 1 ? 'is' : 'are'} counted in the all-time total but not shown on the graph.`;
       const rows = buckets.filter(b => b.count > 0).reverse();
       q('.ls-chart-table-body').innerHTML = rows.length ? `<table><thead><tr><th scope="col">${isLifetime ? 'Month' : 'Day'}</th><th scope="col">Plays</th></tr></thead><tbody>${rows.map(b => `<tr><td>${this.escapeHtml(b.label)}</td><td>${b.count.toLocaleString()}</td></tr>`).join('')}</tbody></table>` : '<p class="ls-chart-table-empty">No plays in this period.</p>';
       draw();
@@ -18228,7 +18222,7 @@ class AdvancedMusicPlayer {
     const countKey = isLifetime ? 'lifetime' : 'count30';
     const container = document.getElementById('lsFullListContainer');
     if (container) {
-      container.innerHTML = this._buildFullListHtml(list, countKey, this._statsSearchTerm, list[0]?.[countKey] || 0);
+      container.innerHTML = this._buildFullListHtml(list, countKey, this._statsSearchTerm);
     }
   }
   _accumulate30DaySecond() {
