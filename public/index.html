@@ -328,11 +328,15 @@
         <span id="discordSuccessText"></span>
       </div>
       <div class="discord-install-hint" id="discordInstallHint">
-        <i class="fas fa-info-circle"></i>
-        <div>
-          <strong>Desktop App Required</strong>
-          Discord RPC needs the SweetEscape desktop app running.
-          <a href="https://github.com/fish-aimf/sweetescape-music-player/blob/main/sweetescape%20discord%20RPC%20download/discord_rpc_server.pyw" target="_blank">Get script →</a>
+        <i class="fas fa-desktop"></i>
+        <div class="discord-install-body">
+          <strong id="discordInstallTitle">Desktop app not running</strong>
+          <span id="discordInstallText">Discord only accepts status updates from apps on your computer, so this goes through SweetEscape RPC, a small open-source tray app.</span>
+          <div class="discord-install-actions">
+            <button class="discord-btn discord-btn-primary discord-btn-sm" id="discordLaunchBtn"><i class="fas fa-arrow-up-right-from-square"></i> Open app</button>
+            <a class="discord-btn discord-btn-ghost discord-btn-sm" id="discordDownloadLink" href="https://github.com/fish-aimf/sweetescape-music-player/releases/latest/download/SweetEscape-RPC.exe" rel="noopener"><i class="fas fa-download"></i> <span id="discordDownloadLabel">Download for Windows</span></a>
+            <a class="discord-install-more" href="https://github.com/fish-aimf/sweetescape-music-player/tree/main/rpc#readme" target="_blank" rel="noopener">Source, checksums and what it can access</a>
+          </div>
         </div>
       </div>
 

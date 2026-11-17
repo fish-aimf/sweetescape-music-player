@@ -1,0 +1,77 @@
+name: Release desktop RPC
+
+on:
+  push:
+    tags: ['rpc-v*']
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12.10'
+
+      - name: Check the tag matches the app version
+        shell: bash
+        run: |
+          version=$(tr -d '\r' < rpc/sweetescape_rpc.pyw | sed -n 's/^VERSION = "\(.*\)"$/\1/p')
+          if [ "rpc-v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match VERSION $version in rpc/sweetescape_rpc.pyw"
+            exit 1
+          fi
+
+      - name: Install pinned dependencies
+        run: python -m pip install --require-hashes --no-deps -r rpc/requirements-build.txt
+
+      - name: Build
+        shell: bash
+        working-directory: rpc
+        run: |
+          export SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)
+          export PYTHONHASHSEED=0
+          pyinstaller --noconfirm --clean --onefile --windowed --name SweetEscape-RPC \
+            --icon icon.png --add-data "icon.png:." sweetescape_rpc.pyw
+          cd dist
+          sha256sum SweetEscape-RPC.exe > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8
+        with:
+          subject-path: rpc/dist/SweetEscape-RPC.exe
+
+      - name: Publish release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          hash=$(cut -d' ' -f1 rpc/dist/SHA256SUMS.txt)
+          cat > notes.md <<EOF
+          Built by [this workflow run]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID) from commit $GITHUB_SHA.
+
+          SHA-256 of \`SweetEscape-RPC.exe\`:
+
+          \`\`\`
+          $hash
+          \`\`\`
+
+          Check the file you downloaded (PowerShell):
+
+          \`\`\`
+          Get-FileHash .\SweetEscape-RPC.exe -Algorithm SHA256
+          gh attestation verify .\SweetEscape-RPC.exe --repo $GITHUB_REPOSITORY
+          \`\`\`
+
+          What the app does and how to read through it: [rpc/README.md]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/blob/$GITHUB_SHA/rpc/README.md)
+          EOF
+          gh release create "$GITHUB_REF_NAME" rpc/dist/SweetEscape-RPC.exe rpc/dist/SHA256SUMS.txt \
+            --title "Desktop RPC ${GITHUB_REF_NAME#rpc-v}" --notes-file notes.md --latest

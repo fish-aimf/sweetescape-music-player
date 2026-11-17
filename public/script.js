@@ -359,6 +359,7 @@ const HTML_ENTITY_PATTERN = /&(#\d{1,7}|#[xX][0-9a-fA-F]{1,6}|[a-zA-Z][a-zA-Z0-9
 class AdvancedMusicPlayer {
   static VISUALIZER_STYLES = new Set([ 'bars', 'levels', 'wave', 'ribbon', 'radial', 'glow' ]);
   static YOUTUBE_HOST = 'https://www.youtube-nocookie.com';
+  static DISCORD_APP_VERSION = '2.0.0';
   static MIX_LAB_MAX_SEEDS = 5;
   static MIX_LAB_PAGE_SIZE = 24;
   static MIX_LAB_MOODS = [ 'Rainy day', 'Workout', '90s R&B', 'Lofi study', 'Road trip', 'Feel good' ];
@@ -1127,6 +1128,7 @@ class AdvancedMusicPlayer {
     });
     document.getElementById('discordResetBtn')?.addEventListener('click', () => this._discordResetFields());
     document.getElementById('discordSendNowBtn')?.addEventListener('click', () => this._discordSendNow());
+    document.getElementById('discordLaunchBtn')?.addEventListener('click', () => this._discordLaunchApp());
     document.getElementById('discordRpcModal')?.addEventListener('click', e => {
       if (e.target.id === 'discordRpcModal') {
         this.closeDiscordModal();
@@ -6650,6 +6652,7 @@ class AdvancedMusicPlayer {
         this.stopListeningTimeTracking();
         this.idleVisualizerAudio();
         this.updatePageTitle();
+        this._discordScheduleSend();
       });
       this.localAudio.addEventListener('play', () => {
         if (!this.isLocalPlayback) {
@@ -6660,6 +6663,12 @@ class AdvancedMusicPlayer {
         this.startListeningTimeTracking();
         this.resumeVisualizerAudio();
         this.startVisualizer();
+        this._discordScheduleSend();
+      });
+      this.localAudio.addEventListener('seeked', () => {
+        if (this.isLocalPlayback) {
+          this._discordScheduleSend();
+        }
       });
     }
     if (this.localAudio.src?.startsWith('blob:')) {
@@ -6927,6 +6936,7 @@ class AdvancedMusicPlayer {
     } else if (event.data === YT.PlayerState.PAUSED) {
       this.isPlaying = false;
       this.updatePlayerUI();
+      this._discordScheduleSend();
       this.stopListeningTimeTracking();
       this.updatePageTitle();
       clearInterval(this.progressInterval);
@@ -6936,6 +6946,7 @@ class AdvancedMusicPlayer {
     } else if (event.data === YT.PlayerState.PLAYING) {
       this.isPlaying = true;
       this.updatePlayerUI();
+      this._discordScheduleSend();
       if (this.currentSpeed !== 1) {
         this.ytPlayer.setPlaybackRate(this.currentSpeed);
       }
@@ -16271,7 +16282,9 @@ class AdvancedMusicPlayer {
         this._discordApiOk = false;
         this.discordConnected = false;
         this._discordLastError = 'Cannot reach ws://localhost:9112 — is the SweetEscape desktop app running?';
-        this._discordShowError(this._discordLastError);
+        if (!this._discordLaunchTimer) {
+          this._discordShowError(this._discordLastError);
+        }
         this._discordRefreshModal();
         this.updateDiscordButtonUI();
       };
@@ -16279,6 +16292,8 @@ class AdvancedMusicPlayer {
         try {
           const r = JSON.parse(event.data);
           if (r.status === 'app_ready') {
+            this._discordAppVersion = typeof r.version === 'string' ? r.version : null;
+            this._discordLaunchFailed = false;
             this._discordWsOk = true;
             this._discordAppFound = true;
             this._discordApiOk = false;
@@ -16338,6 +16353,8 @@ class AdvancedMusicPlayer {
     }
     clearTimeout(this.discordReconnectTimer);
     this.discordReconnectTimer = null;
+    clearInterval(this._discordLaunchTimer);
+    this._discordLaunchTimer = null;
     this.discordConnected = false;
     this._discordConnecting = false;
     this._discordWsOk = false;
@@ -16354,11 +16371,18 @@ class AdvancedMusicPlayer {
       return;
     }
     const d = await this._discordGetEffective();
+    const p = this._discordPlayback();
     try {
       this.discordWs.send(JSON.stringify({
         song: d.song,
         artist: d.artist,
-        url: d.url
+        url: d.url,
+        videoId: this.currentSong.videoId || null,
+        image: d.thumbnail || null,
+        position: p.position,
+        duration: p.duration,
+        rate: p.rate,
+        paused: !this.isPlaying
       }));
       await this._discordSyncPreview();
     } catch (error) {
@@ -16434,10 +16458,7 @@ class AdvancedMusicPlayer {
     if (bs) {
       bs.textContent = subs[state];
     }
-    const hint = document.getElementById('discordInstallHint');
-    if (hint) {
-      hint.classList.toggle('visible', state === 'disconnected' && !this._discordAppFound);
-    }
+    this._discordRefreshInstallHint(state);
     this._discordRefreshSteps(state);
     await this._discordSyncPreview();
     this._discordSyncLastUpdate();
@@ -16496,7 +16517,7 @@ class AdvancedMusicPlayer {
       set('discordStep3', 'discordStep3Desc', 'idle', 'Waiting for WebSocket');
       return;
     }
-    set('discordStep2', 'discordStep2Desc', 'ok', 'WebSocket connected to desktop app');
+    set('discordStep2', 'discordStep2Desc', 'ok', this._discordAppVersion ? `Desktop app v${this._discordAppVersion} connected` : 'Desktop app connected');
     if (!this._discordApiOk) {
       set('discordStep3', 'discordStep3Desc', 'fail', 'Desktop app could not reach Discord — is Discord open?');
       return;
@@ -16631,7 +16652,9 @@ class AdvancedMusicPlayer {
     const s = this.currentSong;
     const v = s?.videoId || '';
     let thumbnail = '';
-    if (v) {
+    if (v && this._discordThumb?.videoId === v) {
+      thumbnail = this._discordThumb.url;
+    } else if (v) {
       const maxres = `https://i.ytimg.com/vi/${v}/maxresdefault.jpg`;
       const hq = `https://i.ytimg.com/vi/${v}/hqdefault.jpg`;
       try {
@@ -16642,6 +16665,10 @@ class AdvancedMusicPlayer {
       } catch {
         thumbnail = hq;
       }
+      this._discordThumb = {
+        videoId: v,
+        url: thumbnail
+      };
     }
     return {
       song: s?.name || '',
@@ -16696,6 +16723,116 @@ class AdvancedMusicPlayer {
   _discordStopLastUpdateTick() {
     clearInterval(this._discordUpdateTickInterval);
     this._discordUpdateTickInterval = null;
+  }
+  _discordPlayback() {
+    try {
+      if (this.isLocalPlayback && this.localAudio) {
+        return {
+          position: this.localAudio.currentTime,
+          duration: this.localAudio.duration,
+          rate: this.localAudio.playbackRate
+        };
+      }
+      if (this.ytPlayer && this.ytPlayerReady) {
+        return {
+          position: this.ytPlayer.getCurrentTime(),
+          duration: this.ytPlayer.getDuration(),
+          rate: this.ytPlayer.getPlaybackRate()
+        };
+      }
+    } catch (error) {}
+    return {};
+  }
+  _discordAppOutdated() {
+    const have = String(this._discordAppVersion || '0').split('.').map(Number);
+    const want = AdvancedMusicPlayer.DISCORD_APP_VERSION.split('.').map(Number);
+    for (let i = 0; i < want.length; i++) {
+      const diff = (have[i] || 0) - want[i];
+      if (diff) {
+        return diff < 0;
+      }
+    }
+    return false;
+  }
+  _discordRefreshInstallHint(state) {
+    const hint = document.getElementById('discordInstallHint');
+    if (!hint) {
+      return;
+    }
+    const windows = /Windows/i.test(navigator.userAgent);
+    const launching = Boolean(this._discordLaunchTimer);
+    const outdated = this._discordWsOk && this._discordAppOutdated();
+    const missing = !this._discordWsOk && (launching || state === 'disconnected' && !this._discordAppFound);
+    hint.classList.toggle('visible', outdated || missing);
+    let title = 'Desktop app not running';
+    let text = 'Discord only accepts status updates from apps on your computer, so this goes through SweetEscape RPC, a small open-source tray app.';
+    if (outdated) {
+      title = 'Desktop app update available';
+      text = `You're running ${this._discordAppVersion ? 'v' + this._discordAppVersion : 'the original script'}. Version ${AdvancedMusicPlayer.DISCORD_APP_VERSION} adds a progress bar and paused status, reconnects by itself when Discord restarts, and ignores every site except this one.`;
+    } else if (launching) {
+      title = 'Opening SweetEscape RPC…';
+      text = 'If your browser asks, allow it to open the app. If nothing happens, it isn\'t installed yet.';
+    } else if (this._discordLaunchFailed) {
+      title = 'The app didn\'t answer';
+      text = 'If your browser never asked to open SweetEscape RPC, it isn\'t installed yet. Download it and run it once; after that this button can open it.';
+    }
+    const titleEl = document.getElementById('discordInstallTitle');
+    const textEl = document.getElementById('discordInstallText');
+    if (titleEl) {
+      titleEl.textContent = title;
+    }
+    if (textEl) {
+      textEl.textContent = text;
+    }
+    const launch = document.getElementById('discordLaunchBtn');
+    if (launch) {
+      launch.style.display = windows && !outdated ? '' : 'none';
+      launch.disabled = launching;
+    }
+    const download = document.getElementById('discordDownloadLink');
+    const label = document.getElementById('discordDownloadLabel');
+    if (download && label && !windows) {
+      download.href = 'https://github.com/fish-aimf/sweetescape-music-player/tree/main/rpc#install';
+      download.target = '_blank';
+      label.textContent = 'Run it with Python';
+    } else if (label) {
+      label.textContent = outdated ? 'Download update' : 'Download for Windows';
+    }
+  }
+  _discordLaunchApp() {
+    if (!this.discordEnabled) {
+      this.discordEnabled = true;
+      this.saveDiscordSettings();
+    }
+    this._discordLaunchFrame?.remove();
+    const frame = document.createElement('iframe');
+    frame.hidden = true;
+    frame.src = 'sweetescape-rpc://open';
+    document.body.appendChild(frame);
+    this._discordLaunchFrame = frame;
+    this._discordLaunchFailed = false;
+    clearInterval(this._discordLaunchTimer);
+    let tries = 0;
+    const finish = () => {
+      clearInterval(this._discordLaunchTimer);
+      this._discordLaunchTimer = null;
+      this._discordLaunchFrame?.remove();
+      this._discordLaunchFrame = null;
+      this._discordLaunchFailed = !this._discordWsOk;
+      this._discordRefreshModal();
+      this.updateDiscordButtonUI();
+    };
+    this._discordLaunchTimer = setInterval(() => {
+      if (this._discordWsOk || ++tries > 12) {
+        finish();
+        return;
+      }
+      if (this.discordWs?.readyState !== WebSocket.OPEN && this.discordWs?.readyState !== WebSocket.CONNECTING) {
+        this.discordReconnectAttempts = 0;
+        this.initDiscordConnection();
+      }
+    }, 2500);
+    this._discordRefreshModal();
   }
   _discordRetry() {
     if (!this.discordEnabled) {

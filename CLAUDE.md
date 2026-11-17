@@ -17,6 +17,7 @@ There is no bundler, no package.json, no test suite. Edit the file, reload the p
 | `public/introduction.html`, `public/tutorial.html` | Static SEO pages served at `/introduction` and `/tutorial`, styled by `public/learn/learn.css`, screenshots in `public/learn/shots/` |
 | `public/guide/` | Guide mode (`guide.js` module, `guide.json` content, `guide.css`). Fetched only on Alt+Shift+G or `/?guide`, never cached |
 | `api/` | Vercel serverless functions (`youtube`, `deezer`, `musixmatch`, `shazam`, `download`, `count`, `gemini`, `song/[videoId]`, `youtube-iframe-api`) |
+| `rpc/` | SweetEscape RPC, the Discord tray app (`sweetescape_rpc.pyw`) with hash-pinned requirements. Released as an exe by `.github/workflows/rpc-release.yml` on an `rpc-vX.Y.Z` tag; bump `VERSION` there and `DISCORD_APP_VERSION` in `script.js` together. Read `rpc/README.md` before changing what it accepts |
 | `public/llms.txt` | Plain-text summary of the site for AI assistants; keep it in step with `introduction.html` |
 | `vercel.json` | Rewrites + the immutable `Cache-Control` regex for hashed-forever assets |
 | `CODEMAP.md` | **Generated** index of every method, element alias and dialog — read this before searching `script.js` |
