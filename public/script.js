@@ -523,6 +523,7 @@ class AdvancedMusicPlayer {
       canvas: null,
       ctx: null,
       animationId: null,
+      frameTimer: 0,
       isActive: false,
       style: 'bars',
       scale: 1 / 3,
@@ -531,8 +532,6 @@ class AdvancedMusicPlayer {
       height: 0,
       maxRenderWidth: 960,
       frameInterval: 1000 / 30,
-      vsync: 1000 / 60,
-      lastTick: 0,
       lastFrame: 0,
       paletteDirty: true,
       paletteFrame: 0,
@@ -13294,27 +13293,36 @@ class AdvancedMusicPlayer {
   }
   startVisualizer() {
     const v = this.visualizer;
-    if (!v.isActive || !v.ctx || v.animationId !== null) {
+    if (!v.isActive || !v.ctx || this.isVisualizerQueued()) {
       return;
     }
     v.lastFrame = 0;
-    v.lastTick = 0;
     v.animationId = requestAnimationFrame(this._visualizerTick);
+  }
+  isVisualizerQueued() {
+    const v = this.visualizer;
+    return v.animationId !== null || v.frameTimer !== 0;
+  }
+  queueVisualizerFrame() {
+    const v = this.visualizer;
+    v.frameTimer = setTimeout(() => {
+      v.frameTimer = 0;
+      v.animationId = requestAnimationFrame(this._visualizerTick);
+    }, Math.max(0, v.lastFrame + v.frameInterval - performance.now() - 4));
+  }
+  stopVisualizerFrame() {
+    const v = this.visualizer;
+    clearTimeout(v.frameTimer);
+    if (v.animationId !== null) {
+      cancelAnimationFrame(v.animationId);
+    }
+    v.frameTimer = 0;
+    v.animationId = null;
   }
   renderVisualizerFrame(timestamp) {
     const v = this.visualizer;
     v.animationId = null;
     if (!v.isActive || !v.ctx) {
-      return;
-    }
-    const gap = v.lastTick ? timestamp - v.lastTick : 0;
-    v.lastTick = timestamp;
-    if (gap > 2 && gap < 50) {
-      v.vsync += (gap - v.vsync) * 0.1;
-    }
-    const every = Math.max(1, Math.ceil(v.frameInterval * 0.9 / v.vsync));
-    if (v.lastFrame && timestamp - v.lastFrame < v.vsync * (every - 0.5)) {
-      v.animationId = requestAnimationFrame(this._visualizerTick);
       return;
     }
     const delta = v.lastFrame ? Math.min((timestamp - v.lastFrame) / 1000, 0.12) : 1 / 30;
@@ -13325,7 +13333,7 @@ class AdvancedMusicPlayer {
     const settling = this.sampleVisualizerLevels(playing, timestamp, delta);
     this.drawVisualizerFrame();
     if (playing || settling) {
-      v.animationId = requestAnimationFrame(this._visualizerTick);
+      this.queueVisualizerFrame();
     }
   }
   sampleVisualizerLevels(playing, timestamp, delta) {
@@ -13487,12 +13495,12 @@ class AdvancedMusicPlayer {
   invalidateVisualizerPalette() {
     const v = this.visualizer;
     v.paletteDirty = true;
-    if (!v.isActive || !v.ctx || v.animationId !== null || v.paletteFrame) {
+    if (!v.isActive || !v.ctx || this.isVisualizerQueued() || v.paletteFrame) {
       return;
     }
     v.paletteFrame = requestAnimationFrame(() => {
       v.paletteFrame = 0;
-      if (v.animationId === null && v.isActive) {
+      if (!this.isVisualizerQueued() && v.isActive) {
         this.drawVisualizerFrame();
       }
     });
@@ -13896,12 +13904,8 @@ class AdvancedMusicPlayer {
     ctx.globalCompositeOperation = 'source-over';
   }
   destroyVisualizer() {
-    const v = this.visualizer;
-    v.isActive = false;
-    if (v.animationId !== null) {
-      cancelAnimationFrame(v.animationId);
-      v.animationId = null;
-    }
+    this.visualizer.isActive = false;
+    this.stopVisualizerFrame();
   }
   refreshVisualizerPower() {
     const v = this.visualizer;
@@ -13912,10 +13916,7 @@ class AdvancedMusicPlayer {
     }
     v.isActive = shown;
     if (!v.isActive) {
-      if (v.animationId !== null) {
-        cancelAnimationFrame(v.animationId);
-        v.animationId = null;
-      }
+      this.stopVisualizerFrame();
       if (v.ctx) {
         v.ctx.clearRect(0, 0, v.width, v.height);
       }
@@ -19536,11 +19537,7 @@ class AdvancedMusicPlayer {
     }
     clearInterval(this.lyricsInterval);
     this.lyricsInterval = null;
-    const v = this.visualizer;
-    if (v && v.animationId !== null) {
-      cancelAnimationFrame(v.animationId);
-      v.animationId = null;
-    }
+    this.stopVisualizerFrame();
   }
   syncUIWithCurrentState() {
     if (this.isLocalPlayback && this.localAudio) {

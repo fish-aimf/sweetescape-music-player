@@ -12,7 +12,7 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 | Source | sha256 (first 12) | Lines |
 |---|---|---|
-| `public/script.js` | `c777c1d8f1ec` | 20191 |
+| `public/script.js` | `fcefb9057120` | 20189 |
 | `public/index.html` | `041f9e98642a` | 1525 |
 | `public/script/settings.js` | `3bc48cfe84cc` | 560 |
 | `public/karaoke-player.js` | `3e6bb16779a4` | 682 |
@@ -38,7 +38,7 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 ---
 
-## `AdvancedMusicPlayer` by topic (753 methods)
+## `AdvancedMusicPlayer` by topic (756 methods)
 
 Names only. `grep -n "^  name(" public/script.js` gives the current line, and a name
 here that you cannot find has been renamed since this file was generated.
@@ -53,7 +53,7 @@ here that you cannot find has been renamed since this file was generated.
 
 ### Playback & queue
 
-`_setupSpeedButton` · `_shuffleArray` · `playSong` · `playSongById` · `togglePlayPause` · `playNextSong` · `playPreviousSong` · `playSongFromPlaylist` · `seekMusic` · `seekBy` · `setVolume` · `adjustVolume` · `showVolumeIndicator` · `toggleLoop` · `togglePlaylistLoop` · `updatePlaylistLoopButton` · `toggleAutoplay` · `initializeAutoplay` · `setPlaybackSpeed` · `toggleSpeedOptions` · `playNextNonSkippedSong` · `updateProgressBar` · `togglePlaylistSidebar` · `togglePlaylistSidebarMode` · `togglePlaylistSidebarSide` · `addToQueue` · `addLoopBlock` · `removeFromQueue` · `clearQueue` · `shuffleQueue` · `duplicateQueueBlock` · `_debouncedSaveQueue` · `_consumeQueueHead` · `reorderQueue` · `updateQueueVisualIndicators` · `showQueueNotification` · `_queueRefreshPanel` · `_queueBuildOverlay` · `showQueueOverlay` · `_queueRenderRows` · `_queueBuildRow` · `_queueBindDrag` · `_queueBindSearch` · `addQueueStyles`
+`_setupSpeedButton` · `_shuffleArray` · `playSong` · `playSongById` · `togglePlayPause` · `playNextSong` · `playPreviousSong` · `playSongFromPlaylist` · `seekMusic` · `seekBy` · `setVolume` · `adjustVolume` · `showVolumeIndicator` · `toggleLoop` · `togglePlaylistLoop` · `updatePlaylistLoopButton` · `toggleAutoplay` · `initializeAutoplay` · `setPlaybackSpeed` · `toggleSpeedOptions` · `playNextNonSkippedSong` · `updateProgressBar` · `togglePlaylistSidebar` · `togglePlaylistSidebarMode` · `togglePlaylistSidebarSide` · `addToQueue` · `addLoopBlock` · `removeFromQueue` · `clearQueue` · `shuffleQueue` · `duplicateQueueBlock` · `_debouncedSaveQueue` · `_consumeQueueHead` · `reorderQueue` · `updateQueueVisualIndicators` · `showQueueNotification` · `_queueRefreshPanel` · `_queueBuildOverlay` · `showQueueOverlay` · `_queueRenderRows` · `_queueBuildRow` · `_queueBindDrag` · `_queueBindSearch` · `addQueueStyles` · `isVisualizerQueued` · `queueVisualizerFrame`
 
 ### Playlists
 
@@ -73,7 +73,7 @@ here that you cannot find has been renamed since this file was generated.
 
 ### Appearance & visualizer
 
-`getAppearanceDefaults` · `initializeAppearance` · `setAppearanceBackgroundBlob` · `applyAppearance` · `getAppearanceBackgroundValue` · `sampleAppearanceBackground` · `syncAlbumArtBackdrop` · `getGlassBackdropColors` · `renderAppearanceControls` · `renderVisualizerColorControls` · `handleVisualizerColorModeClick` · `handleVisualizerColorInput` · `renderAppearancePresets` · `updateAppearance` · `handleSurfaceStyleChange` · `handleAppearanceSliderInput` · `setupAppearanceListeners` · `initializeTheme` · `handleSaveCustomTheme` · `handleThemeModeChange` · `toggleTheme` · `updateFaviconThemeFromDB` · `updateThemeIcon` · `exportTheme` · `importTheme` · `applyImportedTheme` · `resetCustomTheme` · `applySavedTheme` · `deleteSavedTheme` · `_getSavedThemesRecord` · `_writeSavedThemes` · `initializeVisualizer` · `buildVisualizerBars` · `buildVisualizerBands` · `attachVisualizerAnalyser` · `resumeVisualizerAudio` · `idleVisualizerAudio` · `startVisualizer` · `renderVisualizerFrame` · `sampleVisualizerLevels` · `sampleVisualizerWave` · `readVisualizerColor` · `vividVisualizerColor` · `invalidateVisualizerPalette` · `getVisualizerBackdropColors` · `getAutoVisualizerColor` · `refreshVisualizerPalette` · `buildVisualizerGlowSprites` · `drawVisualizerFrame` · `drawVisualizerBars` · `drawVisualizerLevels` · `drawVisualizerWave` · `drawVisualizerRibbon` · `drawVisualizerRadial` · `drawVisualizerGlow` · `destroyVisualizer` · `refreshVisualizerPower` · `syncVisualizerUI` · `renderVisualizerStyleOptions` · `handleVisualizerStyleClick` · `setVisualizerStyle` · `clampVisualizerGain` · `renderVisualizerGainLabel` · `handleVisualizerGainInput` · `handleVisualizerToggle` · `isGlassSurface` · `isVisualizerShown` · `restorePageAppearance`
+`getAppearanceDefaults` · `initializeAppearance` · `setAppearanceBackgroundBlob` · `applyAppearance` · `getAppearanceBackgroundValue` · `sampleAppearanceBackground` · `syncAlbumArtBackdrop` · `getGlassBackdropColors` · `renderAppearanceControls` · `renderVisualizerColorControls` · `handleVisualizerColorModeClick` · `handleVisualizerColorInput` · `renderAppearancePresets` · `updateAppearance` · `handleSurfaceStyleChange` · `handleAppearanceSliderInput` · `setupAppearanceListeners` · `initializeTheme` · `handleSaveCustomTheme` · `handleThemeModeChange` · `toggleTheme` · `updateFaviconThemeFromDB` · `updateThemeIcon` · `exportTheme` · `importTheme` · `applyImportedTheme` · `resetCustomTheme` · `applySavedTheme` · `deleteSavedTheme` · `_getSavedThemesRecord` · `_writeSavedThemes` · `initializeVisualizer` · `buildVisualizerBars` · `buildVisualizerBands` · `attachVisualizerAnalyser` · `resumeVisualizerAudio` · `idleVisualizerAudio` · `startVisualizer` · `stopVisualizerFrame` · `renderVisualizerFrame` · `sampleVisualizerLevels` · `sampleVisualizerWave` · `readVisualizerColor` · `vividVisualizerColor` · `invalidateVisualizerPalette` · `getVisualizerBackdropColors` · `getAutoVisualizerColor` · `refreshVisualizerPalette` · `buildVisualizerGlowSprites` · `drawVisualizerFrame` · `drawVisualizerBars` · `drawVisualizerLevels` · `drawVisualizerWave` · `drawVisualizerRibbon` · `drawVisualizerRadial` · `drawVisualizerGlow` · `destroyVisualizer` · `refreshVisualizerPower` · `syncVisualizerUI` · `renderVisualizerStyleOptions` · `handleVisualizerStyleClick` · `setVisualizerStyle` · `clampVisualizerGain` · `renderVisualizerGainLabel` · `handleVisualizerGainInput` · `handleVisualizerToggle` · `isGlassSurface` · `isVisualizerShown` · `restorePageAppearance`
 
 ### Modals, notifications & UI chrome
 
