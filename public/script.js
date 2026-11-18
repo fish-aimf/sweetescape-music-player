@@ -358,6 +358,48 @@ const HTML_ENTITIES = {
 const HTML_ENTITY_PATTERN = /&(#\d{1,7}|#[xX][0-9a-fA-F]{1,6}|[a-zA-Z][a-zA-Z0-9]{1,30});/g;
 class AdvancedMusicPlayer {
   static VISUALIZER_STYLES = new Set([ 'bars', 'levels', 'wave', 'ribbon', 'radial', 'glow' ]);
+  static BATTERY_LEVELS = [ 'Normal', 'Balanced', 'Strong', 'Extreme' ];
+  static BATTERY_FEATURES = [ {
+    key: 'background',
+    level: 1,
+    name: 'Rest in the background',
+    hint: 'Freezes the visualizer and moving backgrounds while another window is in front'
+  }, {
+    key: 'updates',
+    level: 1,
+    name: 'Slower clock and lyrics',
+    hint: 'Moves the progress bar and lyric highlight a few times a second instead of every frame'
+  }, {
+    key: 'vizLite',
+    level: 1,
+    name: 'Lighter visualizer',
+    hint: 'Draws the visualizer at 12 frames a second instead of 30'
+  }, {
+    key: 'motion',
+    level: 2,
+    name: 'Still animations',
+    hint: 'Stops looping animations like the drifting album art and pulsing badges'
+  }, {
+    key: 'glass',
+    level: 2,
+    name: 'Solid surfaces',
+    hint: 'Shows glass panels as solid ones, so nothing has to be blurred'
+  }, {
+    key: 'visualizer',
+    level: 3,
+    name: 'Visualizer off',
+    hint: 'Hides the visualizer entirely, the biggest single saving'
+  }, {
+    key: 'artwork',
+    level: 3,
+    name: 'Plain background',
+    hint: 'Hides the background image and album art'
+  }, {
+    key: 'dim',
+    level: 4,
+    name: 'Dim the screen',
+    hint: 'Darkens everything by a third, which saves the most on OLED screens'
+  } ];
   static YOUTUBE_HOST = 'https://www.youtube-nocookie.com';
   static DISCORD_APP_VERSION = '2.2.0';
   static BACKUP_STORES = [ 'settings', 'userSettings', 'recentlyPlayed', 'listeningStats' ];
@@ -463,6 +505,8 @@ class AdvancedMusicPlayer {
     this.webEmbedKeyHandler = null;
     this.adsEnabled = false;
     this.visualizerEnabled = true;
+    this.batterySaver = this.getBatterySaverDefaults();
+    this.batteryIdle = false;
     this.miniplayerWindow = null;
     this._miniplayerEls = null;
     this._miniplayerInterval = null;
@@ -609,7 +653,7 @@ class AdvancedMusicPlayer {
   async _initialize() {
     try {
       await this.initDatabase();
-      await Promise.all([ this.loadSongLibrary(), this.loadPlaylists(), this.loadSettings(), this.loadRecentlyPlayed(), this.loadDiscoverMoreSettingsOnStartup(), this.loadKeybinds(), this.loadDiscordSettings(), this.loadLibrarySortValue(), this.loadLibraryReverseValue(), this.loadVisualizerValue() ]);
+      await Promise.all([ this.loadSongLibrary(), this.loadPlaylists(), this.loadSettings(), this.loadRecentlyPlayed(), this.loadDiscoverMoreSettingsOnStartup(), this.loadKeybinds(), this.loadBatterySaver(), this.loadDiscordSettings(), this.loadLibrarySortValue(), this.loadLibraryReverseValue(), this.loadVisualizerValue() ]);
       await this.repairEncodedStoredText();
       const shouldShowWelcome = this.songLibrary.length === 0;
       this.initializeElements();
@@ -661,6 +705,7 @@ class AdvancedMusicPlayer {
     this.setupLyricsTabContextMenu();
     this.initializeAdvertisementSettings();
     this.initializeVisualizer();
+    this.initBatterySaver();
     this.initGlobalLibraryDebouncedSearch();
     this.initMixLab();
     this.setupChangelogModal();
@@ -893,6 +938,11 @@ class AdvancedMusicPlayer {
       transcriptLangSelect: document.getElementById('transcriptLangSelect'),
       statsButton: document.getElementById('statsButton'),
       disguiseButton: document.getElementById('disguiseButton'),
+      batteryButton: document.getElementById('batteryButton'),
+      batteryLevel: document.getElementById('batteryLevel'),
+      batteryLevelValue: document.getElementById('batteryLevelValue'),
+      batteryFeatures: document.getElementById('batteryFeatures'),
+      batteryEstimate: document.getElementById('batteryEstimate'),
       lsPanel: document.getElementById('lsPanel'),
       lsRangeTabs: document.getElementById('lsRangeTabs'),
       listeningStatsToggle: document.getElementById('listeningStatsToggle')
@@ -6918,7 +6968,7 @@ class AdvancedMusicPlayer {
     if (this.elements.timeDisplay) {
       this.elements.timeDisplay.textContent = '0:00/0:00';
     }
-    if (this.visualizerEnabled) {
+    if (this.isVisualizerShown()) {
       this.attachVisualizerAnalyser();
       this.resumeVisualizerAudio();
     }
@@ -6974,7 +7024,7 @@ class AdvancedMusicPlayer {
       } catch (error) {
         console.error('Error updating progress bar:', error);
       }
-    }, 1200);
+    }, this.batteryActive('updates') ? 3000 : 1200);
   }
   updatePlayerUI() {
     this.syncAlbumArtBackdrop();
@@ -8391,7 +8441,7 @@ class AdvancedMusicPlayer {
           const currentTime = this.ytPlayer.getCurrentTime();
           this.updateHighlightedLyric(currentTime, this.currentLyrics, this.currentTimings);
         }
-      }, 240);
+      }, this.batteryActive('updates') ? 700 : 240);
     }
   }
   generateKaraokeURL(song, lyricsWithTimestamps) {
@@ -9583,10 +9633,10 @@ class AdvancedMusicPlayer {
         this.frameStageCards(time);
       }
     }
-    if (live && stage.playing) {
+    if (live && stage.playing && !this.batteryActive('updates')) {
       stage.frame = requestAnimationFrame(stage.tick);
     } else {
-      stage.timer = setTimeout(stage.wake, 200);
+      stage.timer = setTimeout(stage.wake, this.batteryActive('updates') ? 250 : 200);
     }
   }
   relayoutLyricsStage() {
@@ -11864,7 +11914,7 @@ class AdvancedMusicPlayer {
   applyAppearance() {
     const state = this.appearance || this.getAppearanceDefaults();
     const root = document.documentElement;
-    root.setAttribute('data-surface', state.surfaceStyle === 'glass' ? 'glass' : 'solid');
+    root.setAttribute('data-surface', this.isGlassSurface() ? 'glass' : 'solid');
     root.style.setProperty('--glass-tint', String(state.glassTint));
     root.style.setProperty('--glass-blur', state.glassBlur + 'px');
     root.style.setProperty('--glass-sat', state.glassSat + '%');
@@ -11879,6 +11929,7 @@ class AdvancedMusicPlayer {
     root.style.setProperty('--app-bg-image', image || 'none');
     this.syncAlbumArtBackdrop();
     this.scheduleGlassLegibility();
+    this.renderBatterySaverControls();
   }
   getAppearanceBackgroundValue() {
     const state = this.appearance || this.getAppearanceDefaults();
@@ -11944,8 +11995,7 @@ class AdvancedMusicPlayer {
     return samples;
   }
   getAlbumArtSong() {
-    const state = this.appearance || this.getAppearanceDefaults();
-    if (state.surfaceStyle !== 'glass' || !state.backgroundAlbumArt) {
+    if (!this.isGlassSurface() || !this.appearance?.backgroundAlbumArt || this.batteryActive('artwork')) {
       return null;
     }
     if (this.temporarySongArt) {
@@ -11962,7 +12012,7 @@ class AdvancedMusicPlayer {
     const custom = song?.thumbnailUrl && !song.thumbnailUrl.includes('i.ytimg.com/') ? song.thumbnailUrl : '';
     const key = custom || song?.videoId || '';
     root.setAttribute('data-app-art', key ? 'on' : 'off');
-    root.setAttribute('data-app-bg', key || this.getAppearanceBackgroundValue() ? 'on' : 'off');
+    root.setAttribute('data-app-bg', key || (!this.batteryActive('artwork') && this.getAppearanceBackgroundValue()) ? 'on' : 'off');
     root.toggleAttribute('data-art-playing', Boolean(key && (this.isPlaying || this.temporarySongArt)));
     if (key === this.albumArtKey) {
       const state = this.appearance || this.getAppearanceDefaults();
@@ -12142,7 +12192,7 @@ class AdvancedMusicPlayer {
   refreshGlassLegibility() {
     const root = document.documentElement;
     const state = this.appearance || this.getAppearanceDefaults();
-    const glass = state.surfaceStyle === 'glass';
+    const glass = this.isGlassSurface();
     const inline = root.style;
     const signature = [ glass, root.getAttribute('data-theme'), state.glassTint, state.backgroundKind, state.backgroundGradient, state.backgroundDim, this.backgroundSamples ? this.backgroundObjectUrl : '', this.albumArtKey + ':' + (this.albumArtSamples ? 'sampled' : String(this.albumArtSamples)) ].concat([ 'primary', 'background', 'secondary', 'text-primary', 'text-secondary', 'hover', 'accent' ].map(name => inline.getPropertyValue('--custom-' + name))).join('|');
     if (signature === this.legibilitySignature) {
@@ -13303,7 +13353,7 @@ class AdvancedMusicPlayer {
     v.lastFrame = timestamp;
     v.now = timestamp;
     const still = v.reducedMotion ? v.reducedMotion.matches : false;
-    const playing = !still && this.isPlaying && this.isTabVisible;
+    const playing = !still && this.isPlaying && this.isTabVisible && !this.batteryIdle;
     const settling = this.sampleVisualizerLevels(playing, timestamp, delta);
     this.drawVisualizerFrame();
     if (playing || settling) {
@@ -13888,10 +13938,11 @@ class AdvancedMusicPlayer {
   refreshVisualizerPower() {
     const v = this.visualizer;
     const host = document.getElementById('musicVisualizer');
+    const shown = this.isVisualizerShown();
     if (host) {
-      host.style.display = this.visualizerEnabled ? 'block' : 'none';
+      host.style.display = shown ? 'block' : 'none';
     }
-    v.isActive = !!this.visualizerEnabled;
+    v.isActive = shown;
     if (!v.isActive) {
       if (v.animationId !== null) {
         cancelAnimationFrame(v.animationId);
@@ -13976,12 +14027,197 @@ class AdvancedMusicPlayer {
   }
   handleVisualizerToggle(event) {
     this.visualizerEnabled = event.target.checked;
-    if (this.visualizerEnabled && this.isLocalPlayback) {
+    if (this.isVisualizerShown() && this.isLocalPlayback) {
       this.attachVisualizerAnalyser();
       this.resumeVisualizerAudio();
     }
     this.refreshVisualizerPower();
+    this.renderBatterySaverControls();
     this.saveSetting('visualizerEnabled', this.visualizerEnabled);
+  }
+  getBatterySaverDefaults() {
+    return {
+      on: false,
+      level: 2,
+      features: this.getBatteryLevelFeatures(2)
+    };
+  }
+  getBatteryLevelFeatures(level) {
+    return Object.fromEntries(AdvancedMusicPlayer.BATTERY_FEATURES.map(feature => [ feature.key, feature.level <= level ]));
+  }
+  async loadBatterySaver() {
+    const saved = await this.getSetting('batterySaver');
+    if (!saved || typeof saved !== 'object') {
+      return;
+    }
+    const level = Math.min(4, Math.max(1, Math.round(Number(saved.level)) || 2));
+    const features = this.getBatteryLevelFeatures(level);
+    Object.keys(features).forEach(key => {
+      if (typeof saved.features?.[key] === 'boolean') {
+        features[key] = saved.features[key];
+      }
+    });
+    this.batterySaver = {
+      on: saved.on === true,
+      level,
+      features
+    };
+  }
+  saveBatterySaver() {
+    const { on, level, features } = this.batterySaver;
+    clearTimeout(this._batterySaveTimer);
+    this._batterySaveTimer = setTimeout(() => {
+      this.saveSetting('batterySaver', {
+        on,
+        level,
+        features: { ...features }
+      }).catch(error => console.error('Error saving battery saver:', error));
+    }, 250);
+  }
+  batteryActive(key) {
+    return this.batterySaver.on && this.batterySaver.features[key] === true;
+  }
+  isGlassSurface() {
+    return (this.appearance || this.getAppearanceDefaults()).surfaceStyle === 'glass' && !this.batteryActive('glass');
+  }
+  isVisualizerShown() {
+    return this.visualizerEnabled && !this.batteryActive('visualizer');
+  }
+  initBatterySaver() {
+    const els = this.elements;
+    if (els.batteryFeatures) {
+      els.batteryFeatures.replaceChildren(...AdvancedMusicPlayer.BATTERY_FEATURES.map(feature => this.buildBatteryOption(feature)));
+      els.batteryFeatures.addEventListener('change', event => {
+        const key = event.target.dataset.batteryKey;
+        if (key) {
+          this.setBatteryFeature(key, event.target.checked);
+        }
+      });
+    }
+    els.batteryButton?.addEventListener('click', () => this.toggleBatterySaver());
+    els.batteryLevel?.addEventListener('input', event => this.setBatteryLevel(event.target.value));
+    window.addEventListener('focus', () => this.syncBatteryFocus());
+    window.addEventListener('blur', () => setTimeout(() => this.syncBatteryFocus(), 0));
+    this.applyBatterySaver();
+  }
+  buildBatteryOption(feature) {
+    const row = UI.el('label', 'battery-option');
+    const input = UI.el('input', 'battery-option__check');
+    const text = UI.el('span', 'battery-option__text');
+    const name = UI.el('span', 'battery-option__name');
+    const hint = UI.el('span', 'battery-option__hint');
+    const gain = UI.el('span', 'ui-chip battery-option__gain');
+    input.type = 'checkbox';
+    input.dataset.batteryKey = feature.key;
+    name.textContent = feature.name;
+    hint.textContent = feature.hint;
+    text.append(name, hint);
+    row.append(input, text, gain);
+    return row;
+  }
+  toggleBatterySaver() {
+    this.batterySaver.on = !this.batterySaver.on;
+    this.applyBatterySaver();
+    this.saveBatterySaver();
+    this.showNotification(this.batterySaver.on ? `Battery saver on: ${this.getBatteryLevelName()}` : 'Battery saver off', 'success');
+  }
+  setBatteryLevel(value) {
+    const level = Math.min(4, Math.max(1, Math.round(Number(value)) || 1));
+    this.batterySaver.level = level;
+    this.batterySaver.features = this.getBatteryLevelFeatures(level);
+    this.applyBatterySaver();
+    this.saveBatterySaver();
+  }
+  setBatteryFeature(key, checked) {
+    this.batterySaver.features[key] = checked;
+    this.applyBatterySaver();
+    this.saveBatterySaver();
+  }
+  applyBatterySaver() {
+    const root = document.documentElement;
+    const active = AdvancedMusicPlayer.BATTERY_FEATURES.map(feature => feature.key).filter(key => this.batteryActive(key));
+    if (active.length) {
+      root.setAttribute('data-battery', active.join(' '));
+    } else {
+      root.removeAttribute('data-battery');
+    }
+    this.visualizer.frameInterval = 1000 / (this.batteryActive('vizLite') ? 12 : 30);
+    this.syncBatteryFocus();
+    if (this.appearance) {
+      this.applyAppearance();
+    }
+    if (this.isVisualizerShown() && this.isLocalPlayback) {
+      this.attachVisualizerAnalyser();
+      this.resumeVisualizerAudio();
+    }
+    this.refreshVisualizerPower();
+    if (this.isPlaying) {
+      this.updateProgressBar();
+    }
+    this._startLyricsInterval();
+    this.restartMiniplayerTimer();
+    this.renderBatterySaverControls();
+  }
+  syncBatteryFocus() {
+    const idle = this.batteryActive('background') && !document.hasFocus();
+    if (idle === this.batteryIdle) {
+      return;
+    }
+    this.batteryIdle = idle;
+    document.documentElement.toggleAttribute('data-battery-idle', idle);
+    if (!idle) {
+      this.startVisualizer();
+    }
+  }
+  getBatteryLevelName() {
+    const { level, features } = this.batterySaver;
+    const preset = this.getBatteryLevelFeatures(level);
+    const custom = Object.keys(preset).some(key => preset[key] !== features[key]);
+    return custom ? 'Custom' : AdvancedMusicPlayer.BATTERY_LEVELS[level - 1];
+  }
+  estimateBatteryDraw(features) {
+    const look = this.appearance || this.getAppearanceDefaults();
+    const glass = look.surfaceStyle === 'glass' && !features.glass;
+    const backdrop = !features.artwork && Boolean(this.getAppearanceBackgroundValue() || glass && look.backgroundAlbumArt);
+    const awake = features.background ? 0.7 : 1;
+    const visualizer = this.visualizerEnabled && !features.visualizer ? (features.vizLite ? 0.4 : 1) * (16 + (glass ? 14 : 0)) : 0;
+    return (features.dim ? 54 : 60) + visualizer * awake + (glass ? 2 : 0) + (backdrop ? (features.motion ? 1 : 3) * awake : 0) + (features.motion ? 0 : 1.5) + (features.updates ? 0.5 : 2);
+  }
+  estimateBatteryGain(features) {
+    return Math.max(0, Math.round(this.estimateBatteryDraw({}) / this.estimateBatteryDraw(features) * 100 - 100));
+  }
+  renderBatterySaverControls() {
+    const els = this.elements;
+    const { on, level, features } = this.batterySaver;
+    const name = this.getBatteryLevelName();
+    if (els.batteryButton) {
+      els.batteryButton.setAttribute('aria-pressed', String(on));
+      els.batteryButton.title = on ? `Battery saver on: ${name}` : 'Battery saver';
+    }
+    if (!els.batteryFeatures) {
+      return;
+    }
+    els.batteryLevel.value = level;
+    els.batteryLevelValue.textContent = name;
+    els.batteryFeatures.querySelectorAll('.battery-option').forEach(row => {
+      const input = row.querySelector('.battery-option__check');
+      const key = input.dataset.batteryKey;
+      const gain = this.estimateBatteryGain({
+        [key]: true
+      });
+      input.checked = features[key] === true;
+      row.querySelector('.battery-option__gain').textContent = '+' + gain + '%';
+      row.classList.toggle('is-idle', gain === 0);
+    });
+    const total = this.estimateBatteryGain(features);
+    els.batteryEstimate.textContent = total ? `Estimated +${total}% battery life while music plays, compared with running without it.` : 'With your current settings none of these would make a difference.';
+  }
+  restartMiniplayerTimer() {
+    if (!this.miniplayerWindow) {
+      return;
+    }
+    clearInterval(this._miniplayerInterval);
+    this._miniplayerInterval = setInterval(() => this.updateMiniplayerUI(), this.batteryActive('updates') ? 1500 : 500);
   }
   toggleMiniplayer() {
     if (this.miniplayerWindow) {
@@ -14006,7 +14242,7 @@ class AdvancedMusicPlayer {
       this.miniplayerWindow = pipWindow;
       this.buildMiniplayerDOM(pipWindow);
       this.updateMiniplayerUI();
-      this._miniplayerInterval = setInterval(() => this.updateMiniplayerUI(), 500);
+      this.restartMiniplayerTimer();
       pipWindow.addEventListener('pagehide', () => this.handleMiniplayerClosed(), {
         once: true
       });

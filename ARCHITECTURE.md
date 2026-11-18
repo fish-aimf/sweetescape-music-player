@@ -99,6 +99,7 @@ Colour theme and *surface style* are two independent axes on `<html>`:
 | `data-theme` | `light` / `dark` / `custom` | the existing theme code |
 | `data-surface` | `solid` / `glass` | `applyAppearance()` |
 | `data-app-bg` | `on` / `off` | `applyAppearance()` |
+| `data-battery` | space-separated battery saver features in force | `applyBatterySaver()` |
 
 Every theme block defines `--bg-primary-base`, `--bg-secondary-base` and
 `--border-color-base` as raw colours, then `:root` derives `--bg-primary`,
@@ -175,6 +176,11 @@ live and debounce the write by 250ms.
 
 Fallbacks: `@supports not (backdrop-filter)` and `prefers-reduced-transparency: reduce`
 both raise `--glass-tint` to near-opaque so the app stays readable.
+
+Battery saver never writes to these settings. It overrides them where they are read:
+`isGlassSurface()`, `isVisualizerShown()` and `batteryActive(key)` decide what runs, and
+`data-battery` on `<html>` drives the CSS-only parts (still animations, dim). Switching it
+off therefore restores the exact previous state. Its own state is one `batterySaver` row.
 
 ---
 

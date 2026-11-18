@@ -357,7 +357,7 @@
       "id": "toolbar",
       "target": ".theme-toggle",
       "title": "Tools",
-      "body": "Left to right: switch theme, disguise the tab, listening statistics, sleep timer, Discord, identify a song that's playing around you, downloads, and settings.",
+      "body": "Left to right: switch theme, disguise the tab, listening statistics, sleep timer, battery saver, Discord, identify a song that's playing around you, downloads, and settings.",
       "keys": [["P", "theme"], ["T", "timer"]]
     },
     {
@@ -378,6 +378,13 @@
       "target": "#statsButton",
       "title": "Listening statistics",
       "body": "Your top songs and artist, plays and time listened, for 30 days or all time. Click a song for its play history. Turn it on first in Settings, Additional."
+    },
+    {
+      "id": "battery-button",
+      "target": "#batteryButton",
+      "title": "Battery saver",
+      "body": "Turns off the effects that drain a laptop battery, like the visualizer, glass and moving backgrounds, while playback keeps working. Click again and everything comes back as it was.",
+      "tips": ["Settings, Additional sets how far it goes, from Normal to Extreme, with an estimated saving next to each option."]
     },
     {
       "id": "timer-button",

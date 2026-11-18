@@ -1705,6 +1705,28 @@ a.ui-btn--block {
   animation-play-state: running;
 }
 
+:root[data-battery-idle] .app-backdrop__art {
+  animation-play-state: paused;
+}
+
+:root[data-battery~="motion"] .app-backdrop__art,
+:root[data-battery~="motion"] .timer-button.active::after,
+:root[data-battery~="motion"] .discord-status-dot.is-connecting,
+:root[data-battery~="motion"] .discord-badge.state-connecting .discord-badge-icon,
+:root[data-battery~="motion"] .mix-lab-row.is-playing .mix-lab-row__eq span {
+  animation: none;
+  transition: none;
+}
+
+:root[data-battery~="dim"] body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  background: rgb(0 0 0 / 0.34);
+  pointer-events: none;
+}
+
 @keyframes app-backdrop-drift {
   0% {
     transform: scale(1.12) translate3d(0%, 0%, 0) rotate(0deg);

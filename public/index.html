@@ -102,6 +102,9 @@
             <i class="fas fa-clock"></i>
             <span id="timerDisplay" class="timer-display"></span>
             </button>
+            <button id="batteryButton" class="timer-button" title="Battery saver" aria-pressed="false">
+                <i class="fas fa-battery-half"></i>
+            </button>
             <button id="discordButton" class="timer-button" title="Discord Rich Presence">
                 <i class="fab fa-discord"></i>
                 <span class="discord-status-dot" id="discordStatusDot"></span>
@@ -1105,6 +1108,17 @@ Another Playlist{
                      <iframe data-src="https://docs.google.com/forms/d/e/1FAIpQLSd_TCuV0fb6j0Psu2-QowYAlK440IOd4f1XxhzswTfWOkLHyw/viewform?embedded=true" width="100%" height="600" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
                   </div>
                   <div class="tab-panel" id="additionalPanel">
+                     <div class="setting-group appearance-section battery-settings">
+                        <label>Battery Saver:</label>
+                        <p class="setting-description">What the <i class="fas fa-battery-half"></i> button in the top bar switches on. Nothing stops working, and everything comes back the moment you switch it off.</p>
+                        <div class="appearance-row">
+                           <label for="batteryLevel">Strength</label>
+                           <input type="range" id="batteryLevel" min="1" max="4" step="1" value="2">
+                           <span class="appearance-value" id="batteryLevelValue">Balanced</span>
+                        </div>
+                        <div class="battery-options" id="batteryFeatures"></div>
+                        <p class="setting-description" id="batteryEstimate"></p>
+                     </div>
                      <div class="setting-group">
                         <label for="adsToggle">Enable Advertisements:</label>
                         <div class="toggle-switch">
