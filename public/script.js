@@ -528,6 +528,8 @@ class AdvancedMusicPlayer {
     };
     this.YOUTUBE_API_KEYS_COUNT = 20;
     this.exhaustedYouTubeKeys = new Set();
+    this._ytPlaylistCache = new Map();
+    this._ytPlaylistDialog = null;
     this.youtubeLibrarySearchResults = [];
     this.YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3/search';
     this.topicKeywordEnabled = true;
@@ -881,6 +883,8 @@ class AdvancedMusicPlayer {
       playlistSearch: document.getElementById('playlistSearch'),
       newPlaylistBtn: document.getElementById('newPlaylistBtn'),
       artistPlaylistBtn: document.getElementById('artistPlaylistBtn'),
+      youtubePlaylistBtn: document.getElementById('youtubePlaylistBtn'),
+      songUrlPlaylistHint: document.getElementById('songUrlPlaylistHint'),
       libraryOptionsDropdown: document.getElementById('libraryOptionsDropdown'),
       switchLangBtn: document.getElementById('switchLangBtn'),
       transcriptLangSelect: document.getElementById('transcriptLangSelect'),
@@ -983,6 +987,8 @@ class AdvancedMusicPlayer {
       },
       newPlaylist: () => this.openNewPlaylistDialog(),
       artistPlaylist: () => this.openArtistPlaylistDialog(),
+      youtubePlaylist: () => this.openYouTubePlaylistImport(),
+      songUrlPlaylistHint: () => this._importPlaylistFromSongUrl(),
       openSettings: this.handleOpenSettings.bind(this),
       closeSettings: this.handleCloseSettings.bind(this),
       settingsModalClick: this.handleSettingsModalClick.bind(this),
@@ -994,6 +1000,10 @@ class AdvancedMusicPlayer {
         if (e.key === 'Enter') {
           this.replaceTargetSongId = null;
           const searchTerm = this.elements.librarySearch.value.trim();
+          if (this.extractYouTubePlaylistId(searchTerm)) {
+            this._openPlaylistFromLibrarySearch(searchTerm);
+            return;
+          }
           const videoId = this.extractYouTubeId(searchTerm);
           if (videoId && this.elements.youtubeSearchSuggestion.style.display !== 'none') {
             this.autofillFromUrl(searchTerm);
@@ -1037,12 +1047,13 @@ class AdvancedMusicPlayer {
       refreshRandomRecommendations: () => this.refreshRandomRecommendations(),
       visualizerToggle: e => this.handleVisualizerToggle(e)
     };
-    const simpleBindings = [ [ this.elements.addSongBtn, 'click', handlers.addSong ], [ this.elements.addSongToPlaylistBtn, 'click', handlers.addSongToPlaylist ], [ this.elements.playPauseBtn, 'click', handlers.togglePlayPause ], [ this.elements.prevBtn, 'click', handlers.playPrevious ], [ this.elements.nextBtn, 'click', handlers.playNext ], [ this.elements.loopBtn, 'click', handlers.toggleLoop ], [ this.elements.showPlaylistBtn, 'click', handlers.toggleSidebar ], [ this.elements.closeSidebarBtn, 'click', handlers.toggleSidebar ], [ this.elements.themeToggle, 'click', handlers.toggleTheme ], [ this.elements.autoplayBtn, 'click', handlers.toggleAutoplay ], [ this.elements.speedBtn, 'click', handlers.toggleSpeedOptions ], [ this.elements.volumeSlider, 'input', handlers.volumeChange ], [ this.elements.progressBar, 'click', handlers.seekMusic ], [ this.elements.currentSongName, 'contextmenu', handlers.songNameRightClick ], [ this.elements.toggleControlBarBtn, 'click', handlers.toggleControlBar ], [ this.elements.modifyLibraryBtn, 'click', handlers.openLibraryModal ], [ this.elements.closeLibraryModalBtn, 'click', handlers.closeLibraryModal ], [ this.elements.importLibraryBtn, 'click', handlers.importLibrary ], [ this.elements.exportLibraryBtn, 'click', handlers.exportLibrary ], [ this.elements.libraryModificationTabAddSong, 'click', handlers.libraryModificationTabAddSongClick ], [ this.elements.libraryModificationTabImportExport, 'click', handlers.libraryModificationTabImportExportClick ], [ this.elements.loopPlaylistBtn, 'click', handlers.togglePlaylistLoop ], [ this.elements.discordButton, 'click', handlers.discordClick ], [ this.elements.librarySortToggle, 'change', handlers.librarySortToggle ], [ this.elements.libraryReverseToggle, 'change', handlers.libraryReverseToggle ], [ this.elements.closeImportModalBtn, 'click', handlers.closeImportModal ], [ this.elements.importSongsBtn, 'click', handlers.importSongs ], [ this.elements.playlistSearch, 'input', handlers.filterPlaylists ], [ this.elements.playlistSearch, 'keypress', handlers.playlistSearchEnter ], [ this.elements.newPlaylistBtn, 'click', handlers.newPlaylist ], [ this.elements.artistPlaylistBtn, 'click', handlers.artistPlaylist ], [ this.elements.settingsButton, 'click', handlers.openSettings ], [ this.elements.settingsCloseBtn, 'click', handlers.closeSettings ], [ this.elements.settingsModal, 'click', handlers.settingsModalClick ], [ this.elements.themeMode, 'change', handlers.themeModeChange ], [ this.elements.saveCustomTheme, 'click', handlers.saveCustomTheme ], [ this.elements.adsToggle, 'change', handlers.adsToggle ], [ this.elements.saveDiscoverMoreSettings, 'click', handlers.saveDiscoverMoreSettings ], [ this.elements.visualizerToggle, 'change', handlers.visualizerToggle ], [ this.elements.visualizerStyleGrid, 'click', this.handleVisualizerStyleClick.bind(this) ], [ this.elements.visualizerGain, 'input', this.handleVisualizerGainInput.bind(this) ], [ this.elements.findSongsBtn, 'click', handlers.findSongsOpen ], [ this.elements.closeFindSongs, 'click', handlers.findSongsClose ], [ this.elements.statsButton, 'click', this.openStatsModal.bind(this) ], [ this.elements.disguiseButton, 'click', this.openDisguiseModal.bind(this) ], [ this.elements.lsPanel, 'click', this._handleStatsShowAllClick.bind(this) ], [ this.elements.lsPanel, 'input', this._handleStatsSearchInput.bind(this) ], [ this.elements.lsPanel, 'keydown', this._handleStatsRowKeydown.bind(this) ], [ document.getElementById('lsCloseBtn'), 'click', this.closeStatsModal.bind(this) ], [ this.elements.lsRangeTabs, 'click', this._handleStatsRangeToggle.bind(this) ], [ this.elements.listeningStatsToggle, 'change', this.handleListeningStatsToggle.bind(this) ], [ this.elements.libTopicBtn, 'click', handlers.toggleTopicKeyword ] ];
+    const simpleBindings = [ [ this.elements.addSongBtn, 'click', handlers.addSong ], [ this.elements.addSongToPlaylistBtn, 'click', handlers.addSongToPlaylist ], [ this.elements.playPauseBtn, 'click', handlers.togglePlayPause ], [ this.elements.prevBtn, 'click', handlers.playPrevious ], [ this.elements.nextBtn, 'click', handlers.playNext ], [ this.elements.loopBtn, 'click', handlers.toggleLoop ], [ this.elements.showPlaylistBtn, 'click', handlers.toggleSidebar ], [ this.elements.closeSidebarBtn, 'click', handlers.toggleSidebar ], [ this.elements.themeToggle, 'click', handlers.toggleTheme ], [ this.elements.autoplayBtn, 'click', handlers.toggleAutoplay ], [ this.elements.speedBtn, 'click', handlers.toggleSpeedOptions ], [ this.elements.volumeSlider, 'input', handlers.volumeChange ], [ this.elements.progressBar, 'click', handlers.seekMusic ], [ this.elements.currentSongName, 'contextmenu', handlers.songNameRightClick ], [ this.elements.toggleControlBarBtn, 'click', handlers.toggleControlBar ], [ this.elements.modifyLibraryBtn, 'click', handlers.openLibraryModal ], [ this.elements.closeLibraryModalBtn, 'click', handlers.closeLibraryModal ], [ this.elements.importLibraryBtn, 'click', handlers.importLibrary ], [ this.elements.exportLibraryBtn, 'click', handlers.exportLibrary ], [ this.elements.libraryModificationTabAddSong, 'click', handlers.libraryModificationTabAddSongClick ], [ this.elements.libraryModificationTabImportExport, 'click', handlers.libraryModificationTabImportExportClick ], [ this.elements.loopPlaylistBtn, 'click', handlers.togglePlaylistLoop ], [ this.elements.discordButton, 'click', handlers.discordClick ], [ this.elements.librarySortToggle, 'change', handlers.librarySortToggle ], [ this.elements.libraryReverseToggle, 'change', handlers.libraryReverseToggle ], [ this.elements.closeImportModalBtn, 'click', handlers.closeImportModal ], [ this.elements.importSongsBtn, 'click', handlers.importSongs ], [ this.elements.playlistSearch, 'input', handlers.filterPlaylists ], [ this.elements.playlistSearch, 'keypress', handlers.playlistSearchEnter ], [ this.elements.newPlaylistBtn, 'click', handlers.newPlaylist ], [ this.elements.artistPlaylistBtn, 'click', handlers.artistPlaylist ], [ this.elements.youtubePlaylistBtn, 'click', handlers.youtubePlaylist ], [ this.elements.songUrlPlaylistHint, 'click', handlers.songUrlPlaylistHint ], [ this.elements.settingsButton, 'click', handlers.openSettings ], [ this.elements.settingsCloseBtn, 'click', handlers.closeSettings ], [ this.elements.settingsModal, 'click', handlers.settingsModalClick ], [ this.elements.themeMode, 'change', handlers.themeModeChange ], [ this.elements.saveCustomTheme, 'click', handlers.saveCustomTheme ], [ this.elements.adsToggle, 'change', handlers.adsToggle ], [ this.elements.saveDiscoverMoreSettings, 'click', handlers.saveDiscoverMoreSettings ], [ this.elements.visualizerToggle, 'change', handlers.visualizerToggle ], [ this.elements.visualizerStyleGrid, 'click', this.handleVisualizerStyleClick.bind(this) ], [ this.elements.visualizerGain, 'input', this.handleVisualizerGainInput.bind(this) ], [ this.elements.findSongsBtn, 'click', handlers.findSongsOpen ], [ this.elements.closeFindSongs, 'click', handlers.findSongsClose ], [ this.elements.statsButton, 'click', this.openStatsModal.bind(this) ], [ this.elements.disguiseButton, 'click', this.openDisguiseModal.bind(this) ], [ this.elements.lsPanel, 'click', this._handleStatsShowAllClick.bind(this) ], [ this.elements.lsPanel, 'input', this._handleStatsSearchInput.bind(this) ], [ this.elements.lsPanel, 'keydown', this._handleStatsRowKeydown.bind(this) ], [ document.getElementById('lsCloseBtn'), 'click', this.closeStatsModal.bind(this) ], [ this.elements.lsRangeTabs, 'click', this._handleStatsRangeToggle.bind(this) ], [ this.elements.listeningStatsToggle, 'change', this.handleListeningStatsToggle.bind(this) ], [ this.elements.libTopicBtn, 'click', handlers.toggleTopicKeyword ] ];
     simpleBindings.forEach(([element, event, handler]) => {
       if (element) {
         element.addEventListener(event, handler);
       }
     });
+    document.addEventListener('paste', this.handleGlobalPlaylistPaste.bind(this));
     if (this.elements.librarySearch) {
       this.elements.librarySearch.addEventListener('input', handlers.librarySearchInput);
       this.elements.librarySearch.addEventListener('keydown', handlers.librarySearchKeydown);
@@ -2318,6 +2329,10 @@ class AdvancedMusicPlayer {
     const songName = this.elements.songNameInput.value.trim();
     const songAuthor = this.elements.songAuthorInput.value.trim();
     const songUrl = this.elements.songUrlInput.value.trim();
+    if (songUrl && !this.extractYouTubeId(songUrl) && this.extractYouTubePlaylistId(songUrl)) {
+      this._importPlaylistFromSongUrl();
+      return;
+    }
     if (!songName || !songUrl) {
       alert('Please enter both song name and URL');
       return;
@@ -2961,6 +2976,11 @@ class AdvancedMusicPlayer {
     this.replaceTargetSongId = null;
     this.resetLibrarySearchTimeout();
     const searchTerm = this.elements.librarySearch.value.trim();
+    if (this.extractYouTubePlaylistId(searchTerm)) {
+      this.showYouTubePlaylistSuggestion(searchTerm);
+      this.elements.songLibrary.innerHTML = '<div class="empty-library-message">YouTube playlist link detected - press Enter to import it</div>';
+      return;
+    }
     const videoId = this.extractYouTubeId(searchTerm);
     if (videoId) {
       this.showAddToLibrarySuggestion(searchTerm);
@@ -4204,6 +4224,7 @@ class AdvancedMusicPlayer {
   }
   handleUrlPaste() {
     const songUrl = this.elements.songUrlInput.value.trim();
+    this._syncPlaylistLinkHint(songUrl);
     const songName = this.elements.songNameInput.value.trim();
     if (songUrl) {
       const videoId = this.extractYouTubeId(songUrl);
@@ -4755,7 +4776,7 @@ class AdvancedMusicPlayer {
     }
     card.innerHTML = `<div class="shelf-header"><div class="discovery-header-left"><span class="shelf-title"><i class="fas fa-list"></i> Playlists</span><span class="discovery-count">${playlists.length}</span></div></div>`;
     if (playlists.length === 0) {
-      const empty = UI.el('div', 'ui-empty playlists-empty', `<i class="fas fa-list"></i><strong>No playlists yet</strong><span>Start one from scratch, or gather every song by one artist.</span>`);
+      const empty = UI.el('div', 'ui-empty playlists-empty', `<i class="fas fa-list"></i><strong>No playlists yet</strong><span>Start one from scratch, gather every song by one artist, or bring one in from YouTube.</span>`);
       const actions = UI.el('div', 'playlists-empty-actions');
       actions.append(UI.button('New playlist', {
         variant: 'primary',
@@ -4766,6 +4787,10 @@ class AdvancedMusicPlayer {
         size: 'sm',
         icon: 'fa-microphone-lines',
         onClick: () => this.openArtistPlaylistDialog()
+      }), UI.button('From YouTube', {
+        size: 'sm',
+        icon: 'fab fa-youtube',
+        onClick: () => this.openYouTubePlaylistImport()
       }));
       empty.appendChild(actions);
       card.appendChild(empty);
@@ -15281,6 +15306,805 @@ class AdvancedMusicPlayer {
       name = `${base} ${n}`;
     }
     return name;
+  }
+  extractYouTubePlaylistId(text) {
+    const match = String(text || '').match(/(?:youtube\.com|youtu\.be)\/\S*?[?&]list=([\w-]{2,64})/i);
+    return match ? match[1] : null;
+  }
+  _youtubePlaylistBlockReason(listId) {
+    if (/^RD/.test(listId)) {
+      return 'YouTube Mixes are put together for you on the fly, so they can’t be imported. Save the songs to a playlist on YouTube, then paste that link.';
+    }
+    if (/^(LL|WL|LM)$/.test(listId)) {
+      return 'That list is private to your YouTube account. Copy its songs into a public or unlisted playlist, then paste that link.';
+    }
+    return '';
+  }
+  _youtubePlaylistErrorText(error) {
+    if (error.status === 404 || error.reason === 'playlistNotFound') {
+      return 'This playlist doesn’t exist or is private. On YouTube, set it to Public or Unlisted and try again.';
+    }
+    if (error.status === 403) {
+      return 'This playlist is private. On YouTube, set it to Public or Unlisted and try again.';
+    }
+    if (error.status === 400) {
+      return 'That doesn’t look like a YouTube playlist link.';
+    }
+    return 'Couldn’t reach YouTube. Check your connection and try again.';
+  }
+  async fetchYouTubePlaylistPage(listId, pageToken, signal) {
+    const query = `playlist:${listId}`;
+    let lastError = null;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const keyIndex = this.youtubeKeyIndexFor(query, attempt);
+      let url = `/api/youtube?type=playlist&query=${encodeURIComponent(listId)}&keyIndex=${keyIndex}`;
+      if (pageToken) {
+        url += `&pageToken=${encodeURIComponent(pageToken)}`;
+      }
+      let result;
+      try {
+        const response = await fetch(url, {
+          signal: signal
+        });
+        result = await response.json();
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          throw error;
+        }
+        lastError = error;
+        continue;
+      }
+      if (result.status === 200 && result.data) {
+        return result.data;
+      }
+      if (result.status === 403 && result.reason !== 'playlistItemsNotAccessible') {
+        this.exhaustedYouTubeKeys.add(keyIndex);
+        continue;
+      }
+      const error = new Error(result.reason || result.error || `YouTube answered ${result.status}`);
+      error.status = result.status || 0;
+      error.reason = result.reason || '';
+      if (!result.status || result.status >= 500) {
+        lastError = error;
+        continue;
+      }
+      throw error;
+    }
+    throw lastError || new Error('Every YouTube key is busy right now');
+  }
+  _youtubePlaylistSource(listId) {
+    let source = this._ytPlaylistCache.get(listId);
+    if (!source) {
+      source = {
+        meta: null,
+        items: [],
+        total: 0,
+        next: undefined
+      };
+      this._ytPlaylistCache.set(listId, source);
+    }
+    return source;
+  }
+  handleGlobalPlaylistPaste(event) {
+    const text = event.clipboardData?.getData('text/plain')?.trim();
+    if (!text || text.length > 2048) {
+      return;
+    }
+    if (!this.extractYouTubePlaylistId(text)) {
+      return;
+    }
+    const field = event.target.closest?.('textarea, [contenteditable]:not([contenteditable="false"]), input:not([type="checkbox"], [type="radio"], [type="range"], [type="button"], [type="submit"], [type="color"], [type="file"])');
+    if (field && field !== this.elements.librarySearch && field !== this.elements.playlistSearch) {
+      return;
+    }
+    event.preventDefault();
+    if (field === this.elements.librarySearch && field.value.trim()) {
+      field.value = '';
+      this.hideYouTubeSearchSuggestion();
+      this.renderLibraryView();
+    }
+    this.openYouTubePlaylistImport(text);
+  }
+  _importPlaylistFromSongUrl() {
+    const url = this.elements.songUrlInput.value.trim();
+    this.elements.songUrlInput.value = '';
+    this.elements.songNameInput.value = '';
+    this.elements.songAuthorInput.value = '';
+    this.removeYouTubeThumbnailPreview();
+    this._syncPlaylistLinkHint('');
+    this.elements.autofillBtn.disabled = true;
+    this.closeLibraryModal();
+    this.openYouTubePlaylistImport(url);
+  }
+  _syncPlaylistLinkHint(url) {
+    if (this.elements.songUrlPlaylistHint) {
+      this.elements.songUrlPlaylistHint.hidden = !this.extractYouTubePlaylistId(url);
+    }
+  }
+  _openPlaylistFromLibrarySearch(link) {
+    this.elements.librarySearch.value = '';
+    this.hideYouTubeSearchSuggestion();
+    this.renderLibraryView();
+    this.openYouTubePlaylistImport(link);
+  }
+  showYouTubePlaylistSuggestion(link) {
+    const suggestion = this.elements.youtubeSearchSuggestion;
+    suggestion.querySelector('.search-query').textContent = 'Import this YouTube playlist';
+    suggestion.style.display = 'block';
+    suggestion.onclick = () => this._openPlaylistFromLibrarySearch(link);
+  }
+  openYouTubePlaylistImport(link = '') {
+    this._ytPlaylistDialog?.close();
+    let session = null;
+    let rows = [];
+    let byId = new Map();
+    let libraryMap = new Map();
+    let source = null;
+    let target = null;
+    let targetIds = null;
+    let currentListId = '';
+    let filter = 'all';
+    let matcher = null;
+    let lastIndex = null;
+    let shiftHeld = false;
+    let nameTouched = false;
+    let loading = false;
+    let partial = false;
+    let busy = false;
+    let repeats = 0;
+    const dialog = UI.modal({
+      title: 'Import from YouTube',
+      icon: 'fab fa-youtube',
+      size: 'lg',
+      className: 'ytpl-modal',
+      bodyClassName: 'ytpl-body',
+      closeOnEscape: true,
+      onClose: () => {
+        session?.abort();
+        session = null;
+        if (this._ytPlaylistDialog === dialog) {
+          this._ytPlaylistDialog = null;
+        }
+      }
+    });
+    this._ytPlaylistDialog = dialog;
+    const form = UI.el('form', 'ytpl-link');
+    form.noValidate = true;
+    const linkInput = UI.el('input', 'ui-input');
+    linkInput.type = 'text';
+    linkInput.inputMode = 'url';
+    linkInput.placeholder = 'Paste a YouTube playlist link';
+    linkInput.autocomplete = 'off';
+    linkInput.spellcheck = false;
+    linkInput.setAttribute('aria-label', 'YouTube playlist link');
+    const loadBtn = UI.button('Load', {
+      icon: 'fa-arrow-right'
+    });
+    loadBtn.type = 'submit';
+    form.append(linkInput, loadBtn);
+    const hero = UI.el('div', 'ytpl-hero', `<img class="ytpl-cover" alt="" decoding="async" hidden><div class="ytpl-hero-text"><strong class="ytpl-title"></strong><span class="ytpl-sub"></span><span class="ytpl-notes"></span></div><a class="ui-btn ui-btn--ghost ui-btn--sm ytpl-open" target="_blank" rel="noopener noreferrer" title="Open on YouTube" aria-label="Open on YouTube">${UI.icon('fa-arrow-up-right-from-square')}</a><div class="ytpl-progress" hidden><span></span></div>`);
+    hero.hidden = true;
+    const [ cover, heroText, openLink, progress ] = hero.children;
+    const [ titleEl, subEl, notesEl ] = heroText.children;
+    const notice = UI.el('div', 'ui-empty ytpl-notice', `<i class="fab fa-youtube"></i><strong></strong><span></span>`);
+    const retryBtn = UI.button('Try again', {
+      size: 'sm',
+      icon: 'fa-rotate-right',
+      onClick: () => start(linkInput.value.trim())
+    });
+    notice.appendChild(retryBtn);
+    const toolbar = UI.el('div', 'ytpl-toolbar', `<label class="ytpl-all"><input type="checkbox" class="ytpl-check" aria-label="Select every song shown"><span class="ytpl-count"></span></label><div class="ui-tabs ytpl-tabs"><button type="button" class="ui-tab active" data-filter="all">All</button><button type="button" class="ui-tab" data-filter="new">New <span class="ytpl-tab-n"></span></button><button type="button" class="ui-tab" data-filter="owned">In library <span class="ytpl-tab-n"></span></button></div>`);
+    const filterInput = UI.el('input', 'ui-input ytpl-filter');
+    filterInput.type = 'search';
+    filterInput.placeholder = 'Filter songs';
+    filterInput.autocomplete = 'off';
+    filterInput.setAttribute('aria-label', 'Filter songs');
+    toolbar.appendChild(filterInput);
+    toolbar.hidden = true;
+    const master = toolbar.querySelector('.ytpl-check');
+    const countEl = toolbar.querySelector('.ytpl-count');
+    const tabs = toolbar.querySelector('.ytpl-tabs');
+    const [ newCountEl, ownedCountEl ] = tabs.querySelectorAll('.ytpl-tab-n');
+    const list = UI.el('div', 'ytpl-list ui-scroll');
+    list.hidden = true;
+    const none = UI.el('div', 'ytpl-none', 'No songs match');
+    none.hidden = true;
+    const save = UI.el('div', 'ytpl-save', `<div class="toggle-switch"><input type="checkbox" id="ytplMakePlaylist" class="toggle-input" checked><label for="ytplMakePlaylist" class="toggle-label"><span class="toggle-slider"></span></label></div><div class="ytpl-save-text"><label for="ytplMakePlaylist" class="ytpl-save-label"></label><span class="ytpl-save-hint"></span></div>`);
+    const nameInput = UI.el('input', 'ui-input ytpl-save-name');
+    nameInput.type = 'text';
+    nameInput.maxLength = 100;
+    nameInput.autocomplete = 'off';
+    nameInput.placeholder = 'Playlist name';
+    nameInput.setAttribute('aria-label', 'Playlist name');
+    save.appendChild(nameInput);
+    save.hidden = true;
+    const makeToggle = save.querySelector('.toggle-input');
+    const saveLabel = save.querySelector('.ytpl-save-label');
+    const saveHint = save.querySelector('.ytpl-save-hint');
+    const singleBtn = UI.button('Just this song', {
+      variant: 'ghost',
+      icon: 'fa-music',
+      className: 'ytpl-single',
+      onClick: () => {
+        const url = linkInput.value.trim();
+        dialog.close();
+        this.autofillFromUrl(url);
+      }
+    });
+    singleBtn.hidden = true;
+    const cancelBtn = UI.button('Cancel', {
+      variant: 'ghost',
+      onClick: dialog.close
+    });
+    const importBtn = UI.button('Add songs', {
+      variant: 'primary',
+      icon: 'fa-plus'
+    });
+    importBtn.disabled = true;
+    dialog.addFooter(singleBtn, cancelBtn, importBtn);
+    dialog.body.append(form, hero, notice, toolbar, list, save);
+    const setButton = (label, icon, enabled) => {
+      importBtn.innerHTML = `${UI.icon(icon)} `;
+      importBtn.append(label);
+      importBtn.disabled = !enabled;
+    };
+    const showNotice = (title, text, retry = false) => {
+      notice.children[1].textContent = title;
+      notice.children[2].textContent = text;
+      retryBtn.hidden = !retry;
+      notice.hidden = false;
+      hero.hidden = rows.length === 0;
+      toolbar.hidden = list.hidden = save.hidden = rows.length === 0;
+      setButton('Add songs', 'fa-plus', false);
+    };
+    const visible = row => {
+      if (filter === 'new' && (row.owned || row.state === 'gone')) {
+        return false;
+      }
+      if (filter === 'owned' && !row.owned) {
+        return false;
+      }
+      return !matcher || matcher(row.name) || matcher(row.author);
+    };
+    const applyFilter = () => {
+      let shown = 0;
+      rows.forEach(row => {
+        const show = visible(row);
+        row.el.hidden = !show;
+        shown += show ? 1 : 0;
+      });
+      none.hidden = shown > 0 || rows.length === 0;
+      lastIndex = null;
+      sync();
+    };
+    const rowHtml = (row, index) => {
+      const esc = text => this.escapeHtml(text || '');
+      let tag = '';
+      if (row.owned) {
+        tag = '<span class="ytpl-tag">In library</span>';
+      } else if (row.state === 'gone') {
+        tag = '<span class="ytpl-tag ytpl-tag--muted">Unavailable</span>';
+      } else if (row.state === 'blocked') {
+        tag = '<span class="ytpl-tag ytpl-tag--warn" title="The uploader only allows this video on YouTube, so it may not play here">YouTube only</span>';
+      }
+      const thumb = row.state === 'gone' ? `<span class="ytpl-thumb ytpl-thumb--empty">${UI.icon('fa-ban')}</span>` : `<img class="ytpl-thumb" src="https://i.ytimg.com/vi/${esc(row.id)}/mqdefault.jpg" alt="" loading="lazy" decoding="async">`;
+      const edit = row.owned || row.state === 'gone' ? '<span class="ytpl-edit-gap"></span>' : `<button type="button" class="ui-btn ui-btn--ghost ui-btn--sm ytpl-edit" title="Edit name and artist" aria-label="Edit name and artist">${UI.icon('fa-pen')}</button>`;
+      return `<label class="ytpl-row${row.state === 'gone' ? ' is-gone' : ''}" data-i="${index}"><input type="checkbox" class="ytpl-check"${row.checked ? ' checked' : ''}${row.state === 'gone' ? ' disabled' : ''}>${thumb}<span class="ytpl-text"><span class="ytpl-name">${esc(row.name)}</span><span class="ytpl-artist">${esc(row.author)}</span></span>${tag}<span class="ytpl-time">${row.duration ? this.formatDuration(row.duration) : ''}</span>${edit}</label>`;
+    };
+    const showSkeleton = () => {
+      list.replaceChildren(...Array.from({
+        length: 6
+      }, () => UI.el('div', 'ytpl-row ytpl-skeleton', '<span class="ytpl-thumb"></span><span class="ytpl-text"><span></span><span></span></span>')), none);
+    };
+    const append = items => {
+      const start = rows.length;
+      let html = '';
+      items.forEach(item => {
+        if (byId.has(item.id)) {
+          repeats += 1;
+          return;
+        }
+        const owned = libraryMap.get(item.id) || null;
+        const title = this.decodeHtmlEntities(item.title || '');
+        const channel = this.stripYouTubeTopicSuffix(this.decodeHtmlEntities(item.channel || ''));
+        let name = title;
+        let author = channel;
+        if (owned) {
+          name = owned.name;
+          author = owned.author || '';
+        } else if (item.state !== 'gone') {
+          const parsed = this.parseVideoTitle(title);
+          name = parsed.songName || title;
+          author = parsed.author || channel;
+        }
+        const row = {
+          id: item.id,
+          name: name,
+          author: author,
+          duration: item.duration || 0,
+          state: item.state,
+          owned: owned,
+          checked: item.state === 'ok',
+          el: null
+        };
+        byId.set(row.id, row);
+        rows.push(row);
+        html += rowHtml(row, rows.length - 1);
+      });
+      if (!html) {
+        return;
+      }
+      list.querySelectorAll('.ytpl-skeleton').forEach(node => node.remove());
+      const template = document.createElement('template');
+      template.innerHTML = html;
+      Array.from(template.content.children).forEach((el, offset) => {
+        const row = rows[start + offset];
+        row.el = el;
+        el.hidden = !visible(row);
+      });
+      list.insertBefore(template.content, none);
+      none.hidden = rows.some(row => !row.el.hidden);
+    };
+    const renderHero = () => {
+      const meta = source?.meta;
+      const total = Math.max(source?.total || 0, meta?.count || 0, rows.length);
+      titleEl.textContent = meta?.title || 'YouTube playlist';
+      const art = meta?.thumb || (rows[0] && rows[0].state !== 'gone' ? `https://i.ytimg.com/vi/${rows[0].id}/mqdefault.jpg` : '');
+      if (art && cover.getAttribute('src') !== art) {
+        cover.src = art;
+      }
+      cover.hidden = !art;
+      const seconds = rows.reduce((sum, row) => sum + row.duration, 0);
+      subEl.textContent = [ meta?.channel, total ? this._songCountText(total) : '', seconds ? this.formatDuration(seconds) : '' ].filter(Boolean).join(' · ');
+      const gone = rows.filter(row => row.state === 'gone').length;
+      const blocked = rows.filter(row => row.state === 'blocked').length;
+      notesEl.textContent = [ repeats ? `${repeats} repeat${repeats === 1 ? '' : 's'} merged` : '', gone ? `${gone} unavailable` : '', blocked ? `${blocked} YouTube-only, left unticked` : '', partial ? 'Couldn’t load the rest of the list' : '' ].filter(Boolean).join(' · ');
+      notesEl.hidden = !notesEl.textContent;
+      progress.hidden = !loading;
+      progress.firstChild.style.width = `${total ? Math.min(100, Math.round(rows.length / total * 100)) : 8}%`;
+      openLink.href = `https://www.youtube.com/playlist?list=${encodeURIComponent(currentListId)}`;
+      if (!nameTouched && !target && meta?.title && !nameInput.value) {
+        nameInput.value = this.uniquePlaylistName(meta.title);
+      }
+    };
+    const sync = () => {
+      let usable = 0;
+      let picked = 0;
+      let fresh = 0;
+      let owned = 0;
+      let toPlaylist = 0;
+      let shownUsable = 0;
+      let shownPicked = 0;
+      rows.forEach(row => {
+        if (row.state === 'gone') {
+          return;
+        }
+        usable += 1;
+        if (row.owned) {
+          owned += 1;
+        }
+        const shown = !row.el.hidden;
+        shownUsable += shown ? 1 : 0;
+        if (!row.checked) {
+          return;
+        }
+        picked += 1;
+        shownPicked += shown ? 1 : 0;
+        if (!row.owned) {
+          fresh += 1;
+        }
+        if (targetIds && !targetIds.has(row.id)) {
+          toPlaylist += 1;
+        }
+      });
+      countEl.textContent = usable && picked === usable ? `All ${usable.toLocaleString()} selected` : `${picked.toLocaleString()} of ${usable.toLocaleString()} selected`;
+      master.checked = shownUsable > 0 && shownPicked === shownUsable;
+      master.indeterminate = shownPicked > 0 && shownPicked < shownUsable;
+      master.disabled = shownUsable === 0;
+      newCountEl.textContent = (usable - owned).toLocaleString();
+      ownedCountEl.textContent = owned.toLocaleString();
+      tabs.children[2].hidden = owned === 0 && filter !== 'owned';
+      const make = makeToggle.checked;
+      nameInput.hidden = !make || Boolean(target);
+      if (target) {
+        saveLabel.textContent = `Also update “${target.name}”`;
+        saveHint.textContent = make ? toPlaylist ? `${this._songCountText(toPlaylist)} it doesn’t have yet` : 'It already has every selected song' : 'You imported this playlist before';
+      } else {
+        saveLabel.textContent = 'Also create a playlist';
+        const name = nameInput.value.trim();
+        const finalName = name ? this.uniquePlaylistName(name) : '';
+        saveHint.textContent = !make ? 'Songs go to your library only' : finalName && finalName !== name ? `You already have one with that name, so it’ll be saved as “${finalName}”` : `With all ${this._songCountText(picked)} selected`;
+      }
+      renderHero();
+      if (busy) {
+        return;
+      }
+      if (loading) {
+        const total = Math.max(source?.total || 0, source?.meta?.count || 0);
+        setButton(total ? `Loading ${rows.length.toLocaleString()} of ${total.toLocaleString()}…` : 'Loading…', 'fa-circle-notch fa-spin', false);
+        return;
+      }
+      if (make && !target) {
+        setButton(fresh ? `Add ${this._songCountText(fresh)} & create playlist` : 'Create playlist', 'fa-plus', picked > 0);
+      } else if (make && target) {
+        setButton(fresh ? `Add ${this._songCountText(fresh)} & update playlist` : toPlaylist ? `Add ${this._songCountText(toPlaylist)} to playlist` : 'Already up to date', 'fa-plus', fresh + toPlaylist > 0);
+      } else {
+        setButton(fresh ? `Add ${this._songCountText(fresh)}` : picked ? 'Already in your library' : 'Add songs', 'fa-plus', fresh > 0);
+      }
+    };
+    const editRow = row => {
+      const text = row.el.querySelector('.ytpl-text');
+      if (text.classList.contains('is-editing')) {
+        return;
+      }
+      text.classList.add('is-editing');
+      const nameField = UI.el('input', 'ui-input ytpl-edit-input');
+      nameField.value = row.name;
+      nameField.setAttribute('aria-label', 'Song name');
+      const authorField = UI.el('input', 'ui-input ytpl-edit-input');
+      authorField.value = row.author;
+      authorField.placeholder = 'Artist';
+      authorField.setAttribute('aria-label', 'Artist');
+      text.replaceChildren(nameField, authorField);
+      const finish = keep => {
+        text.removeEventListener('focusout', onFocusOut);
+        if (keep) {
+          row.name = nameField.value.trim() || row.name;
+          row.author = authorField.value.trim();
+        }
+        text.classList.remove('is-editing');
+        text.innerHTML = '<span class="ytpl-name"></span><span class="ytpl-artist"></span>';
+        text.firstChild.textContent = row.name;
+        text.lastChild.textContent = row.author;
+      };
+      const onFocusOut = event => {
+        if (!text.contains(event.relatedTarget)) {
+          finish(true);
+        }
+      };
+      text.addEventListener('focusout', onFocusOut);
+      [ nameField, authorField ].forEach(field => field.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === 'Escape') {
+          event.preventDefault();
+          event.stopPropagation();
+          finish(event.key === 'Enter');
+          row.el.firstChild.focus();
+        }
+      }));
+      nameField.focus();
+      nameField.select();
+    };
+    const start = async raw => {
+      session?.abort();
+      session = null;
+      linkInput.value = raw;
+      rows = [];
+      byId = new Map();
+      repeats = 0;
+      lastIndex = null;
+      partial = false;
+      loading = false;
+      source = null;
+      target = null;
+      targetIds = null;
+      nameTouched = false;
+      nameInput.value = '';
+      matcher = null;
+      filterInput.value = '';
+      list.replaceChildren(none);
+      const videoId = this.extractYouTubeId(raw);
+      libraryMap = this._libraryByVideoId();
+      singleBtn.hidden = !videoId || libraryMap.has(videoId);
+      const listId = this.extractYouTubePlaylistId(raw) || (/^(PL|OL|UU|FL)[\w-]{10,62}$/.test(raw) ? raw : null);
+      currentListId = listId || '';
+      if (!raw) {
+        showNotice('Paste a playlist link', 'Every song in it shows up here, so you can pick what to add.');
+        linkInput.focus();
+        return;
+      }
+      if (!listId) {
+        showNotice('That isn’t a playlist link', 'Copy the link from a YouTube playlist, or from a video playing inside one. It contains “list=”.');
+        return;
+      }
+      const blocked = this._youtubePlaylistBlockReason(listId);
+      if (blocked) {
+        showNotice('This list can’t be imported', blocked);
+        return;
+      }
+      target = this.playlists.find(p => p.source?.type === 'youtube' && p.source.id === listId) || null;
+      targetIds = target ? new Set(target.songs.map(entry => entry.videoId)) : null;
+      source = this._youtubePlaylistSource(listId);
+      loading = source.next !== null;
+      notice.hidden = true;
+      hero.hidden = false;
+      toolbar.hidden = false;
+      list.hidden = false;
+      save.hidden = false;
+      append(source.items);
+      if (!rows.length) {
+        showSkeleton();
+      }
+      sync();
+      if (!loading) {
+        if (!rows.length) {
+          showNotice('This playlist is empty', 'Add some videos to it on YouTube, then try again.');
+        }
+        return;
+      }
+      const controller = new AbortController();
+      session = controller;
+      try {
+        while (source.next !== null) {
+          const page = await this.fetchYouTubePlaylistPage(listId, source.next || null, controller.signal);
+          if (page.playlist) {
+            source.meta = page.playlist;
+          }
+          if (page.total) {
+            source.total = page.total;
+          }
+          source.items.push(...page.items);
+          source.next = page.next || null;
+          if (session !== controller) {
+            return;
+          }
+          append(page.items);
+          sync();
+        }
+      } catch (error) {
+        if (session !== controller) {
+          return;
+        }
+        session = null;
+        loading = false;
+        if (!rows.length) {
+          showNotice('Couldn’t load this playlist', this._youtubePlaylistErrorText(error), !error.status || error.status >= 500);
+          return;
+        }
+        partial = true;
+        sync();
+        return;
+      }
+      session = null;
+      loading = false;
+      if (!rows.length) {
+        showNotice('This playlist is empty', 'Add some videos to it on YouTube, then try again.');
+        return;
+      }
+      sync();
+    };
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      start(linkInput.value.trim());
+    });
+    linkInput.addEventListener('paste', () => setTimeout(() => {
+      const value = linkInput.value.trim();
+      if (this.extractYouTubePlaylistId(value)) {
+        start(value);
+      }
+    }));
+    tabs.addEventListener('click', event => {
+      const tab = event.target.closest('.ui-tab');
+      if (!tab || tab.dataset.filter === filter) {
+        return;
+      }
+      filter = tab.dataset.filter;
+      tabs.querySelectorAll('.ui-tab').forEach(node => node.classList.toggle('active', node === tab));
+      applyFilter();
+    });
+    filterInput.addEventListener('input', this.debounce(() => {
+      const term = filterInput.value.trim();
+      matcher = term ? this._searchMatcher(term) : null;
+      applyFilter();
+    }, 120));
+    master.addEventListener('change', () => {
+      rows.forEach(row => {
+        if (row.state !== 'gone' && !row.el.hidden) {
+          row.checked = master.checked;
+          row.el.firstChild.checked = master.checked;
+        }
+      });
+      lastIndex = null;
+      sync();
+    });
+    list.addEventListener('pointerdown', event => {
+      shiftHeld = event.shiftKey;
+    });
+    list.addEventListener('click', event => {
+      const edit = event.target.closest('.ytpl-edit');
+      if (edit) {
+        event.preventDefault();
+        editRow(rows[Number(edit.closest('.ytpl-row').dataset.i)]);
+      }
+    });
+    list.addEventListener('keydown', event => {
+      shiftHeld = event.shiftKey;
+      if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') {
+        return;
+      }
+      const box = event.target.closest('.ytpl-check');
+      if (!box) {
+        return;
+      }
+      event.preventDefault();
+      let next = box.closest('.ytpl-row');
+      do {
+        next = event.key === 'ArrowDown' ? next.nextElementSibling : next.previousElementSibling;
+      } while (next && (next.hidden || !next.dataset.i || next.firstChild.disabled));
+      next?.firstChild.focus();
+    });
+    list.addEventListener('change', event => {
+      const box = event.target;
+      if (!box.classList.contains('ytpl-check')) {
+        return;
+      }
+      const index = Number(box.closest('.ytpl-row').dataset.i);
+      if (shiftHeld && lastIndex !== null && lastIndex !== index) {
+        const from = Math.min(lastIndex, index);
+        const to = Math.max(lastIndex, index);
+        for (let i = from; i <= to; i++) {
+          const row = rows[i];
+          if (row.state !== 'gone' && !row.el.hidden) {
+            row.checked = box.checked;
+            row.el.firstChild.checked = box.checked;
+          }
+        }
+      } else {
+        rows[index].checked = box.checked;
+      }
+      lastIndex = index;
+      shiftHeld = false;
+      sync();
+    });
+    makeToggle.addEventListener('change', sync);
+    nameInput.addEventListener('input', () => {
+      nameTouched = true;
+      sync();
+    });
+    importBtn.addEventListener('click', async () => {
+      if (busy || loading) {
+        return;
+      }
+      const picked = rows.filter(row => row.checked && row.state !== 'gone');
+      if (!picked.length) {
+        return;
+      }
+      busy = true;
+      setButton('Importing…', 'fa-circle-notch fa-spin', false);
+      try {
+        const result = await this.importYouTubePlaylistSongs(picked, {
+          listId: currentListId,
+          name: nameInput.value.trim() || source?.meta?.title || 'YouTube playlist',
+          makePlaylist: makeToggle.checked,
+          target: target
+        });
+        dialog.close();
+        this._announceYouTubePlaylistImport(result, picked.length);
+      } catch (error) {
+        console.error('Error importing YouTube playlist:', error);
+        busy = false;
+        sync();
+        this.showNotification('Couldn’t import the playlist. Please try again.', 'error');
+      }
+    });
+    dialog.open();
+    start(String(link || '').trim());
+  }
+  async importYouTubePlaylistSongs(picked, { listId, name, makePlaylist, target }) {
+    const library = this._libraryByVideoId();
+    const ids = new Set(this.songLibrary.map(song => song.id));
+    const addedOn = (new Date()).toISOString();
+    let nextId = Date.now();
+    const added = [];
+    const entries = [];
+    picked.forEach(row => {
+      let song = library.get(row.id);
+      if (!song) {
+        while (ids.has(nextId)) {
+          nextId += 1;
+        }
+        ids.add(nextId);
+        song = {
+          id: nextId,
+          name: row.name,
+          author: row.author,
+          videoId: row.id,
+          favorite: false,
+          lyrics: '',
+          addedOn: addedOn
+        };
+        library.set(row.id, song);
+        added.push(song);
+      }
+      entries.push(this._newPlaylistEntry(song));
+    });
+    if (added.length) {
+      await this.addImportedSongsOneByOne(added);
+    }
+    let playlist = null;
+    let appended = [];
+    if (makePlaylist && target && this.playlists.includes(target)) {
+      const have = new Set(target.songs.map(entry => entry.videoId));
+      appended = entries.filter(entry => !have.has(entry.videoId));
+      if (appended.length) {
+        target.songs.push(...appended);
+        await this.savePlaylist(target);
+      }
+      playlist = target;
+    } else if (makePlaylist) {
+      playlist = await this.createPlaylist(this.uniquePlaylistName(name), entries, {
+        source: {
+          type: 'youtube',
+          id: listId
+        }
+      });
+    }
+    this._refreshAfterYouTubePlaylistImport(playlist);
+    return {
+      added: added,
+      playlist: playlist,
+      created: Boolean(playlist) && playlist !== target,
+      appended: appended
+    };
+  }
+  _refreshAfterYouTubePlaylistImport(playlist) {
+    const term = this.elements.librarySearch ? this.elements.librarySearch.value.trim() : '';
+    term === '' ? this.renderLibraryView() : this.renderSongLibrary(term);
+    this.renderPlaylists();
+    this.updatePlaylistSelection();
+    this.renderAdditionalDetails();
+    if (playlist && this.currentPlaylist?.id === playlist.id) {
+      this.renderPlaylistSidebar();
+    }
+  }
+  _announceYouTubePlaylistImport(result, pickedCount) {
+    const { added, playlist, created, appended } = result;
+    const parts = [];
+    if (added.length) {
+      parts.push(`Added ${this._songCountText(added.length)}`);
+    }
+    if (pickedCount > added.length) {
+      parts.push(`${pickedCount - added.length} already in your library`);
+    }
+    if (created) {
+      parts.push(`created “${playlist.name}”`);
+    } else if (playlist) {
+      parts.push(appended.length ? `${this._songCountText(appended.length)} added to “${playlist.name}”` : `“${playlist.name}” was already up to date`);
+    }
+    const message = parts.join(' · ');
+    const text = message.charAt(0).toUpperCase() + message.slice(1);
+    if (added.length || created || appended.length) {
+      this.showUndoToast(text, () => this.undoYouTubePlaylistImport(result));
+    } else {
+      this.showQueueNotification(text);
+    }
+  }
+  async undoYouTubePlaylistImport({ added, playlist, created, appended }) {
+    try {
+      if (created) {
+        this.playlists = this.playlists.filter(p => p.id !== playlist.id);
+        await this.savePlaylists();
+      } else if (playlist && appended.length) {
+        const drop = new Set(appended.map(entry => entry.entryId));
+        playlist.songs = playlist.songs.filter(entry => !drop.has(entry.entryId));
+        await this.savePlaylist(playlist);
+      }
+      if (added.length) {
+        const drop = new Set(added.map(song => song.id));
+        this.songLibrary = this.songLibrary.filter(song => !drop.has(song.id));
+        await new Promise((resolve, reject) => {
+          const transaction = this.db.transaction([ 'songLibrary' ], 'readwrite');
+          const store = transaction.objectStore('songLibrary');
+          drop.forEach(id => store.delete(id));
+          transaction.oncomplete = () => resolve();
+          transaction.onerror = event => reject(event.target.error);
+        });
+      }
+      this.showQueueNotification('Import undone');
+    } catch (error) {
+      console.error('Error undoing YouTube playlist import:', error);
+      this.showNotification('Couldn’t undo the import. Please try again.', 'error');
+    }
+    this._refreshAfterYouTubePlaylistImport(created ? null : playlist);
   }
   async importMixLabPlaylist() {
     const lab = this.mixLab;

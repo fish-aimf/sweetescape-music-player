@@ -235,6 +235,9 @@
                            <button id="artistPlaylistBtn" class="playlist-tool-btn" title="Make a playlist of every song by one artist">
                            <i class="fas fa-microphone-lines"></i><span>From artist</span>
                            </button>
+                           <button id="youtubePlaylistBtn" class="playlist-tool-btn" title="Import a playlist from YouTube">
+                           <i class="fab fa-youtube"></i><span>From YouTube</span>
+                           </button>
                         </div>
                         <div id="playlistContainer" class="playlist-container">
                         </div>
@@ -448,6 +451,7 @@
                      <input type="text" id="songName" class="ui-input" placeholder="Song Name">
                      <input type="text" id="songAuthor" class="ui-input" placeholder="Author Name (Optional)">
                      <input type="text" id="songUrl" class="ui-input" placeholder="YouTube URL">
+                     <button id="songUrlPlaylistHint" class="ui-btn ytpl-hint" type="button" hidden><i class="fab fa-youtube"></i><span>This link is part of a playlist</span><strong>Import playlist <i class="fas fa-arrow-right"></i></strong></button>
                      <button id="autofillBtn" class="ui-btn" disabled><i class="fas fa-wand-magic-sparkles"></i> Autofill Name &amp; Author</button>
                      <button id="autofillUndoBtn" class="ui-btn ui-btn--ghost ui-btn--sm" style="display: none;"><i class="fas fa-rotate-left"></i> Undo</button>
 

@@ -12,8 +12,8 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 | Source | sha256 (first 12) | Lines |
 |---|---|---|
-| `public/script.js` | `6bec3ae2d199` | 19089 |
-| `public/index.html` | `c4c9238ad459` | 1505 |
+| `public/script.js` | `4c5b6a9df058` | 19913 |
+| `public/index.html` | `50015f882b4d` | 1509 |
 | `public/script/settings.js` | `3bc48cfe84cc` | 560 |
 | `public/karaoke-player.js` | `3e6bb16779a4` | 682 |
 | `public/karaoke-encoder.js` | `d277db62d9e9` | 147 |
@@ -23,7 +23,7 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 ## Reading `public/script.js` cheaply
 
-- 86 lines are longer than 300 characters (the machine-formatted
+- 90 lines are longer than 300 characters (the machine-formatted
   `innerHTML` template literals; the longest is ~3.9 KB). A single `grep -n` that hits
   several of them dumps tens of kilobytes. Search with `grep -o`, or pipe through
   `cut -c1-200`, and only widen once you know which line you want.
@@ -38,7 +38,7 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 ---
 
-## `AdvancedMusicPlayer` by topic (717 methods)
+## `AdvancedMusicPlayer` by topic (732 methods)
 
 Names only. `grep -n "^  name(" public/script.js` gives the current line, and a name
 here that you cannot find has been renamed since this file was generated.
@@ -49,7 +49,7 @@ here that you cannot find has been renamed since this file was generated.
 
 ### Song library
 
-`_setupLibraryModificationModalTabs` · `switchLibraryModificationTab` · `handleLibrarySortToggle` · `handleLibraryReverseToggle` · `addSongToLibrary` · `renderSongLibrary` · `renderLibraryView` · `_libraryByVideoId` · `setupSongLibraryDelegation` · `filterLibrarySongs` · `handleLibrarySearchInput` · `showAddToLibrarySuggestion` · `_buildFavoritesCard` · `_syncLibraryPlayingState` · `toggleFavorite` · `syncFavoritesOnLoad` · `batchFavoriteUpdate` · `updateFavoritesPlaylist` · `getFavoritesPlaylist` · `createFavoritesPlaylist` · `openSongEditModal` · `updateSongDetails` · `openLibraryModal` · `closeLibraryModal` · `initLibraryFilter` · `_applyLibraryFiltersAndRender` · `resetLibrarySearchTimeout` · `_refreshLibraryAfterStars` · `addSongToSelectedPlaylist` · `openLyricsLibraryModal` · `exportLibrary` · `importLibrary` · `initGlobalLibraryDebouncedSearch` · `handleGlobalLibraryDebouncedSearchInput` · `executeGlobalLibraryCatalogSearch` · `renderGlobalLibrarySearchSuggestionsDropdownLoading` · `renderGlobalLibrarySearchSuggestionsDropdownError` · `renderGlobalLibrarySearchSuggestionsDropdown` · `closeGlobalLibrarySearchSuggestionsDropdown` · `handleGlobalLibraryArtistCardClick` · `renderGlobalLibraryArtistSongsGrid` · `closeGlobalLibraryArtistSongsGrid` · `handleGlobalLibrarySongCardClick` · `renderGlobalLibrarySongDetailCardLoading` · `renderGlobalLibrarySongDetailCardError` · `renderGlobalLibrarySongDetailCard` · `closeGlobalLibrarySongDetailCard` · `normalizeGlobalLibrarySearchKey` · `resolveGlobalLibrarySongYouTubeId` · `fetchGlobalLibrarySongFromYouTube` · `runGlobalLibraryYouTubeSearch` · `populateAddSongToLibraryModalFromGlobalLibrary` · `returnToGlobalLibraryPreviousView` · `addPremadePlaylistToLocalLibrary` · `watchGlobalLibraryInset` · `getMixLabLibraryIndex` · `isMixLabTrackInLibrary` · `syncMixLabLibraryState` · `addMixLabTrackToLibrary` · `addBillboardSongToLibrary` · `searchYouTubeForLibraryMatches` · `renderYouTubeLibrarySearchResults` · `createYouTubeLibraryResultCard` · `setupYouTubeLibraryResultsDelegation` · `addTemporarySongToLibrary`
+`_setupLibraryModificationModalTabs` · `switchLibraryModificationTab` · `handleLibrarySortToggle` · `handleLibraryReverseToggle` · `addSongToLibrary` · `renderSongLibrary` · `renderLibraryView` · `_libraryByVideoId` · `setupSongLibraryDelegation` · `filterLibrarySongs` · `handleLibrarySearchInput` · `showAddToLibrarySuggestion` · `_buildFavoritesCard` · `_syncLibraryPlayingState` · `toggleFavorite` · `syncFavoritesOnLoad` · `batchFavoriteUpdate` · `updateFavoritesPlaylist` · `getFavoritesPlaylist` · `createFavoritesPlaylist` · `openSongEditModal` · `updateSongDetails` · `openLibraryModal` · `closeLibraryModal` · `initLibraryFilter` · `_applyLibraryFiltersAndRender` · `resetLibrarySearchTimeout` · `_refreshLibraryAfterStars` · `addSongToSelectedPlaylist` · `openLyricsLibraryModal` · `exportLibrary` · `importLibrary` · `initGlobalLibraryDebouncedSearch` · `handleGlobalLibraryDebouncedSearchInput` · `executeGlobalLibraryCatalogSearch` · `renderGlobalLibrarySearchSuggestionsDropdownLoading` · `renderGlobalLibrarySearchSuggestionsDropdownError` · `renderGlobalLibrarySearchSuggestionsDropdown` · `closeGlobalLibrarySearchSuggestionsDropdown` · `handleGlobalLibraryArtistCardClick` · `renderGlobalLibraryArtistSongsGrid` · `closeGlobalLibraryArtistSongsGrid` · `handleGlobalLibrarySongCardClick` · `renderGlobalLibrarySongDetailCardLoading` · `renderGlobalLibrarySongDetailCardError` · `renderGlobalLibrarySongDetailCard` · `closeGlobalLibrarySongDetailCard` · `normalizeGlobalLibrarySearchKey` · `resolveGlobalLibrarySongYouTubeId` · `fetchGlobalLibrarySongFromYouTube` · `runGlobalLibraryYouTubeSearch` · `populateAddSongToLibraryModalFromGlobalLibrary` · `returnToGlobalLibraryPreviousView` · `addPremadePlaylistToLocalLibrary` · `watchGlobalLibraryInset` · `getMixLabLibraryIndex` · `isMixLabTrackInLibrary` · `_openPlaylistFromLibrarySearch` · `syncMixLabLibraryState` · `addMixLabTrackToLibrary` · `addBillboardSongToLibrary` · `searchYouTubeForLibraryMatches` · `renderYouTubeLibrarySearchResults` · `createYouTubeLibraryResultCard` · `setupYouTubeLibraryResultsDelegation` · `addTemporarySongToLibrary`
 
 ### Playback & queue
 
@@ -57,7 +57,7 @@ here that you cannot find has been renamed since this file was generated.
 
 ### Playlists
 
-`sharePlaylist` · `checkIncomingPlaylistShare` · `showSharedPlaylistPrompt` · `importSharedPlaylist` · `_refreshPlaylistsShelf` · `_buildPlaylistsShelf` · `_buildPlaylistTile` · `_buildPlaylistCover` · `_buildCreatePlaylistShelfTile` · `createPlaylist` · `openNewPlaylistDialog` · `renderPlaylists` · `_sortedPlaylists` · `_buildPlaylistsHome` · `_bindPlaylistGridDrag` · `_searchPlaylists` · `_buildPlaylistResults` · `_buildPlaylistRow` · `_bindPlaylistItem` · `_activatePlaylist` · `playTopPlaylistSearchResult` · `_artistPlaylistState` · `openArtistPlaylistDialog` · `openPlaylistEditModal` · `_editPlaylistSongs` · `_playlistArtistSummary` · `_newPlaylistEntry` · `duplicatePlaylist` · `openAddToPlaylistMenu` · `updatePlaylistSelection` · `closePlaylistModal` · `deletePlaylist` · `_removePlaylist` · `_restorePlaylist` · `playPlaylist` · `getPlaylistDurationText` · `renderPlaylistSidebar` · `renderPlaylistSidebarExpandedMode` · `renderPlaylistSidebarOverlayMode` · `applyPlaylistSidebarMode` · `setupPlaylistSidebarModeListeners` · `filterPlaylistSidebarSongs` · `exportPlaylist` · `showPlaylistSelectionForExport` · `exportSongsWithAllPlaylists` · `createImportedPlaylists` · `searchPremadePlaylistsSupabase` · `extendMixLabPlaylist` · `uniquePlaylistName` · `importMixLabPlaylist`
+`sharePlaylist` · `checkIncomingPlaylistShare` · `showSharedPlaylistPrompt` · `importSharedPlaylist` · `_refreshPlaylistsShelf` · `_buildPlaylistsShelf` · `_buildPlaylistTile` · `_buildPlaylistCover` · `_buildCreatePlaylistShelfTile` · `createPlaylist` · `openNewPlaylistDialog` · `renderPlaylists` · `_sortedPlaylists` · `_buildPlaylistsHome` · `_bindPlaylistGridDrag` · `_searchPlaylists` · `_buildPlaylistResults` · `_buildPlaylistRow` · `_bindPlaylistItem` · `_activatePlaylist` · `playTopPlaylistSearchResult` · `_artistPlaylistState` · `openArtistPlaylistDialog` · `openPlaylistEditModal` · `_editPlaylistSongs` · `_playlistArtistSummary` · `_newPlaylistEntry` · `duplicatePlaylist` · `openAddToPlaylistMenu` · `updatePlaylistSelection` · `closePlaylistModal` · `deletePlaylist` · `_removePlaylist` · `_restorePlaylist` · `playPlaylist` · `getPlaylistDurationText` · `renderPlaylistSidebar` · `renderPlaylistSidebarExpandedMode` · `renderPlaylistSidebarOverlayMode` · `applyPlaylistSidebarMode` · `setupPlaylistSidebarModeListeners` · `filterPlaylistSidebarSongs` · `exportPlaylist` · `showPlaylistSelectionForExport` · `exportSongsWithAllPlaylists` · `createImportedPlaylists` · `searchPremadePlaylistsSupabase` · `extendMixLabPlaylist` · `uniquePlaylistName` · `extractYouTubePlaylistId` · `_youtubePlaylistBlockReason` · `_youtubePlaylistErrorText` · `fetchYouTubePlaylistPage` · `_youtubePlaylistSource` · `handleGlobalPlaylistPaste` · `_importPlaylistFromSongUrl` · `_syncPlaylistLinkHint` · `showYouTubePlaylistSuggestion` · `openYouTubePlaylistImport` · `importYouTubePlaylistSongs` · `_refreshAfterYouTubePlaylistImport` · `_announceYouTubePlaylistImport` · `undoYouTubePlaylistImport` · `importMixLabPlaylist`
 
 ### YouTube & search
 
@@ -114,18 +114,18 @@ The rest match their id exactly.
 
 | id | line | classes |
 |---|---|---|
-| `discordRpcModal` | 297 | `modal discord-rpc-modal-overlay ui-overlay` |
-| `libraryModificationModal` | 434 | `modal ui-overlay` |
-| `importModal` | 470 | `modal ui-overlay` |
-| `timerModal` | 516 | `modal ui-overlay` |
-| `changelogModal` | 646 | `changelog-modal ui-overlay` |
-| `subtitlesImportModal` | 655 | `subtitles-import-modal-overlay ui-overlay` |
-| `settingsModal` | 724 | `settings-modal ui-overlay` |
-| `recentlyPlayedModal` | 1200 | `recently-played-modal-bg ui-overlay` |
-| `lyricsModal` | 1215 | `lyrics-maker-modal hidden ui-overlay` |
-| `downloadModal` | 1355 | `dl-overlay ui-overlay` |
-| `shazamModal` | 1421 | `sz-overlay ui-overlay` |
-| `statsModal` | 1472 | `ls-overlay ui-overlay` |
+| `discordRpcModal` | 300 | `modal discord-rpc-modal-overlay ui-overlay` |
+| `libraryModificationModal` | 437 | `modal ui-overlay` |
+| `importModal` | 474 | `modal ui-overlay` |
+| `timerModal` | 520 | `modal ui-overlay` |
+| `changelogModal` | 650 | `changelog-modal ui-overlay` |
+| `subtitlesImportModal` | 659 | `subtitles-import-modal-overlay ui-overlay` |
+| `settingsModal` | 728 | `settings-modal ui-overlay` |
+| `recentlyPlayedModal` | 1204 | `recently-played-modal-bg ui-overlay` |
+| `lyricsModal` | 1219 | `lyrics-maker-modal hidden ui-overlay` |
+| `downloadModal` | 1359 | `dl-overlay ui-overlay` |
+| `shazamModal` | 1425 | `sz-overlay ui-overlay` |
+| `statsModal` | 1476 | `ls-overlay ui-overlay` |
 
 ---
 

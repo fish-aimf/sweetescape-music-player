@@ -56,6 +56,70 @@ export default async function handler(req, res) {
                 data: { items: enrichedItems, nextPageToken },
                 status: 200
             });
+        } else if (type === 'playlist') {
+            if (!/^[\w-]{2,64}$/.test(query || '')) {
+                return res.status(400).json({ error: 'Invalid playlist id' });
+            }
+            const base = 'https://www.googleapis.com/youtube/v3';
+            const listId = encodeURIComponent(query);
+            const itemFields = encodeURIComponent('nextPageToken,pageInfo/totalResults,items(snippet(title,videoOwnerChannelTitle,resourceId/videoId))');
+            let itemsUrl = `${base}/playlistItems?part=snippet&maxResults=50&playlistId=${listId}&fields=${itemFields}&key=${apiKey}`;
+            if (pageToken) itemsUrl += `&pageToken=${encodeURIComponent(pageToken)}`;
+            const metaFields = encodeURIComponent('items(snippet(title,channelTitle,thumbnails/medium/url),contentDetails/itemCount)');
+            const metaUrl = `${base}/playlists?part=snippet,contentDetails&id=${listId}&fields=${metaFields}&key=${apiKey}`;
+            const [itemsResponse, metaResponse] = await Promise.all([
+                fetch(itemsUrl),
+                pageToken ? null : fetch(metaUrl)
+            ]);
+            const itemsData = await itemsResponse.json();
+            if (!itemsResponse.ok) {
+                const reason = itemsData.error?.errors?.[0]?.reason || '';
+                return res.status(itemsResponse.status).json({ status: itemsResponse.status, reason, data: null });
+            }
+            const rows = (itemsData.items || []).map(item => item.snippet).filter(s => s?.resourceId?.videoId);
+            const videos = new Map();
+            let complete = true;
+            if (rows.length) {
+                const videoFields = encodeURIComponent('items(id,contentDetails/duration,status/embeddable)');
+                const ids = [...new Set(rows.map(s => s.resourceId.videoId))].join(',');
+                const videosResponse = await fetch(`${base}/videos?part=contentDetails,status&id=${ids}&fields=${videoFields}&key=${apiKey}`);
+                if (videosResponse.ok) {
+                    ((await videosResponse.json()).items || []).forEach(v => videos.set(v.id, v));
+                } else {
+                    complete = false;
+                }
+            }
+            const seconds = iso => {
+                const m = /P(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/.exec(iso || '');
+                return m ? ((+m[1] || 0) * 86400) + ((+m[2] || 0) * 3600) + ((+m[3] || 0) * 60) + (+m[4] || 0) : 0;
+            };
+            const items = rows.map(s => {
+                const id = s.resourceId.videoId;
+                const video = videos.get(id);
+                let state = 'ok';
+                if (complete && !video) state = 'gone';
+                else if (video?.status?.embeddable === false) state = 'blocked';
+                return { id, title: s.title || '', channel: s.videoOwnerChannelTitle || '', duration: seconds(video?.contentDetails?.duration), state };
+            });
+            let playlist = null;
+            if (metaResponse && metaResponse.ok) {
+                const meta = (await metaResponse.json()).items?.[0];
+                if (meta) {
+                    playlist = {
+                        title: meta.snippet?.title || '',
+                        channel: meta.snippet?.channelTitle || '',
+                        count: meta.contentDetails?.itemCount || 0,
+                        thumb: meta.snippet?.thumbnails?.medium?.url || ''
+                    };
+                }
+            }
+            if (complete && (pageToken || playlist)) {
+                res.setHeader('Cache-Control', SHORT_CACHE);
+            }
+            return res.status(200).json({
+                status: 200,
+                data: { playlist, items, total: itemsData.pageInfo?.totalResults || 0, next: itemsData.nextPageToken || null }
+            });
         } else {
             return res.status(400).json({ error: 'Invalid type parameter' });
         }

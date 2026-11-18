@@ -304,6 +304,18 @@
       "body": "Pick an artist and every song of theirs in your library becomes one playlist named after them. Featured artists count too, so a song by A ft. B lands in both. Open it again after adding more of their songs and the row offers to add just the new ones."
     },
     {
+      "id": "youtube-playlist",
+      "target": "#youtubePlaylistBtn",
+      "prepare": { "tab": "playlists" },
+      "title": "Import a YouTube playlist",
+      "body": "Paste a YouTube playlist link here, or anywhere on the page, and every song in it is listed, all ticked. Untick what you don't want and add the rest to your library, with a playlist of them made at the same time if you like.",
+      "tips": [
+        "Songs you already have are marked In library. They're never added twice, but still go into the new playlist.",
+        "Shift-click a tick box to tick or untick a whole range.",
+        "Import the same YouTube playlist again later and it offers to add only its new songs to the playlist you made."
+      ]
+    },
+    {
       "id": "side-panel",
       "target": "#currentPlaylistSidebar.visible",
       "fallback": "#showPlaylistBtn",
