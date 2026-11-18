@@ -824,3 +824,4 @@ Battery saver: a new battery button in the top bar turns off the effects that dr
 Removed the requests for low video quality, which YouTube has ignored for years; the player now just picks its own quality for the hidden video, as it already did v76.25.1
 SweetEscape Lite at /lite: a stripped-down player for the songs saved on your device, with search, playlists and lyrics only when you open the Lyrics tab; it looks like the full player, uses far less battery, and opens without internet once you have visited the site v76.26.0
 The introduction and tutorial now cover the battery saver and SweetEscape Lite, with screenshots of both v76.26.1
+The battery saver button now turns into a leaf while it is on, instead of filling with the accent colour v76.26.2

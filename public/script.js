@@ -14160,6 +14160,7 @@ class AdvancedMusicPlayer {
     const name = this.getBatteryLevelName();
     if (els.batteryButton) {
       els.batteryButton.setAttribute('aria-pressed', String(on));
+      els.batteryButton.firstElementChild.className = on ? 'fas fa-leaf' : 'fas fa-battery-half';
       els.batteryButton.title = on ? `Battery saver on: ${name}` : 'Battery saver';
     }
     if (!els.batteryFeatures) {

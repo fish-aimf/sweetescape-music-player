@@ -8845,10 +8845,6 @@ body.playlist-expanded-active .right-advertisement-banner {
   width: 100%;
   min-width: 0;
 }
-.theme-toggle #batteryButton[aria-pressed="true"] {
-  color: var(--accent-color);
-  opacity: 1;
-}
 .battery-settings .appearance-row {
   grid-template-columns: 116px 1fr 64px;
   margin-top: var(--ui-space-3);
