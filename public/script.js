@@ -6256,17 +6256,7 @@ class AdvancedMusicPlayer {
       return;
     }
     try {
-      this.ytPlayer.loadVideoById({
-        videoId: videoId,
-        suggestedQuality: 'small'
-      });
-      setTimeout(() => {
-        try {
-          this.ytPlayer.setPlaybackQuality('small');
-        } catch (error) {
-          console.warn('Failed to set video quality:', error);
-        }
-      }, 200);
+      this.ytPlayer.loadVideoById(videoId);
       this.isPlaying = true;
       this.updatePlayerUI();
       if (this.elements.progressBar) {
@@ -7144,8 +7134,8 @@ class AdvancedMusicPlayer {
         widget_referrer: window.location.href
       },
       events: {
-        onReady: event => {
-          this.onPlayerReady(event);
+        onReady: () => {
+          this.onPlayerReady();
           this.ytPlayerReady = true;
         },
         onStateChange: this.onPlayerStateChange.bind(this),
@@ -7153,16 +7143,7 @@ class AdvancedMusicPlayer {
       }
     });
   }
-  onPlayerReady(event) {
-    try {
-      const qualities = this.ytPlayer.getAvailableQualityLevels();
-      if (qualities && qualities.length > 0) {
-        const lowestQuality = qualities[qualities.length - 1];
-        this.ytPlayer.setPlaybackQuality(lowestQuality);
-      }
-    } catch (error) {
-      console.warn('Could not set video quality:', error);
-    }
+  onPlayerReady() {
     this.ytPlayer.setVolume(this.savedVolume ?? 100);
     this.initializeAutoplay();
   }
@@ -10138,13 +10119,6 @@ class AdvancedMusicPlayer {
     text = text.replace(/([.!?]\s+)([a-z])/g, (match, punctuation, letter) => punctuation + letter.toUpperCase());
     return text;
   }
-  isMobileConnection() {
-    if ('connection' in navigator) {
-      const connection = navigator.connection;
-      return [ 'slow-2g', '2g', '3g' ].includes(connection.effectiveType) || connection.saveData === true;
-    }
-    return window.innerWidth <= 768;
-  }
   toggleVideoFullscreen() {
     this.isVideoFullscreen = !this.isVideoFullscreen;
     if (this.isVideoFullscreen) {
@@ -10165,9 +10139,6 @@ class AdvancedMusicPlayer {
     const ytPlayerEl = document.getElementById('ytPlayer');
     ytPlayerEl.classList.add('fullscreen-video');
     this.ytPlayer.setSize(window.innerWidth, window.innerHeight - 120);
-    if (this.isMobileConnection()) {
-      this.ytPlayer.setPlaybackQuality('small');
-    }
     if (isCurrentlyPlaying) {
       setTimeout(() => {
         this.ytPlayer.seekTo(currentTime, true);
@@ -10188,9 +10159,6 @@ class AdvancedMusicPlayer {
     const ytPlayerEl = document.getElementById('ytPlayer');
     ytPlayerEl.classList.remove('fullscreen-video');
     this.ytPlayer.setSize(1, 1);
-    if (this.isMobileConnection()) {
-      this.ytPlayer.setPlaybackQuality('small');
-    }
     if (isCurrentlyPlaying) {
       setTimeout(() => {
         this.ytPlayer.seekTo(currentTime, true);
