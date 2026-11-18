@@ -81,9 +81,11 @@
         <li><a href="#timer">Sleep timer</a></li>
         <li><a href="#identify">Identify a song</a></li>
         <li><a href="#download">Downloads and local files</a></li>
+        <li><a href="#lite">SweetEscape Lite</a></li>
         <li><a href="#stats">Listening statistics</a></li>
         <li><a href="#appearance">Themes and glass</a></li>
         <li><a href="#visualizer">Visualizer</a></li>
+        <li><a href="#battery">Battery saver</a></li>
         <li><a href="#shortcuts">Keyboard shortcuts</a></li>
         <li><a href="#disguise">Disguise</a></li>
         <li><a href="#discord">Discord</a></li>
@@ -118,6 +120,7 @@
             <li><strong>Mask</strong>: <a href="#disguise">Disguise</a>.</li>
             <li><strong>Bar chart</strong>: <a href="#stats">Listening statistics</a>.</li>
             <li><strong>Clock</strong>: <a href="#timer">Sleep timer</a> (<kbd>T</kbd>).</li>
+            <li><strong>Battery</strong>: <a href="#battery">Battery saver</a>.</li>
             <li><strong>Discord</strong>: <a href="#discord">Rich Presence</a>. The dot shows whether it's connected.</li>
             <li><strong>Magnifier</strong>: <a href="#identify">Identify a song</a>.</li>
             <li><strong>Download arrow</strong>: <a href="#download">Downloads</a>.</li>
@@ -572,6 +575,18 @@
         </figure>
       </section>
 
+      <section id="lite">
+        <div class="prose">
+          <h2>SweetEscape Lite</h2>
+          <p><a href="/lite">/lite</a> is a pared-down player for the songs you've linked to a file on your device. It has the Library with search, your Playlists showing only their offline songs, and Lyrics, which load only when you open that tab. There's no YouTube, no visualizer and nothing that needs the internet, so it uses far less battery and opens offline once you've visited the site.</p>
+          <p>Adding and editing songs, settings, the queue, statistics, the timer and Discord stay in the full player, which the arrow at the top right opens. Lite only reads your library, so it never changes anything in it.</p>
+          <p class="note">Like linking files, Lite needs Chrome or Edge. After the browser restarts it may ask once for permission to open a song's file. Press play to allow it.</p>
+        </div>
+        <figure class="shot">
+          <img src="/learn/shots/lite.jpg" width="1280" height="800" loading="lazy" alt="SweetEscape Lite with eight offline songs in the Library tab and Believer playing in the control bar.">
+        </figure>
+      </section>
+
       <section id="stats">
         <div class="prose">
           <h2>Listening statistics</h2>
@@ -637,6 +652,28 @@
         </div>
         <figure class="shot">
           <img src="/learn/shots/settings-additional.jpg" width="900" height="688" loading="lazy" alt="Settings, Additional tab with the visualizer designs, magnitude slider and library sorting toggles.">
+        </figure>
+      </section>
+
+      <section id="battery">
+        <div class="prose">
+          <h2>Battery saver</h2>
+          <p>The battery icon in the top bar switches off the parts of the player that work your computer hardest. Playback, the queue, lyrics and everything else keep working. The icon takes your accent colour while it's on, and clicking it again puts everything back exactly as it was, because battery saver never changes your own settings.</p>
+          <p>Settings, Additional decides how far it goes. Drag <strong>Strength</strong> from Normal to Extreme, or tick the options yourself:</p>
+          <ul>
+            <li><strong>Rest in the background</strong>: freezes the visualizer and moving backgrounds while another window is in front.</li>
+            <li><strong>Slower clock and lyrics</strong>: the progress bar and lyric highlight move a few times a second instead of every frame.</li>
+            <li><strong>Lighter visualizer</strong>: 12 frames a second instead of 30.</li>
+            <li><strong>Still animations</strong>: stops looping animations such as the drifting album art.</li>
+            <li><strong>Solid surfaces</strong>: shows glass panels as solid ones.</li>
+            <li><strong>Visualizer off</strong>: the biggest single saving.</li>
+            <li><strong>Plain background</strong>: hides the background image and album art.</li>
+            <li><strong>Dim the screen</strong>: darkens everything by a third, which helps most on OLED screens.</li>
+          </ul>
+          <p>Next to each option is an estimate of the extra battery life it gives on its own with your current settings, and the line underneath estimates the ticked options together. They are estimates; the real figure depends on your device and screen. For the lightest option of all, use <a href="#lite">SweetEscape Lite</a>.</p>
+        </div>
+        <figure class="shot shot--narrow">
+          <img src="/learn/shots/settings-battery.jpg" width="858" height="658" loading="lazy" alt="The Battery Saver settings at Balanced strength, with eight options and an estimated saving beside each.">
         </figure>
       </section>
 
