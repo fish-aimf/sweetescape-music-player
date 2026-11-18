@@ -530,6 +530,8 @@ class AdvancedMusicPlayer {
     this.exhaustedYouTubeKeys = new Set();
     this._ytPlaylistCache = new Map();
     this._ytPlaylistDialog = null;
+    this._embedChecks = new Map();
+    this._embedBlocked = new Set();
     this.youtubeLibrarySearchResults = [];
     this.YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3/search';
     this.topicKeywordEnabled = true;
@@ -885,6 +887,7 @@ class AdvancedMusicPlayer {
       artistPlaylistBtn: document.getElementById('artistPlaylistBtn'),
       youtubePlaylistBtn: document.getElementById('youtubePlaylistBtn'),
       songUrlPlaylistHint: document.getElementById('songUrlPlaylistHint'),
+      songUrlEmbedWarning: document.getElementById('songUrlEmbedWarning'),
       libraryOptionsDropdown: document.getElementById('libraryOptionsDropdown'),
       switchLangBtn: document.getElementById('switchLangBtn'),
       transcriptLangSelect: document.getElementById('transcriptLangSelect'),
@@ -946,7 +949,7 @@ class AdvancedMusicPlayer {
   }
   setupEventListeners() {
     const handlers = {
-      addSong: this.addSongToLibrary.bind(this),
+      addSong: () => this.addSongToLibrary(),
       filterLibrary: this.filterLibrarySongs.bind(this),
       addSongToPlaylist: this.addSongToSelectedPlaylist.bind(this),
       seekMusic: this.seekMusic.bind(this),
@@ -2325,7 +2328,7 @@ class AdvancedMusicPlayer {
     this.renderLibraryView();
     this.saveSetting('libraryReverseOrder', this.libraryReverseOrder);
   }
-  addSongToLibrary() {
+  addSongToLibrary(allowBlocked = false) {
     const songName = this.elements.songNameInput.value.trim();
     const songAuthor = this.elements.songAuthorInput.value.trim();
     const songUrl = this.elements.songUrlInput.value.trim();
@@ -2346,6 +2349,10 @@ class AdvancedMusicPlayer {
       alert('This song is already in your library');
       return;
     }
+    if (!allowBlocked && this._embedBlocked.has(videoId)) {
+      this._confirmBlockedAdd(() => this.addSongToLibrary(true));
+      return;
+    }
     const newSong = {
       id: Date.now(),
       name: songName,
@@ -2362,6 +2369,7 @@ class AdvancedMusicPlayer {
       this.elements.songAuthorInput.value = '';
       this.elements.songUrlInput.value = '';
       this.removeYouTubeThumbnailPreview();
+      this._syncEmbedWarning(null);
       this.closeLibraryModal();
     }).catch(error => {
       console.error('Error adding song to library:', error);
@@ -3576,16 +3584,51 @@ class AdvancedMusicPlayer {
   }
   validateYouTubeUrl() {
     const url = this.elements.songUrlInput.value.trim();
-    if (!url) {
-      this.removeYouTubeThumbnailPreview();
-      return;
-    }
-    const videoId = this.extractYouTubeId(url);
+    const videoId = url ? this.extractYouTubeId(url) : null;
     this.removeYouTubeThumbnailPreview();
+    this._syncEmbedWarning(videoId);
     if (videoId) {
       this.showYouTubeThumbnailPreview(videoId);
-      this.checkVideoRestrictions(videoId);
     }
+  }
+  _syncEmbedWarning(videoId) {
+    const note = this.elements.songUrlEmbedWarning;
+    if (!note || note.dataset.videoId === (videoId || '')) {
+      return;
+    }
+    note.dataset.videoId = videoId || '';
+    note.hidden = true;
+    if (!videoId) {
+      return;
+    }
+    this.checkVideoRestrictions(videoId).then(blocked => {
+      if (note.dataset.videoId === videoId) {
+        note.hidden = !blocked;
+      }
+    });
+  }
+  _confirmBlockedAdd(onConfirm) {
+    const dialog = UI.modal({
+      title: 'This song won’t play here',
+      icon: 'fa-ban',
+      size: 'sm',
+      bodyClassName: 'ui-modal__body--stack',
+      closeOnEscape: true
+    });
+    dialog.body.append(UI.el('p', 'playlist-dialog-text', 'Its uploader only allows it to be played on YouTube itself, so the player here will skip straight past it. Look for another upload of the same song, like a lyric or audio video, or add it anyway.'));
+    const addAnyway = UI.button('Add anyway', {
+      onClick: () => {
+        dialog.close();
+        onConfirm();
+      }
+    });
+    const cancel = UI.button('Find another upload', {
+      variant: 'primary',
+      onClick: dialog.close
+    });
+    dialog.addFooter(addAnyway, cancel);
+    dialog.open();
+    cancel.focus();
   }
   showYouTubeThumbnailPreview(videoId) {
     this.removeYouTubeThumbnailPreview();
@@ -3622,28 +3665,58 @@ class AdvancedMusicPlayer {
     }
   }
   checkVideoRestrictions(videoId) {
-    const tempPlayer = document.createElement('div');
-    tempPlayer.id = 'tempYTPlayer';
-    tempPlayer.style.display = 'none';
-    document.body.appendChild(tempPlayer);
-    const player = new YT.Player('tempYTPlayer', {
-      host: AdvancedMusicPlayer.YOUTUBE_HOST,
-      videoId: videoId,
-      events: {
-        onError: event => {
-          if (event.data === 101 || event.data === 150) {
-            alert('This video cannot be played outside YouTube due to restrictions set by the content owner.');
-          }
-          player.destroy();
-          document.getElementById('tempYTPlayer')?.remove();
-        },
-        onReady: () => {
-          setTimeout(() => {
-            player.destroy();
-            document.getElementById('tempYTPlayer')?.remove();
-          }, 1e3);
-        }
+    let check = this._embedChecks.get(videoId);
+    if (check) {
+      return check;
+    }
+    check = fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`).then(response => response.status === 401 || response.status === 403, () => false).then(blocked => blocked || this._probeEmbed(videoId)).then(blocked => {
+      if (blocked) {
+        this._embedBlocked.add(videoId);
       }
+      return blocked;
+    });
+    this._embedChecks.set(videoId, check);
+    return check;
+  }
+  _probeEmbed(videoId) {
+    if (typeof YT === 'undefined' || !YT.Player) {
+      return Promise.resolve(false);
+    }
+    return new Promise(resolve => {
+      const holder = document.createElement('div');
+      const mount = document.createElement('div');
+      holder.style.display = 'none';
+      holder.appendChild(mount);
+      document.body.appendChild(holder);
+      let player = null;
+      let settled = false;
+      let timer = 0;
+      const done = blocked => {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        clearTimeout(timer);
+        try {
+          player?.destroy();
+        } catch (error) {
+          console.warn('Could not close the playback check player:', error);
+        }
+        holder.remove();
+        resolve(blocked);
+      };
+      timer = setTimeout(() => done(false), 8e3);
+      player = new YT.Player(mount, {
+        host: AdvancedMusicPlayer.YOUTUBE_HOST,
+        videoId: videoId,
+        events: {
+          onError: event => done(event.data === 101 || event.data === 150),
+          onReady: () => {
+            clearTimeout(timer);
+            timer = setTimeout(() => done(false), 1e3);
+          }
+        }
+      });
     });
   }
   parseVideoTitle(title) {
@@ -15412,6 +15485,7 @@ class AdvancedMusicPlayer {
     this.elements.songAuthorInput.value = '';
     this.removeYouTubeThumbnailPreview();
     this._syncPlaylistLinkHint('');
+    this._syncEmbedWarning(null);
     this.elements.autofillBtn.disabled = true;
     this.closeLibraryModal();
     this.openYouTubePlaylistImport(url);
@@ -15585,7 +15659,7 @@ class AdvancedMusicPlayer {
       } else if (row.state === 'gone') {
         tag = '<span class="ytpl-tag ytpl-tag--muted">Unavailable</span>';
       } else if (row.state === 'blocked') {
-        tag = '<span class="ytpl-tag ytpl-tag--warn" title="The uploader only allows this video on YouTube, so it may not play here">YouTube only</span>';
+        tag = `<span class="ytpl-tag ytpl-tag--warn" title="Its uploader only allows it to be played on YouTube, so it can’t play in SweetEscape. Left unticked; tick it to add it anyway.">${UI.icon('fa-ban')} Won’t play here</span>`;
       }
       const thumb = row.state === 'gone' ? `<span class="ytpl-thumb ytpl-thumb--empty">${UI.icon('fa-ban')}</span>` : `<img class="ytpl-thumb" src="https://i.ytimg.com/vi/${esc(row.id)}/mqdefault.jpg" alt="" loading="lazy" decoding="async">`;
       const edit = row.owned || row.state === 'gone' ? '<span class="ytpl-edit-gap"></span>' : `<button type="button" class="ui-btn ui-btn--ghost ui-btn--sm ytpl-edit" title="Edit name and artist" aria-label="Edit name and artist">${UI.icon('fa-pen')}</button>`;
@@ -15658,7 +15732,7 @@ class AdvancedMusicPlayer {
       subEl.textContent = [ meta?.channel, total ? this._songCountText(total) : '', seconds ? this.formatDuration(seconds) : '' ].filter(Boolean).join(' · ');
       const gone = rows.filter(row => row.state === 'gone').length;
       const blocked = rows.filter(row => row.state === 'blocked').length;
-      notesEl.textContent = [ repeats ? `${repeats} repeat${repeats === 1 ? '' : 's'} merged` : '', gone ? `${gone} unavailable` : '', blocked ? `${blocked} YouTube-only, left unticked` : '', partial ? 'Couldn’t load the rest of the list' : '' ].filter(Boolean).join(' · ');
+      notesEl.textContent = [ repeats ? `${repeats} repeat${repeats === 1 ? '' : 's'} merged` : '', gone ? `${gone} unavailable` : '', blocked ? `${blocked} can only play on YouTube, so ${blocked === 1 ? 'it’s' : 'they’re'} left unticked` : '', partial ? 'Couldn’t load the rest of the list' : '' ].filter(Boolean).join(' · ');
       notesEl.hidden = !notesEl.textContent;
       progress.hidden = !loading;
       progress.firstChild.style.width = `${total ? Math.min(100, Math.round(rows.length / total * 100)) : 8}%`;

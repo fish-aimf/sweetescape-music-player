@@ -160,7 +160,7 @@ Notes when driving the page:
 - A `/api/count` 404 and its `"not found" is not valid JSON` page error are expected
   locally — the serverless functions in `api/` do not run under the static dev server.
 - Check both `data-theme="dark"` (default) and `"light"`, and 400px width for overflow.
-- `page.route('**/youtube.com/oembed**', …)` stubs the metadata fetches, so the add-song
+- `page.route('**/oembed**', …)` stubs the metadata fetches, so the add-song
   and autofill paths can be tested without network or API keys.
 
 ## Privacy: no YouTube cookies

@@ -19,12 +19,12 @@ export default async function handler(req, res) {
         let youtubeUrl;
         
         if (type === 'search') {
-            youtubeUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=${parsedMaxResults}&q=${encodeURIComponent(query)}&type=video&order=relevance&key=${apiKey}`;
+            youtubeUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=${parsedMaxResults}&q=${encodeURIComponent(query)}&type=video&videoEmbeddable=true&order=relevance&key=${apiKey}`;
             if (pageToken) youtubeUrl += `&pageToken=${encodeURIComponent(pageToken)}`;
         } else if (type === 'statistics') {
             youtubeUrl = `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${encodeURIComponent(query)}&key=${apiKey}`;
         } else if (type === 'combined') {
-            let searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=${parsedMaxResults}&q=${encodeURIComponent(query)}&type=video&order=relevance&key=${apiKey}`;
+            let searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=${parsedMaxResults}&q=${encodeURIComponent(query)}&type=video&videoEmbeddable=true&order=relevance&key=${apiKey}`;
             if (pageToken) searchUrl += `&pageToken=${encodeURIComponent(pageToken)}`;
             const searchResponse = await fetch(searchUrl);
             const searchData = await searchResponse.json();

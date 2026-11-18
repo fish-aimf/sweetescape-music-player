@@ -10424,6 +10424,26 @@ body.playlist-expanded-active .right-advertisement-banner {
 .add-song-section .ytpl-hint[hidden] {
   display: none;
 }
+.song-url-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ui-space-2);
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px solid color-mix(in srgb, var(--error-color) 45%, transparent);
+  border-radius: var(--ui-radius-md);
+  background: color-mix(in srgb, var(--error-color) 12%, transparent);
+  color: var(--text-primary);
+  font-size: var(--ui-font-sm);
+  line-height: var(--ui-line);
+}
+.song-url-warning i {
+  margin-top: 0.2em;
+  color: var(--error-color);
+}
+.song-url-warning[hidden] {
+  display: none;
+}
 .ui-modal__body.ytpl-body {
   display: flex;
   flex-direction: column;
@@ -10635,6 +10655,7 @@ body.playlist-expanded-active .right-advertisement-banner {
 .ytpl-tag--warn {
   background: color-mix(in srgb, var(--error-color) 14%, transparent);
   color: var(--error-color);
+  cursor: help;
 }
 .ytpl-time {
   flex-shrink: 0;
