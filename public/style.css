@@ -10,7 +10,6 @@
 #modifyLibraryBtn,
 .details-item-name,
 .find-songs-btn,
-.input-row button,
 .playlist-tool-btn,
 .speed-options,
 .time-display,
@@ -190,8 +189,6 @@ body {
 .ads-enabled .right-advertisement-banner,
 .discovery-card.expanded .discovery-expanded-list,
 .favorites-card.expanded .favorites-expanded-list,
-.global-library-songs-container.expanded,
-.library-options-dropdown.show,
 .lyrics-tab.active,
 .tab-pane.active,
 .tab-panel.active {
@@ -503,7 +500,6 @@ body {
   outline: 0;
   appearance: none;
 }
-.library-option-item:hover,
 .player-controls button:hover,
 .subtitles-import-modal-close:hover {
   color: var(--accent-color);
@@ -584,8 +580,6 @@ body {
 }
 #importSongsTextarea:focus,
 .custom-timer input:focus,
-.global-library-search-bar:focus,
-.global-library-song-edit-item input:focus,
 .modal textarea:focus,
 .section-limit-input:focus,
 .subtitles-import-lang-select:focus,
@@ -595,12 +589,7 @@ body {
   border-color: var(--accent-color);
 }
 .billboard-song-item:last-child,
-.changelog-modal-body li:last-child,
-.detailed-song-item:last-child,
-.individual-song-result:last-child,
-.library-option-item:last-child,
-.playlist-result:last-child,
-.settings-section:last-child {
+.changelog-modal-body li:last-child {
   border-bottom: currentcolor;
 }
 .right-advertisement-banner {
@@ -812,8 +801,7 @@ body[data-playlist-panel="left"] .watermark {
   color: var(--button-text-color);
 }
 .bulk-actions button#exportLibraryBtn,
-.layout-toggle button,
-.timer-button.active::after {
+.layout-toggle button {
   background-color: var(--accent-color);
 }
 #saveLyricsBtn,
@@ -933,7 +921,6 @@ body[data-playlist-panel="left"] .watermark {
   padding-right: 15px;
 }
 .controls-center .now-playing-info,
-.session-ended,
 .timer-status {
   text-align: center;
 }
@@ -999,17 +986,12 @@ body[data-playlist-panel="left"] .watermark {
   position: relative;
   overflow: hidden;
 }
-.add-single-song-btn:hover,
-.add-to-library-btn:hover,
 .billboard-add-btn:hover,
 .custom-timer button:hover,
 .fav-play-btn:hover,
-.global-library-btn:hover,
 .refresh-random-btn:hover,
 .subtitles-import-switch-lang-btn:hover,
 .timer-options button:hover,
-.update-top-songs-btn:hover,
-.view-all-btn:hover,
 .youtube-result-add-btn:hover,
 .youtube-result-replace-btn:hover {
   background: var(--hover-color);
@@ -1081,38 +1063,12 @@ body[data-playlist-panel="left"] .watermark {
 .reset-keybinds-btn:hover {
   background: var(--error-hover);
 }
-.timer-button.active::after {
-  content: "";
-  position: absolute;
-  top: -3px;
-  right: -3px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  animation: 2s infinite pulse;
-}
-.restart-button,
 .specific-time-input button {
   border: currentcolor;
   cursor: pointer;
   border-image: initial;
 }
-@keyframes pulse {
-  0% {
-    transform: scale(0.95);
-    box-shadow: rgba(93, 156, 89, 0.7) 0 0 0 0;
-  }
-  70% {
-    transform: scale(1);
-    box-shadow: rgba(93, 156, 89, 0) 0 0 0 4px;
-  }
-  100% {
-    transform: scale(0.95);
-    box-shadow: rgba(93, 156, 89, 0) 0 0 0 0;
-  }
-}
 
-.restart-button:hover,
 .specific-time-input button:hover {
   background: #2980b9;
 }
@@ -1162,8 +1118,7 @@ body[data-playlist-panel="left"] .watermark {
 .bulk-actions button {
   flex: 1 1 0%;
 }
-.bulk-actions button i,
-.select-container label {
+.bulk-actions button i {
   font-size: 14px;
 }
 .modal textarea {
@@ -1177,8 +1132,7 @@ body[data-playlist-panel="left"] .watermark {
   cursor: pointer;
 }
 
-.import-btn,
-.input-row button {
+.import-btn {
   color: #fff;
   border-image: initial;
 }
@@ -1310,7 +1264,6 @@ body[data-playlist-panel="left"] .watermark {
   margin-bottom: 12px;
   color: var(--text-primary);
 }
-.welcome-import-btn:hover,
 .welcome-skip-btn:hover {
   transform: translateY(-1px);
   box-shadow: rgba(0, 0, 0, 0.1) 0 2px 5px;
@@ -1329,7 +1282,6 @@ body[data-playlist-panel="left"] .watermark {
   color: var(--accent-color);
   font-size: 24px;
 }
-.welcome-import-btn,
 .welcome-skip-btn {
   padding: 12px 20px;
   margin: 15px 10px 0 0;
@@ -1433,8 +1385,7 @@ body[data-playlist-panel="left"] .watermark {
   object-fit: cover;
   transform: scale(1.35);
 }
-#ytPlayer iframe,
-.fullscreen-video-container iframe {
+#ytPlayer iframe {
   width: 100% !important;
   height: 100% !important;
 }
@@ -1454,8 +1405,7 @@ body[data-playlist-panel="left"] .watermark {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.export-dropdown,
-.export-submenu {
+.export-dropdown {
   box-shadow: rgba(0, 0, 0, 0.3) 0 4px 12px;
   opacity: 0;
 }
@@ -2526,7 +2476,6 @@ body:has(#ytPlayer.fullscreen-video) {
   flex-wrap: wrap;
 }
 .find-songs-header,
-.find-songs-search,
 .subtitles-import-input-section,
 .subtitles-import-instructions-container,
 .timer-action-selection {
@@ -2615,8 +2564,7 @@ body:has(#ytPlayer.fullscreen-video) {
   align-items: center;
   border-bottom: 1px solid var(--border-color);
 }
-.add-songs-button,
-.add-to-library-btn {
+.add-songs-button {
   background-color: var(--accent-color);
   border-image: initial;
 }
@@ -2775,7 +2723,6 @@ body:has(#ytPlayer.fullscreen-video) {
 .subtitles-import-auto-fetch-btn,
 .subtitles-import-cancel-btn,
 .subtitles-import-convert-btn,
-.subtitles-import-save-btn,
 .subtitles-import-youtube-btn {
   padding: 12px;
   border: currentcolor;
@@ -2793,7 +2740,6 @@ body:has(#ytPlayer.fullscreen-video) {
 .subtitles-import-auto-fetch-btn:hover,
 .subtitles-import-cancel-btn:hover,
 .subtitles-import-convert-btn:hover,
-.subtitles-import-save-btn:hover,
 .subtitles-import-youtube-btn:hover {
   transform: translateY(-2px);
 }
@@ -2903,10 +2849,7 @@ body:has(#ytPlayer.fullscreen-video) {
   box-shadow: 0 2px 8px var(--shadow-color);
   flex-shrink: 0;
 }
-.current-song-thumbnail,
-.detailed-song-item:hover,
-.individual-song-result:hover,
-.playlist-result:hover {
+.current-song-thumbnail {
   background: var(--bg-primary);
 }
 .current-song-title {
@@ -3050,8 +2993,7 @@ body:has(#ytPlayer.fullscreen-video) {
 .song-actions .song-card-btn.edit-btn:hover {
   color: var(--accent-color);
 }
-.billboard-play-btn:hover,
-.preview-btn:hover {
+.billboard-play-btn:hover {
   background: #c00;
 }
 .playlist-name {
@@ -3060,7 +3002,6 @@ body:has(#ytPlayer.fullscreen-video) {
   color: var(--text-primary);
   margin-bottom: 4px;
 }
-.detailed-song-item,
 .recommendation-title {
   border-bottom: 1px solid var(--border-color);
 }
@@ -3093,8 +3034,7 @@ body:has(#ytPlayer.fullscreen-video) {
   margin: 0 0 12px;
   padding-bottom: 8px;
 }
-.refresh-random-btn,
-.update-top-songs-btn {
+.refresh-random-btn {
   margin-top: 8px;
   cursor: pointer;
   border-image: initial;
@@ -4023,7 +3963,6 @@ body:has(#ytPlayer.fullscreen-video) {
   gap: 12px;
   align-items: center;
 }
-.discord-field-hint,
 .discord-last-update {
   gap: 4px;
   font-size: 10.5px;
@@ -4080,8 +4019,7 @@ body:has(#ytPlayer.fullscreen-video) {
   margin-top: 3px;
   opacity: 0.7;
 }
-.discord-field-group label,
-.discord-field-hint {
+.discord-field-group label {
   color: var(--text-secondary);
   display: flex;
   align-items: center;

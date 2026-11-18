@@ -729,8 +729,7 @@ a.ui-btn--block {
 .dl-title,
 .sz-title,
 .ls-title,
-.discord-modal-header-text h2,
-.modal-heading {
+.discord-modal-header-text h2 {
   display: flex;
   align-items: center;
   gap: var(--ui-space-2);
@@ -886,7 +885,6 @@ a.ui-btn--block {
 .subtitles-import-convert-btn,
 .subtitles-import-cancel-btn,
 .subtitles-import-switch-lang-btn,
-.welcome-import-btn,
 .welcome-skip-btn,
 .discord-btn,
 .dl-download-all-btn,
@@ -961,7 +959,6 @@ a.ui-btn--block {
 #autofillBtn:not(:disabled),
 .subtitles-import-convert-btn,
 .subtitles-import-auto-fetch-btn,
-.welcome-import-btn,
 .dl-download-all-btn,
 .dl-add-url-btn,
 .sz-btn-primary,
@@ -980,7 +977,6 @@ a.ui-btn--block {
 .modal button.copy-btn:hover,
 .subtitles-import-convert-btn:hover,
 .subtitles-import-auto-fetch-btn:hover:not(:disabled),
-.welcome-import-btn:hover,
 .dl-download-all-btn:hover,
 .dl-add-url-btn:hover,
 .sz-btn-primary:hover:not(:disabled),
@@ -1347,8 +1343,7 @@ a.ui-btn--block {
   color: var(--accent-color);
 }
 
-.subtitles-import-loading,
-.ui-loading {
+.subtitles-import-loading {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1710,7 +1705,6 @@ a.ui-btn--block {
 }
 
 :root[data-battery~="motion"] .app-backdrop__art,
-:root[data-battery~="motion"] .timer-button.active::after,
 :root[data-battery~="motion"] .discord-status-dot.is-connecting,
 :root[data-battery~="motion"] .discord-badge.state-connecting .discord-badge-icon,
 :root[data-battery~="motion"] .mix-lab-row.is-playing .mix-lab-row__eq span {
@@ -1842,7 +1836,6 @@ a.ui-btn--block {
 [data-surface="glass"] #additionalDetails,
 [data-surface="glass"] .playlist-sidebar,
 [data-surface="glass"] .now-playing,
-[data-surface="glass"] .music-player,
 [data-surface="glass"] .recommendations-panel,
 [data-surface="glass"] .favorites-panel,
 [data-surface="glass"] .settings-tabs,
@@ -1865,14 +1858,14 @@ a.ui-btn--block {
   -webkit-backdrop-filter: blur(calc(var(--glass-blur) * 1.3)) saturate(var(--glass-sat));
 }
 
-[data-surface="glass"] :is(.song-item, .playlist-card, .details-item, .setting-group, .keybind-category, .discovery-card, .favorites-card, .playlists-shelf, .ls-card-large, .ls-card-small, .ls-card-hero, .discord-status-card, .dl-current-card, .ui-card, .np-left, .current-song-section, #additionalDetails, .playlist-sidebar, .now-playing, .music-player, .recommendations-panel, .favorites-panel, .settings-tabs, .lyrics-navbar, .lyrics-header, .find-songs-content, .ui-modal, .modal-content, .settings-modal-content, .timer-modal-content, .changelog-modal-content, .subtitles-import-modal-content, .discord-rpc-modal, .billboard-modal-content, .qv2-panel, .dl-modal, .sz-modal, .ls-modal-content, .lyrics-maker-content, .temp-song-modal-content, .speed-options, .np-speed-options, .qv2-dropdown, .dl-search-results, .lib-filter-panel, .global-library-search-suggestions-dropdown, .mix-lab__suggest, .youtube-search-suggestion, .transport-preview-popup, .drag-link-toast) :is(.song-item, .playlist-card, .details-item, .setting-group, .keybind-category, .discovery-card, .favorites-card, .playlists-shelf, .ls-card-large, .ls-card-small, .ls-card-hero, .discord-status-card, .dl-current-card, .ui-card, .np-left, .current-song-section, #additionalDetails, .playlist-sidebar, .now-playing, .music-player, .recommendations-panel, .favorites-panel, .settings-tabs, .lyrics-navbar, .lyrics-header, .find-songs-content):not(:hover) {
+[data-surface="glass"] :is(.song-item, .playlist-card, .details-item, .setting-group, .keybind-category, .discovery-card, .favorites-card, .playlists-shelf, .discord-status-card, .dl-current-card, .ui-card, .np-left, .current-song-section, #additionalDetails, .playlist-sidebar, .now-playing, .recommendations-panel, .favorites-panel, .settings-tabs, .lyrics-navbar, .lyrics-header, .find-songs-content, .ui-modal, .modal-content, .settings-modal-content, .timer-modal-content, .changelog-modal-content, .subtitles-import-modal-content, .discord-rpc-modal, .billboard-modal-content, .qv2-panel, .dl-modal, .sz-modal, .ls-modal-content, .lyrics-maker-content, .temp-song-modal-content, .speed-options, .np-speed-options, .qv2-dropdown, .dl-search-results, .lib-filter-panel, .global-library-search-suggestions-dropdown, .mix-lab__suggest, .youtube-search-suggestion, .transport-preview-popup, .drag-link-toast) :is(.song-item, .playlist-card, .details-item, .setting-group, .keybind-category, .discovery-card, .favorites-card, .playlists-shelf, .discord-status-card, .dl-current-card, .ui-card, .np-left, .current-song-section, #additionalDetails, .playlist-sidebar, .now-playing, .recommendations-panel, .favorites-panel, .settings-tabs, .lyrics-navbar, .lyrics-header, .find-songs-content):not(:hover) {
   background-color: transparent;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   box-shadow: inset 0 0 0 1px var(--glass-sheen);
 }
 
-[data-surface="glass"] :is(.song-item, .playlist-card, .details-item, .setting-group, .keybind-category, .discovery-card, .favorites-card, .playlists-shelf, .ls-card-large, .ls-card-small, .ls-card-hero, .discord-status-card, .dl-current-card, .ui-card, .np-left, .current-song-section, #additionalDetails, .playlist-sidebar, .now-playing, .music-player, .recommendations-panel, .favorites-panel, .settings-tabs, .lyrics-navbar, .lyrics-header, .find-songs-content, .ui-modal, .modal-content, .settings-modal-content, .timer-modal-content, .changelog-modal-content, .subtitles-import-modal-content, .discord-rpc-modal, .billboard-modal-content, .qv2-panel, .dl-modal, .sz-modal, .ls-modal-content, .lyrics-maker-content, .temp-song-modal-content, .speed-options, .np-speed-options, .qv2-dropdown, .dl-search-results, .lib-filter-panel, .global-library-search-suggestions-dropdown, .mix-lab__suggest, .youtube-search-suggestion, .transport-preview-popup, .drag-link-toast) :is(.current-song-thumbnail, .details-item-thumbnail, .playlist-shelf-thumb, .discovery-thumb-wrap, .favorites-thumbnails, .global-library-suggestion-track-thumb, .global-library-suggestion-playlist-icon, .global-library-song-detail-thumb, .global-library-artist-grid-song-thumb, .discord-preview-thumb, .mix-lab-row__cover, .mix-lab-hero__art, .mix-lab__option-thumb) {
+[data-surface="glass"] :is(.song-item, .playlist-card, .details-item, .setting-group, .keybind-category, .discovery-card, .favorites-card, .playlists-shelf, .discord-status-card, .dl-current-card, .ui-card, .np-left, .current-song-section, #additionalDetails, .playlist-sidebar, .now-playing, .recommendations-panel, .favorites-panel, .settings-tabs, .lyrics-navbar, .lyrics-header, .find-songs-content, .ui-modal, .modal-content, .settings-modal-content, .timer-modal-content, .changelog-modal-content, .subtitles-import-modal-content, .discord-rpc-modal, .billboard-modal-content, .qv2-panel, .dl-modal, .sz-modal, .ls-modal-content, .lyrics-maker-content, .temp-song-modal-content, .speed-options, .np-speed-options, .qv2-dropdown, .dl-search-results, .lib-filter-panel, .global-library-search-suggestions-dropdown, .mix-lab__suggest, .youtube-search-suggestion, .transport-preview-popup, .drag-link-toast) :is(.current-song-thumbnail, .details-item-thumbnail, .playlist-shelf-thumb, .discovery-thumb-wrap, .favorites-thumbnails, .global-library-suggestion-track-thumb, .global-library-suggestion-playlist-icon, .global-library-song-detail-thumb, .global-library-artist-grid-song-thumb, .discord-preview-thumb, .mix-lab-row__cover, .mix-lab-hero__art, .mix-lab__option-thumb) {
   background-color: transparent;
 }
 

@@ -12,9 +12,9 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 | Source | sha256 (first 12) | Lines |
 |---|---|---|
-| `public/script.js` | `47162e565d5b` | 20283 |
+| `public/script.js` | `7c820b5d6899` | 20261 |
 | `public/index.html` | `d2db9a8587d9` | 1532 |
-| `public/script/settings.js` | `3bc48cfe84cc` | 560 |
+| `public/lite.js` | `ab24617b0e5c` | 459 |
 | `public/karaoke-player.js` | `3e6bb16779a4` | 682 |
 | `public/karaoke-encoder.js` | `d277db62d9e9` | 147 |
 | `public/sw.js` | `2890096289be` | 226 |
@@ -131,9 +131,9 @@ The rest match their id exactly.
 
 ## Other scripts
 
-### `public/script/settings.js` (37 members)
+### `public/lite.js` (29 members)
 
-`handleCloseSettings` 3 · `handleSettingsModalClick` 8 · `initializeSettingsContent` 14 · `setupTabs` 25 · `handleTabSwitch` 34 · `loadThemeMode` 42 · `handleThemeModeChange` 53 · `loadCustomThemeColors` 66 · `handleSaveCustomTheme` 79 · `resetCustomTheme` 122 · `handleColorChange` 141 · `updateColorPickerByKey` 155 · `updateColorPickerValues` 170 · `exportTheme` 186 · `importTheme` 218 · `applyImportedTheme` 234 · `hexToRgba` 262 · `loadAdvertisementSettingsInModal` 270 · `handleAdsToggle` 274 · `handleVisualizerToggle` 280 · `handleLibrarySortToggle` 294 · `loadLibrarySortSetting` 300 · `handleLibraryReverseToggle` 316 · `loadLibraryReverseSetting` 322 · `saveDiscordSettings` 338 · `saveKeybinds` 348 · `loadKeybindsSettings` 359 · `getKeyDisplayName` 373 · `getActionDisplayName` 389 · `startKeybindRecording` 416 · `recordKeybind` 432 · `cancelKeybindRecording` 456 · `stopKeybindRecording` 464 · `resetKeybindsToDefault` 474 · `loadDiscoverMoreSettings` 481 · `setDefaultDiscoverMoreValues` 494 · `handleSaveDiscoverMoreSettings` 508
+`start` 35 · `openDatabase` 52 · `readAll` 64 · `readSetting` 74 · `applyTheme` 84 · `collectPlaylists` 99 · `bind` 117 · `showTab` 187 · `normalize` 196 · `renderLibrary` 199 · `songRow` 210 · `renderPlaylists` 231 · `playPlaylist` 254 · `playAt` 261 · `readFile` 296 · `togglePlay` 307 · `step` 319 · `previous` 325 · `renderNowPlaying` 332 · `setStatus` 350 · `markCurrent` 353 · `syncPlaying` 356 · `syncTime` 365 · `formatTime` 375 · `renderLyrics` 379 · `highlightLyric` 413 · `emptyMessage` 432 · `el` 435 · `icon` 445
 
 ### `public/karaoke-player.js` (40 members)
 

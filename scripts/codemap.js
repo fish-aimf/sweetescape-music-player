@@ -7,7 +7,7 @@ const OUT = path.join(root, 'CODEMAP.md');
 
 const CONTROL_WORDS = new Set([ 'if', 'for', 'while', 'switch', 'catch', 'return', 'do', 'else', 'try', 'function', 'typeof', 'new', 'await', 'constructor' ]);
 
-const OTHER_SCRIPTS = [ 'public/script/settings.js', 'public/karaoke-player.js', 'public/karaoke-encoder.js', 'public/sw.js' ];
+const OTHER_SCRIPTS = [ 'public/lite.js', 'public/karaoke-player.js', 'public/karaoke-encoder.js', 'public/sw.js' ];
 
 const TOPICS = [
   [ 'Startup & database', [ '^_initialize', 'initDatabase', '^load[A-Z]', '^save[A-Z]', 'Migration', 'repairEncoded', 'gracefulDatabase', '^cleanup', 'clearTimers', 'saveCurrentState' ] ],

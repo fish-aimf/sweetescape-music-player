@@ -30,9 +30,6 @@ This document explains the structure and main components of **SweetEscape Music 
   `<audio>` element. It reuses `style.css` and `ui-system.css` so it looks like the app,
   never writes to the database, and is precached by `sw.js` so it opens offline.
 
-- **script/settings.js**  
-  Settings modal behaviour, fetched lazily the first time the modal opens.
-
 - **scripts/**  
   Repo tooling, not shipped to the browser: `codemap.js` regenerates `CODEMAP.md`,
   `audit-css.js` reports unused selectors, `dev-server.js` serves `public/` locally, and
@@ -40,7 +37,7 @@ This document explains the structure and main components of **SweetEscape Music 
 
 - **api/**  
   Vercel serverless functions: `youtube`, `deezer`, `musixmatch`, `shazam`, `download`,
-  `count`, `gemini` and `song/[videoId]` (which renders the Open Graph share page).
+  `count` and `song/[videoId]` (which renders the Open Graph share page).
 
 ---
 

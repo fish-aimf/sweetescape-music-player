@@ -463,7 +463,6 @@ class AdvancedMusicPlayer {
     };
     this.ytPlayer = null;
     this.ytPlayerReady = false;
-    this.fullscreenYtPlayer = null;
     this.isSidebarVisible = false;
     this.isVideoFullscreen = false;
     this.isWebEmbedVisible = false;
@@ -577,18 +576,14 @@ class AdvancedMusicPlayer {
     this._ytPlaylistDialog = null;
     this._embedChecks = new Map();
     this._embedBlocked = new Set();
-    this.youtubeLibrarySearchResults = [];
-    this.YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3/search';
     this.topicKeywordEnabled = true;
     this.replaceTargetSongId = null;
     this.supabase = null;
     this.supabaseReadyPromise = null;
     this.supadataApiKey = 'sd_b3095aebbee9e4a7e6333bca9027b4cc';
     this.currentSongForSubtitlesImport = null;
-    this.searchTimeout = null;
     this.librarySearchTimeout = null;
     this.sidebarSearchDebounceTimer = null;
-    this.importModal = null;
     this.closeImportModalBtn = null;
     this.importSongsBtn = null;
     this.importSongsTextarea = null;
@@ -818,7 +813,6 @@ class AdvancedMusicPlayer {
       playlistTotalDuration: document.getElementById('playlistTotalDuration'),
       loopPlaylistBtn: document.getElementById('loopPlaylistBtn'),
       autoplayBtn: document.getElementById('autoplayBtn'),
-      playlistSongsContent: document.getElementById('playlistSongsContent'),
       addSongToPlaylistBtn: document.getElementById('addSongToPlaylistBtn'),
       playlistSelectionForSong: document.getElementById('playlistSelectionForSong'),
       importLibraryBtn: document.getElementById('importLibraryBtn'),
@@ -853,14 +847,12 @@ class AdvancedMusicPlayer {
       tabs: document.querySelectorAll('.tab'),
       tabPanes: document.querySelectorAll('.tab-pane'),
       themeToggle: document.getElementById('themeToggle'),
-      lyricsTab: document.querySelector('.tab[data-tab="lyrics"]'),
       lyricsPane: document.getElementById('lyrics'),
       autofillBtn: document.getElementById('autofillBtn'),
       autofillUndoBtn: document.getElementById('autofillUndoBtn'),
       settingsButton: document.getElementById('settingsButton'),
       settingsModal: document.getElementById('settingsModal'),
       settingsCloseBtn: document.getElementById('settingsCloseBtn'),
-      settingsContent: document.getElementById('settingsContent'),
       themeMode: document.getElementById('themeMode'),
       surfaceStyle: document.getElementById('surfaceStyle'),
       glassControls: document.getElementById('glassControls'),
@@ -912,10 +904,6 @@ class AdvancedMusicPlayer {
       youtubeRedColorPicker: document.getElementById('youtubeRedColorPicker'),
       adsToggle: document.getElementById('adsToggle'),
       recentlyPlayedStorageLimit: document.getElementById('recentlyPlayedStorageLimit'),
-      recentlyPlayedDisplayLimit: document.getElementById('recentlyPlayedDisplayLimit'),
-      suggestedSongsDisplayLimit: document.getElementById('suggestedSongsDisplayLimit'),
-      yourPicksDisplayLimit: document.getElementById('yourPicksDisplayLimit'),
-      recentlyPlayedPlaylistsLimit: document.getElementById('recentlyPlayedPlaylistsLimit'),
       saveDiscoverMoreSettings: document.getElementById('saveDiscoverMoreSettings'),
       discordButton: document.getElementById('discordButton'),
       visualizerToggle: document.getElementById('visualizerToggle'),
@@ -927,8 +915,6 @@ class AdvancedMusicPlayer {
       findSongsDiv: document.getElementById('findSongsDiv'),
       librarySortToggle: document.getElementById('librarySortToggle'),
       libraryReverseToggle: document.getElementById('libraryReverseToggle'),
-      aiImportGlobalBtn: document.getElementById('aiImportGlobalBtn'),
-      importModal: document.getElementById('importModal'),
       closeImportModalBtn: document.getElementById('closeImportModal'),
       importSongsBtn: document.getElementById('importSongsBtn'),
       importSongsTextarea: document.getElementById('importSongsTextarea'),
@@ -938,7 +924,6 @@ class AdvancedMusicPlayer {
       youtubePlaylistBtn: document.getElementById('youtubePlaylistBtn'),
       songUrlPlaylistHint: document.getElementById('songUrlPlaylistHint'),
       songUrlEmbedWarning: document.getElementById('songUrlEmbedWarning'),
-      libraryOptionsDropdown: document.getElementById('libraryOptionsDropdown'),
       switchLangBtn: document.getElementById('switchLangBtn'),
       transcriptLangSelect: document.getElementById('transcriptLangSelect'),
       statsButton: document.getElementById('statsButton'),
@@ -6618,8 +6603,6 @@ class AdvancedMusicPlayer {
         return;
       }
       this.ytPlayer.seekTo(seekTime, true);
-      this.pendingSeekTime = seekTime;
-      this.pendingSeekTimestamp = Date.now();
     }
     this._syncTransportDisplays(seekTime, duration);
     this.updateHighlightedLyric(seekTime, this.currentLyrics ?? [], this.currentTimings ?? []);
@@ -10537,7 +10520,7 @@ class AdvancedMusicPlayer {
         once: true
       });
     };
-    this._queueNotifTimer = setTimeout(hide, 2200);
+    setTimeout(hide, 2200);
   }
   _queueRefreshPanel() {
     const panel = document.getElementById('qv2-panel');
@@ -14451,7 +14434,6 @@ class AdvancedMusicPlayer {
     this.globalLibrarySearchDebounceTimer = null;
     this.globalLibrarySearchAbortController = null;
     this.globalLibraryCurrentArtistContext = null;
-    this.globalLibraryCurrentDetailContext = null;
     const bar = document.getElementById('globalLibraryDebouncedSearchBar');
     if (!bar) {
       return;
@@ -14668,7 +14650,6 @@ class AdvancedMusicPlayer {
   }
   async handleGlobalLibrarySongCardClick(song) {
     this.closeGlobalLibrarySearchSuggestionsDropdown();
-    this.globalLibraryCurrentDetailContext = song.sourceContext || 'root';
     this.renderGlobalLibrarySongDetailCardLoading(song);
     try {
       const resolved = await this.resolveGlobalLibrarySongYouTubeId(song.name, song.artist);
@@ -14718,7 +14699,6 @@ class AdvancedMusicPlayer {
       card.classList.remove('visible');
       card.innerHTML = '';
     }
-    this.globalLibraryCurrentDetailContext = null;
   }
   normalizeGlobalLibrarySearchKey(name, artist) {
     return `${name.trim().toLowerCase()}::${(artist || '').trim().toLowerCase()}`;
@@ -19717,7 +19697,6 @@ class AdvancedMusicPlayer {
       modal = document.getElementById('tempSongModal');
     }
     modal.style.display = 'flex';
-    this.isTemporarySongPlaying = true;
   }
   updateTemporarySongUrlDisplay(videoId) {
     const urlInput = document.getElementById('tempSongUrlDisplay');
@@ -19826,7 +19805,6 @@ class AdvancedMusicPlayer {
       this.tempYtPlayerReady = false;
     }
     this.temporarySongPendingVideoId = null;
-    this.isTemporarySongPlaying = false;
     const container = document.getElementById('tempYtPlayerContainer');
     if (container) {
       container.innerHTML = '<div id="tempYtPlayer"></div>';

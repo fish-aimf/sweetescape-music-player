@@ -7,7 +7,7 @@ const GROUPS = [
   {
     label: 'app',
     css: [ 'public/style.css', 'public/ui-system.css' ],
-    sources: [ 'public/index.html', 'public/script.js', 'public/script/settings.js', 'public/sw.js', 'public/register-sw.js', 'public/karaoke-encoder.js' ]
+    sources: [ 'public/index.html', 'public/script.js', 'public/sw.js', 'public/register-sw.js', 'public/karaoke-encoder.js' ]
   },
   {
     label: 'karaoke',
@@ -105,6 +105,48 @@ function collectRules(css) {
   return { rules, keyframes };
 }
 
+function splitSelectors(selector) {
+  const parts = [];
+  let depth = 0;
+  let current = '';
+  for (const ch of selector) {
+    if (ch === '(') {
+      depth++;
+    } else if (ch === ')') {
+      depth--;
+    }
+    if (ch === ',' && depth === 0) {
+      parts.push(current.trim());
+      current = '';
+    } else {
+      current += ch;
+    }
+  }
+  parts.push(current.trim());
+  return parts.filter(Boolean);
+}
+
+function outsideParens(part) {
+  let depth = 0;
+  let out = '';
+  for (const ch of part) {
+    if (ch === '(') {
+      depth++;
+    }
+    if (depth === 0) {
+      out += ch;
+    }
+    if (ch === ')') {
+      depth--;
+    }
+  }
+  return out;
+}
+
+function selectorLists(part) {
+  return [ ...part.matchAll(/:(?:is|where)\(([^()]*)\)/g) ].map(match => match[1].split(',').map(item => item.trim()));
+}
+
 function classesIn(selectorPart) {
   return (selectorPart.match(/\.(-?[A-Za-z_][A-Za-z0-9_-]*)/g) || []).map(c => c.slice(1));
 }
@@ -135,18 +177,21 @@ GROUPS.forEach(group => {
     }
     const { rules, keyframes } = collectRules(css);
     const dead = [];
+    const allLive = text => classesIn(text).every(className => isLive(className, tokens, prefixes));
+    const partLive = part => allLive(outsideParens(part)) && selectorLists(part).every(items => items.some(allLive));
+    const deadParts = [];
     rules.forEach(rule => {
-      const parts = rule.selector.split(',').map(p => p.trim()).filter(Boolean);
-      const anyLive = parts.some(part => {
-        const classes = classesIn(part);
-        if (classes.length === 0) {
-          return true;
-        }
-        return classes.every(className => isLive(className, tokens, prefixes));
-      });
-      if (!anyLive) {
+      const parts = splitSelectors(rule.selector);
+      if (!parts.some(partLive)) {
         dead.push(rule);
+        return;
       }
+      parts.forEach(part => {
+        if (!partLive(part)) {
+          deadParts.push({ line: rule.line, text: part });
+        }
+        selectorLists(part).forEach(items => items.filter(item => !allLive(item)).forEach(item => deadParts.push({ line: rule.line, text: item + ' (inside :is/:where)' })));
+      });
     });
     const animationNames = new Set();
     (stripComments(css).match(/animation(?:-name)?\s*:[^;}]+/g) || []).forEach(decl => {
@@ -157,6 +202,9 @@ GROUPS.forEach(group => {
     console.log(`\n  ${cssFile}: ${rules.length} rules, ${keyframes.length} @keyframes`);
     console.log(`    comma-groups with no live part: ${dead.length}`);
     dead.forEach(rule => console.log(`      ${cssFile}:${rule.line}  ${rule.selector.replace(/\s+/g, ' ').slice(0, 160)}`));
+    deadTotal += deadParts.length;
+    console.log(`    dead selectors inside live groups: ${deadParts.length}`);
+    deadParts.forEach(part => console.log(`      ${cssFile}:${part.line}  ${part.text.replace(/\s+/g, ' ').slice(0, 160)}`));
     console.log(`    @keyframes with no animation-name reference: ${deadKeyframes.length}`);
     deadKeyframes.forEach(frame => console.log(`      ${cssFile}:${frame.line}  @keyframes ${frame.name}`));
   });

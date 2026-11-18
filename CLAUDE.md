@@ -11,14 +11,13 @@ There is no bundler, no package.json, no test suite. Edit the file, reload the p
 | `public/script.js` | One class, `AdvancedMusicPlayer`, plus a module-level `UI` factory (~15k lines, 600 KB) |
 | `public/style.css` | Feature styles. Machine-formatted: selectors are merged into shared groups, so one class's rules are scattered across many blocks |
 | `public/ui-system.css` | Design system. Loads **after** style.css and is authoritative for shared chrome |
-| `public/script/settings.js` | Settings modal behaviour, lazy-fetched on first open |
 | `public/karaoke.html` + `karaoke-styles.css` + `karaoke-player.js` + `karaoke-encoder.js` | Standalone karaoke share page |
 | `public/lite.html` + `lite.js` + `lite.css` | SweetEscape Lite at `/lite`: offline songs, playlists and lyrics only. Reads `MusicPlayerDB` and never writes to it; keep it free of anything that needs the network |
 | `public/manifest.webmanifest` + `public/icons/` | Makes the app installable (Chrome/Edge); Lite is a shortcut on the icon. Icons are PNGs rendered from `favicon.svg` |
 | `public/sw.js` | Service worker. `STATIC_ASSETS` must list any new top-level asset; `NETWORK_ONLY_PREFIXES` lists paths it must never cache |
 | `public/introduction.html`, `public/tutorial.html` | Static SEO pages served at `/introduction` and `/tutorial`, styled by `public/learn/learn.css`, screenshots in `public/learn/shots/` |
 | `public/guide/` | Guide mode (`guide.js` module, `guide.json` content, `guide.css`). Fetched only on Alt+Shift+G or `/?guide`, never cached |
-| `api/` | Vercel serverless functions (`youtube`, `deezer`, `musixmatch`, `shazam`, `download`, `count`, `gemini`, `song/[videoId]`, `youtube-iframe-api`) |
+| `api/` | Vercel serverless functions (`youtube`, `deezer`, `musixmatch`, `shazam`, `download`, `count`, `song/[videoId]`, `youtube-iframe-api`) |
 | `rpc/` | SweetEscape RPC, the Discord tray app (`sweetescape_rpc.pyw`) with hash-pinned requirements. Released as an exe by `.github/workflows/rpc-release.yml` on an `rpc-vX.Y.Z` tag; bump `VERSION` there and `DISCORD_APP_VERSION` in `script.js` together. Read `rpc/README.md` before changing what it accepts |
 | `public/llms.txt` | Plain-text summary of the site for AI assistants; keep it in step with `introduction.html` |
 | `vercel.json` | Rewrites + the immutable `Cache-Control` regex for hashed-forever assets |
@@ -135,8 +134,8 @@ text headed for `textContent` or an input `value`.
 No test suite. Do this instead:
 
 ```bash
-node --check public/script.js public/script/settings.js public/sw.js public/karaoke-player.js public/karaoke-encoder.js
-node scripts/audit-css.js      # unused selectors + orphan @keyframes; clean baseline is 0/0
+node --check public/script.js public/lite.js public/sw.js public/karaoke-player.js public/karaoke-encoder.js
+node scripts/audit-css.js      # dead rules, dead selectors inside live groups, orphan @keyframes; clean baseline is 0/0/0
 node scripts/codemap.js        # refresh CODEMAP.md
 node scripts/dev-server.js     # serves public/ on http://localhost:4173 with the site-wide headers from vercel.json (CSP included)
 ```
