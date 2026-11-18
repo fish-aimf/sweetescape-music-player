@@ -13,6 +13,8 @@
         <link rel="canonical" href="https://sweetescape.vercel.app/">
         <title>SweetEscape – Music Player</title>
         <link rel="icon" type="image/svg+xml" href="favicon.svg">
+        <link rel="manifest" href="/manifest.webmanifest">
+        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 
 
         <link rel="preconnect" href="https://i.ytimg.com">
@@ -1119,6 +1121,11 @@ Another Playlist{
                         <div class="battery-options" id="batteryFeatures"></div>
                         <p class="setting-description" id="batteryEstimate"></p>
                         <p class="setting-description">For the lightest option there is <a href="/lite">SweetEscape Lite</a>: just your offline songs, playlists and lyrics, and it works without internet.</p>
+                     </div>
+                     <div class="setting-group" id="installAppGroup" style="display: none;">
+                        <label>Install SweetEscape:</label>
+                        <p class="setting-description">Opens the player in its own window, with an icon in your taskbar and Start menu, and it still opens offline. Right-click the icon (long-press on a phone) to go straight to SweetEscape Lite.</p>
+                        <button type="button" id="installAppBtn" class="ui-btn ui-btn--primary"><i class="fas fa-desktop"></i> Install</button>
                      </div>
                      <div class="setting-group">
                         <label for="adsToggle">Enable Advertisements:</label>

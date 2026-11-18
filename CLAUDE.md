@@ -14,6 +14,7 @@ There is no bundler, no package.json, no test suite. Edit the file, reload the p
 | `public/script/settings.js` | Settings modal behaviour, lazy-fetched on first open |
 | `public/karaoke.html` + `karaoke-styles.css` + `karaoke-player.js` + `karaoke-encoder.js` | Standalone karaoke share page |
 | `public/lite.html` + `lite.js` + `lite.css` | SweetEscape Lite at `/lite`: offline songs, playlists and lyrics only. Reads `MusicPlayerDB` and never writes to it; keep it free of anything that needs the network |
+| `public/manifest.webmanifest` + `public/icons/` | Makes the app installable (Chrome/Edge); Lite is a shortcut on the icon. Icons are PNGs rendered from `favicon.svg` |
 | `public/sw.js` | Service worker. `STATIC_ASSETS` must list any new top-level asset; `NETWORK_ONLY_PREFIXES` lists paths it must never cache |
 | `public/introduction.html`, `public/tutorial.html` | Static SEO pages served at `/introduction` and `/tutorial`, styled by `public/learn/learn.css`, screenshots in `public/learn/shots/` |
 | `public/guide/` | Guide mode (`guide.js` module, `guide.json` content, `guide.css`). Fetched only on Alt+Shift+G or `/?guide`, never cached |

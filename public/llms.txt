@@ -40,4 +40,5 @@ SweetEscape is built by one developer (fish-aimf) in plain HTML, CSS and JavaScr
 - Is it free? Yes, with no paid tier.
 - Does it work on phones? Yes, in mobile browsers. Local file linking and the miniplayer need desktop Chrome or Edge.
 - How do I move my library? Modify Library, Import/Export: export to text, then import it on the other device.
+- Can it be installed? Yes, as an app with its own window and icon from Chrome or Edge (Install in Settings, Additional), with SweetEscape Lite as a shortcut on the icon.
 - Does it work offline? The app does after the first visit; songs need a connection unless a local audio file is linked, and SweetEscape Lite plays those linked songs offline.

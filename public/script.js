@@ -508,6 +508,7 @@ class AdvancedMusicPlayer {
     this.batterySaver = this.getBatterySaverDefaults();
     this.batteryIdle = false;
     this.mediaSessionKey = null;
+    this.installPrompt = null;
     this.miniplayerWindow = null;
     this._miniplayerEls = null;
     this._miniplayerInterval = null;
@@ -648,6 +649,7 @@ class AdvancedMusicPlayer {
     this.lyricMakerCleanup = null;
     this.guidePromise = null;
     this.elements = {};
+    this.watchInstallPrompt();
     this._initialize();
   }
   async _initialize() {
@@ -699,6 +701,8 @@ class AdvancedMusicPlayer {
     this.initializeAutoplay();
     this.setupKeyboardControls();
     this.setupMediaSession();
+    this.elements.installAppBtn?.addEventListener('click', () => this.installApp());
+    this.syncInstallButton();
     this.setupNavigationGuards();
     this.setupGuideHotkey();
     this.renderInitialState();
@@ -944,6 +948,8 @@ class AdvancedMusicPlayer {
       batteryLevelValue: document.getElementById('batteryLevelValue'),
       batteryFeatures: document.getElementById('batteryFeatures'),
       batteryEstimate: document.getElementById('batteryEstimate'),
+      installAppGroup: document.getElementById('installAppGroup'),
+      installAppBtn: document.getElementById('installAppBtn'),
       lsPanel: document.getElementById('lsPanel'),
       lsRangeTabs: document.getElementById('lsRangeTabs'),
       listeningStatsToggle: document.getElementById('listeningStatsToggle')
@@ -7085,6 +7091,32 @@ class AdvancedMusicPlayer {
     this.updatePageTitle();
     this.syncMediaSession(currentSong);
     this.updateNowPlayingView();
+  }
+  watchInstallPrompt() {
+    window.addEventListener('beforeinstallprompt', event => {
+      event.preventDefault();
+      this.installPrompt = event;
+      this.syncInstallButton();
+    });
+    window.addEventListener('appinstalled', () => {
+      this.installPrompt = null;
+      this.syncInstallButton();
+      this.showNotification('SweetEscape is installed', 'success');
+    });
+  }
+  syncInstallButton() {
+    if (this.elements.installAppGroup) {
+      this.elements.installAppGroup.style.display = this.installPrompt ? '' : 'none';
+    }
+  }
+  async installApp() {
+    const prompt = this.installPrompt;
+    if (!prompt) {
+      return;
+    }
+    this.installPrompt = null;
+    this.syncInstallButton();
+    await prompt.prompt();
   }
   setupMediaSession() {
     if (!('mediaSession' in navigator)) {
