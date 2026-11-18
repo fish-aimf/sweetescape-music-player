@@ -23,6 +23,10 @@
     {
       "source": "/tutorial",
       "destination": "/tutorial.html"
+    },
+    {
+      "source": "/lite",
+      "destination": "/lite.html"
     }
   ],
   "redirects": [
@@ -34,6 +38,11 @@
     {
       "source": "/tutorial.html",
       "destination": "/tutorial",
+      "permanent": true
+    },
+    {
+      "source": "/lite.html",
+      "destination": "/lite",
       "permanent": true
     },
     {

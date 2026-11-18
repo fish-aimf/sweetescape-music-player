@@ -23,6 +23,11 @@ const GROUPS = [
     label: 'guide',
     css: [ 'public/guide/guide.css' ],
     sources: [ 'public/guide/guide.js' ]
+  },
+  {
+    label: 'lite',
+    css: [ 'public/lite.css' ],
+    sources: [ 'public/lite.html', 'public/lite.js' ]
   }
 ];
 

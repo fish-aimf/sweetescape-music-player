@@ -24,6 +24,12 @@ This document explains the structure and main components of **SweetEscape Music 
 - **favicon.svg**  
   Icon displayed in the browser tab.
 
+- **lite.html**, **lite.js**, **lite.css**  
+  SweetEscape Lite at `/lite`: one small `LitePlayer` class that opens `MusicPlayerDB`
+  read-only, lists the songs that have a `localFileHandle`, and plays them with a single
+  `<audio>` element. It reuses `style.css` and `ui-system.css` so it looks like the app,
+  never writes to the database, and is precached by `sw.js` so it opens offline.
+
 - **script/settings.js**  
   Settings modal behaviour, fetched lazily the first time the modal opens.
 

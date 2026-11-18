@@ -1,0 +1,30 @@
+.lite .app-container {
+  padding-bottom: var(--lite-bar, 150px);
+}
+.lite-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ui-space-3);
+  margin-bottom: var(--ui-space-4);
+}
+.lite-title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ui-space-2);
+  font-size: var(--ui-font-md);
+  font-weight: var(--ui-weight-semibold);
+  color: var(--text-primary);
+}
+.lite-title i {
+  color: var(--accent-color);
+}
+.lite .song-item {
+  cursor: pointer;
+}
+.lite .song-item.is-current .song-name {
+  color: var(--accent-color);
+}
+.lite .lyrics-display {
+  padding: var(--ui-space-3);
+}

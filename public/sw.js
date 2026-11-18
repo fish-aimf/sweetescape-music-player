@@ -21,7 +21,7 @@ async function getActiveCacheName() {
 
 const NETWORK_ONLY_PREFIXES = [ "/api/", "/guide/", "/learn/", "/introduction", "/tutorial" ];
 
-const STATIC_ASSETS = [ "/", "/index.html", "/style.css", "/ui-system.css", "/all.min.css", "/script.js", "/karaoke-encoder.js", "/favicon.svg" ];
+const STATIC_ASSETS = [ "/", "/index.html", "/style.css", "/ui-system.css", "/all.min.css", "/script.js", "/karaoke-encoder.js", "/favicon.svg", "/lite", "/lite.js", "/lite.css", "/register-sw.js", "/webfonts/fa-solid-900.woff2" ];
 
 function timeout(ms) {
   return new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), ms));

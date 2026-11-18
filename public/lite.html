@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" class="lite">
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="theme-color" content="#1a1a1a">
+      <meta name="description" content="SweetEscape Lite plays the songs saved on your device with as little battery and data as possible, and works offline.">
+      <meta name="robots" content="noindex">
+      <title>SweetEscape Lite</title>
+      <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+      <link rel="preload" href="/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+      <link rel="stylesheet" href="/all.min.css">
+      <link rel="stylesheet" href="/style.css">
+      <link rel="stylesheet" href="/ui-system.css">
+      <link rel="stylesheet" href="/lite.css">
+      <script src="/lite.js" defer></script>
+      <script src="/register-sw.js" defer></script>
+   </head>
+   <body>
+      <div class="app-container">
+         <div class="lite-header">
+            <span class="lite-title"><i class="fas fa-feather"></i> SweetEscape Lite</span>
+            <div class="theme-toggle">
+               <button id="liteFullButton" title="Open the full player">
+                  <i class="fas fa-up-right-from-square"></i>
+               </button>
+            </div>
+         </div>
+         <div class="main-container">
+            <div class="player-area">
+               <div class="tabs">
+                  <button class="tab active" data-tab="library">Library</button>
+                  <button class="tab" data-tab="playlists">Playlists</button>
+                  <button class="tab" data-tab="lyrics">Lyrics</button>
+               </div>
+               <div class="tab-content">
+                  <div class="tab-pane active" id="library">
+                     <div class="library-manager">
+                        <div class="search-section">
+                           <div class="library-search-wrap">
+                              <input type="text" id="librarySearch" placeholder="Search offline songs..." autocomplete="off">
+                           </div>
+                        </div>
+                        <div id="songLibrary" class="song-list"></div>
+                     </div>
+                  </div>
+                  <div class="tab-pane" id="playlists">
+                     <div class="playlist-manager">
+                        <div id="playlistContainer" class="playlist-container"></div>
+                     </div>
+                  </div>
+                  <div class="tab-pane" id="lyrics">
+                     <div class="lyrics-container">
+                        <div class="lyrics-content" id="lyricsContent">
+                           <p class="no-lyrics-message">No song playing</p>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+         <div class="now-playing">
+            <div class="music-progress">
+               <input type="range" id="musicProgressBar" min="0" max="100" value="0" step="0.1" aria-label="Position">
+               <div id="timeDisplay" class="time-display">0:00/0:00</div>
+            </div>
+            <div class="now-playing-info">
+               <div class="current-song">
+                  <span id="currentSongName">No Song Playing</span>
+               </div>
+               <div class="next-song">
+                  <span>Next: </span>
+                  <span id="nextSongName">-</span>
+               </div>
+            </div>
+            <div class="player-controls">
+               <button id="prevBtn" title="Previous"><i class="fas fa-step-backward"></i></button>
+               <button id="playPauseBtn" title="Play"><i class="fas fa-play"></i></button>
+               <button id="nextBtn" title="Next"><i class="fas fa-step-forward"></i></button>
+               <button id="loopBtn" title="Repeat this song"><i class="fas fa-redo"></i></button>
+            </div>
+            <div class="volume-control">
+               <i class="fas fa-volume-down"></i>
+               <input type="range" id="volumeSlider" min="0" max="100" value="100" aria-label="Volume">
+               <i class="fas fa-volume-up"></i>
+            </div>
+         </div>
+      </div>
+   </body>
+</html>
