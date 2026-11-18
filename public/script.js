@@ -507,6 +507,7 @@ class AdvancedMusicPlayer {
     this.visualizerEnabled = true;
     this.batterySaver = this.getBatterySaverDefaults();
     this.batteryIdle = false;
+    this.mediaSessionKey = null;
     this.miniplayerWindow = null;
     this._miniplayerEls = null;
     this._miniplayerInterval = null;
@@ -697,6 +698,7 @@ class AdvancedMusicPlayer {
     this.setupAppearanceListeners();
     this.initializeAutoplay();
     this.setupKeyboardControls();
+    this.setupMediaSession();
     this.setupNavigationGuards();
     this.setupGuideHotkey();
     this.renderInitialState();
@@ -7043,6 +7045,7 @@ class AdvancedMusicPlayer {
         playPauseIcon.classList.add('fa-play');
       }
       this.updatePageTitle();
+      this.syncMediaSession(null);
       return;
     }
     this.elements.currentSongName.textContent = currentSong.name;
@@ -7080,7 +7083,64 @@ class AdvancedMusicPlayer {
       this.renderPlaylistSidebar();
     }
     this.updatePageTitle();
+    this.syncMediaSession(currentSong);
     this.updateNowPlayingView();
+  }
+  setupMediaSession() {
+    if (!('mediaSession' in navigator)) {
+      return;
+    }
+    const actions = {
+      play: () => {
+        if (!this.isPlaying) {
+          this.togglePlayPause();
+        }
+      },
+      pause: () => {
+        if (this.isPlaying) {
+          this.togglePlayPause();
+        }
+      },
+      previoustrack: () => this.playPreviousSong(),
+      nexttrack: () => this.playNextSong(),
+      seekbackward: details => this.seekBy(-(details.seekOffset || 10)),
+      seekforward: details => this.seekBy(details.seekOffset || 10)
+    };
+    Object.entries(actions).forEach(([ action, handler ]) => {
+      try {
+        navigator.mediaSession.setActionHandler(action, handler);
+      } catch {}
+    });
+  }
+  syncMediaSession(song) {
+    if (!('mediaSession' in navigator)) {
+      return;
+    }
+    const session = navigator.mediaSession;
+    session.playbackState = !song ? 'none' : this.isPlaying ? 'playing' : 'paused';
+    const disguised = this.priorityModeActive ? document.title : '';
+    const album = this.currentPlaylist?.name || 'SweetEscape';
+    const key = song ? [ song.id, song.name, song.author, song.thumbnailUrl, album, disguised ].join('|') : '';
+    if (key === this.mediaSessionKey) {
+      return;
+    }
+    this.mediaSessionKey = key;
+    if (!song) {
+      session.metadata = null;
+    } else if (disguised) {
+      session.metadata = new MediaMetadata({
+        title: disguised
+      });
+    } else {
+      session.metadata = new MediaMetadata({
+        title: song.name,
+        artist: song.author || '',
+        album,
+        artwork: [ {
+          src: song.thumbnailUrl || `https://i.ytimg.com/vi/${song.videoId}/mqdefault.jpg`
+        } ]
+      });
+    }
   }
   formatTime(seconds) {
     if (isNaN(seconds) || seconds < 0) {
@@ -10855,6 +10915,7 @@ class AdvancedMusicPlayer {
       this.stopTitleMonitor();
       this.changeFavicon(this.themedFavicon || this.originalFavicon);
       this.updatePageTitle();
+      this.syncMediaSession(this.currentSong);
       return;
     }
     localStorage.setItem('faviconDisguise', disguise.id);
@@ -10862,6 +10923,7 @@ class AdvancedMusicPlayer {
     this.changeFavicon(this.disguiseIconUrl(disguise.svg));
     this.priorityModeActive = true;
     this.startTitleMonitor(disguise.title);
+    this.syncMediaSession(this.currentSong);
   }
   normalizeEmbedUrl(value) {
     const text = value.trim();

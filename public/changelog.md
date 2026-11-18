@@ -826,3 +826,4 @@ SweetEscape Lite at /lite: a stripped-down player for the songs saved on your de
 The introduction and tutorial now cover the battery saver and SweetEscape Lite, with screenshots of both v76.26.1
 The battery saver button now turns into a leaf while it is on, instead of filling with the accent colour v76.26.2
 The visualizer now sleeps between its frames instead of waking on every screen refresh, which saves the most on 120 Hz and 144 Hz screens and when battery saver lowers it to 12 frames a second v76.26.3
+Media keys now work: play, pause, next and previous on the keyboard, headphones or the Windows media overlay control the player, which also shows the song name, artist and cover there; with a disguise on it shows only the disguise title v76.27.0
