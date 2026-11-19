@@ -749,10 +749,11 @@ body {
 .song-card-thumbnail {
   flex-shrink: 0;
   width: var(--ui-side-panel-thumb);
-  aspect-ratio: 16 / 9;
-  border-radius: var(--ui-radius-sm);
+  aspect-ratio: 1;
   object-fit: cover;
   background-color: var(--ui-surface-sunken);
+  transform: scale(1.08);
+  clip-path: inset(4% round var(--ui-radius-sm));
 }
 .song-card-actions {
   display: flex;
