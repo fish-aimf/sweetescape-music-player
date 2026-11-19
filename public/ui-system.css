@@ -385,7 +385,7 @@ a.ui-btn--block {
   border-radius: var(--ui-radius-sm);
   background: none;
   color: var(--text-secondary);
-  font-size: var(--ui-font-md);
+  font-size: var(--ui-font-lg);
   line-height: 1;
   cursor: pointer;
   transition:
@@ -1852,10 +1852,13 @@ a.ui-btn--block {
     0 6px 22px var(--glass-shade);
 }
 
+[data-surface="glass"] .playlist-sidebar {
+  backdrop-filter: blur(clamp(32px, calc(var(--glass-blur) * 2), 64px)) saturate(var(--glass-sat));
+  -webkit-backdrop-filter: blur(clamp(32px, calc(var(--glass-blur) * 2), 64px)) saturate(var(--glass-sat));
+}
+
 [data-surface="glass"] .playlist-sidebar:not(.expanded-mode) {
   background-color: color-mix(in srgb, var(--bg-secondary-base) max(calc(var(--glass-tint) * 0.4 * 1%), var(--glass-legible-floor)), transparent);
-  backdrop-filter: blur(calc(var(--glass-blur) * 1.3)) saturate(var(--glass-sat));
-  -webkit-backdrop-filter: blur(calc(var(--glass-blur) * 1.3)) saturate(var(--glass-sat));
 }
 
 [data-surface="glass"] :is(.song-item, .playlist-card, .details-item, .setting-group, .keybind-category, .discovery-card, .favorites-card, .playlists-shelf, .discord-status-card, .dl-current-card, .ui-card, .np-left, .current-song-section, #additionalDetails, .playlist-sidebar, .now-playing, .recommendations-panel, .favorites-panel, .settings-tabs, .lyrics-navbar, .lyrics-header, .find-songs-content, .ui-modal, .modal-content, .settings-modal-content, .timer-modal-content, .changelog-modal-content, .subtitles-import-modal-content, .discord-rpc-modal, .billboard-modal-content, .qv2-panel, .dl-modal, .sz-modal, .ls-modal-content, .lyrics-maker-content, .temp-song-modal-content, .speed-options, .np-speed-options, .qv2-dropdown, .dl-search-results, .lib-filter-panel, .global-library-search-suggestions-dropdown, .mix-lab__suggest, .youtube-search-suggestion, .transport-preview-popup, .drag-link-toast) :is(.song-item, .playlist-card, .details-item, .setting-group, .keybind-category, .discovery-card, .favorites-card, .playlists-shelf, .discord-status-card, .dl-current-card, .ui-card, .np-left, .current-song-section, #additionalDetails, .playlist-sidebar, .now-playing, .recommendations-panel, .favorites-panel, .settings-tabs, .lyrics-navbar, .lyrics-header, .find-songs-content):not(:hover) {

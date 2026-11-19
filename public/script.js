@@ -7476,7 +7476,7 @@ class AdvancedMusicPlayer {
     }
     const modeBtn = this.elements.sidebarModeToggleBtn;
     if (modeBtn) {
-      modeBtn.querySelector('i').className = `fas ${expanded ? 'fa-minimize' : 'fa-maximize'}`;
+      modeBtn.querySelector('i').className = `fas ${expanded ? 'fa-compress' : 'fa-expand'}`;
       modeBtn.title = expanded ? 'Switch to the overlay panel' : 'Switch to the expanded panel';
     }
     if (this.elements.sidebarSideToggleBtn) {
