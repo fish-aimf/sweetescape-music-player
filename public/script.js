@@ -643,6 +643,7 @@ class AdvancedMusicPlayer {
     this.currentLyricMakerSongId = null;
     this.lyricMakerCleanup = null;
     this.guidePromise = null;
+    this.persistRequest = null;
     this.elements = {};
     this.watchInstallPrompt();
     this._initialize();
@@ -661,6 +662,7 @@ class AdvancedMusicPlayer {
       }
       this.checkIncomingPlaylistShare();
       this._offerRelinkAfterRestore();
+      this.requestPersistentStorage();
     } catch (error) {
       console.error('Error initializing music player:', error);
       this._handleInitializationError(error);
@@ -1513,6 +1515,7 @@ class AdvancedMusicPlayer {
           };
         }
         transaction.oncomplete = () => {
+          this.requestPersistentStorage();
           resolve();
         };
         transaction.onerror = event => {
@@ -1535,7 +1538,10 @@ class AdvancedMusicPlayer {
       try {
         const transaction = this.db.transaction([ 'songLibrary' ], 'readwrite');
         transaction.objectStore('songLibrary').put(song);
-        transaction.oncomplete = () => resolve();
+        transaction.oncomplete = () => {
+          this.requestPersistentStorage();
+          resolve();
+        };
         transaction.onerror = e => reject(new Error('Failed to save song: ' + e.target.error.message));
       } catch (error) {
         reject(error);
@@ -7084,6 +7090,7 @@ class AdvancedMusicPlayer {
     window.addEventListener('appinstalled', () => {
       this.installPrompt = null;
       this.syncInstallButton();
+      this.requestPersistentStorage(true);
       this.showNotification('SweetEscape is installed', 'success');
     });
   }
@@ -7100,6 +7107,13 @@ class AdvancedMusicPlayer {
     this.installPrompt = null;
     this.syncInstallButton();
     await prompt.prompt();
+  }
+  requestPersistentStorage(retry = false) {
+    if ((this.persistRequest && !retry) || !navigator.storage?.persist || !this.songLibrary.length) {
+      return this.persistRequest;
+    }
+    this.persistRequest = navigator.storage.persisted().then(persisted => persisted || navigator.storage.persist()).catch(() => false);
+    return this.persistRequest;
   }
   setupMediaSession() {
     if (!('mediaSession' in navigator)) {
@@ -11751,6 +11765,7 @@ class AdvancedMusicPlayer {
         }
       });
       transaction.oncomplete = () => {
+        this.requestPersistentStorage();
         resolve();
       };
       transaction.onerror = event => {
