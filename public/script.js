@@ -3771,7 +3771,7 @@ class AdvancedMusicPlayer {
     return check;
   }
   _probeEmbed(videoId) {
-    if (typeof YT === 'undefined' || !YT.Player) {
+    if (typeof YT === 'undefined' || !YT.Player || this.dataSaverActive('offline')) {
       return Promise.resolve(false);
     }
     return new Promise(resolve => {
@@ -6358,6 +6358,9 @@ class AdvancedMusicPlayer {
       if (playerState === YT.PlayerState.PLAYING) {
         this.ytPlayer.pauseVideo();
         this.isPlaying = false;
+      } else if (this.dataSaverActive('offline')) {
+        this.showStreamingBlocked();
+        return;
       } else {
         this.ytPlayer.playVideo();
         this.isPlaying = true;
@@ -9050,6 +9053,10 @@ class AdvancedMusicPlayer {
       }
       if (isOffline()) {
         showNoSource("You're offline. Pick this song's audio file to time the lyrics without YouTube.");
+        return;
+      }
+      if (this.dataSaverActive('offline')) {
+        showNoSource('Offline songs only is on in Settings, Metered connection. Pick this song\'s audio file to time the lyrics without YouTube.');
         return;
       }
       releaseMedia();
@@ -14689,6 +14696,7 @@ class AdvancedMusicPlayer {
         const key = event.target.dataset.dataSaverKey;
         if (key) {
           this.dataSaver.features[key] = event.target.checked;
+          this.dataSaver.on = this.dataSaver.on || event.target.checked;
           this.applyDataSaver();
         }
       });
@@ -14702,6 +14710,7 @@ class AdvancedMusicPlayer {
       const level = Math.min(4, Math.max(1, Math.round(Number(event.target.value)) || 1));
       this.dataSaver.level = level;
       this.dataSaver.features = this.getDataSaverLevelFeatures(level);
+      this.dataSaver.on = true;
       this.applyDataSaver();
     });
     els.cacheEverythingBtn?.addEventListener('click', () => this.cacheEverything());
@@ -14715,6 +14724,26 @@ class AdvancedMusicPlayer {
     if (this.ytPlayerDeferred && !this.dataSaverActive('player')) {
       this.setupYouTubePlayer();
     }
+    if (this.dataSaverActive('offline')) {
+      this.stopStreaming();
+    }
+  }
+  stopStreaming() {
+    try {
+      if (!this.isLocalPlayback && this.ytPlayerReady && this.ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
+        this.ytPlayer.pauseVideo();
+        this.isPlaying = false;
+        this.updatePlayerUI();
+      }
+      if (this.tempYtPlayerReady && this.tempYtPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
+        this.tempYtPlayer.pauseVideo();
+      }
+    } catch (error) {
+      console.warn('Could not pause YouTube:', error);
+    }
+  }
+  showStreamingBlocked() {
+    this.showNotification('Offline songs only is on, so YouTube songs don\'t play. Change it in Settings, Metered connection.', 'error');
   }
   syncDataSaverWorker() {
     navigator.serviceWorker?.ready.then(registration => registration.active?.postMessage({
@@ -14758,7 +14787,7 @@ class AdvancedMusicPlayer {
     this.offlineSkips = 0;
     this.isPlaying = false;
     this.updatePlayerUI();
-    this.showNotification('Only songs with an offline file play while Offline songs only is on. Change it in Settings, Metered connection.', 'error');
+    this.showStreamingBlocked();
   }
   async cacheEverything() {
     const els = this.elements;
@@ -20202,6 +20231,10 @@ class AdvancedMusicPlayer {
     }
   }
   samplePlayTemporarySong(youtubeUrl, song = null) {
+    if (this.dataSaverActive('offline')) {
+      this.showStreamingBlocked();
+      return;
+    }
     const videoId = this.extractYouTubeId(youtubeUrl);
     if (!videoId) {
       this.showNotification('Invalid YouTube URL', 'error');
