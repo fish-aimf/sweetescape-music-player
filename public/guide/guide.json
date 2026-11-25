@@ -130,7 +130,7 @@
         "Right-click any song here to queue it.",
         "Click the \"Recently Listened To\" heading for your full history.",
         "Click \"Suggested\" or \"Your Picks\" to reshuffle them.",
-        "Section sizes and order live in Settings, Recommendation."
+        "Section sizes and order live in Settings, Music Explorer."
       ]
     },
     {
@@ -364,7 +364,7 @@
       "id": "theme-button",
       "target": "#themeToggle",
       "title": "Theme",
-      "body": "Cycles light, dark and your custom theme. Settings, Theme has glass mode, backgrounds and your own colours.",
+      "body": "Cycles light, dark and your custom theme. Settings, Theme has your own colours, and Settings, Background & glass has glass mode and backgrounds.",
       "keys": [["P", ""]]
     },
     {
@@ -377,14 +377,14 @@
       "id": "stats-button",
       "target": "#statsButton",
       "title": "Listening statistics",
-      "body": "Your top songs and artist, plays and time listened, for 30 days or all time. Click a song for its play history. Turn it on first in Settings, Additional."
+      "body": "Your top songs and artist, plays and time listened, for 30 days or all time. Click a song for its play history. Turn it on first in Settings, Privacy & stats."
     },
     {
       "id": "battery-button",
       "target": "#batteryButton",
       "title": "Battery saver",
       "body": "Turns off the effects that drain a laptop battery, like the visualizer, glass and moving backgrounds, while playback keeps working. Click again and everything comes back as it was.",
-      "tips": ["Settings, Additional sets how far it goes, from Normal to Extreme, with an estimated saving next to each option."]
+      "tips": ["Settings, Battery saver sets how far it goes, from Normal to Extreme, with an estimated saving next to each option."]
     },
     {
       "id": "timer-button",
@@ -415,7 +415,7 @@
       "id": "settings-button",
       "target": "#settingsButton",
       "title": "Settings",
-      "body": "Themes and glass, Music Explorer sections, keyboard shortcuts, feedback, the visualizer, library sorting and statistics."
+      "body": "Every setting, as a grid of tiles: theme, background and glass, visualizer, library, Music Explorer, shortcuts, battery saver, metered connection for saving mobile data, privacy and stats, installing the app, and help."
     },
     {
       "id": "listening-time",
@@ -445,7 +445,7 @@
     {
       "id": "keys",
       "title": "A few more keys",
-      "body": "Every shortcut can be changed in Settings, Keybinds. A few that are worth learning first:",
+      "body": "Every shortcut can be changed in Settings, Keyboard shortcuts. A few that are worth learning first:",
       "keys": [["Y", "queue"], ["U", "video mode"], ["I", "miniplayer (Chrome, Edge)"], ["O", "hide Music Explorer"], ["Q", "next tab"], ["F / G", "seek 5s"]]
     },
     {

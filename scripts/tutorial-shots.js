@@ -501,19 +501,26 @@ const scenes = {
     const page = await boot(ctx);
     await page.click('#settingsButton');
     await sleep(1500);
-    await save(page, 'settings-theme', '#settingsModal .ui-modal', 0);
+    await save(page, 'settings-home', '#settingsModal .ui-modal', 0);
+    const open = async tab => {
+      await page.click(`.settings-tile[data-tab="${tab}"]`);
+      await sleep(900);
+    };
+    const back = async () => {
+      await page.click('#settingsBackBtn');
+      await sleep(400);
+    };
+    await open('theme');
     await page.selectOption('#themeMode', 'custom');
     await sleep(800);
-    await page.locator('#customThemeSection').scrollIntoViewIfNeeded();
-    await sleep(400);
     await save(page, 'settings-colours', '#settingsModal .ui-modal', 0);
     await page.selectOption('#themeMode', 'dark');
     await sleep(600);
-    await page.locator('.settings-tab-btn[data-tab="theme"]').scrollIntoViewIfNeeded();
-    for (const tab of ['recommendation', 'keybinds', 'additional']) {
-      await page.click(`.settings-tab-btn[data-tab="${tab}"]`);
-      await sleep(900);
+    await back();
+    for (const tab of ['surface', 'visualizer', 'recommendation', 'keybinds', 'data']) {
+      await open(tab);
       await save(page, 'settings-' + tab, '#settingsModal .ui-modal', 0);
+      await back();
     }
   },
   async glass(ctx) {

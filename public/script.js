@@ -400,6 +400,38 @@ class AdvancedMusicPlayer {
     name: 'Dim the screen',
     hint: 'Darkens everything by a third, which saves the most on OLED screens'
   } ];
+  static DATA_SAVER_LEVELS = [ 'Light', 'Balanced', 'Strong', 'Offline' ];
+  static DATA_SAVER_FEATURES = [ {
+    key: 'thumbs',
+    level: 1,
+    name: 'Smaller artwork',
+    hint: 'Loads cover art at 120 pixels wide, and reuses any size already saved on this device',
+    saves: '−80% per image'
+  }, {
+    key: 'updates',
+    level: 1,
+    name: 'Update on Wi-Fi',
+    hint: 'On mobile data, new versions of the app download at most once a week. Phones that report Wi-Fi update straight away',
+    saves: '~200 KB each'
+  }, {
+    key: 'player',
+    level: 2,
+    name: 'Load YouTube on first play',
+    hint: 'Starts the YouTube player the first time you play a YouTube song, instead of every time the page opens',
+    saves: '60 KB–1 MB a visit'
+  }, {
+    key: 'images',
+    level: 3,
+    name: 'No new images',
+    hint: 'Shows only artwork already saved on this device, and a blank tile for the rest',
+    saves: 'all artwork'
+  }, {
+    key: 'offline',
+    level: 4,
+    name: 'Offline songs only',
+    hint: 'Plays songs that have an offline file and skips the rest, so nothing streams',
+    saves: 'all streaming'
+  } ];
   static YOUTUBE_HOST = 'https://www.youtube-nocookie.com';
   static DISCORD_APP_VERSION = '2.2.0';
   static BACKUP_STORES = [ 'settings', 'userSettings', 'recentlyPlayed', 'listeningStats' ];
@@ -505,6 +537,7 @@ class AdvancedMusicPlayer {
     this.adsEnabled = false;
     this.visualizerEnabled = true;
     this.batterySaver = this.getBatterySaverDefaults();
+    this.dataSaver = this.getDataSaverDefaults();
     this.batteryIdle = false;
     this.mediaSessionKey = null;
     this.installPrompt = null;
@@ -651,7 +684,7 @@ class AdvancedMusicPlayer {
   async _initialize() {
     try {
       await this.initDatabase();
-      await Promise.all([ this.loadSongLibrary(), this.loadPlaylists(), this.loadSettings(), this.loadRecentlyPlayed(), this.loadDiscoverMoreSettingsOnStartup(), this.loadKeybinds(), this.loadBatterySaver(), this.loadDiscordSettings(), this.loadLibrarySortValue(), this.loadLibraryReverseValue(), this.loadVisualizerValue() ]);
+      await Promise.all([ this.loadSongLibrary(), this.loadPlaylists(), this.loadSettings(), this.loadRecentlyPlayed(), this.loadDiscoverMoreSettingsOnStartup(), this.loadKeybinds(), this.loadBatterySaver(), this.loadDataSaver(), this.loadDiscordSettings(), this.loadLibrarySortValue(), this.loadLibraryReverseValue(), this.loadVisualizerValue() ]);
       await this.repairEncodedStoredText();
       const shouldShowWelcome = this.songLibrary.length === 0;
       this.initializeElements();
@@ -708,6 +741,7 @@ class AdvancedMusicPlayer {
     this.initializeAdvertisementSettings();
     this.initializeVisualizer();
     this.initBatterySaver();
+    this.initDataSaver();
     this.initGlobalLibraryDebouncedSearch();
     this.initMixLab();
     this.setupChangelogModal();
@@ -935,6 +969,12 @@ class AdvancedMusicPlayer {
       batteryLevelValue: document.getElementById('batteryLevelValue'),
       batteryFeatures: document.getElementById('batteryFeatures'),
       batteryEstimate: document.getElementById('batteryEstimate'),
+      dataSaverToggle: document.getElementById('dataSaverToggle'),
+      dataSaverLevel: document.getElementById('dataSaverLevel'),
+      dataSaverLevelValue: document.getElementById('dataSaverLevelValue'),
+      dataSaverFeatures: document.getElementById('dataSaverFeatures'),
+      cacheEverythingBtn: document.getElementById('cacheEverythingBtn'),
+      cacheEverythingStatus: document.getElementById('cacheEverythingStatus'),
       installAppGroup: document.getElementById('installAppGroup'),
       installAppBtn: document.getElementById('installAppBtn'),
       lsPanel: document.getElementById('lsPanel'),
@@ -1221,8 +1261,12 @@ class AdvancedMusicPlayer {
       if (e.target.id === 'resetKeybindsBtn') {
         this.resetKeybindsToDefault();
       }
-      if (e.target.closest('.settings-tab-btn')) {
-        this.handleTabSwitch(e);
+      const settingsTile = e.target.closest('.settings-tile');
+      if (settingsTile) {
+        this.showSettingsSection(settingsTile.dataset.tab);
+      }
+      if (e.target.closest('#settingsBackBtn')) {
+        this.showSettingsSection(null);
       }
     });
     document.addEventListener('contextmenu', e => {
@@ -6214,6 +6258,7 @@ class AdvancedMusicPlayer {
         if (perm === 'granted') {
           const file = await masterSong.localFileHandle.getFile();
           const url = URL.createObjectURL(file);
+          this.offlineSkips = 0;
           this.playLocalAudio(url);
           return;
         }
@@ -6245,12 +6290,20 @@ class AdvancedMusicPlayer {
       }
     }
     this.isLocalPlayback = false;
+    if (this.dataSaverActive('offline')) {
+      this.skipStreamedSong();
+      return;
+    }
+    if (!this.ytPlayer && this.ytPlayerDeferred) {
+      this.setupYouTubePlayer(true);
+    }
     if (!this.ytPlayer) {
       console.error('YouTube player not initialized');
       this.showNotification?.('No internet connection or YouTube unavailable.', 'error');
       return;
     }
     if (!this.ytPlayerReady) {
+      this.pendingYouTubeVideo = videoId;
       return;
     }
     try {
@@ -7192,7 +7245,14 @@ class AdvancedMusicPlayer {
       return `${minutes}:${secs.toString().padStart(2, '0')}`;
     }
   }
-  setupYouTubePlayer() {
+  setupYouTubePlayer(force = false) {
+    if (this.ytPlayer) {
+      return;
+    }
+    this.ytPlayerDeferred = !force && this.dataSaverActive('player');
+    if (this.ytPlayerDeferred) {
+      return;
+    }
     if (window.YT && window.YT.Player) {
       this.initializeYouTubePlayer();
     } else {
@@ -7225,6 +7285,11 @@ class AdvancedMusicPlayer {
         onReady: () => {
           this.onPlayerReady();
           this.ytPlayerReady = true;
+          if (this.pendingYouTubeVideo) {
+            const videoId = this.pendingYouTubeVideo;
+            this.pendingYouTubeVideo = null;
+            this.playSongById(videoId);
+          }
         },
         onStateChange: this.onPlayerStateChange.bind(this),
         onError: this.onPlayerError.bind(this)
@@ -12117,28 +12182,37 @@ class AdvancedMusicPlayer {
     this.loadThemeMode();
     this.loadCustomThemeColors();
     this.loadAdvertisementSettingsInModal();
-    this.setupTabs();
+    this.showSettingsSection(null);
     this.loadDiscoverMoreSettings();
     this.loadLibrarySortSetting();
     this.loadLibraryReverseSetting();
     this.loadKeybindsSettings();
     this.loadSavedThemesList();
   }
-  setupTabs() {
-    const firstTab = document.querySelector('.settings-tab-btn');
-    const firstPanel = document.querySelector('.tab-panel');
-    if (firstTab && firstPanel) {
-      firstTab.classList.add('active');
-      firstPanel.classList.add('active');
+  showSettingsSection(name) {
+    const body = this.elements.settingsModal?.querySelector('.settings-modal-body');
+    if (!body) {
+      return;
     }
-  }
-  handleTabSwitch(event) {
-    const targetTab = event.target.closest('.settings-tab-btn').dataset.tab;
-    document.querySelectorAll('.settings-tab-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
-    event.target.closest('.settings-tab-btn').classList.add('active');
-    document.getElementById(targetTab + 'Panel').classList.add('active');
-    if (targetTab === 'feedback') {
+    const previous = body.dataset.section;
+    const tile = name ? body.querySelector(`.settings-tile[data-tab="${name}"]`) : null;
+    body.querySelectorAll('.tab-panel').forEach(panel => panel.classList.toggle('active', Boolean(tile) && panel.id === name + 'Panel'));
+    body.scrollTop = 0;
+    if (!tile) {
+      delete body.dataset.section;
+      if (previous) {
+        body.querySelector(`.settings-tile[data-tab="${previous}"]`)?.focus({
+          preventScroll: true
+        });
+      }
+      return;
+    }
+    body.dataset.section = name;
+    document.getElementById('settingsSectionTitle').textContent = tile.querySelector('.settings-tile__name').textContent;
+    document.getElementById('settingsBackBtn')?.focus({
+      preventScroll: true
+    });
+    if (name === 'feedback') {
       const iframe = document.querySelector('#feedbackPanel iframe');
       if (iframe && !iframe.src) {
         iframe.src = iframe.dataset.src;
@@ -14437,7 +14511,7 @@ class AdvancedMusicPlayer {
   initBatterySaver() {
     const els = this.elements;
     if (els.batteryFeatures) {
-      els.batteryFeatures.replaceChildren(...AdvancedMusicPlayer.BATTERY_FEATURES.map(feature => this.buildBatteryOption(feature)));
+      els.batteryFeatures.replaceChildren(...AdvancedMusicPlayer.BATTERY_FEATURES.map(feature => this.buildSaverOption(feature, 'batteryKey')));
       els.batteryFeatures.addEventListener('change', event => {
         const key = event.target.dataset.batteryKey;
         if (key) {
@@ -14451,7 +14525,7 @@ class AdvancedMusicPlayer {
     window.addEventListener('blur', () => setTimeout(() => this.syncBatteryFocus(), 0));
     this.applyBatterySaver();
   }
-  buildBatteryOption(feature) {
+  buildSaverOption(feature, keyName) {
     const row = UI.el('label', 'battery-option');
     const input = UI.el('input', 'battery-option__check');
     const text = UI.el('span', 'battery-option__text');
@@ -14459,9 +14533,10 @@ class AdvancedMusicPlayer {
     const hint = UI.el('span', 'battery-option__hint');
     const gain = UI.el('span', 'ui-chip battery-option__gain');
     input.type = 'checkbox';
-    input.dataset.batteryKey = feature.key;
+    input.dataset[keyName] = feature.key;
     name.textContent = feature.name;
     hint.textContent = feature.hint;
+    gain.textContent = feature.saves || '';
     text.append(name, hint);
     row.append(input, text, gain);
     return row;
@@ -14563,6 +14638,179 @@ class AdvancedMusicPlayer {
     });
     const total = this.estimateBatteryGain(features);
     els.batteryEstimate.textContent = total ? `Estimated +${total}% battery life while music plays, compared with running without it.` : 'With your current settings none of these would make a difference.';
+  }
+  getDataSaverDefaults() {
+    return {
+      on: false,
+      level: 2,
+      features: this.getDataSaverLevelFeatures(2)
+    };
+  }
+  getDataSaverLevelFeatures(level) {
+    return Object.fromEntries(AdvancedMusicPlayer.DATA_SAVER_FEATURES.map(feature => [ feature.key, feature.level <= level ]));
+  }
+  async loadDataSaver() {
+    const saved = await this.getSetting('dataSaver');
+    if (!saved || typeof saved !== 'object') {
+      return;
+    }
+    const level = Math.min(4, Math.max(1, Math.round(Number(saved.level)) || 2));
+    const features = this.getDataSaverLevelFeatures(level);
+    Object.keys(features).forEach(key => {
+      if (typeof saved.features?.[key] === 'boolean') {
+        features[key] = saved.features[key];
+      }
+    });
+    this.dataSaver = {
+      on: saved.on === true,
+      level,
+      features
+    };
+  }
+  saveDataSaver() {
+    const { on, level, features } = this.dataSaver;
+    clearTimeout(this._dataSaverSaveTimer);
+    this._dataSaverSaveTimer = setTimeout(() => {
+      this.saveSetting('dataSaver', {
+        on,
+        level,
+        features: { ...features }
+      }).catch(error => console.error('Error saving data saver:', error));
+    }, 250);
+  }
+  dataSaverActive(key) {
+    return this.dataSaver.on && this.dataSaver.features[key] === true;
+  }
+  initDataSaver() {
+    const els = this.elements;
+    if (els.dataSaverFeatures) {
+      els.dataSaverFeatures.replaceChildren(...AdvancedMusicPlayer.DATA_SAVER_FEATURES.map(feature => this.buildSaverOption(feature, 'dataSaverKey')));
+      els.dataSaverFeatures.addEventListener('change', event => {
+        const key = event.target.dataset.dataSaverKey;
+        if (key) {
+          this.dataSaver.features[key] = event.target.checked;
+          this.applyDataSaver();
+        }
+      });
+    }
+    els.dataSaverToggle?.addEventListener('change', event => {
+      this.dataSaver.on = event.target.checked;
+      this.applyDataSaver();
+      this.showNotification(this.dataSaver.on ? `Saving mobile data: ${this.getDataSaverLevelName()}` : 'Mobile data saving off', 'success');
+    });
+    els.dataSaverLevel?.addEventListener('input', event => {
+      const level = Math.min(4, Math.max(1, Math.round(Number(event.target.value)) || 1));
+      this.dataSaver.level = level;
+      this.dataSaver.features = this.getDataSaverLevelFeatures(level);
+      this.applyDataSaver();
+    });
+    els.cacheEverythingBtn?.addEventListener('click', () => this.cacheEverything());
+    this.renderDataSaverControls();
+    this.syncDataSaverWorker();
+  }
+  applyDataSaver() {
+    this.renderDataSaverControls();
+    this.syncDataSaverWorker();
+    this.saveDataSaver();
+    if (this.ytPlayerDeferred && !this.dataSaverActive('player')) {
+      this.setupYouTubePlayer();
+    }
+  }
+  syncDataSaverWorker() {
+    navigator.serviceWorker?.ready.then(registration => registration.active?.postMessage({
+      type: 'DATA_SAVER',
+      thumbs: this.dataSaverActive('thumbs'),
+      images: this.dataSaverActive('images'),
+      updates: this.dataSaverActive('updates')
+    })).catch(error => console.warn('Could not reach the service worker:', error));
+  }
+  getDataSaverLevelName() {
+    const { level, features } = this.dataSaver;
+    const preset = this.getDataSaverLevelFeatures(level);
+    const custom = Object.keys(preset).some(key => preset[key] !== features[key]);
+    return custom ? 'Custom' : AdvancedMusicPlayer.DATA_SAVER_LEVELS[level - 1];
+  }
+  renderDataSaverControls() {
+    const els = this.elements;
+    if (!els.dataSaverFeatures) {
+      return;
+    }
+    const { on, level, features } = this.dataSaver;
+    els.dataSaverToggle.checked = on;
+    els.dataSaverLevel.value = level;
+    els.dataSaverLevelValue.textContent = this.getDataSaverLevelName();
+    els.dataSaverFeatures.querySelectorAll('.battery-option').forEach(row => {
+      const input = row.querySelector('.battery-option__check');
+      input.checked = features[input.dataset.dataSaverKey] === true;
+      row.classList.toggle('is-idle', !on);
+    });
+  }
+  skipStreamedSong() {
+    const limit = this.currentPlaylist?.songs?.length || this.songLibrary.length;
+    this.offlineSkips = (this.offlineSkips || 0) + 1;
+    if (this.isAutoplayEnabled && this.offlineSkips < limit) {
+      if (this.offlineSkips === 1) {
+        this.showNotification('Skipping songs without an offline file (Offline songs only is on)', 'info');
+      }
+      setTimeout(() => this.playNextSong(), 0);
+      return;
+    }
+    this.offlineSkips = 0;
+    this.isPlaying = false;
+    this.updatePlayerUI();
+    this.showNotification('Only songs with an offline file play while Offline songs only is on. Change it in Settings, Metered connection.', 'error');
+  }
+  async cacheEverything() {
+    const els = this.elements;
+    const worker = navigator.serviceWorker?.controller;
+    if (!worker) {
+      els.cacheEverythingStatus.textContent = 'Saving needs the offline helper, which starts after the page has loaded once. Reload the page and try again.';
+      return;
+    }
+    const ids = [ ...new Set([ ...this.songLibrary, ...this.playlists.flatMap(playlist => playlist.songs || []) ].map(song => song.videoId).filter(Boolean)) ];
+    els.cacheEverythingBtn.disabled = true;
+    els.cacheEverythingStatus.textContent = 'Saving the app and its icons…';
+    await new Promise(resolve => {
+      const channel = new MessageChannel();
+      const timer = setTimeout(resolve, 6e4);
+      channel.port1.onmessage = () => {
+        clearTimeout(timer);
+        resolve();
+      };
+      worker.postMessage({
+        type: 'CACHE_APP'
+      }, [ channel.port2 ]);
+    });
+    const queue = ids.slice();
+    let done = 0;
+    let failed = 0;
+    const saveNext = async () => {
+      while (queue.length) {
+        const id = queue.shift();
+        try {
+          const response = await fetch(`https://i.ytimg.com/vi/${encodeURIComponent(id)}/mqdefault.jpg?se-save=1`, {
+            mode: 'cors',
+            credentials: 'omit'
+          });
+          if (!response.ok) {
+            failed++;
+          }
+        } catch {
+          failed++;
+        }
+        done++;
+        els.cacheEverythingStatus.textContent = `Saving artwork: ${done} of ${ids.length}`;
+      }
+    };
+    await Promise.all(Array.from({
+      length: 6
+    }, saveNext));
+    await this.requestPersistentStorage(true);
+    const estimate = await navigator.storage?.estimate?.().catch(() => null);
+    const used = estimate?.usage ? ` SweetEscape now keeps ${(estimate.usage / 1048576).toFixed(1)} MB on this device.` : '';
+    const missed = failed ? ` ${failed} could not be reached.` : '';
+    els.cacheEverythingStatus.textContent = `Saved the app and artwork for ${ids.length - failed} songs.${missed}${used}`;
+    els.cacheEverythingBtn.disabled = false;
   }
   restartMiniplayerTimer() {
     if (!this.miniplayerWindow) {
@@ -19439,7 +19687,7 @@ class AdvancedMusicPlayer {
     const panel = document.getElementById('lsPanel');
     if (!this.listeningStatsEnabled) {
       this._syncStatsRangeTabs();
-      panel.innerHTML = `<div class="ui-empty"><span>Listening statistics are off.</span><span class="ls-empty-hint">Turn them on in Settings → Additional.</span></div>`;
+      panel.innerHTML = `<div class="ui-empty"><span>Listening statistics are off.</span><span class="ls-empty-hint">Turn them on in Settings → Privacy &amp; stats.</span></div>`;
       return;
     }
     if (!this.db || !this.db.objectStoreNames.contains('listeningStats')) {

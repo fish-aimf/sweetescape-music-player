@@ -740,30 +740,25 @@ Another Playlist{
                </button>
             </div>
             <div class="settings-modal-body ui-modal__body">
-               <div class="settings-tabs ui-tabs">
-                  <button class="settings-tab-btn ui-tab active" data-tab="theme">
-                  <i class="fas fa-palette"></i>
-                  Theme
-                  </button>
-                  <button class="settings-tab-btn ui-tab" data-tab="recommendation">
-                  <i class="fas fa-music"></i>
-                  Recommendation
-                  </button>
-                  <button class="settings-tab-btn ui-tab" data-tab="keybinds">
-                  <i class="fas fa-keyboard"></i>
-                  Keybinds
-                  </button>
-                  <button class="settings-tab-btn ui-tab" data-tab="feedback">
-                  <i class="fas fa-comment"></i>
-                  Feedback
-                  </button>
-                  <button class="settings-tab-btn ui-tab" data-tab="additional">
-                  <i class="fas fa-cog"></i>
-                  Additional
-                  </button>
+               <nav class="settings-home" aria-label="Settings sections">
+                  <button type="button" class="settings-tile" data-tab="theme"><i class="fas fa-palette"></i><span class="settings-tile__name">Theme</span><span class="settings-tile__hint">Light, dark or your own colours</span></button>
+                  <button type="button" class="settings-tile" data-tab="surface"><i class="fas fa-image"></i><span class="settings-tile__name">Background &amp; glass</span><span class="settings-tile__hint">Glass panels, album art and your own image</span></button>
+                  <button type="button" class="settings-tile" data-tab="visualizer"><i class="fas fa-wave-square"></i><span class="settings-tile__name">Visualizer</span><span class="settings-tile__hint">On or off, design, size and colour</span></button>
+                  <button type="button" class="settings-tile" data-tab="library"><i class="fas fa-list"></i><span class="settings-tile__name">Library</span><span class="settings-tile__hint">The order your songs are listed in</span></button>
+                  <button type="button" class="settings-tile" data-tab="recommendation"><i class="fas fa-compass"></i><span class="settings-tile__name">Music Explorer</span><span class="settings-tile__hint">Which sections show, and how many songs</span></button>
+                  <button type="button" class="settings-tile" data-tab="keybinds"><i class="fas fa-keyboard"></i><span class="settings-tile__name">Keyboard shortcuts</span><span class="settings-tile__hint">Change the key for any action</span></button>
+                  <button type="button" class="settings-tile" data-tab="battery"><i class="fas fa-battery-half"></i><span class="settings-tile__name">Battery saver</span><span class="settings-tile__hint">What the battery button switches off</span></button>
+                  <button type="button" class="settings-tile" data-tab="data"><i class="fas fa-signal"></i><span class="settings-tile__name">Metered connection</span><span class="settings-tile__hint">Use less mobile data, or save everything now</span></button>
+                  <button type="button" class="settings-tile" data-tab="privacy"><i class="fas fa-user-shield"></i><span class="settings-tile__name">Privacy &amp; stats</span><span class="settings-tile__hint">Listening statistics and ads</span></button>
+                  <button type="button" class="settings-tile" data-tab="app"><i class="fas fa-download"></i><span class="settings-tile__name">App</span><span class="settings-tile__hint">Install SweetEscape, or use Lite</span></button>
+                  <button type="button" class="settings-tile" data-tab="feedback"><i class="fas fa-comment"></i><span class="settings-tile__name">Help &amp; feedback</span><span class="settings-tile__hint">Guides, and a note to the developer</span></button>
+               </nav>
+               <div class="settings-section-bar">
+                  <button type="button" id="settingsBackBtn" class="ui-btn ui-btn--ghost ui-btn--sm"><i class="fas fa-arrow-left"></i> All settings</button>
+                  <h3 class="settings-section-title" id="settingsSectionTitle"></h3>
                </div>
                <div class="settings-tab-content">
-                  <div class="tab-panel active" id="themePanel">
+                  <div class="tab-panel" id="themePanel">
                      <div class="setting-group">
                         <label>Theme Mode:</label>
                         <select id="themeMode">
@@ -772,6 +767,88 @@ Another Playlist{
                            <option value="custom">Custom</option>
                         </select>
                      </div>
+                     <div class="custom-theme-section" id="customThemeSection">
+                        <h3>Customize Colors</h3>
+                        <div class="color-picker-grid">
+                           <div class="color-picker-group">
+                              <label for="primaryColorPicker">Primary Color:</label>
+                              <input type="color" id="primaryColorPicker" value="#3b82f6">
+                           </div>
+                           <div class="color-picker-group">
+                              <label for="backgroundColorPicker">Background Color:</label>
+                              <input type="color" id="backgroundColorPicker" value="#1e293b">
+                           </div>
+                           <div class="color-picker-group">
+                              <label for="secondaryColorPicker">Secondary Background:</label>
+                              <input type="color" id="secondaryColorPicker" value="#334155">
+                           </div>
+                           <div class="color-picker-group">
+                              <label for="textPrimaryColorPicker">Primary Text:</label>
+                              <input type="color" id="textPrimaryColorPicker" value="#e2e8f0">
+                           </div>
+                           <div class="color-picker-group">
+                              <label for="textSecondaryColorPicker">Secondary Text:</label>
+                              <input type="color" id="textSecondaryColorPicker" value="#94a3b8">
+                           </div>
+                           <div class="color-picker-group">
+                              <label for="hoverColorPicker">Hover Color:</label>
+                              <input type="color" id="hoverColorPicker" value="#2563eb">
+                           </div>
+                           <div class="color-picker-group">
+                              <label for="borderColorPicker">Border Color:</label>
+                              <input type="color" id="borderColorPicker" value="#475569">
+                           </div>
+                           <div class="color-picker-group">
+                              <label for="accentColorPicker">Accent Color (favicon):</label>
+                              <input type="color" id="accentColorPicker" value="#3b82f6">
+                           </div>
+                           <div class="color-picker-group">
+                              <label for="buttonTextColorPicker">Button Text Color:</label>
+                              <input type="color" id="buttonTextColorPicker" value="#ffffff">
+                           </div>
+                           <div class="color-picker-group">
+                              <label for="shadowColorPicker">Shadow Color:</label>
+                              <div class="shadow-controls">
+                                 <input type="color" id="shadowColorPicker" value="#000000">
+                                 <input type="range" id="shadowOpacity" min="0" max="1" step="0.1" value="0.1">
+                                 <span>Opacity</span>
+                              </div>
+                           </div>
+                           <div class="color-picker-group">
+                              <label for="errorColorPicker">Error Color:</label>
+                              <input type="color" id="errorColorPicker" value="#dc3545">
+                           </div>
+                           <div class="color-picker-group">
+                              <label for="youtubeRedColorPicker">YouTube Red:</label>
+                              <input type="color" id="youtubeRedColorPicker" value="#FF0000">
+                           </div>
+                        </div>
+                        <div class="theme-buttons">
+                           <button id="saveCustomTheme" onclick="musicPlayer.handleSaveCustomTheme()">Save Theme</button>
+                           <button onclick="musicPlayer.resetCustomTheme()">Reset to Defaults</button>
+                        </div>
+                        <div class="theme-import-export">
+                           <h4>Import/Export Theme</h4>
+                           <div class="import-export-group">
+                              <button onclick="musicPlayer.exportTheme()">Export Theme to Clipboard</button>
+                              <button onclick="musicPlayer.importTheme()">Import Theme</button>
+                           </div>
+                           <div class="theme-input-group">
+                              <label for="themeImportText">Paste Theme Code:</label>
+                              <textarea id="themeImportText" placeholder="Paste your theme code here..." rows="4"></textarea>
+                           </div>
+                        </div>
+                        <div class="saved-themes-section">
+                          <h4>Saved Themes</h4>
+                          <div class="save-theme-row">
+                            <input type="text" id="savedThemeName" placeholder="Name this theme…" maxlength="40" />
+                            <button onclick="musicPlayer.saveNamedTheme()">Save Current</button>
+                          </div>
+                          <div class="saved-themes-list" id="savedThemesList"></div>
+                        </div>
+                     </div>
+                  </div>
+                  <div class="tab-panel" id="surfacePanel">
                      <div class="setting-group">
                         <label for="surfaceStyle">Surface Style:</label>
                         <select id="surfaceStyle">
@@ -861,6 +938,53 @@ Another Playlist{
                         </div>
                         <p class="setting-description">Raise Dim if text is hard to read over a busy photo. Images are stored on this device only.</p>
                      </div>
+                  </div>
+                  <div class="tab-panel" id="visualizerPanel">
+                     <div class="setting-group">
+                        <label for="visualizerToggle">Enable Music Visualizer:</label>
+                        <div class="toggle-switch">
+                           <input type="checkbox" id="visualizerToggle" class="toggle-input" checked>
+                           <label for="visualizerToggle" class="toggle-label">
+                           <span class="toggle-slider"></span>
+                           </label>
+                        </div>
+                        <p class="setting-description">Show animated background visualizer while music is playing</p>
+                     </div>
+                     <div class="setting-group appearance-section">
+                        <label>Visualizer Design:</label>
+                        <div class="vis-style-grid" id="visualizerStyleGrid">
+                           <button type="button" class="vis-style" data-vis-style="bars">
+                              <svg class="vis-style__glyph" viewBox="0 0 40 24" aria-hidden="true"><path d="M5 8v8M12 4v16M19 9v6M26 2v20M33 7v10"/></svg>
+                              <span>Bars</span>
+                           </button>
+                           <button type="button" class="vis-style" data-vis-style="levels">
+                              <svg class="vis-style__glyph" viewBox="0 0 40 24" aria-hidden="true"><path d="M6 6h5M6 10h5M6 14h5M6 18h5M15 10h5M15 14h5M15 18h5M24 4h5M24 8h5M24 12h5M24 16h5M24 20h5M33 12h5M33 16h5M33 20h5"/></svg>
+                              <span>Levels</span>
+                           </button>
+                           <button type="button" class="vis-style" data-vis-style="wave">
+                              <svg class="vis-style__glyph" viewBox="0 0 40 24" aria-hidden="true"><path d="M2 12c2.6-7 5.2-7 7.8 0s5.2 7 7.8 0 5.2-7 7.8 0 5.2 7 7.8 0"/></svg>
+                              <span>Wave</span>
+                           </button>
+                           <button type="button" class="vis-style" data-vis-style="ribbon">
+                              <svg class="vis-style__glyph" viewBox="0 0 40 24" aria-hidden="true"><path d="M1 8q6-6 12 0t12 0 12 0"/><path d="M1 16q6-6 12 0t12 0 12 0"/></svg>
+                              <span>Ribbon</span>
+                           </button>
+                           <button type="button" class="vis-style" data-vis-style="radial">
+                              <svg class="vis-style__glyph" viewBox="0 0 40 24" aria-hidden="true"><circle cx="20" cy="12" r="3.5"/><path d="M20 6.5V1.5M20 17.5V21M25.5 12h5.5M14.5 12H10.5M23.7 8.3l3.4-3.4M16.3 15.7l-2.1 2.1M23.7 15.7l2.6 2.6M16.3 8.3l-3.1-3.1"/></svg>
+                              <span>Radial</span>
+                           </button>
+                           <button type="button" class="vis-style" data-vis-style="glow">
+                              <svg class="vis-style__glyph" viewBox="0 0 40 24" aria-hidden="true"><circle cx="15" cy="13" r="5.5" fill="currentColor" stroke="none" opacity="0.85"/><circle cx="25.5" cy="9.5" r="4" fill="currentColor" stroke="none" opacity="0.5"/><circle cx="27" cy="17" r="2.5" fill="currentColor" stroke="none" opacity="0.32"/></svg>
+                              <span>Glow</span>
+                           </button>
+                        </div>
+                        <div class="appearance-row vis-style-row">
+                           <label for="visualizerGain">Magnitude</label>
+                           <input type="range" id="visualizerGain" min="0.2" max="6" step="0.1" value="1">
+                           <span class="appearance-value" id="visualizerGainValue">1.0x</span>
+                        </div>
+                        <p class="setting-description">Every design reads the real audio while a local file is playing. YouTube playback animates in sync with the beat but cannot be analysed, because the embedded player does not expose its audio.</p>
+                     </div>
                      <div class="setting-group appearance-section" id="visualizerColorControls">
                         <label>Visualizer Colour:</label>
                         <div class="appearance-presets" id="visualizerColorModes">
@@ -875,85 +999,27 @@ Another Playlist{
                         </div>
                         <p class="setting-description">Primary follows your theme colour. Auto picks a colour from the album art or background and adjusts its brightness so the visualizer always stands out from what is behind it.</p>
                      </div>
-                     <div class="custom-theme-section" id="customThemeSection">
-                        <h3>Customize Colors</h3>
-                        <div class="color-picker-grid">
-                           <div class="color-picker-group">
-                              <label for="primaryColorPicker">Primary Color:</label>
-                              <input type="color" id="primaryColorPicker" value="#3b82f6">
-                           </div>
-                           <div class="color-picker-group">
-                              <label for="backgroundColorPicker">Background Color:</label>
-                              <input type="color" id="backgroundColorPicker" value="#1e293b">
-                           </div>
-                           <div class="color-picker-group">
-                              <label for="secondaryColorPicker">Secondary Background:</label>
-                              <input type="color" id="secondaryColorPicker" value="#334155">
-                           </div>
-                           <div class="color-picker-group">
-                              <label for="textPrimaryColorPicker">Primary Text:</label>
-                              <input type="color" id="textPrimaryColorPicker" value="#e2e8f0">
-                           </div>
-                           <div class="color-picker-group">
-                              <label for="textSecondaryColorPicker">Secondary Text:</label>
-                              <input type="color" id="textSecondaryColorPicker" value="#94a3b8">
-                           </div>
-                           <div class="color-picker-group">
-                              <label for="hoverColorPicker">Hover Color:</label>
-                              <input type="color" id="hoverColorPicker" value="#2563eb">
-                           </div>
-                           <div class="color-picker-group">
-                              <label for="borderColorPicker">Border Color:</label>
-                              <input type="color" id="borderColorPicker" value="#475569">
-                           </div>
-                           <div class="color-picker-group">
-                              <label for="accentColorPicker">Accent Color (favicon):</label>
-                              <input type="color" id="accentColorPicker" value="#3b82f6">
-                           </div>
-                           <div class="color-picker-group">
-                              <label for="buttonTextColorPicker">Button Text Color:</label>
-                              <input type="color" id="buttonTextColorPicker" value="#ffffff">
-                           </div>
-                           <div class="color-picker-group">
-                              <label for="shadowColorPicker">Shadow Color:</label>
-                              <div class="shadow-controls">
-                                 <input type="color" id="shadowColorPicker" value="#000000">
-                                 <input type="range" id="shadowOpacity" min="0" max="1" step="0.1" value="0.1">
-                                 <span>Opacity</span>
-                              </div>
-                           </div>
-                           <div class="color-picker-group">
-                              <label for="errorColorPicker">Error Color:</label>
-                              <input type="color" id="errorColorPicker" value="#dc3545">
-                           </div>
-                           <div class="color-picker-group">
-                              <label for="youtubeRedColorPicker">YouTube Red:</label>
-                              <input type="color" id="youtubeRedColorPicker" value="#FF0000">
-                           </div>
+                  </div>
+                  <div class="tab-panel" id="libraryPanel">
+                     <div class="setting-group">
+                        <label for="librarySortToggle">Sort Library Alphabetically:</label>
+                        <div class="toggle-switch">
+                           <input type="checkbox" id="librarySortToggle" class="toggle-input" checked>
+                           <label for="librarySortToggle" class="toggle-label">
+                           <span class="toggle-slider"></span>
+                           </label>
                         </div>
-                        <div class="theme-buttons">
-                           <button id="saveCustomTheme" onclick="musicPlayer.handleSaveCustomTheme()">Save Theme</button>
-                           <button onclick="musicPlayer.resetCustomTheme()">Reset to Defaults</button>
+                        <p class="setting-description">When off, shows songs in the order they were added</p>
+                     </div>
+                     <div class="setting-group">
+                        <label for="libraryReverseToggle">Reverse Library Order:</label>
+                        <div class="toggle-switch">
+                           <input type="checkbox" id="libraryReverseToggle" class="toggle-input">
+                           <label for="libraryReverseToggle" class="toggle-label">
+                           <span class="toggle-slider"></span>
+                           </label>
                         </div>
-                        <div class="theme-import-export">
-                           <h4>Import/Export Theme</h4>
-                           <div class="import-export-group">
-                              <button onclick="musicPlayer.exportTheme()">Export Theme to Clipboard</button>
-                              <button onclick="musicPlayer.importTheme()">Import Theme</button>
-                           </div>
-                           <div class="theme-input-group">
-                              <label for="themeImportText">Paste Theme Code:</label>
-                              <textarea id="themeImportText" placeholder="Paste your theme code here..." rows="4"></textarea>
-                           </div>
-                        </div>
-                        <div class="saved-themes-section">
-                          <h4>Saved Themes</h4>
-                          <div class="save-theme-row">
-                            <input type="text" id="savedThemeName" placeholder="Name this theme…" maxlength="40" />
-                            <button onclick="musicPlayer.saveNamedTheme()">Save Current</button>
-                          </div>
-                          <div class="saved-themes-list" id="savedThemesList"></div>
-                        </div>
+                        <p class="setting-description">Reverses the current sort order (favorites always stay on top)</p>
                      </div>
                   </div>
                   <div class="tab-panel" id="recommendationPanel">
@@ -1102,14 +1168,7 @@ Another Playlist{
                         </div>
                      </div>
                   </div>
-                  <div class="tab-panel" id="feedbackPanel">
-                     <div class="setting-group">
-                        <label>Help:</label>
-                        <p class="setting-description">New here? Read the <a href="/introduction" target="_blank" rel="noopener">introduction</a> or the <a href="/tutorial" target="_blank" rel="noopener">tutorial</a>, or press Alt + Shift + G for guide mode.</p>
-                     </div>
-                     <iframe data-src="https://docs.google.com/forms/d/e/1FAIpQLSd_TCuV0fb6j0Psu2-QowYAlK440IOd4f1XxhzswTfWOkLHyw/viewform?embedded=true" width="100%" height="600" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
-                  </div>
-                  <div class="tab-panel" id="additionalPanel">
+                  <div class="tab-panel" id="batteryPanel">
                      <div class="setting-group appearance-section battery-settings">
                         <label>Battery Saver:</label>
                         <p class="setting-description">What the <i class="fas fa-battery-half"></i> button in the top bar switches on. Nothing stops working, and everything comes back the moment you switch it off.</p>
@@ -1122,10 +1181,45 @@ Another Playlist{
                         <p class="setting-description" id="batteryEstimate"></p>
                         <p class="setting-description">For the lightest option there is <a href="/lite">SweetEscape Lite</a>: just your offline songs, playlists and lyrics, and it works without internet.</p>
                      </div>
-                     <div class="setting-group" id="installAppGroup" style="display: none;">
-                        <label>Install SweetEscape:</label>
-                        <p class="setting-description">Opens the player in its own window, with an icon in your taskbar and Start menu, and it still opens offline. Right-click the icon (long-press on a phone) to go straight to SweetEscape Lite.</p>
-                        <button type="button" id="installAppBtn" class="ui-btn ui-btn--primary"><i class="fas fa-desktop"></i> Install</button>
+                  </div>
+                  <div class="tab-panel" id="dataPanel">
+                     <div class="setting-group">
+                        <label for="dataSaverToggle">Save Mobile Data:</label>
+                        <div class="toggle-switch">
+                           <input type="checkbox" id="dataSaverToggle" class="toggle-input">
+                           <label for="dataSaverToggle" class="toggle-label">
+                           <span class="toggle-slider"></span>
+                           </label>
+                        </div>
+                        <p class="setting-description">For mobile data, phone hotspots and capped plans. The options below only apply while this is on.</p>
+                     </div>
+                     <div class="setting-group appearance-section battery-settings">
+                        <label>What It Saves:</label>
+                        <div class="appearance-row">
+                           <label for="dataSaverLevel">Strength</label>
+                           <input type="range" id="dataSaverLevel" min="1" max="4" step="1" value="2">
+                           <span class="appearance-value" id="dataSaverLevelValue">Balanced</span>
+                        </div>
+                        <div class="battery-options" id="dataSaverFeatures"></div>
+                        <p class="setting-description">YouTube picks its own video quality and a website can't lower it, so a YouTube song always streams. Songs with an offline file play without using any data.</p>
+                     </div>
+                     <div class="setting-group">
+                        <label>Cache Everything:</label>
+                        <p class="setting-description">Uses data now, best on Wi-Fi, so you need less later. Saves the artwork for every song in your library and playlists, the newest version of the app and all of its icons. With No new images on, saved artwork is the only artwork you'll see.</p>
+                        <button type="button" id="cacheEverythingBtn" class="ui-btn ui-btn--primary"><i class="fas fa-cloud-arrow-down"></i> Cache everything</button>
+                        <p class="setting-description" id="cacheEverythingStatus" aria-live="polite"></p>
+                     </div>
+                  </div>
+                  <div class="tab-panel" id="privacyPanel">
+                     <div class="setting-group">
+                        <label for="listeningStatsToggle">Track Listening Statistics:</label>
+                        <div class="toggle-switch">
+                           <input type="checkbox" id="listeningStatsToggle" class="toggle-input">
+                           <label for="listeningStatsToggle" class="toggle-label">
+                           <span class="toggle-slider"></span>
+                           </label>
+                        </div>
+                        <p class="setting-description">Tracks how often you play each song (lifetime and last 30 days). Turning this off permanently deletes all stored listening data.</p>
                      </div>
                      <div class="setting-group">
                         <label for="adsToggle">Enable Advertisements:</label>
@@ -1137,81 +1231,24 @@ Another Playlist{
                         </div>
                         <p class="setting-description">Turning on advertisements won't even give me a hundredth of a cent</p>
                      </div>
-                     <div class="setting-group">
-                        <label for="visualizerToggle">Enable Music Visualizer:</label>
-                        <div class="toggle-switch">
-                           <input type="checkbox" id="visualizerToggle" class="toggle-input" checked>
-                           <label for="visualizerToggle" class="toggle-label">
-                           <span class="toggle-slider"></span>
-                           </label>
-                        </div>
-                        <p class="setting-description">Show animated background visualizer while music is playing</p>
-                     </div>
-                     <div class="setting-group appearance-section">
-                        <label>Visualizer Design:</label>
-                        <div class="vis-style-grid" id="visualizerStyleGrid">
-                           <button type="button" class="vis-style" data-vis-style="bars">
-                              <svg class="vis-style__glyph" viewBox="0 0 40 24" aria-hidden="true"><path d="M5 8v8M12 4v16M19 9v6M26 2v20M33 7v10"/></svg>
-                              <span>Bars</span>
-                           </button>
-                           <button type="button" class="vis-style" data-vis-style="levels">
-                              <svg class="vis-style__glyph" viewBox="0 0 40 24" aria-hidden="true"><path d="M6 6h5M6 10h5M6 14h5M6 18h5M15 10h5M15 14h5M15 18h5M24 4h5M24 8h5M24 12h5M24 16h5M24 20h5M33 12h5M33 16h5M33 20h5"/></svg>
-                              <span>Levels</span>
-                           </button>
-                           <button type="button" class="vis-style" data-vis-style="wave">
-                              <svg class="vis-style__glyph" viewBox="0 0 40 24" aria-hidden="true"><path d="M2 12c2.6-7 5.2-7 7.8 0s5.2 7 7.8 0 5.2-7 7.8 0 5.2 7 7.8 0"/></svg>
-                              <span>Wave</span>
-                           </button>
-                           <button type="button" class="vis-style" data-vis-style="ribbon">
-                              <svg class="vis-style__glyph" viewBox="0 0 40 24" aria-hidden="true"><path d="M1 8q6-6 12 0t12 0 12 0"/><path d="M1 16q6-6 12 0t12 0 12 0"/></svg>
-                              <span>Ribbon</span>
-                           </button>
-                           <button type="button" class="vis-style" data-vis-style="radial">
-                              <svg class="vis-style__glyph" viewBox="0 0 40 24" aria-hidden="true"><circle cx="20" cy="12" r="3.5"/><path d="M20 6.5V1.5M20 17.5V21M25.5 12h5.5M14.5 12H10.5M23.7 8.3l3.4-3.4M16.3 15.7l-2.1 2.1M23.7 15.7l2.6 2.6M16.3 8.3l-3.1-3.1"/></svg>
-                              <span>Radial</span>
-                           </button>
-                           <button type="button" class="vis-style" data-vis-style="glow">
-                              <svg class="vis-style__glyph" viewBox="0 0 40 24" aria-hidden="true"><circle cx="15" cy="13" r="5.5" fill="currentColor" stroke="none" opacity="0.85"/><circle cx="25.5" cy="9.5" r="4" fill="currentColor" stroke="none" opacity="0.5"/><circle cx="27" cy="17" r="2.5" fill="currentColor" stroke="none" opacity="0.32"/></svg>
-                              <span>Glow</span>
-                           </button>
-                        </div>
-                        <div class="appearance-row vis-style-row">
-                           <label for="visualizerGain">Magnitude</label>
-                           <input type="range" id="visualizerGain" min="0.2" max="6" step="0.1" value="1">
-                           <span class="appearance-value" id="visualizerGainValue">1.0x</span>
-                        </div>
-                        <p class="setting-description">Every design reads the real audio while a local file is playing. YouTube playback animates in sync with the beat but cannot be analysed, because the embedded player does not expose its audio.</p>
+                  </div>
+                  <div class="tab-panel" id="appPanel">
+                     <div class="setting-group" id="installAppGroup" style="display: none;">
+                        <label>Install SweetEscape:</label>
+                        <p class="setting-description">Opens the player in its own window, with an icon in your taskbar and Start menu, and it still opens offline. Right-click the icon (long-press on a phone) to go straight to SweetEscape Lite.</p>
+                        <button type="button" id="installAppBtn" class="ui-btn ui-btn--primary"><i class="fas fa-desktop"></i> Install</button>
                      </div>
                      <div class="setting-group">
-                        <label for="librarySortToggle">Sort Library Alphabetically:</label>
-                        <div class="toggle-switch">
-                           <input type="checkbox" id="librarySortToggle" class="toggle-input" checked>
-                           <label for="librarySortToggle" class="toggle-label">
-                           <span class="toggle-slider"></span>
-                           </label>
-                        </div>
-                        <p class="setting-description">When off, shows songs in the order they were added</p>
+                        <label>SweetEscape Lite:</label>
+                        <p class="setting-description">Just your offline songs, playlists and lyrics, with nothing else to load. It works without internet and uses no data at all. <a href="/lite">Open SweetEscape Lite</a></p>
                      </div>
+                  </div>
+                  <div class="tab-panel" id="feedbackPanel">
                      <div class="setting-group">
-                        <label for="libraryReverseToggle">Reverse Library Order:</label>
-                        <div class="toggle-switch">
-                           <input type="checkbox" id="libraryReverseToggle" class="toggle-input">
-                           <label for="libraryReverseToggle" class="toggle-label">
-                           <span class="toggle-slider"></span>
-                           </label>
-                        </div>
-                        <p class="setting-description">Reverses the current sort order (favorites always stay on top)</p>
+                        <label>Help:</label>
+                        <p class="setting-description">New here? Read the <a href="/introduction" target="_blank" rel="noopener">introduction</a> or the <a href="/tutorial" target="_blank" rel="noopener">tutorial</a>, or press Alt + Shift + G for guide mode.</p>
                      </div>
-                     <div class="setting-group">
-                        <label for="listeningStatsToggle">Track Listening Statistics:</label>
-                        <div class="toggle-switch">
-                           <input type="checkbox" id="listeningStatsToggle" class="toggle-input">
-                           <label for="listeningStatsToggle" class="toggle-label">
-                           <span class="toggle-slider"></span>
-                           </label>
-                        </div>
-                        <p class="setting-description">Tracks how often you play each song (lifetime and last 30 days). Turning this off permanently deletes all stored listening data.</p>
-                     </div>
+                     <iframe data-src="https://docs.google.com/forms/d/e/1FAIpQLSd_TCuV0fb6j0Psu2-QowYAlK440IOd4f1XxhzswTfWOkLHyw/viewform?embedded=true" width="100%" height="600" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
                   </div>
                </div>
             </div>

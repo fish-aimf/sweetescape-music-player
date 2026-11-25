@@ -23,6 +23,7 @@ SweetEscape is built by one developer (fish-aimf) in plain HTML, CSS and JavaScr
 - Identify a song from tab or system audio, the microphone or an uploaded clip, with links to Shazam, YouTube Music, YouTube and Spotify
 - Downloads as MP3 (single or batch), local audio files linked to songs for offline playback, and an app that loads offline after the first visit; SweetEscape Lite (https://sweetescape.vercel.app/lite) plays just those linked songs with search, playlists and on-demand lyrics, offline and with minimal battery use
 - Battery saver: a button in the top bar that turns off the visualizer, glass, moving backgrounds and other effects while playback keeps working, with a Normal to Extreme strength and an estimated battery saving for each option; turning it off restores everything as it was
+- Metered connection: an optional mobile data saver, off by default, with a Light to Offline strength: smaller artwork, app updates held for Wi-Fi, the YouTube player loaded on first play, no new images, or offline songs only; plus a Cache everything button that saves all artwork and the app in one go. App updates download only the files that changed
 - Listening statistics (opt-in): time listened, plays, top songs and artist, per-song play history
 - Appearance: light, dark and custom themes with shareable theme codes, glass mode over a custom image, gradient or the album cover, six visualizer designs
 - Sharing: /song/ links with preview cards, karaoke links, library export
@@ -40,5 +41,5 @@ SweetEscape is built by one developer (fish-aimf) in plain HTML, CSS and JavaScr
 - Is it free? Yes, with no paid tier.
 - Does it work on phones? Yes, in mobile browsers. Local file linking and the miniplayer need desktop Chrome or Edge.
 - How do I move my library? Modify Library, Import/Export: export to text, then import it on the other device.
-- Can it be installed? Yes, as an app with its own window and icon from Chrome or Edge (Install in Settings, Additional), with SweetEscape Lite as a shortcut on the icon.
+- Can it be installed? Yes, as an app with its own window and icon from Chrome or Edge (Install in Settings, App), with SweetEscape Lite as a shortcut on the icon.
 - Does it work offline? The app does after the first visit; songs need a connection unless a local audio file is linked, and SweetEscape Lite plays those linked songs offline.

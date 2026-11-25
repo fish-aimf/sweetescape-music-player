@@ -2,20 +2,38 @@ const CACHE_PREFIX = "se-cache-";
 
 const THUMB_CACHE = "se-thumbs-v1";
 
+const CONFIG_CACHE = "se-config-v1";
+
 const THUMB_HOSTS = [ "i.ytimg.com", "img.youtube.com" ];
 
-const THUMB_LIMIT = 400;
+const THUMB_LIMIT = 3000;
+
+const THUMB_SIZES = [ "maxresdefault", "sddefault", "hqdefault", "mqdefault", "default" ];
+
+const SAVE_PARAM = "se-save";
 
 const VERSION_TIMEOUT_MS = 2500;
+
+const VERSION_MARKER = "__version_marker__";
+
+const DATA_SAVER_KEY = "__data_saver__";
+
+const UPDATE_HOLD_MS = 7 * 24 * 60 * 60 * 1000;
+
+const PLACEHOLDER_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 9"><rect width="16" height="9" fill="#808080" fill-opacity="0.22"/></svg>';
 
 let activeCacheName = null;
 
 let thumbTrimPending = false;
 
+let dataSaver = null;
+
+let refreshPromise = null;
+
 async function getActiveCacheName() {
   if (activeCacheName) return activeCacheName;
   const names = await caches.keys();
-  activeCacheName = names.find(n => n.startsWith(CACHE_PREFIX)) || null;
+  activeCacheName = names.filter(n => n.startsWith(CACHE_PREFIX)).pop() || null;
   return activeCacheName;
 }
 
@@ -23,20 +41,32 @@ const NETWORK_ONLY_PREFIXES = [ "/api/", "/guide/", "/learn/", "/introduction", 
 
 const STATIC_ASSETS = [ "/", "/index.html", "/style.css", "/ui-system.css", "/all.min.css", "/script.js", "/karaoke-encoder.js", "/favicon.svg", "/lite", "/lite.js", "/lite.css", "/register-sw.js", "/webfonts/fa-solid-900.woff2", "/manifest.webmanifest", "/icons/icon-192.png" ];
 
+const EXTRA_ASSETS = [ "/webfonts/fa-regular-400.woff2", "/webfonts/fa-brands-400.woff2" ];
+
+const ALIASES = {
+  "/index.html": "/"
+};
+
+const CARRIED_EXTENSIONS = /\.(css|js|woff2?|ttf|png|svg|jpe?g|webp|ico|webmanifest)$/;
+
 function timeout(ms) {
   return new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), ms));
 }
 
 async function getStoredVersion(cacheName) {
   const cache = await caches.open(cacheName);
-  const res = await cache.match("__version_marker__");
+  const res = await cache.match(VERSION_MARKER);
   if (!res) return null;
   return (await res.text()).trim();
 }
 
 async function setStoredVersion(cacheName, version) {
   const cache = await caches.open(cacheName);
-  await cache.put("__version_marker__", new Response(version));
+  await cache.put(VERSION_MARKER, new Response(version, {
+    headers: {
+      "X-Saved-At": String(Date.now())
+    }
+  }));
 }
 
 async function fetchLiveVersion() {
@@ -47,14 +77,67 @@ async function fetchLiveVersion() {
   return (await res.text()).trim();
 }
 
-async function precache(cacheName) {
+async function getDataSaver() {
+  if (dataSaver) return dataSaver;
+  try {
+    const res = await (await caches.open(CONFIG_CACHE)).match(DATA_SAVER_KEY);
+    dataSaver = res ? await res.json() : {};
+  } catch {
+    dataSaver = {};
+  }
+  return dataSaver;
+}
+
+async function setDataSaver(value) {
+  dataSaver = value;
+  const cache = await caches.open(CONFIG_CACHE);
+  await cache.put(DATA_SAVER_KEY, new Response(JSON.stringify(value), {
+    headers: {
+      "Content-Type": "application/json"
+    }
+  }));
+}
+
+async function carriedAssets(cache) {
+  if (!cache) return [];
+  const requests = await cache.keys();
+  return requests.map(request => new URL(request.url)).filter(url => url.origin === self.location.origin && CARRIED_EXTENSIONS.test(url.pathname)).map(url => url.pathname + url.search);
+}
+
+async function revalidate(url, oldCache) {
+  const cached = oldCache ? await oldCache.match(url) : null;
+  const headers = {};
+  const etag = cached?.headers.get("etag");
+  const modified = cached?.headers.get("last-modified");
+  if (etag) {
+    headers["If-None-Match"] = etag;
+  } else if (modified) {
+    headers["If-Modified-Since"] = modified;
+  }
+  const res = await fetch(url, cached ? {
+    cache: "no-store",
+    headers: headers
+  } : {
+    cache: "no-cache"
+  });
+  if (res.status === 304 && cached) return cached;
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res;
+}
+
+async function fillCache(cacheName, extra = []) {
+  const previousName = await getActiveCacheName();
+  const oldCache = previousName ? await caches.open(previousName) : null;
   const cache = await caches.open(cacheName);
-  await Promise.all(STATIC_ASSETS.map(async url => {
+  const urls = [ ...new Set([ ...STATIC_ASSETS, ...await carriedAssets(oldCache), ...extra ]) ].filter(url => !ALIASES[url]);
+  await Promise.all(urls.map(async url => {
     try {
-      const res = await fetch(url);
-      if (res.ok) await cache.put(url, res);
+      const res = await revalidate(url, oldCache);
+      const aliases = Object.keys(ALIASES).filter(alias => ALIASES[alias] === url);
+      await Promise.all(aliases.map(alias => cache.put(alias, res.clone())));
+      await cache.put(url, res);
     } catch (err) {
-      console.warn("[sw] failed to precache", url, err);
+      console.warn("[sw] failed to cache", url, err);
     }
   }));
 }
@@ -68,22 +151,36 @@ function cacheNameFor(version) {
   return `${CACHE_PREFIX}${version || "initial"}`;
 }
 
-async function refreshAllAssets(newVersion) {
+async function refreshAllAssets(newVersion, extra = []) {
   const newCacheName = cacheNameFor(newVersion);
-  const cache = await caches.open(newCacheName);
-  await Promise.all(STATIC_ASSETS.map(async url => {
-    try {
-      const res = await fetch(url, {
-        cache: "no-store"
-      });
-      if (res.ok) await cache.put(url, res.clone());
-    } catch (err) {
-      console.warn("[sw] failed to refresh", url, err);
-    }
-  }));
+  await fillCache(newCacheName, extra);
   await setStoredVersion(newCacheName, newVersion);
   activeCacheName = newCacheName;
   await deleteOldCaches(newCacheName);
+}
+
+async function updateHeld(cacheName) {
+  const saver = await getDataSaver();
+  if (!saver.updates) return false;
+  const type = self.navigator.connection?.type;
+  if (type === "wifi" || type === "ethernet") return false;
+  const marker = await (await caches.open(cacheName)).match(VERSION_MARKER);
+  const savedAt = Number(marker?.headers.get("X-Saved-At")) || 0;
+  return Date.now() - savedAt < UPDATE_HOLD_MS;
+}
+
+async function cacheApp() {
+  let version = null;
+  try {
+    version = await fetchLiveVersion();
+  } catch {}
+  const cacheName = await getActiveCacheName();
+  const stored = cacheName ? await getStoredVersion(cacheName) : null;
+  if (!cacheName || version && version !== stored) {
+    await refreshAllAssets(version || stored || "initial", EXTRA_ASSETS);
+    return;
+  }
+  await fillCache(cacheName, EXTRA_ASSETS);
 }
 
 self.addEventListener("install", event => {
@@ -93,7 +190,7 @@ self.addEventListener("install", event => {
       version = await fetchLiveVersion();
     } catch {}
     const cacheName = cacheNameFor(version);
-    await precache(cacheName);
+    await fillCache(cacheName);
     await setStoredVersion(cacheName, version);
     activeCacheName = cacheName;
     self.skipWaiting();
@@ -103,7 +200,7 @@ self.addEventListener("install", event => {
 self.addEventListener("activate", event => {
   event.waitUntil((async () => {
     const names = await caches.keys();
-    const current = names.find(n => n.startsWith(CACHE_PREFIX));
+    const current = activeCacheName || names.filter(n => n.startsWith(CACHE_PREFIX)).pop();
     if (current) {
       activeCacheName = current;
       await deleteOldCaches(current);
@@ -112,11 +209,29 @@ self.addEventListener("activate", event => {
   })());
 });
 
+self.addEventListener("message", event => {
+  const data = event.data || {};
+  if (data.type === "DATA_SAVER") {
+    event.waitUntil(setDataSaver({
+      thumbs: data.thumbs === true,
+      images: data.images === true,
+      updates: data.updates === true
+    }));
+  } else if (data.type === "CACHE_APP") {
+    event.waitUntil(cacheApp().catch(err => console.warn("[sw] caching the app failed", err)).finally(() => event.ports[0]?.postMessage({
+      type: "CACHE_APP_DONE"
+    })));
+  }
+});
+
 self.addEventListener("fetch", event => {
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) {
-    if (event.request.method === "GET" && THUMB_HOSTS.includes(url.hostname) && url.pathname.startsWith("/vi/")) {
+    if (event.request.method !== "GET") return;
+    if (THUMB_HOSTS.includes(url.hostname) && url.pathname.startsWith("/vi/")) {
       event.respondWith(handleThumbnailRequest(url));
+    } else if (event.request.destination === "image" && dataSaver?.images) {
+      event.respondWith(handleBlockedImage(event.request));
     }
     return;
   }
@@ -132,24 +247,46 @@ self.addEventListener("fetch", event => {
   }
 });
 
+function placeholderImage() {
+  return new Response(PLACEHOLDER_SVG, {
+    headers: {
+      "Content-Type": "image/svg+xml"
+    }
+  });
+}
+
+async function handleBlockedImage(request) {
+  return await caches.match(request) || placeholderImage();
+}
+
 async function handleThumbnailRequest(url) {
   const canonical = `https://i.ytimg.com${url.pathname}`;
   const cache = await caches.open(THUMB_CACHE);
   const cached = await cache.match(canonical);
   if (cached) return cached;
+  const saver = url.searchParams.has(SAVE_PARAM) ? {} : await getDataSaver();
+  const video = url.pathname.match(/^\/vi\/([^/]+)\/\w+\.jpg$/)?.[1];
+  if (video && (saver.thumbs || saver.images)) {
+    for (const size of THUMB_SIZES) {
+      const other = await cache.match(`https://i.ytimg.com/vi/${video}/${size}.jpg`);
+      if (other) return other;
+    }
+  }
+  if (saver.images) return placeholderImage();
+  const source = video && saver.thumbs ? `https://i.ytimg.com/vi/${video}/default.jpg` : canonical;
   try {
-    const res = await fetch(canonical, {
+    const res = await fetch(source, {
       mode: "cors",
       credentials: "omit"
     });
     if (res.ok) {
-      await cache.put(canonical, res.clone());
+      await cache.put(source, res.clone());
       trimThumbnailCache();
     }
     return res;
   } catch (err) {
     try {
-      return await fetch(canonical, {
+      return await fetch(source, {
         mode: "no-cors"
       });
     } catch (fallbackErr) {
@@ -210,7 +347,12 @@ async function handleVersionRequest() {
     });
   }
   if (liveVersion !== storedVersion) {
-    refreshAllAssets(liveVersion).then(async () => {
+    if (storedVersion && await updateHeld(cacheName)) {
+      return new Response(storedVersion, {
+        status: 200
+      });
+    }
+    refreshPromise = refreshPromise || refreshAllAssets(liveVersion).then(async () => {
       const clientsList = await self.clients.matchAll({
         type: "window"
       });
@@ -218,9 +360,13 @@ async function handleVersionRequest() {
         type: "SW_UPDATED",
         version: liveVersion
       }));
-    }).catch(err => console.warn("[sw] background refresh failed", err));
+    }).catch(err => console.warn("[sw] background refresh failed", err)).finally(() => {
+      refreshPromise = null;
+    });
   }
   return new Response(liveVersion, {
     status: 200
   });
 }
+
+getDataSaver();

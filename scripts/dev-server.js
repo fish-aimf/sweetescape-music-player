@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
@@ -60,12 +61,20 @@ const server = http.createServer((req, res) => {
     res.end('not found');
     return;
   }
+  const body = fs.readFileSync(file);
+  const etag = '"' + crypto.createHash('sha1').update(body).digest('hex') + '"';
+  if (req.headers['if-none-match'] === etag) {
+    res.writeHead(304, { ...siteHeaders, ETag: etag, 'Cache-Control': 'no-store' });
+    res.end();
+    return;
+  }
   res.writeHead(200, {
     ...siteHeaders,
     'Content-Type': TYPES[path.extname(file).toLowerCase()] || 'application/octet-stream',
-    'Cache-Control': 'no-store'
+    'Cache-Control': 'no-store',
+    ETag: etag
   });
-  fs.createReadStream(file).pipe(res);
+  res.end(body);
 });
 
 server.on('error', error => {

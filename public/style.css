@@ -2966,7 +2966,7 @@ body:has(#ytPlayer.fullscreen-video) {
   opacity: 1;
 }
 @media (hover: none) and (pointer: coarse) {
-  #additionalDetails: :-webkit-scrollbar {
+  #additionalDetails::-webkit-scrollbar {
     width: 0;
   }
   #additionalDetails {
