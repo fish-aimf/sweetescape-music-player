@@ -8677,12 +8677,14 @@ class AdvancedMusicPlayer {
     if (!song) {
       return;
     }
-    if (this.ytPlayer && typeof this.ytPlayer.pauseVideo === 'function') {
+    if (this.isLocalPlayback && this.localAudio) {
+      this.localAudio.pause();
+    } else if (this.ytPlayer && typeof this.ytPlayer.pauseVideo === 'function') {
       this.ytPlayer.pauseVideo();
-      this.isPlaying = false;
-      this.updatePlayerUI();
-      this.stopPlaybackTrackingIntervals();
     }
+    this.isPlaying = false;
+    this.updatePlayerUI();
+    this.stopPlaybackTrackingIntervals();
     const modal = document.getElementById('lyricsModal');
     const titleElement = document.getElementById('lyricsTitle');
     titleElement.textContent = `Lyrics Maker for: ${song.name}`;
@@ -8705,7 +8707,12 @@ class AdvancedMusicPlayer {
     const modal = document.getElementById('lyricsModal');
     const closeBtn = document.getElementById('closeLyricsModal');
     const player = {
-      ytPlayer: null
+      ytPlayer: null,
+      audio: null,
+      handle: null,
+      fileName: '',
+      source: '',
+      waitTimer: null
     };
     const state = {
       lyrics: [],
@@ -8714,11 +8721,42 @@ class AdvancedMusicPlayer {
       isRecording: false,
       timeUpdateInterval: null
     };
+    const media = {
+      ready: () => Boolean(player.audio || player.ytPlayer?.getDuration),
+      play: () => {
+        if (player.audio) {
+          player.audio.play().catch(error => console.warn('Lyrics Maker audio play failed:', error));
+        } else {
+          player.ytPlayer?.playVideo?.();
+        }
+      },
+      pause: () => {
+        if (player.audio) {
+          player.audio.pause();
+        } else {
+          player.ytPlayer?.pauseVideo?.();
+        }
+      },
+      time: () => (player.audio ? player.audio.currentTime : player.ytPlayer?.getCurrentTime?.()) || 0,
+      duration: () => {
+        const value = player.audio ? player.audio.duration : player.ytPlayer?.getDuration?.();
+        return Number.isFinite(value) ? value : 0;
+      },
+      seek: seconds => {
+        if (player.audio) {
+          player.audio.currentTime = seconds;
+        } else {
+          player.ytPlayer?.seekTo?.(seconds, true);
+        }
+      }
+    };
+    const isOffline = () => navigator.onLine === false;
+    const plainLyrics = text => String(text || '').split(/\r?\n/).map(line => line.replace(/^\s*(\[\d+:\d+(?:[.:]\d+)?\])+/, '').replace(/\s*\[\d+:\d+\]\s*$/, '').trim()).filter(line => line && !/^\[[a-z]+:.*\]$/i.test(line)).join('\n');
     const closeModal = () => {
       modal.classList.add('hidden');
       clearInterval(state.timeUpdateInterval);
       state.timeUpdateInterval = null;
-      player.ytPlayer?.pauseVideo?.();
+      media.pause();
     };
     closeBtn.onclick = closeModal;
     const showTab = tabId => {
@@ -8740,38 +8778,252 @@ class AdvancedMusicPlayer {
       });
       tab.addEventListener('click', handler);
     });
-    const loadVideo = () => {
-      const videoId = song.videoId;
-      if (!videoId) {
+    const tick = () => {
+      if (document.hidden || !media.ready()) {
         return;
       }
-      if (player.ytPlayer) {
-        player.ytPlayer.destroy();
+      document.getElementById('currentTime').textContent = formatTime(media.time());
+      updateLyricMakerVisualTimeline();
+    };
+    const startTicker = () => {
+      clearInterval(state.timeUpdateInterval);
+      state.timeUpdateInterval = setInterval(tick, 100);
+    };
+    const stopTicker = () => {
+      clearInterval(state.timeUpdateInterval);
+      state.timeUpdateInterval = null;
+      tick();
+    };
+    const renderSourceBar = (message = '') => {
+      const label = document.getElementById('lyricmakerSource');
+      const linkedBtn = document.getElementById('lyricmakerUseLinked');
+      const youtubeBtn = document.getElementById('lyricmakerUseYouTube');
+      const linkBtn = document.getElementById('lyricmakerLinkAudio');
+      const labels = {
+        linked: `Offline file: ${player.fileName}`,
+        file: `Audio file: ${player.fileName}`,
+        youtube: 'YouTube',
+        '': 'No audio loaded'
+      };
+      if (label) {
+        label.textContent = message || labels[player.source];
       }
-      if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
-        if (!document.getElementById('youtube-api')) {
-          const tag = document.createElement('script');
-          tag.id = 'youtube-api';
-          tag.src = 'https://www.youtube.com/iframe_api';
-          const firstScriptTag = document.getElementsByTagName('script')[0];
-          firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-          window.onYouTubeIframeAPIReady = () => {
-            createYouTubePlayer(videoId);
-          };
-        }
-      } else {
-        createYouTubePlayer(videoId);
+      if (linkedBtn) {
+        linkedBtn.style.display = song.localFileHandle?.getFile && player.source !== 'linked' ? '' : 'none';
+      }
+      if (youtubeBtn) {
+        youtubeBtn.style.display = song.videoId && player.source !== 'youtube' ? '' : 'none';
+      }
+      if (linkBtn) {
+        linkBtn.style.display = player.source === 'file' && player.handle ? '' : 'none';
       }
     };
-    const createYouTubePlayer = videoId => {
-      const container = document.getElementById('videoContainer');
-      if (!container) {
+    const releaseMedia = () => {
+      clearInterval(state.timeUpdateInterval);
+      state.timeUpdateInterval = null;
+      clearInterval(player.waitTimer);
+      player.waitTimer = null;
+      if (player.ytPlayer) {
+        try {
+          player.ytPlayer.destroy();
+        } catch (error) {}
+        player.ytPlayer = null;
+      }
+      if (player.audio) {
+        const audio = player.audio;
+        player.audio = null;
+        audio.pause();
+        URL.revokeObjectURL(audio.src);
+        audio.removeAttribute('src');
+        audio.load();
+      }
+      player.handle = null;
+      player.fileName = '';
+      player.source = '';
+      const box = document.getElementById('videoContainer');
+      if (box) {
+        box.classList.remove('lyricmaker-video-box--audio');
+        box.replaceChildren();
+      }
+    };
+    const audioPanel = (iconName, text) => {
+      const panel = document.createElement('div');
+      panel.className = 'lyricmaker-audio-panel';
+      const icon = document.createElement('i');
+      icon.className = `fas ${iconName}`;
+      const caption = document.createElement('p');
+      caption.textContent = text;
+      panel.append(icon, caption);
+      return panel;
+    };
+    const showNoSource = message => {
+      releaseMedia();
+      const box = document.getElementById('videoContainer');
+      if (box) {
+        box.classList.add('lyricmaker-video-box--audio');
+        box.append(audioPanel('fa-file-audio', message));
+      }
+      renderSourceBar();
+      renderLyricMakerVisualTimeline();
+    };
+    const useAudioFile = (file, source, handle = null) => {
+      releaseMedia();
+      const box = document.getElementById('videoContainer');
+      if (!box) {
         return;
       }
-      if (this.ytPlayer && typeof this.ytPlayer.pauseVideo === 'function') {
-        this.ytPlayer.pauseVideo();
+      const audio = document.createElement('audio');
+      audio.className = 'lyricmaker-audio';
+      audio.controls = true;
+      audio.preload = 'metadata';
+      audio.volume = (this.savedVolume ?? 100) / 100;
+      audio.addEventListener('loadedmetadata', () => {
+        tick();
+        renderLyricMakerVisualTimeline();
+      });
+      audio.addEventListener('play', startTicker);
+      audio.addEventListener('pause', stopTicker);
+      audio.addEventListener('seeked', tick);
+      audio.addEventListener('error', () => {
+        if (player.audio === audio) {
+          showNoSource(`${file.name} could not be played. Pick a different audio file.`);
+        }
+      });
+      audio.src = URL.createObjectURL(file);
+      const panel = audioPanel('fa-music', file.name);
+      panel.append(audio);
+      box.classList.add('lyricmaker-video-box--audio');
+      box.append(panel);
+      player.audio = audio;
+      player.handle = handle;
+      player.fileName = file.name;
+      player.source = source;
+      renderSourceBar();
+    };
+    const openLinkedFile = async (quiet = false) => {
+      const handle = song.localFileHandle;
+      if (!handle?.getFile) {
+        return false;
       }
-      player.ytPlayer = new YT.Player(container, {
+      try {
+        let permission = await handle.queryPermission?.({
+          mode: 'read'
+        });
+        if (permission && permission !== 'granted' && handle.requestPermission) {
+          permission = await handle.requestPermission({
+            mode: 'read'
+          });
+        }
+        if (permission && permission !== 'granted') {
+          throw new DOMException('Permission denied', 'NotAllowedError');
+        }
+        useAudioFile(await handle.getFile(), 'linked', handle);
+        return true;
+      } catch (error) {
+        if (!quiet) {
+          const reasons = {
+            NotFoundError: 'was renamed or moved',
+            NotAllowedError: 'was not given permission to be read'
+          };
+          this.showNotification(`This song's offline file ${reasons[error.name] || 'could not be opened'}. Pick the audio file instead.`, 'error');
+        }
+        return false;
+      }
+    };
+    const pickAudioFile = async () => {
+      if (window.showOpenFilePicker) {
+        try {
+          const [handle] = await window.showOpenFilePicker({
+            types: [ {
+              description: 'Audio files',
+              accept: {
+                'audio/*': [ '.mp3', '.flac', '.wav', '.m4a', '.ogg', '.aac' ]
+              }
+            } ]
+          });
+          useAudioFile(await handle.getFile(), 'file', handle);
+          return;
+        } catch (error) {
+          if (error.name === 'AbortError') {
+            return;
+          }
+          console.warn('Lyrics Maker file picker error:', error);
+        }
+      }
+      document.getElementById('lyricmakerAudioInput').click();
+    };
+    const handleAudioInput = event => {
+      const [file] = event.target.files;
+      event.target.value = '';
+      if (file) {
+        useAudioFile(file, 'file');
+      }
+    };
+    const linkAudioToSong = async () => {
+      const handle = player.handle;
+      if (!handle) {
+        return;
+      }
+      song.localFileHandle = handle;
+      song.localFileName = handle.name;
+      try {
+        await this.saveSingleSong(song);
+        player.source = 'linked';
+        renderSourceBar();
+        this.renderSongLibrary();
+        this.showNotification(`${handle.name} is now this song's offline file.`, 'success');
+      } catch (error) {
+        console.error('Linking offline file failed:', error);
+        this.showNotification('Could not link the file to this song.', 'error');
+      }
+    };
+    const useLinkedFile = () => openLinkedFile(false);
+    const loadVideo = () => {
+      if (!song.videoId) {
+        showNoSource('This song has no YouTube video. Pick its audio file to time the lyrics.');
+        return;
+      }
+      if (isOffline()) {
+        showNoSource("You're offline. Pick this song's audio file to time the lyrics without YouTube.");
+        return;
+      }
+      releaseMedia();
+      player.source = 'youtube';
+      renderSourceBar('Loading YouTube…');
+      let waited = 0;
+      const ready = () => {
+        if (!window.YT?.Player) {
+          return false;
+        }
+        clearInterval(player.waitTimer);
+        player.waitTimer = null;
+        createYouTubePlayer(song.videoId);
+        return true;
+      };
+      if (ready()) {
+        return;
+      }
+      player.waitTimer = setInterval(() => {
+        waited += 250;
+        if (!ready() && waited >= 8e3) {
+          showNoSource("YouTube could not be reached. Pick this song's audio file to time the lyrics offline.");
+        }
+      }, 250);
+    };
+    const loadMedia = async () => {
+      if (song.localFileHandle?.getFile && await openLinkedFile(true)) {
+        return;
+      }
+      loadVideo();
+    };
+    const createYouTubePlayer = videoId => {
+      const box = document.getElementById('videoContainer');
+      if (!box) {
+        return;
+      }
+      const mount = document.createElement('div');
+      box.replaceChildren(mount);
+      player.ytPlayer = new YT.Player(mount, {
         host: AdvancedMusicPlayer.YOUTUBE_HOST,
         height: '288',
         width: '512',
@@ -8781,53 +9033,80 @@ class AdvancedMusicPlayer {
           controls: 1
         },
         events: {
+          onReady: () => {
+            renderSourceBar();
+            renderLyricMakerVisualTimeline();
+          },
           onStateChange: event => {
             if (event.data === YT.PlayerState.PLAYING) {
-              clearInterval(state.timeUpdateInterval);
-              state.timeUpdateInterval = setInterval(() => {
-                if (document.hidden) {
-                  return;
-                }
-                if (player.ytPlayer && player.ytPlayer.getCurrentTime) {
-                  document.getElementById('currentTime').textContent = formatTime(player.ytPlayer.getCurrentTime());
-                  updateLyricMakerVisualTimeline();
-                }
-              }, 100);
+              startTicker();
+            } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+              stopTicker();
             }
+          },
+          onError: () => {
+            renderSourceBar('YouTube could not play this video. Pick an audio file instead.');
           }
         }
       });
+      renderSourceBar();
     };
     const formatTime = seconds => {
       const minutes = Math.floor(seconds / 60);
       const remainingSeconds = Math.floor(seconds % 60);
       return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
     };
-    const searchAZLyrics = () => {
+    const needsNetwork = action => () => {
+      if (isOffline()) {
+        this.showNotification("You're offline. Type or paste the lyrics, or open a lyrics file.", 'error');
+        return;
+      }
+      action();
+    };
+    const searchAZLyrics = needsNetwork(() => {
       const songName = song.name ? song.name.replace(/\s+/g, '+') : '';
       const author = song.author ? '+' + song.author.replace(/\s+/g, '+') : '';
       const url = `https://search.azlyrics.com/search.php?q=${songName}${author}&x=acc029721e541ef4da92207eb06ba181719a67575dcaefe50b401ab43356fc32`;
       window.open(url, '_blank');
-    };
-    const searchLetras = () => {
+    });
+    const searchLetras = needsNetwork(() => {
       const songName = song.name ? song.name.replace(/\s+/g, '%20') : '';
       const author = song.author ? '%20' + song.author.replace(/\s+/g, '%20') : '';
       const url = `https://www.letras.com/?q=${songName}${author}`;
       window.open(url, '_blank');
-    };
-    const searchGenius = () => {
+    });
+    const searchGenius = needsNetwork(() => {
       const songName = song.name ? song.name.replace(/\s+/g, '%20') : '';
       const author = song.author ? '%20' + song.author.replace(/\s+/g, '%20') : '';
       const url = `https://genius.com/search?q=${songName}${author}`;
       window.open(url, '_blank');
-    };
-    const searchGoogle = () => {
+    });
+    const searchGoogle = needsNetwork(() => {
       const songName = song.name ? song.name.replace(/\s+/g, '%20') : '';
       const author = song.author ? '%20' + song.author.replace(/\s+/g, '%20') : '';
       const url = `https://www.google.com/search?q=${songName}${author}%20lyrics`;
       window.open(url, '_blank');
+    });
+    const openLyricsFile = () => document.getElementById('lyricsFileInput').click();
+    const handleLyricsFile = async event => {
+      const [file] = event.target.files;
+      event.target.value = '';
+      if (!file) {
+        return;
+      }
+      try {
+        const text = plainLyrics(await file.text());
+        if (!text) {
+          this.showNotification(`${file.name} has no lyrics in it.`, 'error');
+          return;
+        }
+        document.getElementById('lyricsInput').value = text;
+      } catch (error) {
+        console.error('Reading lyrics file failed:', error);
+        this.showNotification(`Could not read ${file.name}.`, 'error');
+      }
     };
-    const autoFetchLyrics = async () => {
+    const autoFetchLyrics = needsNetwork(async () => {
       const btn = document.getElementById('autoFetchLyricsBtn');
       const loadingIndicator = document.getElementById('lyricsFetchLoading');
       const lyricsInput = document.getElementById('lyricsInput');
@@ -8868,7 +9147,7 @@ class AdvancedMusicPlayer {
           loadingIndicator.style.display = 'none';
         }
       }
-    };
+    });
     const prepareLyrics = () => {
       const lyricsText = document.getElementById('lyricsInput').value.trim();
       if (!lyricsText) {
@@ -8881,7 +9160,7 @@ class AdvancedMusicPlayer {
       state.lyrics.forEach((line, index) => {
         const lineElement = document.createElement('div');
         lineElement.className = 'progress-item';
-        lineElement.innerHTML = `\n\t\t\t\t\t\t<span>${index + 1}. ${line}</span>\n\t\t\t\t\t\t<span id="time-${index}">Not timed</span>\n\t\t\t\t\t`;
+        lineElement.innerHTML = `\n\t\t\t\t\t\t<span>${index + 1}. ${this.escapeHtml(line)}</span>\n\t\t\t\t\t\t<span id="time-${index}">Not timed</span>\n\t\t\t\t\t`;
         progressContainer.appendChild(lineElement);
       });
       state.timings = Array(state.lyrics.length).fill(null);
@@ -8922,11 +9201,15 @@ class AdvancedMusicPlayer {
       }
     };
     const startRecording = () => {
-      if (!player.ytPlayer || !state.lyrics.length) {
-        alert('Please load a video and prepare lyrics first');
+      if (!media.ready()) {
+        alert('Load the song first: use its offline file, pick an audio file, or play it from YouTube.');
         return;
       }
-      player.ytPlayer.playVideo();
+      if (!state.lyrics.length) {
+        alert('Please prepare lyrics first');
+        return;
+      }
+      media.play();
       state.timings = Array(state.lyrics.length).fill(null);
       state.currentLineIndex = -1;
       state.isRecording = true;
@@ -8941,7 +9224,7 @@ class AdvancedMusicPlayer {
       if (!state.isRecording) {
         return;
       }
-      const currentTime = player.ytPlayer.getCurrentTime();
+      const currentTime = media.time();
       state.currentLineIndex++;
       if (state.currentLineIndex < state.lyrics.length) {
         let lineToMark = state.currentLineIndex;
@@ -8968,9 +9251,8 @@ class AdvancedMusicPlayer {
       }
     };
     const seekVideoToLyricTime = timeInSeconds => {
-      if (player.ytPlayer && typeof player.ytPlayer.seekTo === 'function') {
-        player.ytPlayer.seekTo(timeInSeconds, true);
-      }
+      media.seek(timeInSeconds);
+      tick();
     };
     const updateLyricMakerButtonStates = () => {
       const redoBtn = document.getElementById('redoLineBtn');
@@ -8984,14 +9266,11 @@ class AdvancedMusicPlayer {
       skipBtn.disabled = state.currentLineIndex >= state.lyrics.length - 1;
     };
     const updateLyricMakerVisualTimeline = () => {
-      if (!player.ytPlayer || !player.ytPlayer.getDuration) {
+      const duration = media.duration();
+      if (!duration) {
         return;
       }
-      const duration = player.ytPlayer.getDuration();
-      const currentTime = player.ytPlayer.getCurrentTime();
-      if (duration === 0) {
-        return;
-      }
+      const currentTime = media.time();
       const percentage = currentTime / duration * 100;
       const progressFill = document.getElementById('lyricmakerProgressFill');
       if (progressFill) {
@@ -9010,11 +9289,8 @@ class AdvancedMusicPlayer {
       }
       singleLane.innerHTML = '';
       previewArea.innerHTML = '';
-      if (!player.ytPlayer || !player.ytPlayer.getDuration) {
-        return;
-      }
-      const duration = player.ytPlayer.getDuration();
-      if (duration === 0) {
+      const duration = media.duration();
+      if (!duration) {
         return;
       }
       const LAYER_HEIGHT = 16;
@@ -9123,13 +9399,13 @@ class AdvancedMusicPlayer {
         return;
       }
       progressBar.onclick = e => {
-        if (!player.ytPlayer || !player.ytPlayer.getDuration) {
+        const duration = media.duration();
+        if (!duration) {
           return;
         }
         const rect = progressBar.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const percentage = x / rect.width * 100;
-        const duration = player.ytPlayer.getDuration();
         const seekTime = percentage / 100 * duration;
         seekVideoToLyricTime(seekTime);
       };
@@ -9222,8 +9498,22 @@ class AdvancedMusicPlayer {
     document.getElementById('geniusBtn').addEventListener('click', searchGenius);
     document.getElementById('googleBtn').addEventListener('click', searchGoogle);
     document.getElementById('autoFetchLyricsBtn')?.addEventListener('click', autoFetchLyrics);
+    document.getElementById('lyricsFileBtn').addEventListener('click', openLyricsFile);
+    document.getElementById('lyricsFileInput').addEventListener('change', handleLyricsFile);
+    document.getElementById('lyricmakerUseLinked').addEventListener('click', useLinkedFile);
+    document.getElementById('lyricmakerPickAudio').addEventListener('click', pickAudioFile);
+    document.getElementById('lyricmakerAudioInput').addEventListener('change', handleAudioInput);
+    document.getElementById('lyricmakerUseYouTube').addEventListener('click', loadVideo);
+    document.getElementById('lyricmakerLinkAudio').addEventListener('click', linkAudioToSong);
     document.addEventListener('keydown', handleKeyDown);
     this.lyricMakerCleanup = () => {
+      document.getElementById('lyricsFileBtn').removeEventListener('click', openLyricsFile);
+      document.getElementById('lyricsFileInput').removeEventListener('change', handleLyricsFile);
+      document.getElementById('lyricmakerUseLinked').removeEventListener('click', useLinkedFile);
+      document.getElementById('lyricmakerPickAudio').removeEventListener('click', pickAudioFile);
+      document.getElementById('lyricmakerAudioInput').removeEventListener('change', handleAudioInput);
+      document.getElementById('lyricmakerUseYouTube').removeEventListener('click', loadVideo);
+      document.getElementById('lyricmakerLinkAudio').removeEventListener('click', linkAudioToSong);
       document.getElementById('prepareLyricsBtn').removeEventListener('click', prepareLyrics);
       document.getElementById('nextToRecordBtn').removeEventListener('click', goToRecordTab);
       document.getElementById('startRecording').removeEventListener('click', startRecording);
@@ -9242,10 +9532,8 @@ class AdvancedMusicPlayer {
       tabHandlers.forEach(({element: element, handler: handler}) => {
         element.removeEventListener('click', handler);
       });
-      clearInterval(state.timeUpdateInterval);
-      state.timeUpdateInterval = null;
-      player.ytPlayer?.destroy();
-      player.ytPlayer = null;
+      releaseMedia();
+      renderSourceBar();
       state.lyrics = [];
       state.timings = [];
       state.currentLineIndex = -1;
@@ -9265,7 +9553,9 @@ class AdvancedMusicPlayer {
       document.getElementById('skipLineBtn').disabled = true;
       showTab('setupTab');
     };
-    setTimeout(() => loadVideo(), 100);
+    document.getElementById('lyricsInput').value = plainLyrics(song.lyrics);
+    renderSourceBar();
+    setTimeout(loadMedia, 100);
     setupLyricMakerProgressBarSeek();
   }
   openLyricsModePicker() {

@@ -1262,6 +1262,8 @@ Another Playlist{
                      <button id="letrasBtn" class="lyrics-search-btn ui-btn">Find Lyrics via Letras</button>
                      <button id="geniusBtn" class="lyrics-search-btn ui-btn">Find Lyrics via Genius</button>
                      <button id="googleBtn" class="lyrics-search-btn ui-btn">Find Lyrics via Google</button>
+                     <button id="lyricsFileBtn" class="lyrics-search-btn ui-btn"><i class="fas fa-file-lines"></i> Open lyrics file</button>
+                     <input type="file" id="lyricsFileInput" accept=".txt,.lrc,text/plain" hidden>
                   </div>
                   <div id="lyricsFetchLoading" class="subtitles-import-loading" style="display: none;">
                      <i class="fas fa-spinner fa-spin"></i> Fetching lyrics from Musixmatch...
@@ -1287,6 +1289,15 @@ Another Playlist{
 
                   <div id="lyricmakerPreviewArea" class="lyricmaker-preview-area"></div>
                </div>
+            </div>
+
+            <div class="lyricmaker-source-row">
+               <span id="lyricmakerSource" class="lyricmaker-source-label">No audio loaded</span>
+               <button id="lyricmakerUseLinked" class="ui-btn ui-btn--sm" style="display: none;"><i class="fas fa-hard-drive"></i> Use offline file</button>
+               <button id="lyricmakerPickAudio" class="ui-btn ui-btn--sm"><i class="fas fa-folder-open"></i> Pick audio file</button>
+               <button id="lyricmakerUseYouTube" class="ui-btn ui-btn--sm" style="display: none;"><i class="fab fa-youtube"></i> Use YouTube</button>
+               <button id="lyricmakerLinkAudio" class="ui-btn ui-btn--sm ui-btn--primary" style="display: none;"><i class="fas fa-link"></i> Save as this song's offline file</button>
+               <input type="file" id="lyricmakerAudioInput" accept="audio/*" hidden>
             </div>
 
             <div class="lyricmaker-lyrics-display">

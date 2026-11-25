@@ -12,8 +12,8 @@ not hold what this file claims, regenerate, or `grep -n "  methodName("`.
 
 | Source | sha256 (first 12) | Lines |
 |---|---|---|
-| `public/script.js` | `676e48d1f9e1` | 20276 |
-| `public/index.html` | `d2db9a8587d9` | 1532 |
+| `public/script.js` | `88f998f80260` | 20566 |
+| `public/index.html` | `26c0b9516258` | 1543 |
 | `public/lite.js` | `ab24617b0e5c` | 459 |
 | `public/karaoke-player.js` | `3e6bb16779a4` | 682 |
 | `public/karaoke-encoder.js` | `d277db62d9e9` | 147 |
@@ -123,9 +123,9 @@ The rest match their id exactly.
 | `settingsModal` | 734 | `settings-modal ui-overlay` |
 | `recentlyPlayedModal` | 1227 | `recently-played-modal-bg ui-overlay` |
 | `lyricsModal` | 1242 | `lyrics-maker-modal hidden ui-overlay` |
-| `downloadModal` | 1382 | `dl-overlay ui-overlay` |
-| `shazamModal` | 1448 | `sz-overlay ui-overlay` |
-| `statsModal` | 1499 | `ls-overlay ui-overlay` |
+| `downloadModal` | 1393 | `dl-overlay ui-overlay` |
+| `shazamModal` | 1459 | `sz-overlay ui-overlay` |
+| `statsModal` | 1510 | `ls-overlay ui-overlay` |
 
 ---
 
