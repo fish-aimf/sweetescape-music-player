@@ -1030,6 +1030,7 @@ Another Playlist{
                         <p class="setting-description" id="offlineFolderName"></p>
                         <div class="offline-folder-actions">
                            <button type="button" id="offlineLinkBtn" class="ui-btn ui-btn--primary"><i class="fas fa-folder-open"></i> <span id="offlineLinkLabel">Link music folder</span></button>
+                           <button type="button" id="offlineCheckBtn" class="ui-btn ui-btn--ghost" hidden>Check for new files</button>
                            <button type="button" id="offlineForgetBtn" class="ui-btn ui-btn--ghost" hidden>Forget folder</button>
                         </div>
                         <p class="setting-description" id="offlineLinkSummary"></p>
@@ -1039,14 +1040,14 @@ Another Playlist{
                         <p class="setting-description">Keep the names your downloads come with, like <strong>Lush Life [8BmMB3i--FM]</strong>. The part in brackets is the YouTube video ID, which pairs the file with exactly the right song. A renamed file can only be paired by its title, which can miss.</p>
                      </div>
                      <div class="setting-group">
-                        <label for="offlineAutoToggle">Link New Files Automatically:</label>
+                        <label for="offlineAutoToggle">Check for New Files Automatically:</label>
                         <div class="toggle-switch">
                            <input type="checkbox" id="offlineAutoToggle" class="toggle-input" checked>
                            <label for="offlineAutoToggle" class="toggle-label">
                            <span class="toggle-slider"></span>
                            </label>
                         </div>
-                        <p class="setting-description">Each time SweetEscape opens, songs without a file are linked to new files in the folder whose name holds the song's video ID, as long as the browser still lets SweetEscape read the folder. A linked song whose file stops opening is relinked from the folder when you play it.</p>
+                        <p class="setting-description">When SweetEscape opens, and when you come back to it (at most every five minutes), songs without a file are linked to new files whose name holds their video ID. A linked song whose file stops opening is relinked from the folder when you play it.</p>
                      </div>
                   </div>
                   <div class="tab-panel" id="recommendationPanel">
