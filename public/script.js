@@ -6248,29 +6248,44 @@ class AdvancedMusicPlayer {
       return;
     }
     this._statCountedForCurrentPlay = false;
+    this.filePermissionSong = null;
     const currentId = this.currentSong?.id;
     const masterSong = currentId && this.songLibrary.find(s => s.id === currentId) || this.songLibrary.find(s => s.videoId === videoId);
     if (masterSong?.localFileHandle) {
+      const offlineOnly = this.dataSaverActive('offline');
+      let needsClick = false;
       try {
-        const perm = await masterSong.localFileHandle.requestPermission({
+        const handle = masterSong.localFileHandle;
+        let perm = await handle.queryPermission?.({
           mode: 'read'
         });
+        if (perm !== 'granted') {
+          perm = await handle.requestPermission({
+            mode: 'read'
+          });
+        }
         if (perm === 'granted') {
-          const file = await masterSong.localFileHandle.getFile();
+          const file = await handle.getFile();
           const url = URL.createObjectURL(file);
           this.offlineSkips = 0;
           this.playLocalAudio(url);
           return;
         }
-        this.showNotification('Local file permission denied. Falling back to YouTube.', 'error');
+        needsClick = true;
+        if (!offlineOnly) {
+          this.showNotification('Local file permission denied. Falling back to YouTube.', 'error');
+        }
       } catch (error) {
-        const errorMessages = {
-          NotFoundError: 'Local file not found — was it renamed or moved?',
-          NotAllowedError: 'Local file access was denied.',
-          SecurityError: 'Security error reading local file.'
-        };
-        const msg = errorMessages[error.name] || `Local file error (${error.name}).`;
-        this.showNotification(`${msg} Falling back to YouTube.`, 'error');
+        needsClick = error.name === 'SecurityError' || error.name === 'NotAllowedError';
+        if (!offlineOnly || !needsClick) {
+          const errorMessages = {
+            NotFoundError: 'Local file not found — was it renamed or moved?',
+            NotAllowedError: 'Local file access was denied.',
+            SecurityError: 'Security error reading local file.'
+          };
+          const msg = errorMessages[error.name] || `Local file error (${error.name}).`;
+          this.showNotification(offlineOnly ? msg : `${msg} Falling back to YouTube.`, 'error');
+        }
         if (error.name === 'NotFoundError') {
           const idx = this.songLibrary.findIndex(s => s.id === masterSong.id);
           if (idx !== -1) {
@@ -6279,6 +6294,10 @@ class AdvancedMusicPlayer {
             this.saveSongLibrary();
           }
         }
+      }
+      if (offlineOnly && needsClick) {
+        this.waitForFilePermission(masterSong);
+        return;
       }
     }
     if (this.localAudio) {
@@ -6337,6 +6356,11 @@ class AdvancedMusicPlayer {
     }
   }
   togglePlayPause() {
+    const waiting = this.filePermissionSong;
+    if (waiting && this.currentSong?.id === waiting.id) {
+      this.playSongById(waiting.videoId);
+      return;
+    }
     if (this.isLocalPlayback && this.localAudio) {
       try {
         if (!this.localAudio.paused) {
@@ -14773,6 +14797,16 @@ class AdvancedMusicPlayer {
       input.checked = features[input.dataset.dataSaverKey] === true;
       row.classList.toggle('is-idle', !on);
     });
+  }
+  waitForFilePermission(song) {
+    this.filePermissionSong = song;
+    this.offlineSkips = 0;
+    if (this.localAudio && !this.localAudio.paused) {
+      this.localAudio.pause();
+    }
+    this.isPlaying = false;
+    this.updatePlayerUI();
+    this.showNotification(`Press play to open the offline file for ${song.name}. The browser asks again for each file after the page reloads.`, 'info');
   }
   skipStreamedSong() {
     const limit = this.currentPlaylist?.songs?.length || this.songLibrary.length;

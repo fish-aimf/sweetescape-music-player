@@ -229,7 +229,7 @@ self.addEventListener("fetch", event => {
   if (url.origin !== self.location.origin) {
     if (event.request.method !== "GET") return;
     if (THUMB_HOSTS.includes(url.hostname) && url.pathname.startsWith("/vi/")) {
-      event.respondWith(handleThumbnailRequest(url));
+      event.respondWith(handleThumbnailRequest(url, event.request.mode));
     } else if (event.request.destination === "image" && dataSaver?.images) {
       event.respondWith(handleBlockedImage(event.request));
     }
@@ -259,18 +259,25 @@ async function handleBlockedImage(request) {
   return await caches.match(request) || placeholderImage();
 }
 
-async function handleThumbnailRequest(url) {
+async function cachedThumbnail(cache, video) {
+  if (!video) return null;
+  for (const size of THUMB_SIZES) {
+    const other = await cache.match(`https://i.ytimg.com/vi/${video}/${size}.jpg`);
+    if (other) return other;
+  }
+  return null;
+}
+
+async function handleThumbnailRequest(url, mode) {
   const canonical = `https://i.ytimg.com${url.pathname}`;
   const cache = await caches.open(THUMB_CACHE);
   const cached = await cache.match(canonical);
   if (cached) return cached;
   const saver = url.searchParams.has(SAVE_PARAM) ? {} : await getDataSaver();
   const video = url.pathname.match(/^\/vi\/([^/]+)\/\w+\.jpg$/)?.[1];
-  if (video && (saver.thumbs || saver.images)) {
-    for (const size of THUMB_SIZES) {
-      const other = await cache.match(`https://i.ytimg.com/vi/${video}/${size}.jpg`);
-      if (other) return other;
-    }
+  if (saver.thumbs || saver.images) {
+    const other = await cachedThumbnail(cache, video);
+    if (other) return other;
   }
   if (saver.images) return placeholderImage();
   const source = video && saver.thumbs ? `https://i.ytimg.com/vi/${video}/default.jpg` : canonical;
@@ -285,15 +292,14 @@ async function handleThumbnailRequest(url) {
     }
     return res;
   } catch (err) {
-    try {
-      return await fetch(source, {
-        mode: "no-cors"
-      });
-    } catch (fallbackErr) {
-      return new Response("", {
-        status: 504
-      });
+    if (mode === "no-cors") {
+      try {
+        return await fetch(source, {
+          mode: "no-cors"
+        });
+      } catch {}
     }
+    return await cachedThumbnail(cache, video) || placeholderImage();
   }
 }
 
