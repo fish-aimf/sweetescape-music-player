@@ -539,6 +539,7 @@ class AdvancedMusicPlayer {
     this.visualizerEnabled = true;
     this.batterySaver = this.getBatterySaverDefaults();
     this.dataSaver = this.getDataSaverDefaults();
+    this.confirmLeave = true;
     this.offlineFolder = {
       handle: null,
       auto: true,
@@ -695,7 +696,7 @@ class AdvancedMusicPlayer {
   async _initialize() {
     try {
       await this.initDatabase();
-      await Promise.all([ this.loadSongLibrary(), this.loadPlaylists(), this.loadSettings(), this.loadRecentlyPlayed(), this.loadDiscoverMoreSettingsOnStartup(), this.loadKeybinds(), this.loadBatterySaver(), this.loadDataSaver(), this.loadOfflineFolder(), this.loadDiscordSettings(), this.loadLibrarySortValue(), this.loadLibraryReverseValue(), this.loadVisualizerValue() ]);
+      await Promise.all([ this.loadSongLibrary(), this.loadPlaylists(), this.loadSettings(), this.loadRecentlyPlayed(), this.loadDiscoverMoreSettingsOnStartup(), this.loadKeybinds(), this.loadBatterySaver(), this.loadDataSaver(), this.loadOfflineFolder(), this.loadLeaveGuard(), this.loadDiscordSettings(), this.loadLibrarySortValue(), this.loadLibraryReverseValue(), this.loadVisualizerValue() ]);
       await this.repairEncodedStoredText();
       const shouldShowWelcome = this.songLibrary.length === 0;
       this.initializeElements();
@@ -994,6 +995,7 @@ class AdvancedMusicPlayer {
       offlineForgetBtn: document.getElementById('offlineForgetBtn'),
       offlineLinkSummary: document.getElementById('offlineLinkSummary'),
       offlineAutoToggle: document.getElementById('offlineAutoToggle'),
+      confirmLeaveToggle: document.getElementById('confirmLeaveToggle'),
       installAppGroup: document.getElementById('installAppGroup'),
       installAppBtn: document.getElementById('installAppBtn'),
       lsPanel: document.getElementById('lsPanel'),
@@ -1338,8 +1340,16 @@ class AdvancedMusicPlayer {
         e.preventDefault();
       }
     });
+    const leaveToggle = this.elements.confirmLeaveToggle;
+    if (leaveToggle) {
+      leaveToggle.checked = this.confirmLeave;
+      leaveToggle.addEventListener('change', () => {
+        this.confirmLeave = leaveToggle.checked;
+        this.saveSetting('confirmLeave', leaveToggle.checked).catch(error => console.error('Error saving the close warning setting:', error));
+      });
+    }
     window.addEventListener('beforeunload', e => {
-      if (this.isPlaying) {
+      if (this.isPlaying && this.confirmLeave) {
         e.preventDefault();
         e.returnValue = '';
       }
@@ -14834,6 +14844,9 @@ class AdvancedMusicPlayer {
       row.classList.toggle('is-idle', !on);
     });
   }
+  async loadLeaveGuard() {
+    this.confirmLeave = await this.getSetting('confirmLeave') !== false;
+  }
   async loadOfflineFolder() {
     const saved = await this.getSetting('offlineFolder');
     if (!saved || typeof saved !== 'object') {
@@ -15150,7 +15163,7 @@ class AdvancedMusicPlayer {
     this.folderLinker?.dialog.close();
     const dialog = UI.modal({
       title: 'Link music folder',
-      size: '2xl',
+      size: 'xl',
       className: 'folder-linker',
       bodyClassName: 'folder-linker__body',
       closeOnEscape: true,
@@ -15167,11 +15180,9 @@ class AdvancedMusicPlayer {
       files: [],
       pairs: new Map(),
       songFile: new Map(),
-      selected: null,
-      fileQuery: '',
-      fileFilter: 'all',
-      songQuery: '',
-      songFilter: 'missing',
+      picking: null,
+      pickQuery: '',
+      query: '',
       options: { ...this.offlineFolder.options },
       run: 0,
       busy: false,
@@ -15184,17 +15195,12 @@ class AdvancedMusicPlayer {
       node.textContent = value;
       return node;
     };
-    const bar = UI.el('div', 'folder-linker__bar');
+    const top = UI.el('div', 'folder-linker__top');
     const where = UI.el('div', 'folder-linker__folder');
     els.folderName = text('div', 'folder-linker__folder-name');
     els.folderMeta = text('div', 'folder-linker__folder-meta');
     where.append(els.folderName, els.folderMeta);
-    const barActions = UI.el('div', 'folder-linker__actions');
-    barActions.append(UI.button('Check for new files', {
-      variant: 'ghost',
-      size: 'sm',
-      onClick: () => this.loadFolderLinkerFiles(true)
-    }), UI.button('Change folder', {
+    top.append(where, UI.button('Change folder', {
       variant: 'ghost',
       size: 'sm',
       onClick: async () => {
@@ -15205,39 +15211,66 @@ class AdvancedMusicPlayer {
         }
       }
     }));
-    bar.append(where, barActions);
-    const status = UI.el('div', 'folder-linker__status');
-    const head = UI.el('div', 'folder-linker__status-head');
-    els.counts = text('div', 'folder-linker__counts');
-    const statusActions = UI.el('div', 'folder-linker__actions');
-    els.matchAgain = UI.button('Match again', {
-      variant: 'ghost',
-      size: 'sm',
-      onClick: () => this.runFolderMatching(true)
-    });
-    els.unpairAll = UI.button('Unpair all', {
-      variant: 'ghost',
-      size: 'sm',
-      onClick: () => {
-        st.run++;
-        st.pairs.clear();
-        st.songFile.clear();
-        st.selected = null;
-        this.setFolderLinkerBusy(false);
-        this.setFolderLinkerProgress('Every pair is removed. Match again to pair them automatically, or pair files yourself.', 0);
-        this.renderFolderLinker();
-      }
-    });
-    statusActions.append(els.matchAgain, els.unpairAll);
-    head.append(els.counts, statusActions);
+    const overview = UI.el('div', 'folder-linker__overview');
+    els.headline = text('div', 'folder-linker__headline');
     els.progress = UI.el('div', 'folder-linker__progress');
     const track = UI.el('div', 'folder-linker__progress-bar');
     els.progressFill = UI.el('div', 'folder-linker__progress-fill');
     els.progressText = text('span', 'folder-linker__progress-text');
     track.append(els.progressFill);
     els.progress.append(track, els.progressText);
+    overview.append(els.headline, els.progress);
+    const tools = UI.el('div', 'folder-linker__tools');
+    els.search = UI.el('input', 'ui-input folder-linker__search');
+    els.search.type = 'search';
+    els.search.placeholder = 'Search files and songs';
+    els.search.addEventListener('input', this.debounce(() => {
+      st.query = els.search.value;
+      this.renderFolderLinkerLists();
+    }, 120));
+    tools.append(els.search, UI.button('Check for new files', {
+      variant: 'ghost',
+      size: 'sm',
+      onClick: () => this.loadFolderLinkerFiles(true)
+    }));
+    const lists = UI.el('div', 'folder-linker__lists ui-scroll');
+    const section = title => {
+      const box = UI.el('section', 'folder-linker__section');
+      const head = UI.el('div', 'folder-linker__section-head');
+      const heading = text('h3', 'folder-linker__section-title', title);
+      const count = text('span', 'folder-linker__section-count');
+      const actions = UI.el('div', 'folder-linker__section-actions');
+      const list = UI.el('ul', 'folder-linker__list');
+      head.append(heading, count, actions);
+      box.append(head, list);
+      return {
+        box,
+        count,
+        actions,
+        list
+      };
+    };
+    const missing = section('Not matched');
+    const matched = section('Matched');
+    els.missingBox = missing.box;
+    els.missingCount = missing.count;
+    els.missingList = missing.list;
+    els.matchedBox = matched.box;
+    els.matchedCount = matched.count;
+    els.matchedList = matched.list;
+    matched.actions.append(UI.button('Tick all', {
+      variant: 'ghost',
+      size: 'sm',
+      onClick: () => this.setFolderLinkerTicks(true)
+    }), UI.button('Untick all', {
+      variant: 'ghost',
+      size: 'sm',
+      onClick: () => this.setFolderLinkerTicks(false)
+    }));
+    lists.append(missing.box, matched.box);
+    const advanced = UI.el('details', 'folder-linker__advanced');
+    const summary = text('summary', '', 'Matching options');
     const options = UI.el('div', 'folder-linker__options');
-    options.append(text('span', 'folder-linker__options-label', 'Match by'));
     const option = (key, label) => {
       const wrap = UI.el('label', 'folder-linker__option');
       const input = document.createElement('input');
@@ -15252,134 +15285,104 @@ class AdvancedMusicPlayer {
       wrap.append(input, text('span', '', label));
       options.append(wrap);
     };
-    option('videoId', 'Video ID in the file name');
-    option('title', 'YouTube title');
-    option('name', 'Song name');
-    options.append(text('span', 'folder-linker__options-gap'));
-    option('replace', 'Replace files songs already have');
-    status.append(head, els.progress, options);
-    const columns = UI.el('div', 'folder-linker__columns');
-    const panel = (tabs, onQuery, onFilter, active) => {
-      const root = UI.el('section', 'folder-linker__panel');
-      const top = UI.el('div', 'folder-linker__panel-head');
-      const titleRow = UI.el('div', 'folder-linker__panel-title');
-      const title = text('h3', 'folder-linker__panel-name');
-      const extra = UI.el('div', 'folder-linker__panel-extra');
-      const search = UI.el('input', 'ui-input folder-linker__search');
-      const tabBar = UI.el('div', 'ui-tabs folder-linker__tabs');
-      const list = UI.el('ul', 'folder-linker__list ui-scroll');
-      const foot = text('div', 'folder-linker__foot');
-      search.type = 'search';
-      search.addEventListener('input', this.debounce(() => onQuery(search.value), 120));
-      tabs.forEach(([ value, label ]) => {
-        const tab = text('button', 'ui-tab', label);
-        tab.type = 'button';
-        tab.classList.toggle('active', value === active);
-        tab.addEventListener('click', () => {
-          tabBar.querySelectorAll('.ui-tab').forEach(other => other.classList.toggle('active', other === tab));
-          onFilter(value);
-        });
-        tabBar.append(tab);
-      });
-      titleRow.append(title, extra);
-      top.append(titleRow, search, tabBar);
-      root.append(top, list, foot);
-      return {
-        root,
-        title,
-        extra,
-        search,
-        list,
-        foot
-      };
-    };
-    const files = panel([ [ 'all', 'All files' ], [ 'unpaired', 'Not matched' ] ], value => {
-      st.fileQuery = value;
-      this.renderFolderLinkerFiles();
-    }, value => {
-      st.fileFilter = value;
-      this.renderFolderLinkerFiles();
-    }, 'all');
-    const songs = panel([ [ 'missing', 'Without a file' ], [ 'all', 'All songs' ] ], value => {
-      st.songQuery = value;
-      this.renderFolderLinkerSongs();
-    }, value => {
-      st.songFilter = value;
-      this.renderFolderLinkerSongs();
-    }, 'missing');
-    files.search.placeholder = 'Search files';
-    songs.search.placeholder = 'Search songs';
-    els.filesTitle = files.title;
-    els.filesExtra = files.extra;
-    els.fileList = files.list;
-    els.fileFoot = files.foot;
-    els.songsPanel = songs.root;
-    els.songsTitle = songs.title;
-    els.songsExtra = songs.extra;
-    els.songList = songs.list;
-    els.songFoot = songs.foot;
-    els.cancelPick = UI.button('Cancel', {
+    options.append(text('span', 'folder-linker__options-label', 'Match files by'));
+    option('videoId', 'the video ID in the file name');
+    option('title', 'the YouTube title');
+    option('name', 'the song name');
+    const replace = UI.el('div', 'folder-linker__options');
+    options.append(replace);
+    replace.append(text('span', 'folder-linker__options-label', 'Songs that already have a file'));
+    const replaceOption = UI.el('label', 'folder-linker__option');
+    const replaceInput = document.createElement('input');
+    replaceInput.type = 'checkbox';
+    replaceInput.checked = st.options.replace;
+    replaceInput.addEventListener('change', () => {
+      st.options.replace = replaceInput.checked;
+      this.offlineFolder.options = { ...st.options };
+      this.saveOfflineFolder();
+      this.runFolderMatching(true);
+    });
+    replaceOption.append(replaceInput, text('span', '', 'can get a file from this folder (repairs links that stopped working)'));
+    replace.append(replaceOption);
+    els.matchAgain = UI.button('Match again from scratch', {
       variant: 'ghost',
       size: 'sm',
-      onClick: () => {
-        st.selected = null;
-        this.renderFolderLinker();
-      }
+      onClick: () => this.runFolderMatching(true)
     });
-    songs.extra.append(els.cancelPick);
-    columns.append(files.root, songs.root);
-    const activate = (list, handler) => {
-      list.addEventListener('click', handler);
-      list.addEventListener('keydown', event => {
-        if ((event.key === 'Enter' || event.key === ' ') && event.target.matches('[role="button"]')) {
-          event.preventDefault();
-          handler(event);
+    advanced.append(summary, options, els.matchAgain);
+    lists.append(advanced);
+    const onRowEvent = event => {
+      const pick = event.target.closest('[data-pick]');
+      if (pick) {
+        const index = Number(pick.dataset.pick);
+        st.picking = st.picking === index ? null : index;
+        st.pickQuery = st.picking === null ? '' : this.cleanFileTitle(st.files[index].name);
+        this.renderFolderLinkerLists();
+        if (st.picking !== null) {
+          lists.querySelector('.folder-linker__picker-input')?.focus();
         }
-      });
+        return;
+      }
+      const choose = event.target.closest('[data-choose]');
+      if (choose && st.picking !== null) {
+        const song = this.songLibrary.find(entry => String(entry.id) === choose.dataset.choose);
+        if (song) {
+          this.pairFolderFile(st.picking, song, 'chosen by you');
+          st.picking = null;
+          st.pickQuery = '';
+          this.renderFolderLinker();
+        }
+        return;
+      }
+      const tick = event.target.closest('[data-tick]');
+      if (tick && event.type === 'change') {
+        const pair = st.pairs.get(Number(tick.dataset.tick));
+        if (pair) {
+          pair.on = tick.checked;
+          this.renderFolderLinker();
+        }
+      }
     };
-    activate(els.fileList, event => {
-      const unpair = event.target.closest('[data-unpair]');
-      if (unpair) {
-        this.unpairFolderFile(Number(unpair.dataset.unpair));
-        this.renderFolderLinker();
-        return;
+    lists.addEventListener('click', onRowEvent);
+    lists.addEventListener('change', onRowEvent);
+    lists.addEventListener('input', this.debounce(event => {
+      if (event.target.classList.contains('folder-linker__picker-input')) {
+        st.pickQuery = event.target.value;
+        this.renderFolderLinkerPicker();
       }
-      const row = event.target.closest('[data-file]');
-      if (row) {
-        const index = Number(row.dataset.file);
-        st.selected = st.selected === index ? null : index;
-        this.renderFolderLinker();
-        if (st.selected !== null) {
-          songs.search.focus({
-            preventScroll: true
-          });
-        }
+    }, 120));
+    lists.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && st.picking !== null) {
+        event.stopPropagation();
+        st.picking = null;
+        this.renderFolderLinkerLists();
       }
     });
-    activate(els.songList, event => {
-      const row = event.target.closest('[data-song]');
-      if (!row || st.selected === null) {
-        return;
-      }
-      const song = this.songLibrary.find(entry => String(entry.id) === row.dataset.song);
-      if (song) {
-        this.pairFolderFile(st.selected, song, 'picked by you');
-        st.selected = null;
-        this.renderFolderLinker();
-      }
-    });
-    dialog.body.append(bar, status, columns);
-    els.summary = text('span', 'folder-linker__summary');
+    dialog.body.append(top, overview, tools, lists);
+    els.footnote = text('span', 'folder-linker__summary');
     els.save = UI.button('Save links', {
       variant: 'primary',
       onClick: () => this.saveFolderLinks()
     });
-    dialog.addFooter(els.summary, UI.button('Cancel', {
+    dialog.addFooter(els.footnote, UI.button('Cancel', {
       variant: 'ghost',
       onClick: () => dialog.close()
     }), els.save);
     dialog.open();
     this.loadFolderLinkerFiles(false);
+  }
+  cleanFileTitle(name) {
+    return String(name || '').replace(/\.[^.]+$/, '').replace(/\[[A-Za-z0-9_-]{11}\]/g, ' ').replace(/[_]+/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+  setFolderLinkerTicks(on) {
+    const st = this.folderLinker;
+    if (!st) {
+      return;
+    }
+    st.pairs.forEach(pair => {
+      pair.on = on;
+    });
+    this.renderFolderLinker();
   }
   async loadFolderLinkerFiles(keepPairs) {
     const st = this.folderLinker;
@@ -15391,7 +15394,7 @@ class AdvancedMusicPlayer {
     const before = st.files.length;
     st.pairs.clear();
     st.songFile.clear();
-    st.selected = null;
+    st.picking = null;
     st.els.folderName.textContent = st.folder.name;
     st.els.folderMeta.textContent = 'Reading the folder…';
     this.setFolderLinkerBusy(true);
@@ -15418,7 +15421,7 @@ class AdvancedMusicPlayer {
       file.key = this.offlineMatchKey(file.path);
       const pair = kept.get(file.path);
       if (pair && !st.songFile.has(pair.song.id)) {
-        this.pairFolderFile(index, pair.song, pair.how);
+        this.pairFolderFile(index, pair.song, pair.how, pair.on);
       }
     });
     st.files = files;
@@ -15450,7 +15453,7 @@ class AdvancedMusicPlayer {
       els.progressFill.style.width = `${Math.round(Math.min(1, Math.max(0, fraction)) * 100)}%`;
     }
   }
-  pairFolderFile(index, song, how) {
+  pairFolderFile(index, song, how, on = true) {
     const st = this.folderLinker;
     const previousFile = st.songFile.get(song.id);
     if (previousFile !== undefined) {
@@ -15462,7 +15465,8 @@ class AdvancedMusicPlayer {
     }
     st.pairs.set(index, {
       song,
-      how
+      how,
+      on
     });
     st.songFile.set(song.id, index);
   }
@@ -15481,7 +15485,7 @@ class AdvancedMusicPlayer {
     }
     if (!st.files.length) {
       this.setFolderLinkerBusy(false);
-      this.setFolderLinkerProgress('There are no audio files in this folder.', 0);
+      this.setFolderLinkerProgress('', 0);
       this.renderFolderLinker();
       return;
     }
@@ -15489,13 +15493,14 @@ class AdvancedMusicPlayer {
     const alive = () => this.folderLinker === st && st.run === run;
     if (fresh) {
       [ ...st.pairs ].forEach(([ index, pair ]) => {
-        if (pair.how !== 'picked by you') {
+        if (pair.how !== 'chosen by you') {
           this.unpairFolderFile(index);
         }
       });
     }
+    const refresh = () => st.picking === null ? this.renderFolderLinker() : this.renderFolderLinkerSummary();
     this.setFolderLinkerBusy(true);
-    this.renderFolderLinker();
+    refresh();
     const freeFiles = () => st.files.filter(file => !st.pairs.has(file.index));
     const freeSongs = () => this.songLibrary.filter(song => !st.songFile.has(song.id) && (st.options.replace || !song.localFileHandle));
     const phases = [ [ 'videoId', 'video ID' ], [ 'title', 'YouTube title' ], [ 'name', 'song name' ] ].filter(([ key ]) => st.options[key]);
@@ -15508,7 +15513,7 @@ class AdvancedMusicPlayer {
       if (key === 'title') {
         await this.lookUpYouTubeTitles(freeSongs(), (done, total) => {
           if (alive()) {
-            this.setFolderLinkerProgress(`Looking up YouTube titles for songs without a match: ${done} of ${total}. You can save at any time.`, base + share * 0.5 * done / total);
+            this.setFolderLinkerProgress(`Looking up YouTube titles: ${done} of ${total}. You can save at any time.`, base + share * 0.5 * done / total);
           }
         }, alive);
         if (!alive()) {
@@ -15520,17 +15525,17 @@ class AdvancedMusicPlayer {
         title: key === 'title',
         name: key === 'name'
       });
-      for (let i = 0; i < links.length; i += 8) {
+      for (let i = 0; i < links.length; i += 12) {
         if (!alive()) {
           return;
         }
-        links.slice(i, i + 8).forEach(({ file, song }) => {
+        links.slice(i, i + 12).forEach(({ file, song }) => {
           if (!st.pairs.has(file.index) && !st.songFile.has(song.id)) {
             this.pairFolderFile(file.index, song, `by ${label}`);
           }
         });
-        this.renderFolderLinker();
-        this.setFolderLinkerProgress(`Matching by ${label}…`, base + share * (0.5 + 0.5 * Math.min(i + 8, links.length) / links.length));
+        refresh();
+        this.setFolderLinkerProgress(`Matching by ${label}…`, base + share * (0.5 + 0.5 * Math.min(i + 12, links.length) / links.length));
         await new Promise(resolve => setTimeout(resolve, 30));
       }
     }
@@ -15538,13 +15543,11 @@ class AdvancedMusicPlayer {
       return;
     }
     this.setFolderLinkerBusy(false);
-    const unpaired = st.files.length - st.pairs.size;
-    this.setFolderLinkerProgress(unpaired ? `Finished. Check the matches, pair the rest yourself if you like, then press Save.` : 'Finished. Every file is matched. Check them, then press Save.', 1);
-    this.renderFolderLinker();
+    this.setFolderLinkerProgress('', 1);
+    refresh();
   }
   renderFolderLinker() {
-    this.renderFolderLinkerFiles();
-    this.renderFolderLinkerSongs();
+    this.renderFolderLinkerLists();
     this.renderFolderLinkerSummary();
   }
   renderFolderLinkerSummary() {
@@ -15552,134 +15555,146 @@ class AdvancedMusicPlayer {
     if (!st) {
       return;
     }
-    const paired = st.pairs.size;
-    const unpaired = st.files.length - paired;
-    st.els.counts.textContent = st.files.length ? `${paired} matched · ${unpaired} not matched` : '';
-    st.els.unpairAll.disabled = !paired;
-    st.els.summary.textContent = paired ? `After saving, ${paired} song${paired === 1 ? '' : 's'} will play from ${paired === 1 ? 'its file' : 'their files'}.` : 'Nothing to save yet.';
-    st.els.save.disabled = !paired;
-    st.els.save.textContent = paired ? `Save ${paired} link${paired === 1 ? '' : 's'}` : 'Save links';
+    const { els } = st;
+    const total = st.files.length;
+    const matched = st.pairs.size;
+    const ticked = [ ...st.pairs.values() ].filter(pair => pair.on).length;
+    els.headline.textContent = !total ? st.busy ? '' : 'There are no audio files in this folder.' : st.busy ? `${matched} of ${total} files matched so far` : matched === total ? `All ${total} files matched to songs in your library` : `${matched} of ${total} files matched to songs in your library`;
+    els.progress.hidden = !st.busy;
+    els.footnote.textContent = ticked ? `${ticked} song${ticked === 1 ? '' : 's'} will play from ${ticked === 1 ? 'its file' : 'their files'} after saving.` : 'Tick the matches you want to keep.';
+    els.save.disabled = !ticked || Boolean(st.saving);
+    els.save.textContent = ticked ? `Save ${ticked} link${ticked === 1 ? '' : 's'}` : 'Save links';
   }
-  renderFolderLinkerFiles() {
+  renderFolderLinkerLists() {
     const st = this.folderLinker;
     if (!st) {
       return;
     }
     const { els } = st;
-    const query = this.offlineMatchKey(st.fileQuery);
-    const rows = st.files.filter(file => {
+    const query = this.offlineMatchKey(st.query);
+    const fits = file => {
       const pair = st.pairs.get(file.index);
-      if (st.fileFilter === 'unpaired' && pair) {
-        return false;
+      return !query || file.key.includes(query) || pair && [ pair.song.name, pair.song.author ].some(value => this.offlineMatchKey(value).includes(query));
+    };
+    const missing = st.files.filter(file => !st.pairs.has(file.index) && fits(file));
+    const matched = st.files.filter(file => st.pairs.has(file.index) && fits(file));
+    const unmatchedTotal = st.files.length - st.pairs.size;
+    els.missingCount.textContent = String(unmatchedTotal);
+    els.matchedCount.textContent = String(st.pairs.size);
+    els.missingBox.hidden = !unmatchedTotal;
+    els.matchedBox.hidden = !st.pairs.size;
+    const cap = rows => rows.slice(0, 300);
+    els.missingList.replaceChildren(...cap(missing).flatMap(file => this.buildFolderLinkerRow(file)));
+    els.matchedList.replaceChildren(...cap(matched).flatMap(file => this.buildFolderLinkerRow(file)));
+    [ [ els.missingList, missing ], [ els.matchedList, matched ] ].forEach(([ list, rows ]) => {
+      if (rows.length > 300 || !rows.length && query) {
+        const note = UI.el('li', 'folder-linker__note');
+        note.textContent = rows.length ? `Showing 300 of ${rows.length}. Search to find the rest.` : 'Nothing here matches your search.';
+        list.append(note);
       }
-      return !query || file.key.includes(query) || pair && this.offlineMatchKey(pair.song.name).includes(query);
     });
-    els.filesTitle.textContent = `Files in ${st.folder.name}`;
-    els.filesExtra.textContent = String(st.files.length);
-    const shown = rows.slice(0, 300);
-    els.fileList.replaceChildren(...shown.map(file => this.buildFolderLinkerFileRow(file)));
-    if (!rows.length) {
-      const empty = UI.el('li', 'ui-empty');
-      empty.textContent = st.busy && !st.files.length ? 'Reading the folder…' : st.files.length ? 'No files here.' : 'No audio files in this folder.';
-      els.fileList.replaceChildren(empty);
-    }
-    els.fileFoot.textContent = rows.length > shown.length ? `Showing ${shown.length} of ${rows.length}. Search to find the rest.` : '';
+    this.renderFolderLinkerPicker();
   }
-  buildFolderLinkerFileRow(file) {
+  buildFolderLinkerRow(file) {
     const st = this.folderLinker;
     const pair = st.pairs.get(file.index);
     const row = UI.el('li', 'folder-linker__row');
     const main = UI.el('div', 'folder-linker__row-main');
-    const name = UI.el('span', 'folder-linker__name');
-    const sub = UI.el('span', 'folder-linker__sub');
-    row.dataset.file = file.index;
-    row.setAttribute('role', 'button');
-    row.tabIndex = 0;
-    row.classList.toggle('is-selected', st.selected === file.index);
-    row.classList.toggle('is-paired', Boolean(pair));
+    const name = UI.el('span', 'folder-linker__file');
     name.textContent = file.path;
+    row.classList.toggle('is-off', Boolean(pair && !pair.on));
+    row.classList.toggle('is-picking', st.picking === file.index);
     if (pair) {
+      const tick = document.createElement('input');
+      tick.type = 'checkbox';
+      tick.className = 'folder-linker__tick';
+      tick.checked = pair.on;
+      tick.dataset.tick = file.index;
+      tick.setAttribute('aria-label', `Link ${file.name} to ${pair.song.name}`);
       const song = UI.el('span', 'folder-linker__song');
       const how = UI.el('span', 'folder-linker__how');
       song.textContent = `→ ${pair.song.name}${pair.song.author ? ' · ' + pair.song.author : ''}`;
       how.textContent = pair.how;
-      sub.append(song, how);
+      main.append(name, song, how);
+      const label = UI.el('label', 'folder-linker__row-label');
+      label.append(tick, main);
+      row.append(label);
     } else {
-      sub.textContent = st.selected === file.index ? 'Choose its song in the list of songs.' : 'Not matched. Select it to choose its song.';
+      main.append(name);
+      row.append(main);
     }
-    main.append(name, sub);
-    row.append(main);
-    if (pair) {
-      const remove = UI.button('Unpair', {
-        variant: 'ghost',
-        size: 'sm',
-        className: 'folder-linker__unpair'
-      });
-      remove.dataset.unpair = file.index;
-      remove.setAttribute('aria-label', `Unpair ${file.name}`);
-      row.append(remove);
+    const button = UI.button(st.picking === file.index ? 'Close' : pair ? 'Change' : 'Choose song', {
+      variant: pair ? 'ghost' : '',
+      size: 'sm',
+      className: 'folder-linker__pick-btn'
+    });
+    button.dataset.pick = file.index;
+    row.append(button);
+    if (st.picking !== file.index) {
+      return [ row ];
     }
-    return row;
+    const picker = UI.el('li', 'folder-linker__picker');
+    const input = UI.el('input', 'ui-input folder-linker__picker-input');
+    input.type = 'search';
+    input.value = st.pickQuery;
+    input.placeholder = 'Search your library';
+    input.setAttribute('aria-label', `Find the song for ${file.name}`);
+    picker.append(input, UI.el('ul', 'folder-linker__results'));
+    return [ row, picker ];
   }
-  renderFolderLinkerSongs() {
+  renderFolderLinkerPicker() {
     const st = this.folderLinker;
-    if (!st) {
+    const results = st?.dialog.body.querySelector('.folder-linker__results');
+    if (!results) {
       return;
     }
-    const { els } = st;
-    const picking = st.selected !== null && st.files[st.selected];
-    els.songsPanel.classList.toggle('is-picking', Boolean(picking));
-    els.songsTitle.textContent = picking ? `Choose the song for “${picking.name}”` : st.songFilter === 'missing' ? 'Songs without a file' : 'All songs';
-    els.cancelPick.hidden = !picking;
-    const query = this.offlineMatchKey(st.songQuery);
-    const rows = this.songLibrary.filter(song => {
-      if (st.songFilter === 'missing' && (st.songFile.has(song.id) || song.localFileHandle)) {
-        return false;
-      }
-      return !query || [ song.name, song.author, song.youtubeTitle ].some(text => this.offlineMatchKey(text).includes(query));
-    }).sort((a, b) => this._compareText(a.name, b.name));
-    const shown = rows.slice(0, 60);
-    els.songList.replaceChildren(...shown.map(song => {
-      const row = UI.el('li', 'folder-linker__row');
-      const main = UI.el('div', 'folder-linker__row-main');
-      const name = UI.el('span', 'folder-linker__name');
-      const sub = UI.el('span', 'folder-linker__sub');
+    const tokens = String(st.pickQuery || '').split(/[^\p{L}\p{N}]+/u).filter(word => word.length >= 2);
+    const words = tokens.filter(word => !/^\d+$/.test(word) || tokens.every(other => /^\d+$/.test(other))).map(word => this.offlineMatchKey(word)).filter(Boolean);
+    const scored = this.songLibrary.map(song => {
+      const hay = this.offlineMatchKey([ song.name, song.author, song.youtubeTitle ].filter(Boolean).join(' '));
+      const hits = words.filter(word => hay.includes(word)).length;
+      return {
+        song,
+        score: words.length ? hits / words.length + (song.localFileHandle || st.songFile.has(song.id) ? 0 : 0.01) : song.localFileHandle ? 0 : 1
+      };
+    }).filter(entry => entry.score > 0.02).sort((a, b) => b.score - a.score || this._compareText(a.song.name, b.song.name)).slice(0, 8);
+    results.replaceChildren(...scored.map(({ song }) => {
+      const item = UI.el('li', 'folder-linker__result');
+      const label = UI.el('div', 'folder-linker__row-main');
+      const name = UI.el('span', 'folder-linker__result-name');
+      const sub = UI.el('span', 'folder-linker__how');
       const index = st.songFile.get(song.id);
-      row.dataset.song = song.id;
-      if (picking) {
-        row.setAttribute('role', 'button');
-        row.tabIndex = 0;
-      }
-      row.classList.toggle('is-paired', index !== undefined);
       name.textContent = song.name;
-      sub.textContent = [ song.author, index !== undefined ? `matched to ${st.files[index]?.name}` : song.localFileHandle ? `has a file: ${song.localFileName || 'linked'}` : 'no file yet' ].filter(Boolean).join(' · ');
-      main.append(name, sub);
-      row.append(main);
-      if (picking) {
-        row.append(UI.el('span', 'folder-linker__pick', 'Choose'));
-      }
-      return row;
+      sub.textContent = [ song.author, index !== undefined ? `now matched to ${st.files[index]?.name}` : song.localFileHandle ? 'already has a file' : '' ].filter(Boolean).join(' · ');
+      label.append(name, sub);
+      const use = UI.button('Use', {
+        variant: 'primary',
+        size: 'sm'
+      });
+      use.dataset.choose = song.id;
+      item.append(label, use);
+      return item;
     }));
-    if (!rows.length) {
-      const empty = UI.el('li', 'ui-empty');
-      empty.textContent = query ? 'No songs match your search.' : 'Every song already has a file. Show All songs to change one.';
-      els.songList.replaceChildren(empty);
+    if (!scored.length) {
+      const empty = UI.el('li', 'folder-linker__note');
+      empty.textContent = 'No song in your library fits. Try other words.';
+      results.append(empty);
     }
-    els.songFoot.textContent = rows.length > shown.length ? `Showing ${shown.length} of ${rows.length}. Search to find the rest.` : picking ? '' : 'Select a file on the other side to choose its song here.';
   }
   async saveFolderLinks() {
     const st = this.folderLinker;
-    if (!st || !st.pairs.size || st.saving) {
+    const chosen = st ? [ ...st.pairs ].filter(([, pair ]) => pair.on) : [];
+    if (!st || !chosen.length || st.saving) {
       return;
     }
     st.saving = true;
     st.run++;
-    this.setFolderLinkerBusy(false);
+    st.busy = false;
     st.els.save.disabled = true;
     st.els.save.textContent = 'Saving…';
     let saved = 0;
     const failed = [];
-    for (const [ index, { song } ] of st.pairs) {
+    for (const [ index, { song } ] of chosen) {
       const file = st.files[index];
       const target = this.songLibrary.find(entry => entry.id === song.id);
       if (!file || !target) {
@@ -15704,6 +15719,7 @@ class AdvancedMusicPlayer {
     if (failed.length) {
       st.saving = false;
       this.renderFolderLinkerSummary();
+      st.els.progress.hidden = false;
       this.setFolderLinkerProgress(`Saved ${saved} link${saved === 1 ? '' : 's'}, but ${failed.length} could not be saved: ${failed.slice(0, 5).join(', ')}${failed.length > 5 ? '…' : ''}`, null);
       return;
     }
