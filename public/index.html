@@ -1026,25 +1026,17 @@ Another Playlist{
                   <div class="tab-panel" id="offlinePanel">
                      <div class="setting-group">
                         <label>Music Folder:</label>
-                        <p class="setting-description">Choose the folder your audio files are in, and SweetEscape links every file in it, and in the folders inside it, to the song it belongs to. Those songs then play from the file instead of YouTube, here and in SweetEscape Lite. A file matches a song when its name holds the song's YouTube video ID, or else its YouTube title, or else the name you gave the song.</p>
-                        <p class="setting-description">Keep the names your downloads come with, like <strong>Lush Life [8BmMB3i--FM]</strong>. The part in brackets is the YouTube video ID, which links the file to exactly the right song. A renamed file can only be matched by title, which can miss or pick the wrong song.</p>
+                        <p class="setting-description">Link the folder your downloaded songs are in. SweetEscape pairs each audio file with its song, you check the pairs, and those songs then play from the file instead of YouTube, here and in SweetEscape Lite.</p>
                         <p class="setting-description" id="offlineFolderName"></p>
                         <div class="offline-folder-actions">
-                           <button type="button" id="offlineChooseBtn" class="ui-btn ui-btn--primary"><i class="fas fa-folder-open"></i> Choose folder</button>
-                           <button type="button" id="offlineRescanBtn" class="ui-btn ui-btn--ghost"><i class="fas fa-rotate"></i> Scan again</button>
+                           <button type="button" id="offlineLinkBtn" class="ui-btn ui-btn--primary"><i class="fas fa-folder-open"></i> <span id="offlineLinkLabel">Link music folder</span></button>
+                           <button type="button" id="offlineForgetBtn" class="ui-btn ui-btn--ghost" hidden>Forget folder</button>
                         </div>
-                        <p class="setting-description" id="offlineScanStatus" aria-live="polite"></p>
-                        <div class="offline-scan-results" id="offlineScanResults"></div>
+                        <p class="setting-description" id="offlineLinkSummary"></p>
                      </div>
                      <div class="setting-group">
-                        <label for="offlineReplaceToggle">Replace Existing Links:</label>
-                        <div class="toggle-switch">
-                           <input type="checkbox" id="offlineReplaceToggle" class="toggle-input" checked>
-                           <label for="offlineReplaceToggle" class="toggle-label">
-                           <span class="toggle-slider"></span>
-                           </label>
-                        </div>
-                        <p class="setting-description">Relinks songs that already have a file, which repairs links that stopped working. Turn off to only link songs that have no file yet.</p>
+                        <label>File Names:</label>
+                        <p class="setting-description">Keep the names your downloads come with, like <strong>Lush Life [8BmMB3i--FM]</strong>. The part in brackets is the YouTube video ID, which pairs the file with exactly the right song. A renamed file can only be paired by its title, which can miss.</p>
                      </div>
                      <div class="setting-group">
                         <label for="offlineAutoToggle">Link New Files Automatically:</label>
@@ -1054,7 +1046,7 @@ Another Playlist{
                            <span class="toggle-slider"></span>
                            </label>
                         </div>
-                        <p class="setting-description">Each time SweetEscape opens, songs without a file are linked to new files in the folder, as long as the browser still lets SweetEscape read it. A linked song whose file stops opening is relinked from the folder when you play it.</p>
+                        <p class="setting-description">Each time SweetEscape opens, songs without a file are linked to new files in the folder whose name holds the song's video ID, as long as the browser still lets SweetEscape read the folder. A linked song whose file stops opening is relinked from the folder when you play it.</p>
                      </div>
                   </div>
                   <div class="tab-panel" id="recommendationPanel">

@@ -541,8 +541,13 @@ class AdvancedMusicPlayer {
     this.dataSaver = this.getDataSaverDefaults();
     this.offlineFolder = {
       handle: null,
-      replace: true,
-      auto: true
+      auto: true,
+      options: {
+        videoId: true,
+        title: true,
+        name: true,
+        replace: true
+      }
     };
     this.batteryIdle = false;
     this.mediaSessionKey = null;
@@ -983,12 +988,11 @@ class AdvancedMusicPlayer {
       cacheEverythingBtn: document.getElementById('cacheEverythingBtn'),
       cacheEverythingStatus: document.getElementById('cacheEverythingStatus'),
       offlineFolderName: document.getElementById('offlineFolderName'),
-      offlineChooseBtn: document.getElementById('offlineChooseBtn'),
-      offlineRescanBtn: document.getElementById('offlineRescanBtn'),
-      offlineReplaceToggle: document.getElementById('offlineReplaceToggle'),
+      offlineLinkBtn: document.getElementById('offlineLinkBtn'),
+      offlineLinkLabel: document.getElementById('offlineLinkLabel'),
+      offlineForgetBtn: document.getElementById('offlineForgetBtn'),
+      offlineLinkSummary: document.getElementById('offlineLinkSummary'),
       offlineAutoToggle: document.getElementById('offlineAutoToggle'),
-      offlineScanStatus: document.getElementById('offlineScanStatus'),
-      offlineScanResults: document.getElementById('offlineScanResults'),
       installAppGroup: document.getElementById('installAppGroup'),
       installAppBtn: document.getElementById('installAppBtn'),
       lsPanel: document.getElementById('lsPanel'),
@@ -12272,7 +12276,7 @@ class AdvancedMusicPlayer {
       preventScroll: true
     });
     if (name === 'offline') {
-      this.renderOfflineResults();
+      this.renderOfflineFolder();
     }
     if (name === 'feedback') {
       const iframe = document.querySelector('#feedbackPanel iframe');
@@ -14834,44 +14838,46 @@ class AdvancedMusicPlayer {
     if (!saved || typeof saved !== 'object') {
       return;
     }
+    const options = saved.options || {};
     this.offlineFolder = {
       handle: typeof saved.handle?.values === 'function' ? saved.handle : null,
-      replace: saved.replace !== false,
-      auto: saved.auto !== false
+      auto: saved.auto !== false,
+      options: {
+        videoId: options.videoId !== false,
+        title: options.title !== false,
+        name: options.name !== false,
+        replace: (options.replace ?? saved.replace) !== false
+      }
     };
   }
   saveOfflineFolder() {
-    const { handle, replace, auto } = this.offlineFolder;
+    const { handle, auto, options } = this.offlineFolder;
     return this.saveSetting('offlineFolder', {
       handle,
-      replace,
-      auto
+      auto,
+      options: { ...options }
     }).catch(error => console.error('Error saving the music folder:', error));
   }
   initOfflineFolder() {
     const els = this.elements;
-    if (!els.offlineChooseBtn) {
+    if (!els.offlineLinkBtn) {
       return;
     }
     if (!window.showDirectoryPicker) {
-      els.offlineChooseBtn.disabled = true;
-      els.offlineRescanBtn.disabled = true;
-      els.offlineScanStatus.textContent = 'Linking a folder needs Chrome or Edge on a computer.';
+      els.offlineLinkBtn.disabled = true;
+      els.offlineForgetBtn.hidden = true;
+      els.offlineLinkSummary.textContent = 'Linking a folder needs Chrome or Edge on a computer.';
       return;
     }
-    els.offlineChooseBtn.addEventListener('click', () => this.chooseOfflineFolder());
-    els.offlineRescanBtn.addEventListener('click', () => this.rescanOfflineFolder());
-    els.offlineReplaceToggle.addEventListener('change', event => {
-      this.offlineFolder.replace = event.target.checked;
-      this.saveOfflineFolder();
-    });
+    els.offlineLinkBtn.addEventListener('click', () => this.openFolderLinker());
+    els.offlineForgetBtn.addEventListener('click', () => this.forgetOfflineFolder());
     els.offlineAutoToggle.addEventListener('change', event => {
       this.offlineFolder.auto = event.target.checked;
       this.saveOfflineFolder();
     });
     this.renderOfflineFolder();
     if (this.offlineFolder.handle && this.offlineFolder.auto) {
-      setTimeout(() => this.autoScanOfflineFolder(), 4e3);
+      setTimeout(() => this.autoLinkOfflineFolder(), 4e3);
     }
   }
   renderOfflineFolder() {
@@ -14879,67 +14885,22 @@ class AdvancedMusicPlayer {
     if (!els.offlineFolderName) {
       return;
     }
-    const { handle, replace, auto } = this.offlineFolder;
-    els.offlineFolderName.textContent = handle ? `Linked folder: ${handle.name}` : 'No folder linked yet.';
-    els.offlineRescanBtn.disabled = !handle || Boolean(this.offlineScanRunning);
-    els.offlineChooseBtn.disabled = Boolean(this.offlineScanRunning);
-    els.offlineReplaceToggle.checked = replace;
+    const { handle, auto } = this.offlineFolder;
+    els.offlineFolderName.textContent = handle ? `Folder: ${handle.name}` : 'No folder linked yet.';
+    els.offlineLinkLabel.textContent = handle ? 'Review folder links' : 'Link music folder';
+    els.offlineForgetBtn.hidden = !handle;
     els.offlineAutoToggle.checked = auto;
-    this.renderOfflineResults();
+    if (window.showDirectoryPicker) {
+      const linked = this.songLibrary.filter(song => song.localFileHandle).length;
+      els.offlineLinkSummary.textContent = `${linked} of ${this.songLibrary.length} songs in your library have a file.`;
+    }
   }
-  renderOfflineResults() {
-    const container = this.elements.offlineScanResults;
-    if (!container || this.offlineScanRunning) {
-      return;
-    }
-    const byName = (a, b) => this._compareText(a.name, b.name);
-    const linked = this.songLibrary.filter(song => song.localFileHandle).sort(byName);
-    const missing = this.songLibrary.filter(song => !song.localFileHandle).sort(byName);
-    const section = (title, rows, open) => {
-      const details = UI.el('details', 'offline-scan-details');
-      const summary = document.createElement('summary');
-      const list = UI.el('ul', 'offline-scan-list');
-      summary.textContent = `${title} (${rows.length})`;
-      list.replaceChildren(...rows.slice(0, 1e3).map(text => {
-        const item = document.createElement('li');
-        item.textContent = text;
-        return item;
-      }));
-      details.open = open;
-      details.append(summary, list);
-      return details;
-    };
-    const sections = [ section('Songs with a file', linked.map(song => `${song.name} → ${song.localFileName || 'linked file'}`), false), section('Songs without a file', missing.map(song => song.author ? `${song.name} by ${song.author}` : song.name), false) ];
-    const unlinked = this.offlineUnlinkedFiles || [];
-    if (unlinked.length) {
-      sections.push(section('Files not linked', unlinked, false));
-    }
-    container.replaceChildren(...sections);
-  }
-  async chooseOfflineFolder() {
-    let handle;
-    try {
-      handle = await window.showDirectoryPicker({
-        id: 'sweetescape-music',
-        mode: 'read'
-      });
-    } catch (error) {
-      if (error.name !== 'AbortError') {
-        this.elements.offlineScanStatus.textContent = 'Could not open that folder.';
-      }
-      return;
-    }
-    this.offlineFolder.handle = handle;
-    await this.saveOfflineFolder();
+  forgetOfflineFolder() {
+    const name = this.offlineFolder.handle?.name || 'the folder';
+    this.offlineFolder.handle = null;
+    this.saveOfflineFolder();
     this.renderOfflineFolder();
-    await this.scanOfflineFolder(this.offlineFolder.replace, true);
-  }
-  async rescanOfflineFolder() {
-    if (!await this.offlineFolderAllowed(true)) {
-      this.elements.offlineScanStatus.textContent = `SweetEscape is not allowed to read ${this.offlineFolder.handle?.name || 'that folder'}. Choose it again to give access.`;
-      return;
-    }
-    await this.scanOfflineFolder(this.offlineFolder.replace, true);
+    this.showNotification(`Forgot ${name}. Songs keep the files they are linked to.`, 'success');
   }
   async offlineFolderAllowed(ask) {
     const handle = this.offlineFolder.handle;
@@ -14960,13 +14921,29 @@ class AdvancedMusicPlayer {
       return false;
     }
   }
-  async autoScanOfflineFolder() {
+  async autoLinkOfflineFolder() {
     if (!await this.offlineFolderAllowed(false)) {
       return;
     }
-    const result = await this.scanOfflineFolder(false, false);
-    if (result?.linked) {
-      this.showNotification(`Linked ${result.linked} new offline song${result.linked === 1 ? '' : 's'} from ${this.offlineFolder.handle.name}`, 'success');
+    try {
+      const files = await this.listOfflineFiles(this.offlineFolder.handle);
+      const { links } = this.matchOfflineFiles(files, this.songLibrary.filter(song => !song.localFileHandle), {
+        videoId: true,
+        title: false,
+        name: false
+      });
+      for (const { file, song } of links) {
+        song.localFileHandle = file.handle;
+        song.localFileName = file.name;
+        await this.saveSingleSong(song);
+      }
+      if (links.length) {
+        this.renderSongLibrary?.();
+        this.renderOfflineFolder();
+        this.showNotification(`Linked ${links.length} new offline song${links.length === 1 ? '' : 's'} from ${this.offlineFolder.handle.name}`, 'success');
+      }
+    } catch (error) {
+      console.warn('Could not read the music folder:', error);
     }
   }
   async listOfflineFiles(folder) {
@@ -14996,22 +14973,25 @@ class AdvancedMusicPlayer {
     const plain = String(text || '').normalize('NFD').replace(/[̀-ͯ]/g, '').normalize('NFC').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
     return plain ? this._searchFold(plain) : '';
   }
-  matchOfflineFiles(files, songs) {
+  matchOfflineFiles(files, songs, { videoId = true, title = true, name = true } = {}) {
     const byVideo = new Map();
-    songs.forEach(song => {
-      if (song.videoId) {
-        byVideo.set(song.videoId, [ ...byVideo.get(song.videoId) || [], song ]);
-      }
-    });
+    if (videoId) {
+      songs.forEach(song => {
+        if (song.videoId) {
+          byVideo.set(song.videoId, [ ...byVideo.get(song.videoId) || [], song ]);
+        }
+      });
+    }
     const stripBrackets = text => String(text || '').replace(/[([{【][^)\]}】]*[)\]}】]/g, ' ');
-    const titled = songs.map(song => {
-      const keys = [ ...new Set([ song.youtubeTitle, stripBrackets(song.youtubeTitle), song.name, stripBrackets(song.name) ].map(text => this.offlineMatchKey(text))) ].filter(key => key.length >= 3);
+    const titled = title || name ? songs.map(song => {
+      const texts = [ ...title ? [ song.youtubeTitle, stripBrackets(song.youtubeTitle) ] : [], ...name ? [ song.name, stripBrackets(song.name) ] : [] ];
+      const keys = [ ...new Set(texts.map(text => this.offlineMatchKey(text))) ].filter(key => key.length >= 3);
       return {
         song,
         keys,
         author: this.offlineMatchKey(song.author)
       };
-    }).filter(entry => entry.keys.length);
+    }).filter(entry => entry.keys.length) : [];
     const candidates = [];
     const ambiguous = [];
     const unmatched = [];
@@ -15023,8 +15003,7 @@ class AdvancedMusicPlayer {
           file,
           song,
           score: 1e4,
-          slack: 0,
-          how: 'video ID'
+          slack: 0
         }));
         return;
       }
@@ -15043,8 +15022,7 @@ class AdvancedMusicPlayer {
               file,
               song,
               score,
-              slack: fileKey.length - key.length,
-              how: withAuthor ? 'title and artist' : 'title'
+              slack: fileKey.length - key.length
             };
           }
         });
@@ -15086,108 +15064,533 @@ class AdvancedMusicPlayer {
       ambiguous
     };
   }
-  async scanOfflineFolder(replace, report) {
-    const els = this.elements;
-    const folder = this.offlineFolder.handle;
-    if (!folder || this.offlineScanRunning) {
-      return null;
-    }
-    this.offlineScanRunning = true;
-    this.renderOfflineFolder();
-    if (report) {
-      els.offlineScanStatus.textContent = `Reading ${folder.name}…`;
-      els.offlineScanResults.replaceChildren();
-    }
-    try {
-      const files = await this.listOfflineFiles(folder);
-      if (report) {
-        await this.lookUpYouTubeTitles(files);
-      }
-      const { links, unmatched, ambiguous } = this.matchOfflineFiles(files, this.songLibrary);
-      let linked = 0;
-      let kept = 0;
-      links.forEach(({ file, song }) => {
-        if (song.localFileHandle && !replace) {
-          kept++;
-          return;
-        }
-        song.localFileHandle = file.handle;
-        song.localFileName = file.name;
-        linked++;
-      });
-      if (linked) {
-        await this.saveSongLibrary();
-        this.renderSongLibrary?.();
-      }
-      if (report) {
-        this.reportOfflineScan(folder, files.length, linked, kept, unmatched, ambiguous);
-      }
-      return {
-        linked
-      };
-    } catch (error) {
-      console.warn('Could not read the music folder:', error);
-      if (report) {
-        els.offlineScanStatus.textContent = `Could not read ${folder.name} (${error.name}). Choose the folder again.`;
-      }
-      return null;
-    } finally {
-      this.offlineScanRunning = false;
-      this.renderOfflineFolder();
-    }
-  }
-  async lookUpYouTubeTitles(files) {
-    const first = this.matchOfflineFiles(files, this.songLibrary);
-    const byVideoId = new Set(first.links.filter(link => link.how === 'video ID').map(link => link.song.id));
-    const unsure = first.unmatched.length + first.ambiguous.length + first.links.filter(link => link.how !== 'video ID').length;
-    if (!unsure) {
-      return;
-    }
-    const queue = this.songLibrary.filter(song => song.videoId && !song.youtubeTitle && !byVideoId.has(song.id)).slice(0, 400);
-    if (!queue.length) {
-      return;
-    }
+  async lookUpYouTubeTitles(songs, onProgress) {
+    const queue = songs.filter(song => song.videoId && !song.youtubeTitle).slice(0, 400);
+    const total = queue.length;
+    const found = [];
     let done = 0;
-    let found = 0;
     const next = async () => {
       while (queue.length) {
         const song = queue.shift();
-        let title = '';
         try {
           const response = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${encodeURIComponent(song.videoId)}&format=json`);
-          title = response.ok ? this.decodeHtmlEntities((await response.json()).title || '') : '';
-        } catch (error) {
-          title = '';
-        }
-        if (title) {
-          song.youtubeTitle = title;
-          found++;
-        }
+          const title = response.ok ? this.decodeHtmlEntities((await response.json()).title || '') : '';
+          if (title) {
+            song.youtubeTitle = title;
+            found.push(song);
+          }
+        } catch (error) {}
         done++;
-        this.elements.offlineScanStatus.textContent = `Looking up YouTube titles: ${done} of ${done + queue.length}`;
+        onProgress?.(done, total);
       }
     };
     await Promise.all(Array.from({
       length: 6
     }, next));
-    if (found) {
+    if (found.length) {
       await this.saveSongLibrary();
     }
   }
-  reportOfflineScan(folder, total, linked, kept, unmatched, ambiguous) {
-    const els = this.elements;
-    const plural = (count, word) => `${count} ${word}${count === 1 ? '' : 's'}`;
-    const missing = this.songLibrary.filter(song => !song.localFileHandle).length;
-    const parts = [ `Found ${plural(total, 'audio file')} in ${folder.name} and linked ${plural(linked, 'song')}.` ];
-    if (kept) {
-      parts.push(`${plural(kept, 'song')} already had a file and kept it.`);
+  async pickMusicFolder() {
+    try {
+      return await window.showDirectoryPicker({
+        id: 'sweetescape-music',
+        mode: 'read'
+      });
+    } catch (error) {
+      if (error.name !== 'AbortError') {
+        this.showNotification('Could not open that folder. Press the button again to choose it.', 'error');
+      }
+      return null;
     }
-    if (unmatched.length || ambiguous.length) {
-      parts.push(`${plural(unmatched.length + ambiguous.length, 'file')} could not be matched.`);
+  }
+  async openFolderLinker() {
+    let folder = this.offlineFolder.handle;
+    if (folder && !await this.offlineFolderAllowed(true)) {
+      folder = null;
     }
-    parts.push(missing ? `${plural(missing, 'song')} in your library still ${missing === 1 ? 'has' : 'have'} no file.` : 'Every song in your library now has a file.');
-    els.offlineScanStatus.textContent = parts.join(' ');
-    this.offlineUnlinkedFiles = [ ...ambiguous.map(file => `${file.path}: fits more than one song equally`), ...unmatched.map(file => `${file.path}: no song with this video ID or title`) ];
+    folder = folder || await this.pickMusicFolder();
+    if (folder) {
+      this.buildFolderLinker(folder);
+    }
+  }
+  buildFolderLinker(folder) {
+    this.folderLinker?.dialog.close();
+    const dialog = UI.modal({
+      title: 'Link music folder',
+      size: '2xl',
+      className: 'folder-linker',
+      bodyClassName: 'folder-linker__body',
+      closeOnEscape: true,
+      onClose: () => {
+        if (this.folderLinker?.dialog === dialog) {
+          this.folderLinker.run++;
+          this.folderLinker = null;
+        }
+      }
+    });
+    const st = {
+      dialog,
+      folder,
+      files: [],
+      pairs: new Map(),
+      songFile: new Map(),
+      selected: null,
+      fileQuery: '',
+      fileFilter: 'all',
+      songQuery: '',
+      songFilter: 'missing',
+      options: { ...this.offlineFolder.options },
+      run: 0,
+      busy: false,
+      els: {}
+    };
+    this.folderLinker = st;
+    const els = st.els;
+    const bar = UI.el('div', 'folder-linker__bar');
+    const where = UI.el('div', 'folder-linker__folder');
+    els.folderName = UI.el('div', 'folder-linker__folder-name');
+    els.folderMeta = UI.el('div', 'folder-linker__folder-meta');
+    where.append(els.folderName, els.folderMeta);
+    bar.append(where, UI.button('Change folder', {
+      variant: 'ghost',
+      size: 'sm',
+      onClick: async () => {
+        const next = await this.pickMusicFolder();
+        if (next && this.folderLinker === st) {
+          st.folder = next;
+          this.loadFolderLinkerFiles();
+        }
+      }
+    }));
+    const config = UI.el('div', 'folder-linker__config');
+    const group = (label, options) => {
+      const box = UI.el('div', 'folder-linker__group');
+      const heading = UI.el('span', 'ui-section-label');
+      const list = UI.el('div', 'folder-linker__options');
+      heading.textContent = label;
+      options.forEach(([ key, text ]) => {
+        const option = UI.el('label', 'folder-linker__option');
+        const input = document.createElement('input');
+        const span = document.createElement('span');
+        input.type = 'checkbox';
+        input.checked = st.options[key];
+        input.addEventListener('change', () => {
+          st.options[key] = input.checked;
+          this.offlineFolder.options = { ...st.options };
+          this.saveOfflineFolder();
+          this.runFolderMatching();
+        });
+        span.textContent = text;
+        option.append(input, span);
+        list.append(option);
+      });
+      box.append(heading, list);
+      return box;
+    };
+    els.progress = UI.el('div', 'folder-linker__progress');
+    const track = UI.el('div', 'folder-linker__progress-bar');
+    els.progressFill = UI.el('div', 'folder-linker__progress-fill');
+    els.progressText = UI.el('span', 'folder-linker__progress-text');
+    track.append(els.progressFill);
+    els.progress.append(track, els.progressText);
+    config.append(group('Match files by', [ [ 'videoId', 'Video ID in the file name' ], [ 'title', 'YouTube title' ], [ 'name', 'Song name in SweetEscape' ] ]), group('Songs that already have a file', [ [ 'replace', 'Give them the file from this folder' ] ]), els.progress);
+    const hint = UI.el('p', 'folder-linker__hint');
+    hint.textContent = 'Pairs show up in the file list as they are found. To pair a file yourself, pick the file, then pick its song from your library. Nothing is saved until you press Save.';
+    const columns = UI.el('div', 'folder-linker__columns');
+    const panel = (title, placeholder, tabs, onQuery, onFilter, active) => {
+      const root = UI.el('section', 'folder-linker__panel');
+      const head = UI.el('div', 'folder-linker__panel-head');
+      const heading = UI.el('h3', 'folder-linker__panel-title');
+      const name = document.createElement('span');
+      const count = UI.el('span', 'folder-linker__panel-count');
+      const search = UI.el('input', 'ui-input folder-linker__search');
+      const tabBar = UI.el('div', 'ui-tabs folder-linker__tabs');
+      const list = UI.el('ul', 'folder-linker__list ui-scroll');
+      const foot = UI.el('div', 'folder-linker__foot');
+      name.textContent = title;
+      heading.append(name, count);
+      search.type = 'search';
+      search.placeholder = placeholder;
+      search.addEventListener('input', this.debounce(() => onQuery(search.value), 120));
+      tabs.forEach(([ value, label ]) => {
+        const tab = UI.el('button', 'ui-tab');
+        tab.type = 'button';
+        tab.textContent = label;
+        tab.classList.toggle('active', value === active);
+        tab.addEventListener('click', () => {
+          tabBar.querySelectorAll('.ui-tab').forEach(other => other.classList.toggle('active', other === tab));
+          onFilter(value);
+        });
+        tabBar.append(tab);
+      });
+      head.append(heading, search, tabBar);
+      root.append(head, list, foot);
+      return {
+        root,
+        count,
+        list,
+        foot
+      };
+    };
+    const files = panel('Files in folder', 'Search files', [ [ 'all', 'All' ], [ 'paired', 'Paired' ], [ 'unpaired', 'Not paired' ] ], value => {
+      st.fileQuery = value;
+      this.renderFolderLinkerFiles();
+    }, value => {
+      st.fileFilter = value;
+      this.renderFolderLinkerFiles();
+    }, 'all');
+    const songs = panel('Songs in your library', 'Search songs', [ [ 'missing', 'Without a file' ], [ 'paired', 'Paired' ], [ 'all', 'All' ] ], value => {
+      st.songQuery = value;
+      this.renderFolderLinkerSongs();
+    }, value => {
+      st.songFilter = value;
+      this.renderFolderLinkerSongs();
+    }, 'missing');
+    els.fileCount = files.count;
+    els.fileList = files.list;
+    els.fileFoot = files.foot;
+    els.songCount = songs.count;
+    els.songList = songs.list;
+    els.songFoot = songs.foot;
+    columns.append(files.root, songs.root);
+    const activate = (list, handler) => {
+      list.addEventListener('click', handler);
+      list.addEventListener('keydown', event => {
+        if ((event.key === 'Enter' || event.key === ' ') && event.target.closest('[role="button"]')) {
+          event.preventDefault();
+          handler(event);
+        }
+      });
+    };
+    activate(els.fileList, event => {
+      const unpair = event.target.closest('[data-unpair]');
+      if (unpair) {
+        this.unpairFolderFile(Number(unpair.dataset.unpair));
+        this.renderFolderLinker();
+        return;
+      }
+      const row = event.target.closest('[data-file]');
+      if (row) {
+        const index = Number(row.dataset.file);
+        st.selected = st.selected === index ? null : index;
+        this.renderFolderLinker();
+      }
+    });
+    activate(els.songList, event => {
+      const row = event.target.closest('[data-song]');
+      if (!row) {
+        return;
+      }
+      const song = this.songLibrary.find(entry => String(entry.id) === row.dataset.song);
+      if (!song) {
+        return;
+      }
+      if (st.selected === null) {
+        const index = st.songFile.get(song.id);
+        st.selected = index ?? null;
+        if (index === undefined) {
+          this.setFolderLinkerProgress('Pick a file first, then this song.', null);
+        }
+        this.renderFolderLinker();
+        return;
+      }
+      this.pairFolderFile(st.selected, song, 'Picked by you');
+      const next = st.files.find(file => file.index > st.selected && !st.pairs.has(file.index));
+      st.selected = next ? next.index : null;
+      this.renderFolderLinker();
+    });
+    dialog.body.append(bar, config, hint, columns);
+    els.summary = UI.el('span', 'folder-linker__summary');
+    els.save = UI.button('Save links', {
+      variant: 'primary',
+      onClick: () => this.saveFolderLinks()
+    });
+    dialog.addFooter(els.summary, UI.button('Cancel', {
+      variant: 'ghost',
+      onClick: () => dialog.close()
+    }), els.save);
+    dialog.open();
+    this.loadFolderLinkerFiles();
+  }
+  async loadFolderLinkerFiles() {
+    const st = this.folderLinker;
+    if (!st) {
+      return;
+    }
+    st.run++;
+    st.files = [];
+    st.pairs.clear();
+    st.songFile.clear();
+    st.selected = null;
+    st.els.folderName.textContent = st.folder.name;
+    st.els.folderMeta.textContent = 'Reading the folder…';
+    this.setFolderLinkerBusy(true);
+    this.setFolderLinkerProgress('Reading the folder…', 0);
+    this.renderFolderLinker();
+    let files;
+    try {
+      files = await this.listOfflineFiles(st.folder);
+    } catch (error) {
+      if (this.folderLinker === st) {
+        this.setFolderLinkerBusy(false);
+        st.els.folderMeta.textContent = 'Could not read this folder.';
+        this.setFolderLinkerProgress(`Could not read ${st.folder.name} (${error.name}). Choose it again.`, null);
+      }
+      return;
+    }
+    if (this.folderLinker !== st) {
+      return;
+    }
+    files.sort((a, b) => this._compareText(a.path, b.path));
+    files.forEach((file, index) => {
+      file.index = index;
+      file.key = this.offlineMatchKey(file.path);
+    });
+    st.files = files;
+    st.els.folderMeta.textContent = `${files.length} audio file${files.length === 1 ? '' : 's'}, including folders inside it`;
+    this.renderFolderLinker();
+    this.runFolderMatching();
+  }
+  setFolderLinkerBusy(busy) {
+    const st = this.folderLinker;
+    if (!st) {
+      return;
+    }
+    st.busy = busy;
+    st.els.progress.classList.toggle('is-busy', busy);
+    this.renderFolderLinkerSummary();
+  }
+  setFolderLinkerProgress(text, fraction) {
+    const els = this.folderLinker?.els;
+    if (!els) {
+      return;
+    }
+    els.progressText.textContent = text;
+    if (fraction !== null) {
+      els.progressFill.style.width = `${Math.round(Math.min(1, Math.max(0, fraction)) * 100)}%`;
+    }
+  }
+  pairFolderFile(index, song, how) {
+    const st = this.folderLinker;
+    const previousFile = st.songFile.get(song.id);
+    if (previousFile !== undefined) {
+      st.pairs.delete(previousFile);
+    }
+    const previous = st.pairs.get(index);
+    if (previous) {
+      st.songFile.delete(previous.song.id);
+    }
+    st.pairs.set(index, {
+      song,
+      how
+    });
+    st.songFile.set(song.id, index);
+  }
+  unpairFolderFile(index) {
+    const st = this.folderLinker;
+    const pair = st.pairs.get(index);
+    if (pair) {
+      st.pairs.delete(index);
+      st.songFile.delete(pair.song.id);
+    }
+  }
+  async runFolderMatching() {
+    const st = this.folderLinker;
+    if (!st || !st.files.length) {
+      this.setFolderLinkerBusy(false);
+      this.setFolderLinkerProgress(st?.files.length === 0 ? 'There are no audio files in this folder.' : '', 0);
+      return;
+    }
+    const run = ++st.run;
+    const alive = () => this.folderLinker === st && st.run === run;
+    [ ...st.pairs ].forEach(([ index, pair ]) => {
+      if (pair.how !== 'Picked by you') {
+        this.unpairFolderFile(index);
+      }
+    });
+    this.setFolderLinkerBusy(true);
+    this.renderFolderLinker();
+    const freeFiles = () => st.files.filter(file => !st.pairs.has(file.index));
+    const freeSongs = () => this.songLibrary.filter(song => !st.songFile.has(song.id) && (st.options.replace || !song.localFileHandle));
+    const phases = [ [ 'videoId', 'video ID', 'Video ID' ], [ 'title', 'YouTube title', 'YouTube title' ], [ 'name', 'song name', 'Song name' ] ].filter(([ key ]) => st.options[key]);
+    for (const [ step, [ key, label, how ] ] of phases.entries()) {
+      if (!freeFiles().length) {
+        break;
+      }
+      const base = step / phases.length;
+      const share = 1 / phases.length;
+      if (key === 'title') {
+        await this.lookUpYouTubeTitles(freeSongs(), (done, total) => {
+          if (alive()) {
+            this.setFolderLinkerProgress(`Looking up YouTube titles: ${done} of ${total}`, base + share * 0.5 * done / total);
+          }
+        });
+        if (!alive()) {
+          return;
+        }
+      }
+      this.setFolderLinkerProgress(`Pairing by ${label}…`, base + share * 0.5);
+      const { links } = this.matchOfflineFiles(freeFiles(), freeSongs(), {
+        videoId: key === 'videoId',
+        title: key === 'title',
+        name: key === 'name'
+      });
+      for (let i = 0; i < links.length; i += 8) {
+        if (!alive()) {
+          return;
+        }
+        links.slice(i, i + 8).forEach(({ file, song }) => {
+          if (!st.pairs.has(file.index) && !st.songFile.has(song.id)) {
+            this.pairFolderFile(file.index, song, how);
+          }
+        });
+        this.renderFolderLinker();
+        this.setFolderLinkerProgress(`Pairing by ${label}: ${Math.min(i + 8, links.length)} of ${links.length}`, base + share * (0.5 + 0.5 * Math.min(i + 8, links.length) / links.length));
+        await new Promise(resolve => setTimeout(resolve, 30));
+      }
+    }
+    if (!alive()) {
+      return;
+    }
+    this.setFolderLinkerBusy(false);
+    const unpaired = st.files.length - st.pairs.size;
+    this.setFolderLinkerProgress(unpaired ? `Done. ${unpaired} file${unpaired === 1 ? '' : 's'} could not be paired automatically. Pick one to pair it yourself, or leave it unpaired.` : 'Done. Every file is paired.', 1);
+    this.renderFolderLinker();
+  }
+  renderFolderLinker() {
+    this.renderFolderLinkerFiles();
+    this.renderFolderLinkerSongs();
+    this.renderFolderLinkerSummary();
+  }
+  renderFolderLinkerSummary() {
+    const st = this.folderLinker;
+    if (!st) {
+      return;
+    }
+    const paired = st.pairs.size;
+    st.els.summary.textContent = st.files.length ? `${paired} of ${st.files.length} files paired` : '';
+    st.els.save.disabled = st.busy || !paired;
+    st.els.save.textContent = paired ? `Save ${paired} link${paired === 1 ? '' : 's'}` : 'Save links';
+  }
+  renderFolderLinkerFiles() {
+    const st = this.folderLinker;
+    if (!st) {
+      return;
+    }
+    const { els } = st;
+    const query = this.offlineMatchKey(st.fileQuery);
+    const rows = st.files.filter(file => {
+      const pair = st.pairs.get(file.index);
+      if (st.fileFilter !== 'all' && st.fileFilter === 'paired' !== Boolean(pair)) {
+        return false;
+      }
+      return !query || file.key.includes(query) || pair && this.offlineMatchKey(pair.song.name).includes(query);
+    });
+    els.fileCount.textContent = String(st.files.length);
+    const shown = rows.slice(0, 300);
+    els.fileList.replaceChildren(...shown.map(file => this.buildFolderLinkerFileRow(file)));
+    if (!st.files.length && !st.busy) {
+      els.fileList.replaceChildren(UI.el('li', 'ui-empty', 'No audio files in this folder.'));
+    }
+    els.fileFoot.textContent = rows.length > shown.length ? `Showing ${shown.length} of ${rows.length}. Search to find the rest.` : st.files.length && !rows.length ? 'No files match.' : '';
+  }
+  buildFolderLinkerFileRow(file) {
+    const st = this.folderLinker;
+    const pair = st.pairs.get(file.index);
+    const row = UI.el('li', 'folder-linker__row');
+    const main = UI.el('div', 'folder-linker__row-main');
+    const name = UI.el('span', 'folder-linker__name');
+    const sub = UI.el('span', 'folder-linker__sub');
+    row.dataset.file = file.index;
+    row.setAttribute('role', 'button');
+    row.tabIndex = 0;
+    row.classList.toggle('is-selected', st.selected === file.index);
+    row.classList.toggle('is-paired', Boolean(pair));
+    name.textContent = file.path;
+    if (pair) {
+      const song = UI.el('span', 'folder-linker__song');
+      const how = UI.el('span', 'ui-chip');
+      song.textContent = `→ ${pair.song.name}${pair.song.author ? ' · ' + pair.song.author : ''}`;
+      how.textContent = pair.how;
+      sub.append(song, how);
+    } else {
+      sub.textContent = st.selected === file.index ? 'Now pick its song from your library.' : 'Not paired';
+    }
+    main.append(name, sub);
+    row.append(main);
+    if (pair) {
+      const remove = UI.el('button', 'ui-icon-btn folder-linker__unpair', UI.icon('fa-times'));
+      remove.type = 'button';
+      remove.title = 'Unpair';
+      remove.setAttribute('aria-label', `Unpair ${file.name}`);
+      remove.dataset.unpair = file.index;
+      row.append(remove);
+    }
+    return row;
+  }
+  renderFolderLinkerSongs() {
+    const st = this.folderLinker;
+    if (!st) {
+      return;
+    }
+    const { els } = st;
+    const query = this.offlineMatchKey(st.songQuery);
+    const rows = this.songLibrary.filter(song => {
+      const paired = st.songFile.has(song.id);
+      if (st.songFilter === 'missing' && (paired || song.localFileHandle) || st.songFilter === 'paired' && !paired) {
+        return false;
+      }
+      return !query || [ song.name, song.author, song.youtubeTitle ].some(text => this.offlineMatchKey(text).includes(query));
+    }).sort((a, b) => this._compareText(a.name, b.name));
+    els.songCount.textContent = String(this.songLibrary.length);
+    const shown = rows.slice(0, 60);
+    els.songList.replaceChildren(...shown.map(song => {
+      const row = UI.el('li', 'folder-linker__row');
+      const main = UI.el('div', 'folder-linker__row-main');
+      const name = UI.el('span', 'folder-linker__name');
+      const sub = UI.el('span', 'folder-linker__sub');
+      const index = st.songFile.get(song.id);
+      row.dataset.song = song.id;
+      row.setAttribute('role', 'button');
+      row.tabIndex = 0;
+      row.classList.toggle('is-paired', index !== undefined);
+      row.classList.toggle('is-selected', index !== undefined && index === st.selected);
+      name.textContent = song.name;
+      sub.textContent = [ song.author, index !== undefined ? `Paired with ${st.files[index]?.name}` : song.localFileHandle ? `Has a file: ${song.localFileName || 'linked'}` : 'No file yet' ].filter(Boolean).join(' · ');
+      main.append(name, sub);
+      row.append(main);
+      return row;
+    }));
+    if (!rows.length) {
+      els.songList.replaceChildren(UI.el('li', 'ui-empty', st.songFilter === 'missing' && !query ? 'Every song has a file.' : 'No songs match.'));
+    }
+    els.songFoot.textContent = rows.length > shown.length ? `Showing ${shown.length} of ${rows.length}. Search to find the rest.` : '';
+  }
+  async saveFolderLinks() {
+    const st = this.folderLinker;
+    if (!st || st.busy || !st.pairs.size) {
+      return;
+    }
+    st.els.save.disabled = true;
+    let saved = 0;
+    for (const [ index, { song } ] of st.pairs) {
+      const file = st.files[index];
+      const target = this.songLibrary.find(entry => entry.id === song.id);
+      if (!file || !target) {
+        continue;
+      }
+      target.localFileHandle = file.handle;
+      target.localFileName = file.name;
+      await this.saveSingleSong(target);
+      saved++;
+    }
+    this.offlineFolder.handle = st.folder;
+    await this.saveOfflineFolder();
+    this.renderSongLibrary?.();
+    this.renderOfflineFolder();
+    st.dialog.close();
+    this.showNotification(`Linked ${saved} song${saved === 1 ? '' : 's'} to files in ${st.folder.name}`, 'success');
   }
   async healOfflineLink(song) {
     if (!this.offlineFolder.handle || !await this.offlineFolderAllowed(true)) {
