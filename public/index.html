@@ -745,6 +745,7 @@ Another Playlist{
                   <button type="button" class="settings-tile" data-tab="surface"><i class="fas fa-image"></i><span class="settings-tile__name">Background &amp; glass</span><span class="settings-tile__hint">Glass panels, album art and your own image</span></button>
                   <button type="button" class="settings-tile" data-tab="visualizer"><i class="fas fa-wave-square"></i><span class="settings-tile__name">Visualizer</span><span class="settings-tile__hint">On or off, design, size and colour</span></button>
                   <button type="button" class="settings-tile" data-tab="library"><i class="fas fa-list"></i><span class="settings-tile__name">Library</span><span class="settings-tile__hint">The order your songs are listed in</span></button>
+                  <button type="button" class="settings-tile" data-tab="offline"><i class="fas fa-folder-open"></i><span class="settings-tile__name">Offline playback</span><span class="settings-tile__hint">Link a folder of audio files to your songs</span></button>
                   <button type="button" class="settings-tile" data-tab="recommendation"><i class="fas fa-compass"></i><span class="settings-tile__name">Music Explorer</span><span class="settings-tile__hint">Which sections show, and how many songs</span></button>
                   <button type="button" class="settings-tile" data-tab="keybinds"><i class="fas fa-keyboard"></i><span class="settings-tile__name">Keyboard shortcuts</span><span class="settings-tile__hint">Change the key for any action</span></button>
                   <button type="button" class="settings-tile" data-tab="battery"><i class="fas fa-battery-half"></i><span class="settings-tile__name">Battery saver</span><span class="settings-tile__hint">What the battery button switches off</span></button>
@@ -1020,6 +1021,40 @@ Another Playlist{
                            </label>
                         </div>
                         <p class="setting-description">Reverses the current sort order (favorites always stay on top)</p>
+                     </div>
+                  </div>
+                  <div class="tab-panel" id="offlinePanel">
+                     <div class="setting-group">
+                        <label>Music Folder:</label>
+                        <p class="setting-description">Choose the folder your audio files are in, and SweetEscape links every file in it, and in the folders inside it, to the song it belongs to. Those songs then play from the file instead of YouTube, here and in SweetEscape Lite. A file matches a song when its name holds the song's YouTube video ID, or else its YouTube title, or else the name you gave the song.</p>
+                        <p class="setting-description">Keep the names your downloads come with, like <strong>Lush Life [8BmMB3i--FM]</strong>. The part in brackets is the YouTube video ID, which links the file to exactly the right song. A renamed file can only be matched by title, which can miss or pick the wrong song.</p>
+                        <p class="setting-description" id="offlineFolderName"></p>
+                        <div class="offline-folder-actions">
+                           <button type="button" id="offlineChooseBtn" class="ui-btn ui-btn--primary"><i class="fas fa-folder-open"></i> Choose folder</button>
+                           <button type="button" id="offlineRescanBtn" class="ui-btn ui-btn--ghost"><i class="fas fa-rotate"></i> Scan again</button>
+                        </div>
+                        <p class="setting-description" id="offlineScanStatus" aria-live="polite"></p>
+                        <div class="offline-scan-results" id="offlineScanResults"></div>
+                     </div>
+                     <div class="setting-group">
+                        <label for="offlineReplaceToggle">Replace Existing Links:</label>
+                        <div class="toggle-switch">
+                           <input type="checkbox" id="offlineReplaceToggle" class="toggle-input" checked>
+                           <label for="offlineReplaceToggle" class="toggle-label">
+                           <span class="toggle-slider"></span>
+                           </label>
+                        </div>
+                        <p class="setting-description">Relinks songs that already have a file, which repairs links that stopped working. Turn off to only link songs that have no file yet.</p>
+                     </div>
+                     <div class="setting-group">
+                        <label for="offlineAutoToggle">Link New Files Automatically:</label>
+                        <div class="toggle-switch">
+                           <input type="checkbox" id="offlineAutoToggle" class="toggle-input" checked>
+                           <label for="offlineAutoToggle" class="toggle-label">
+                           <span class="toggle-slider"></span>
+                           </label>
+                        </div>
+                        <p class="setting-description">Each time SweetEscape opens, songs without a file are linked to new files in the folder, as long as the browser still lets SweetEscape read it. A linked song whose file stops opening is relinked from the folder when you play it.</p>
                      </div>
                   </div>
                   <div class="tab-panel" id="recommendationPanel">

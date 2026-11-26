@@ -400,6 +400,7 @@ class AdvancedMusicPlayer {
     name: 'Dim the screen',
     hint: 'Darkens everything by a third, which saves the most on OLED screens'
   } ];
+  static AUDIO_FILE_PATTERN = /\.(mp3|m4a|aac|ogg|oga|opus|wav|flac|webm|weba)$/i;
   static DATA_SAVER_LEVELS = [ 'Light', 'Balanced', 'Strong', 'Offline' ];
   static DATA_SAVER_FEATURES = [ {
     key: 'thumbs',
@@ -538,6 +539,11 @@ class AdvancedMusicPlayer {
     this.visualizerEnabled = true;
     this.batterySaver = this.getBatterySaverDefaults();
     this.dataSaver = this.getDataSaverDefaults();
+    this.offlineFolder = {
+      handle: null,
+      replace: true,
+      auto: true
+    };
     this.batteryIdle = false;
     this.mediaSessionKey = null;
     this.installPrompt = null;
@@ -684,7 +690,7 @@ class AdvancedMusicPlayer {
   async _initialize() {
     try {
       await this.initDatabase();
-      await Promise.all([ this.loadSongLibrary(), this.loadPlaylists(), this.loadSettings(), this.loadRecentlyPlayed(), this.loadDiscoverMoreSettingsOnStartup(), this.loadKeybinds(), this.loadBatterySaver(), this.loadDataSaver(), this.loadDiscordSettings(), this.loadLibrarySortValue(), this.loadLibraryReverseValue(), this.loadVisualizerValue() ]);
+      await Promise.all([ this.loadSongLibrary(), this.loadPlaylists(), this.loadSettings(), this.loadRecentlyPlayed(), this.loadDiscoverMoreSettingsOnStartup(), this.loadKeybinds(), this.loadBatterySaver(), this.loadDataSaver(), this.loadOfflineFolder(), this.loadDiscordSettings(), this.loadLibrarySortValue(), this.loadLibraryReverseValue(), this.loadVisualizerValue() ]);
       await this.repairEncodedStoredText();
       const shouldShowWelcome = this.songLibrary.length === 0;
       this.initializeElements();
@@ -742,6 +748,7 @@ class AdvancedMusicPlayer {
     this.initializeVisualizer();
     this.initBatterySaver();
     this.initDataSaver();
+    this.initOfflineFolder();
     this.initGlobalLibraryDebouncedSearch();
     this.initMixLab();
     this.setupChangelogModal();
@@ -975,6 +982,13 @@ class AdvancedMusicPlayer {
       dataSaverFeatures: document.getElementById('dataSaverFeatures'),
       cacheEverythingBtn: document.getElementById('cacheEverythingBtn'),
       cacheEverythingStatus: document.getElementById('cacheEverythingStatus'),
+      offlineFolderName: document.getElementById('offlineFolderName'),
+      offlineChooseBtn: document.getElementById('offlineChooseBtn'),
+      offlineRescanBtn: document.getElementById('offlineRescanBtn'),
+      offlineReplaceToggle: document.getElementById('offlineReplaceToggle'),
+      offlineAutoToggle: document.getElementById('offlineAutoToggle'),
+      offlineScanStatus: document.getElementById('offlineScanStatus'),
+      offlineScanResults: document.getElementById('offlineScanResults'),
       installAppGroup: document.getElementById('installAppGroup'),
       installAppBtn: document.getElementById('installAppBtn'),
       lsPanel: document.getElementById('lsPanel'),
@@ -1820,6 +1834,9 @@ class AdvancedMusicPlayer {
           const folder = await window.showDirectoryPicker({
             mode: 'read'
           });
+          this.offlineFolder.handle = folder;
+          this.saveOfflineFolder();
+          this.renderOfflineFolder();
           status.textContent = 'Looking for your files…';
           const linked = await this._relinkFromFolder(folder, missing);
           status.textContent = `Relinked ${linked} of ${missing.length} song${missing.length === 1 ? '' : 's'}.${linked < missing.length ? ' The rest can be linked one by one from each song\'s edit dialog.' : ''}`;
@@ -6251,42 +6268,51 @@ class AdvancedMusicPlayer {
     this.filePermissionSong = null;
     const currentId = this.currentSong?.id;
     const masterSong = currentId && this.songLibrary.find(s => s.id === currentId) || this.songLibrary.find(s => s.videoId === videoId);
-    if (masterSong?.localFileHandle) {
+    if (masterSong?.localFileHandle || masterSong?.localFileName && this.offlineFolder.handle) {
       const offlineOnly = this.dataSaverActive('offline');
       let needsClick = false;
-      try {
-        const handle = masterSong.localFileHandle;
-        let perm = await handle.queryPermission?.({
-          mode: 'read'
-        });
-        if (perm !== 'granted') {
-          perm = await handle.requestPermission({
+      let failure = null;
+      if (masterSong.localFileHandle) {
+        try {
+          const handle = masterSong.localFileHandle;
+          let perm = await handle.queryPermission?.({
             mode: 'read'
           });
+          if (perm !== 'granted') {
+            perm = await handle.requestPermission({
+              mode: 'read'
+            });
+          }
+          if (perm === 'granted') {
+            const file = await handle.getFile();
+            const url = URL.createObjectURL(file);
+            this.offlineSkips = 0;
+            this.playLocalAudio(url);
+            return;
+          }
+          needsClick = true;
+        } catch (error) {
+          failure = error;
+          needsClick = error.name === 'SecurityError' || error.name === 'NotAllowedError';
         }
-        if (perm === 'granted') {
-          const file = await handle.getFile();
-          const url = URL.createObjectURL(file);
-          this.offlineSkips = 0;
-          this.playLocalAudio(url);
-          return;
-        }
-        needsClick = true;
-        if (!offlineOnly) {
-          this.showNotification('Local file permission denied. Falling back to YouTube.', 'error');
-        }
-      } catch (error) {
-        needsClick = error.name === 'SecurityError' || error.name === 'NotAllowedError';
+      }
+      const healed = await this.healOfflineLink(masterSong);
+      if (healed) {
+        this.offlineSkips = 0;
+        this.playLocalAudio(URL.createObjectURL(healed));
+        return;
+      }
+      if (failure) {
         if (!offlineOnly || !needsClick) {
           const errorMessages = {
             NotFoundError: 'Local file not found — was it renamed or moved?',
             NotAllowedError: 'Local file access was denied.',
             SecurityError: 'Security error reading local file.'
           };
-          const msg = errorMessages[error.name] || `Local file error (${error.name}).`;
+          const msg = errorMessages[failure.name] || `Local file error (${failure.name}).`;
           this.showNotification(offlineOnly ? msg : `${msg} Falling back to YouTube.`, 'error');
         }
-        if (error.name === 'NotFoundError') {
+        if (failure.name === 'NotFoundError') {
           const idx = this.songLibrary.findIndex(s => s.id === masterSong.id);
           if (idx !== -1) {
             this.songLibrary[idx].localFileHandle = null;
@@ -6294,8 +6320,10 @@ class AdvancedMusicPlayer {
             this.saveSongLibrary();
           }
         }
+      } else if (needsClick && !offlineOnly) {
+        this.showNotification('Local file permission denied. Falling back to YouTube.', 'error');
       }
-      if (offlineOnly && needsClick) {
+      if (offlineOnly && needsClick && masterSong.localFileHandle) {
         this.waitForFilePermission(masterSong);
         return;
       }
@@ -12243,6 +12271,9 @@ class AdvancedMusicPlayer {
     document.getElementById('settingsBackBtn')?.focus({
       preventScroll: true
     });
+    if (name === 'offline') {
+      this.renderOfflineResults();
+    }
     if (name === 'feedback') {
       const iframe = document.querySelector('#feedbackPanel iframe');
       if (iframe && !iframe.src) {
@@ -14797,6 +14828,387 @@ class AdvancedMusicPlayer {
       input.checked = features[input.dataset.dataSaverKey] === true;
       row.classList.toggle('is-idle', !on);
     });
+  }
+  async loadOfflineFolder() {
+    const saved = await this.getSetting('offlineFolder');
+    if (!saved || typeof saved !== 'object') {
+      return;
+    }
+    this.offlineFolder = {
+      handle: typeof saved.handle?.values === 'function' ? saved.handle : null,
+      replace: saved.replace !== false,
+      auto: saved.auto !== false
+    };
+  }
+  saveOfflineFolder() {
+    const { handle, replace, auto } = this.offlineFolder;
+    return this.saveSetting('offlineFolder', {
+      handle,
+      replace,
+      auto
+    }).catch(error => console.error('Error saving the music folder:', error));
+  }
+  initOfflineFolder() {
+    const els = this.elements;
+    if (!els.offlineChooseBtn) {
+      return;
+    }
+    if (!window.showDirectoryPicker) {
+      els.offlineChooseBtn.disabled = true;
+      els.offlineRescanBtn.disabled = true;
+      els.offlineScanStatus.textContent = 'Linking a folder needs Chrome or Edge on a computer.';
+      return;
+    }
+    els.offlineChooseBtn.addEventListener('click', () => this.chooseOfflineFolder());
+    els.offlineRescanBtn.addEventListener('click', () => this.rescanOfflineFolder());
+    els.offlineReplaceToggle.addEventListener('change', event => {
+      this.offlineFolder.replace = event.target.checked;
+      this.saveOfflineFolder();
+    });
+    els.offlineAutoToggle.addEventListener('change', event => {
+      this.offlineFolder.auto = event.target.checked;
+      this.saveOfflineFolder();
+    });
+    this.renderOfflineFolder();
+    if (this.offlineFolder.handle && this.offlineFolder.auto) {
+      setTimeout(() => this.autoScanOfflineFolder(), 4e3);
+    }
+  }
+  renderOfflineFolder() {
+    const els = this.elements;
+    if (!els.offlineFolderName) {
+      return;
+    }
+    const { handle, replace, auto } = this.offlineFolder;
+    els.offlineFolderName.textContent = handle ? `Linked folder: ${handle.name}` : 'No folder linked yet.';
+    els.offlineRescanBtn.disabled = !handle || Boolean(this.offlineScanRunning);
+    els.offlineChooseBtn.disabled = Boolean(this.offlineScanRunning);
+    els.offlineReplaceToggle.checked = replace;
+    els.offlineAutoToggle.checked = auto;
+    this.renderOfflineResults();
+  }
+  renderOfflineResults() {
+    const container = this.elements.offlineScanResults;
+    if (!container || this.offlineScanRunning) {
+      return;
+    }
+    const byName = (a, b) => this._compareText(a.name, b.name);
+    const linked = this.songLibrary.filter(song => song.localFileHandle).sort(byName);
+    const missing = this.songLibrary.filter(song => !song.localFileHandle).sort(byName);
+    const section = (title, rows, open) => {
+      const details = UI.el('details', 'offline-scan-details');
+      const summary = document.createElement('summary');
+      const list = UI.el('ul', 'offline-scan-list');
+      summary.textContent = `${title} (${rows.length})`;
+      list.replaceChildren(...rows.slice(0, 1e3).map(text => {
+        const item = document.createElement('li');
+        item.textContent = text;
+        return item;
+      }));
+      details.open = open;
+      details.append(summary, list);
+      return details;
+    };
+    const sections = [ section('Songs with a file', linked.map(song => `${song.name} → ${song.localFileName || 'linked file'}`), false), section('Songs without a file', missing.map(song => song.author ? `${song.name} by ${song.author}` : song.name), false) ];
+    const unlinked = this.offlineUnlinkedFiles || [];
+    if (unlinked.length) {
+      sections.push(section('Files not linked', unlinked, false));
+    }
+    container.replaceChildren(...sections);
+  }
+  async chooseOfflineFolder() {
+    let handle;
+    try {
+      handle = await window.showDirectoryPicker({
+        id: 'sweetescape-music',
+        mode: 'read'
+      });
+    } catch (error) {
+      if (error.name !== 'AbortError') {
+        this.elements.offlineScanStatus.textContent = 'Could not open that folder.';
+      }
+      return;
+    }
+    this.offlineFolder.handle = handle;
+    await this.saveOfflineFolder();
+    this.renderOfflineFolder();
+    await this.scanOfflineFolder(this.offlineFolder.replace, true);
+  }
+  async rescanOfflineFolder() {
+    if (!await this.offlineFolderAllowed(true)) {
+      this.elements.offlineScanStatus.textContent = `SweetEscape is not allowed to read ${this.offlineFolder.handle?.name || 'that folder'}. Choose it again to give access.`;
+      return;
+    }
+    await this.scanOfflineFolder(this.offlineFolder.replace, true);
+  }
+  async offlineFolderAllowed(ask) {
+    const handle = this.offlineFolder.handle;
+    if (!handle) {
+      return false;
+    }
+    try {
+      let state = await handle.queryPermission({
+        mode: 'read'
+      });
+      if (state !== 'granted' && ask) {
+        state = await handle.requestPermission({
+          mode: 'read'
+        });
+      }
+      return state === 'granted';
+    } catch (error) {
+      return false;
+    }
+  }
+  async autoScanOfflineFolder() {
+    if (!await this.offlineFolderAllowed(false)) {
+      return;
+    }
+    const result = await this.scanOfflineFolder(false, false);
+    if (result?.linked) {
+      this.showNotification(`Linked ${result.linked} new offline song${result.linked === 1 ? '' : 's'} from ${this.offlineFolder.handle.name}`, 'success');
+    }
+  }
+  async listOfflineFiles(folder) {
+    const files = [];
+    const walk = async (dir, depth, prefix) => {
+      for await (const entry of dir.values()) {
+        if (files.length >= 2e4) {
+          return;
+        }
+        if (entry.kind === 'directory') {
+          if (depth < 6) {
+            await walk(entry, depth + 1, prefix + entry.name + '/');
+          }
+        } else if (AdvancedMusicPlayer.AUDIO_FILE_PATTERN.test(entry.name)) {
+          files.push({
+            handle: entry,
+            name: entry.name,
+            path: prefix + entry.name
+          });
+        }
+      }
+    };
+    await walk(folder, 0, '');
+    return files;
+  }
+  offlineMatchKey(text) {
+    const plain = String(text || '').normalize('NFD').replace(/[̀-ͯ]/g, '').normalize('NFC').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+    return plain ? this._searchFold(plain) : '';
+  }
+  matchOfflineFiles(files, songs) {
+    const byVideo = new Map();
+    songs.forEach(song => {
+      if (song.videoId) {
+        byVideo.set(song.videoId, [ ...byVideo.get(song.videoId) || [], song ]);
+      }
+    });
+    const stripBrackets = text => String(text || '').replace(/[([{【][^)\]}】]*[)\]}】]/g, ' ');
+    const titled = songs.map(song => {
+      const keys = [ ...new Set([ song.youtubeTitle, stripBrackets(song.youtubeTitle), song.name, stripBrackets(song.name) ].map(text => this.offlineMatchKey(text))) ].filter(key => key.length >= 3);
+      return {
+        song,
+        keys,
+        author: this.offlineMatchKey(song.author)
+      };
+    }).filter(entry => entry.keys.length);
+    const candidates = [];
+    const ambiguous = [];
+    const unmatched = [];
+    files.forEach(file => {
+      const base = file.name.replace(/\.[^.]+$/, '');
+      const ids = [ ...base.matchAll(/(?:^|[^A-Za-z0-9_-])([A-Za-z0-9_-]{11})(?=$|[^A-Za-z0-9_-])/g) ].map(match => match[1]).filter(id => byVideo.has(id));
+      if (ids.length) {
+        byVideo.get(ids[ids.length - 1]).forEach(song => candidates.push({
+          file,
+          song,
+          score: 1e4,
+          slack: 0,
+          how: 'video ID'
+        }));
+        return;
+      }
+      const fileKey = this.offlineMatchKey(base);
+      const scored = [];
+      titled.forEach(({ song, keys, author }) => {
+        const withAuthor = author.length >= 2 && fileKey.includes(author);
+        let best = null;
+        keys.forEach((key, index) => {
+          if (!fileKey.includes(key) || key.length < 5 && !withAuthor) {
+            return;
+          }
+          const score = 100 + Math.min(key.length, 60) - index * 5 + (withAuthor ? 50 : 0);
+          if (!best || score > best.score) {
+            best = {
+              file,
+              song,
+              score,
+              slack: fileKey.length - key.length,
+              how: withAuthor ? 'title and artist' : 'title'
+            };
+          }
+        });
+        if (best) {
+          scored.push(best);
+        }
+      });
+      if (!scored.length) {
+        unmatched.push(file);
+        return;
+      }
+      scored.sort((a, b) => b.score - a.score || a.slack - b.slack);
+      if (scored[1] && scored[1].score === scored[0].score && scored[1].slack === scored[0].slack) {
+        ambiguous.push(file);
+        return;
+      }
+      candidates.push(...scored.slice(0, 3));
+    });
+    candidates.sort((a, b) => b.score - a.score || a.slack - b.slack);
+    const links = [];
+    const usedFiles = new Set();
+    const usedSongs = new Set();
+    candidates.forEach(candidate => {
+      if (usedSongs.has(candidate.song.id) || candidate.score < 1e4 && usedFiles.has(candidate.file)) {
+        return;
+      }
+      links.push(candidate);
+      usedFiles.add(candidate.file);
+      usedSongs.add(candidate.song.id);
+    });
+    files.forEach(file => {
+      if (!usedFiles.has(file) && !ambiguous.includes(file) && !unmatched.includes(file)) {
+        unmatched.push(file);
+      }
+    });
+    return {
+      links,
+      unmatched,
+      ambiguous
+    };
+  }
+  async scanOfflineFolder(replace, report) {
+    const els = this.elements;
+    const folder = this.offlineFolder.handle;
+    if (!folder || this.offlineScanRunning) {
+      return null;
+    }
+    this.offlineScanRunning = true;
+    this.renderOfflineFolder();
+    if (report) {
+      els.offlineScanStatus.textContent = `Reading ${folder.name}…`;
+      els.offlineScanResults.replaceChildren();
+    }
+    try {
+      const files = await this.listOfflineFiles(folder);
+      if (report) {
+        await this.lookUpYouTubeTitles(files);
+      }
+      const { links, unmatched, ambiguous } = this.matchOfflineFiles(files, this.songLibrary);
+      let linked = 0;
+      let kept = 0;
+      links.forEach(({ file, song }) => {
+        if (song.localFileHandle && !replace) {
+          kept++;
+          return;
+        }
+        song.localFileHandle = file.handle;
+        song.localFileName = file.name;
+        linked++;
+      });
+      if (linked) {
+        await this.saveSongLibrary();
+        this.renderSongLibrary?.();
+      }
+      if (report) {
+        this.reportOfflineScan(folder, files.length, linked, kept, unmatched, ambiguous);
+      }
+      return {
+        linked
+      };
+    } catch (error) {
+      console.warn('Could not read the music folder:', error);
+      if (report) {
+        els.offlineScanStatus.textContent = `Could not read ${folder.name} (${error.name}). Choose the folder again.`;
+      }
+      return null;
+    } finally {
+      this.offlineScanRunning = false;
+      this.renderOfflineFolder();
+    }
+  }
+  async lookUpYouTubeTitles(files) {
+    const first = this.matchOfflineFiles(files, this.songLibrary);
+    const byVideoId = new Set(first.links.filter(link => link.how === 'video ID').map(link => link.song.id));
+    const unsure = first.unmatched.length + first.ambiguous.length + first.links.filter(link => link.how !== 'video ID').length;
+    if (!unsure) {
+      return;
+    }
+    const queue = this.songLibrary.filter(song => song.videoId && !song.youtubeTitle && !byVideoId.has(song.id)).slice(0, 400);
+    if (!queue.length) {
+      return;
+    }
+    let done = 0;
+    let found = 0;
+    const next = async () => {
+      while (queue.length) {
+        const song = queue.shift();
+        let title = '';
+        try {
+          const response = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${encodeURIComponent(song.videoId)}&format=json`);
+          title = response.ok ? this.decodeHtmlEntities((await response.json()).title || '') : '';
+        } catch (error) {
+          title = '';
+        }
+        if (title) {
+          song.youtubeTitle = title;
+          found++;
+        }
+        done++;
+        this.elements.offlineScanStatus.textContent = `Looking up YouTube titles: ${done} of ${done + queue.length}`;
+      }
+    };
+    await Promise.all(Array.from({
+      length: 6
+    }, next));
+    if (found) {
+      await this.saveSongLibrary();
+    }
+  }
+  reportOfflineScan(folder, total, linked, kept, unmatched, ambiguous) {
+    const els = this.elements;
+    const plural = (count, word) => `${count} ${word}${count === 1 ? '' : 's'}`;
+    const missing = this.songLibrary.filter(song => !song.localFileHandle).length;
+    const parts = [ `Found ${plural(total, 'audio file')} in ${folder.name} and linked ${plural(linked, 'song')}.` ];
+    if (kept) {
+      parts.push(`${plural(kept, 'song')} already had a file and kept it.`);
+    }
+    if (unmatched.length || ambiguous.length) {
+      parts.push(`${plural(unmatched.length + ambiguous.length, 'file')} could not be matched.`);
+    }
+    parts.push(missing ? `${plural(missing, 'song')} in your library still ${missing === 1 ? 'has' : 'have'} no file.` : 'Every song in your library now has a file.');
+    els.offlineScanStatus.textContent = parts.join(' ');
+    this.offlineUnlinkedFiles = [ ...ambiguous.map(file => `${file.path}: fits more than one song equally`), ...unmatched.map(file => `${file.path}: no song with this video ID or title`) ];
+  }
+  async healOfflineLink(song) {
+    if (!this.offlineFolder.handle || !await this.offlineFolderAllowed(true)) {
+      return null;
+    }
+    try {
+      const files = await this.listOfflineFiles(this.offlineFolder.handle);
+      const name = String(song.localFileName || '').toLowerCase();
+      const file = name && files.find(entry => entry.name.toLowerCase() === name) || this.matchOfflineFiles(files, [ song ]).links[0]?.file;
+      if (!file) {
+        return null;
+      }
+      const blob = await file.handle.getFile();
+      song.localFileHandle = file.handle;
+      song.localFileName = file.name;
+      this.saveSongLibrary();
+      return blob;
+    } catch (error) {
+      console.warn('Could not relink from the music folder:', error);
+      return null;
+    }
   }
   waitForFilePermission(song) {
     this.filePermissionSong = song;

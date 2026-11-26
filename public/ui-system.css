@@ -1281,6 +1281,41 @@ button.settings-tile {
   min-width: 0;
 }
 
+.offline-folder-actions {
+  display: flex;
+  flex-wrap: wrap;
+  flex-basis: 100%;
+  gap: var(--ui-space-2);
+  margin-top: var(--ui-space-3);
+}
+
+.offline-scan-results {
+  display: grid;
+  flex-basis: 100%;
+  gap: var(--ui-space-2);
+  margin-top: var(--ui-space-3);
+}
+
+.offline-scan-details {
+  font-size: var(--ui-font-sm);
+  color: var(--text-secondary);
+}
+
+.offline-scan-details summary {
+  cursor: pointer;
+  color: var(--text-primary);
+  font-weight: var(--ui-weight-semibold);
+}
+
+.offline-scan-list {
+  max-height: 220px;
+  overflow-y: auto;
+  margin: var(--ui-space-2) 0 0;
+  padding-left: var(--ui-space-4);
+  line-height: var(--ui-line);
+  overflow-wrap: anywhere;
+}
+
 .settings-section-bar .settings-section-title {
   min-width: 0;
   margin: 0;

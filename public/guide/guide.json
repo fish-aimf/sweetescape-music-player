@@ -415,7 +415,7 @@
       "id": "settings-button",
       "target": "#settingsButton",
       "title": "Settings",
-      "body": "Every setting, as a grid of tiles: theme, background and glass, visualizer, library, Music Explorer, shortcuts, battery saver, metered connection for saving mobile data, privacy and stats, installing the app, and help."
+      "body": "Every setting, as a grid of tiles: theme, background and glass, visualizer, library, offline playback for linking a folder of audio files, Music Explorer, shortcuts, battery saver, metered connection for saving mobile data, privacy and stats, installing the app, and help."
     },
     {
       "id": "listening-time",

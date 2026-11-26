@@ -517,7 +517,7 @@ const scenes = {
     await page.selectOption('#themeMode', 'dark');
     await sleep(600);
     await back();
-    for (const tab of ['surface', 'visualizer', 'recommendation', 'keybinds', 'data']) {
+    for (const tab of ['surface', 'visualizer', 'offline', 'recommendation', 'keybinds', 'data']) {
       await open(tab);
       await save(page, 'settings-' + tab, '#settingsModal .ui-modal', 0);
       await back();
