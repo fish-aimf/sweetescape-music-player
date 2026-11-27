@@ -73,10 +73,13 @@ The file has four layers, in order:
 - Icons are Font Awesome 6 with an explicit style prefix (`fas` / `far` / `fab`).
   Close buttons are `<i class="fas fa-times">`; titles take one accent-coloured icon.
 - JS-built dialogs use the `UI` factory at the top of `script.js`:
-  `UI.modal({ title, icon, size, className, bodyClassName, closeOnEscape })` returns
+  `UI.modal({ title, icon, size, className, bodyClassName, dismissible, onClose })` returns
   `{ overlay, shell, header, heading, body, footer, close, addFooter, open }`, and
   `UI.button(label, { variant, size, icon, block, onClick })` builds a `.ui-btn`.
   Prefer these over hand-rolling `document.createElement` chains and inline styles.
+- The Close Window keybind (`closeDialog`, Esc by default) closes the topmost visible `.ui-overlay`
+  through its `.ui-modal__close`, or a layer registered with `addDismissLayer(el, close)`.
+  Dialogs do not listen for Escape themselves.
 - No comments in source files; naming and this document carry the intent.
 
 ### Adding a new dialog

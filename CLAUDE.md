@@ -89,9 +89,14 @@ Read the "UI Design System" section of `ARCHITECTURE.md` first. Short version:
 - Build dialogs from `.ui-overlay` / `.ui-modal` / `.ui-modal__header|__title|__close|__body|__footer`,
   `.ui-btn` (+`--primary|ghost|danger|sm|block`), `.ui-input`, `.ui-card`, `.ui-tab`, `.ui-chip`.
 - In JS use the `UI` factory at the top of `script.js`:
-  `UI.modal({title, icon, size, className, bodyClassName, closeOnEscape})` →
+  `UI.modal({title, icon, size, className, bodyClassName, dismissible, onClose})` →
   `{overlay, shell, header, heading, body, footer, close, addFooter, open}`,
   and `UI.button(label, {variant, size, icon, block, onClick})`.
+- Esc is the rebindable `closeDialog` keybind, handled once in `setupKeyboardControls`. It closes
+  the topmost visible `.ui-overlay` by clicking its own `.ui-modal__close`, so every dialog needs
+  one. Other layers (menus, the queue, fullscreen views) register with `addDismissLayer(el, close)`
+  and drop out when removed from the DOM. Never add a per-dialog Escape listener: one press would
+  close two stacked dialogs. A field that uses Esc itself (clear a search) calls `stopPropagation()`.
 - Overlays open with `display: flex` (inline style, or an existing `.active` /
   `.subtitles-import-modal-show` class). Never `display: block`.
 - Icons are Font Awesome 6.0 **local** (`public/all.min.css`) with an explicit prefix:

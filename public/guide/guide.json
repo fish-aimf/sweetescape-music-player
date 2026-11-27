@@ -446,7 +446,7 @@
       "id": "keys",
       "title": "A few more keys",
       "body": "Every shortcut can be changed in Settings, Keyboard shortcuts. A few that are worth learning first:",
-      "keys": [["Y", "queue"], ["U", "video mode"], ["I", "miniplayer (Chrome, Edge)"], ["O", "hide Music Explorer"], ["Q", "next tab"], ["F / G", "seek 5s"]]
+      "keys": [["Y", "queue"], ["U", "video mode"], ["I", "miniplayer (Chrome, Edge)"], ["O", "hide Music Explorer"], ["Q", "next tab"], ["F / G", "seek 5s"], ["Esc", "close the window on top"]]
     },
     {
       "id": "done",

@@ -34,7 +34,7 @@ const UI = {
     }
     return node;
   },
-  modal({ title = '', icon = '', size = 'md', className = '', bodyClassName = '', dismissible = true, closeOnEscape = false, onClose } = {}) {
+  modal({ title = '', icon = '', size = 'md', className = '', bodyClassName = '', dismissible = true, onClose } = {}) {
     const overlay = this.el('div', `modal ui-overlay${className ? ' ' + className : ''}`);
     overlay.style.display = 'flex';
     const shell = this.el('div', `modal-content ui-modal ui-modal--${this.SIZES.includes(size) ? size : 'md'}`);
@@ -49,14 +49,8 @@ const UI = {
     header.append(heading, closeBtn);
     shell.append(header, body, footer);
     overlay.append(shell);
-    const onKey = event => {
-      if (event.key === 'Escape') {
-        close();
-      }
-    };
     const close = () => {
       overlay.remove();
-      document.removeEventListener('keydown', onKey);
       if (onClose) {
         onClose();
       }
@@ -84,9 +78,6 @@ const UI = {
       },
       open(parent = document.body) {
         parent.appendChild(overlay);
-        if (closeOnEscape) {
-          document.addEventListener('keydown', onKey);
-        }
         return overlay;
       }
     };
@@ -532,9 +523,8 @@ class AdvancedMusicPlayer {
     this.themedFavicon = null;
     this.activeFaviconDisguise = null;
     this.disguiseDialog = null;
-    this.disguiseEscHandler = null;
     this.webEmbedOverlay = null;
-    this.webEmbedKeyHandler = null;
+    this.dismissLayers = new Map();
     this.adsEnabled = false;
     this.visualizerEnabled = true;
     this.batterySaver = this.getBatterySaverDefaults();
@@ -656,7 +646,8 @@ class AdvancedMusicPlayer {
       toggleMusicExplorer: 'KeyO',
       seekForward: 'KeyG',
       seekBackward: 'KeyF',
-      toggleMiniplayer: 'KeyI'
+      toggleMiniplayer: 'KeyI',
+      closeDialog: 'Escape'
     };
     this.currentKeybinds = {
       ...this.defaultKeybinds
@@ -1389,6 +1380,10 @@ class AdvancedMusicPlayer {
       if (e.ctrlKey || e.metaKey || e.altKey) {
         return;
       }
+      if (e.code === this.currentKeybinds.closeDialog && this.closeTopLayer(e)) {
+        e.preventDefault();
+        return;
+      }
       if (document.activeElement.tagName === 'INPUT') {
         const inputType = document.activeElement.type;
         if (inputType !== 'range' && inputType !== 'checkbox' && inputType !== 'radio') {
@@ -1404,6 +1399,68 @@ class AdvancedMusicPlayer {
       }
       this.handleKeybind(e.code);
     });
+  }
+  addDismissLayer(el, close) {
+    this.dismissLayers.forEach((_, layer) => {
+      if (!layer.isConnected) {
+        this.dismissLayers.delete(layer);
+      }
+    });
+    this.dismissLayers.set(el, close);
+  }
+  topLayer() {
+    const layers = [];
+    document.querySelectorAll('.ui-overlay').forEach(el => {
+      const button = [ ...el.querySelectorAll('.ui-modal__close') ].find(node => node.closest('.ui-overlay') === el);
+      if (button) {
+        layers.push({
+          el,
+          close: () => button.click()
+        });
+      }
+    });
+    this.dismissLayers.forEach((close, el) => {
+      if (el.isConnected) {
+        layers.push({
+          el,
+          close
+        });
+      } else {
+        this.dismissLayers.delete(el);
+      }
+    });
+    return layers.filter(({el}) => this._layerShown(el)).reduce((top, layer) => !top || this._layerAbove(layer.el, top.el) ? layer : top, null);
+  }
+  _layerShown(el) {
+    const style = getComputedStyle(el);
+    return el.getClientRects().length > 0 && style.visibility !== 'hidden' && style.pointerEvents !== 'none' && Number(style.opacity) > 0;
+  }
+  _layerAbove(a, b) {
+    if (a.contains(b) || b.contains(a)) {
+      return b.contains(a);
+    }
+    const depth = el => Number.parseInt(getComputedStyle(el).zIndex, 10) || 0;
+    if (depth(a) !== depth(b)) {
+      return depth(a) > depth(b);
+    }
+    return Boolean(b.compareDocumentPosition(a) & Node.DOCUMENT_POSITION_FOLLOWING);
+  }
+  closeTopLayer(event) {
+    const field = document.activeElement;
+    const typing = field && (field.tagName === 'TEXTAREA' || field.isContentEditable || field.tagName === 'INPUT' && ![ 'range', 'checkbox', 'radio', 'button', 'submit', 'reset', 'file', 'color' ].includes(field.type));
+    if (typing && (event.key.length === 1 || /^(Backspace|Delete|Enter|Tab|Arrow|Home|End|Page)/.test(event.key))) {
+      return false;
+    }
+    const layer = this.topLayer();
+    if (!layer) {
+      return false;
+    }
+    layer.close();
+    return true;
+  }
+  withCloseKey(label) {
+    const key = this.currentKeybinds.closeDialog;
+    return key ? `${label} (${this.getKeyDisplayName(key)})` : label;
   }
   renderInitialState() {
     this.renderPlaylists();
@@ -3736,8 +3793,7 @@ class AdvancedMusicPlayer {
       title: 'This song won’t play here',
       icon: 'fa-ban',
       size: 'sm',
-      bodyClassName: 'ui-modal__body--stack',
-      closeOnEscape: true
+      bodyClassName: 'ui-modal__body--stack'
     });
     dialog.body.append(UI.el('p', 'playlist-dialog-text', 'Its uploader only allows it to be played on YouTube itself, so the player here will skip straight past it. Look for another upload of the same song, like a lyric or audio video, or add it anyway.'));
     const addAnyway = UI.button('Add anyway', {
@@ -4884,8 +4940,7 @@ class AdvancedMusicPlayer {
     const dialog = UI.modal({
       title: 'New playlist',
       icon: 'fa-list',
-      size: 'sm',
-      closeOnEscape: true
+      size: 'sm'
     });
     const input = UI.el('input', 'ui-input');
     input.type = 'text';
@@ -5325,8 +5380,7 @@ class AdvancedMusicPlayer {
       title: 'Playlist from an artist',
       icon: 'fa-microphone-lines',
       size: 'md',
-      bodyClassName: 'ui-modal__body--stack',
-      closeOnEscape: true
+      bodyClassName: 'ui-modal__body--stack'
     });
     const artists = this._artistIndex();
     const search = UI.el('input', 'ui-input');
@@ -5365,7 +5419,6 @@ class AdvancedMusicPlayer {
       icon: 'fa-pen',
       size: 'xl',
       bodyClassName: 'ple-body',
-      closeOnEscape: true,
       onClose: () => {
         commitName();
         if (this._playlistEditor?.dialog !== dialog) {
@@ -6018,12 +6071,6 @@ class AdvancedMusicPlayer {
         close();
       }
     };
-    const onKey = e => {
-      if (e.key === 'Escape') {
-        e.stopPropagation();
-        close();
-      }
-    };
     const onScroll = e => {
       if (!menu.contains(e.target)) {
         close();
@@ -6032,7 +6079,6 @@ class AdvancedMusicPlayer {
     const close = () => {
       menu.remove();
       document.removeEventListener('pointerdown', onPointer, true);
-      document.removeEventListener('keydown', onKey, true);
       window.removeEventListener('scroll', onScroll, true);
       window.removeEventListener('resize', close);
       if (this._addMenu?.menu === menu) {
@@ -6040,7 +6086,7 @@ class AdvancedMusicPlayer {
       }
     };
     document.addEventListener('pointerdown', onPointer, true);
-    document.addEventListener('keydown', onKey, true);
+    this.addDismissLayer(menu, close);
     window.addEventListener('scroll', onScroll, true);
     window.addEventListener('resize', close);
     this._addMenu = {
@@ -6123,8 +6169,7 @@ class AdvancedMusicPlayer {
       title: 'Delete playlist',
       icon: 'fa-trash',
       size: 'sm',
-      className: 'playlist-delete-dialog',
-      closeOnEscape: true
+      className: 'playlist-delete-dialog'
     });
     const count = playlist.songs.length;
     const name = document.createElement('strong');
@@ -8252,11 +8297,6 @@ class AdvancedMusicPlayer {
         limitInput.value = this.recentlyPlayedLimit || 20;
       }
     });
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && modal.style.display === 'flex') {
-        this.hideRecentlyPlayedModal();
-      }
-    });
   }
   renderRecentlyPlayedContent() {
     const content = document.getElementById('recentlyPlayedContent');
@@ -9617,11 +9657,6 @@ class AdvancedMusicPlayer {
         alert('Failed to save lyrics. Please try again.');
       });
     };
-    const handleKeyDown = e => {
-      if (e.key === 'Escape') {
-        closeModal();
-      }
-    };
     document.getElementById('prepareLyricsBtn').addEventListener('click', prepareLyrics);
     const goToRecordTab = () => showTab('recordTab');
     document.getElementById('nextToRecordBtn').addEventListener('click', goToRecordTab);
@@ -9644,7 +9679,6 @@ class AdvancedMusicPlayer {
     document.getElementById('lyricmakerAudioInput').addEventListener('change', handleAudioInput);
     document.getElementById('lyricmakerUseYouTube').addEventListener('click', loadVideo);
     document.getElementById('lyricmakerLinkAudio').addEventListener('click', linkAudioToSong);
-    document.addEventListener('keydown', handleKeyDown);
     this.lyricMakerCleanup = () => {
       document.getElementById('lyricsFileBtn').removeEventListener('click', openLyricsFile);
       document.getElementById('lyricsFileInput').removeEventListener('change', handleLyricsFile);
@@ -9667,7 +9701,6 @@ class AdvancedMusicPlayer {
       document.getElementById('geniusBtn').removeEventListener('click', searchGenius);
       document.getElementById('googleBtn').removeEventListener('click', searchGoogle);
       document.getElementById('autoFetchLyricsBtn')?.removeEventListener('click', autoFetchLyrics);
-      document.removeEventListener('keydown', handleKeyDown);
       tabHandlers.forEach(({element: element, handler: handler}) => {
         element.removeEventListener('click', handler);
       });
@@ -9714,7 +9747,6 @@ class AdvancedMusicPlayer {
       bodyClassName: 'lyrics-mode-grid',
       onClose: () => {
         this.lyricsModeDialog = null;
-        this.syncLyricsStageKeys();
       }
     });
     dialog.body.innerHTML = AdvancedMusicPlayer.LYRICS_STAGE_MODES.map(mode => {
@@ -9731,7 +9763,6 @@ class AdvancedMusicPlayer {
     });
     this.lyricsModeDialog = dialog;
     dialog.open();
-    this.syncLyricsStageKeys();
   }
   resolveLyricsStageSong() {
     const song = this.currentPlaylist ? this.currentPlaylist.songs?.[this.currentSongIndex] : this.songLibrary[this.currentSongIndex];
@@ -9786,7 +9817,7 @@ class AdvancedMusicPlayer {
     root.setAttribute('role', 'dialog');
     root.setAttribute('aria-label', 'Fullscreen lyrics');
     const tools = root.querySelector('.lyrics-stage__tools');
-    [ [ 'fa-layer-group', 'Change lyrics style', () => this.openLyricsModePicker() ], [ 'fa-compress', 'Exit fullscreen (Esc)', () => this.closeLyricsStage() ] ].forEach(([icon, title, onClick]) => {
+    [ [ 'fa-layer-group', 'Change lyrics style', () => this.openLyricsModePicker() ], [ 'fa-compress', this.withCloseKey('Exit fullscreen'), () => this.closeLyricsStage() ] ].forEach(([icon, title, onClick]) => {
       const button = UI.button('', {
         icon,
         size: 'sm',
@@ -9872,6 +9903,7 @@ class AdvancedMusicPlayer {
       stage.raw = NaN;
       stage.lastFrame = performance.now();
       document.body.appendChild(stage.root);
+      this.addDismissLayer(stage.root, () => this.closeLyricsStage());
       document.documentElement.classList.add('lyrics-stage-open');
       const bar = document.querySelector('.now-playing');
       if (bar) {
@@ -9885,7 +9917,6 @@ class AdvancedMusicPlayer {
       stage.resizeObserver.observe(stage.lyrics);
     }
     stage.dirty = true;
-    this.syncLyricsStageKeys();
     cancelAnimationFrame(stage.frame);
     clearTimeout(stage.timer);
     stage.frame = 0;
@@ -9909,31 +9940,8 @@ class AdvancedMusicPlayer {
     this.lyricsStage = null;
     document.documentElement.classList.remove('lyrics-stage-open');
     this.lyricsModeDialog?.close();
-    this.syncLyricsStageKeys();
     if (document.getElementById('lyrics')?.classList.contains('active')) {
       this.renderLyricsTab();
-    }
-  }
-  syncLyricsStageKeys() {
-    const wanted = Boolean(this.lyricsModeDialog || this.lyricsStage?.open);
-    if (wanted === Boolean(this.lyricsStageKeys)) {
-      return;
-    }
-    if (wanted) {
-      this.lyricsStageKeys = event => {
-        if (event.key !== 'Escape') {
-          return;
-        }
-        if (this.lyricsModeDialog) {
-          this.lyricsModeDialog.close();
-        } else {
-          this.closeLyricsStage();
-        }
-      };
-      document.addEventListener('keydown', this.lyricsStageKeys);
-    } else {
-      document.removeEventListener('keydown', this.lyricsStageKeys);
-      this.lyricsStageKeys = null;
     }
   }
   syncLyricsStageInset() {
@@ -10996,14 +11004,8 @@ class AdvancedMusicPlayer {
       }
       this.clearQueue();
     });
-    const onKey = e => {
-      if (e.key === 'Escape') {
-        close();
-      }
-    };
     const close = () => {
       backdrop.remove();
-      document.removeEventListener('keydown', onKey);
       this._queueCloseOverlay = null;
     };
     this._queueCloseOverlay = close;
@@ -11013,7 +11015,7 @@ class AdvancedMusicPlayer {
         close();
       }
     });
-    document.addEventListener('keydown', onKey);
+    this.addDismissLayer(backdrop, close);
     requestAnimationFrame(() => backdrop.classList.add('qv2-backdrop--in'));
   }
   showQueueOverlay() {
@@ -11223,6 +11225,9 @@ class AdvancedMusicPlayer {
     });
     input.addEventListener('keydown', e => {
       if (e.key === 'Escape') {
+        if (input.value || !dropdown.hidden) {
+          e.stopPropagation();
+        }
         dropdown.hidden = true;
         input.value = '';
         return;
@@ -11267,7 +11272,6 @@ class AdvancedMusicPlayer {
     }
     this.syncDisguiseModal();
     this.disguiseDialog.open();
-    document.addEventListener('keydown', this.disguiseEscHandler);
   }
   buildDisguiseModal() {
     const dialog = UI.modal({
@@ -11275,14 +11279,8 @@ class AdvancedMusicPlayer {
       icon: 'fa-user-secret',
       size: 'lg',
       className: 'disguise-modal',
-      bodyClassName: 'disguise-panes',
-      onClose: () => document.removeEventListener('keydown', this.disguiseEscHandler)
+      bodyClassName: 'disguise-panes'
     });
-    this.disguiseEscHandler = e => {
-      if (e.key === 'Escape') {
-        dialog.close();
-      }
-    };
     const tabPane = UI.el('section', 'disguise-pane', '<span class="ui-section-label">Tab disguise</span><p class="disguise-hint">Swap the tab icon and title.</p>');
     const grid = UI.el('div', 'disguise-grid');
     grid.append(...[ {
@@ -11405,18 +11403,11 @@ class AdvancedMusicPlayer {
     frame.src = url;
     const exitBtn = UI.el('button', 'web-embed-overlay__exit', UI.icon('fa-times'));
     exitBtn.type = 'button';
-    exitBtn.title = 'Back to music (Esc)';
+    exitBtn.title = this.withCloseKey('Back to music');
     exitBtn.addEventListener('click', () => this.closeWebEmbed());
     overlay.append(frame, exitBtn);
-    this.webEmbedKeyHandler = e => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        this.closeWebEmbed();
-      }
-    };
-    document.addEventListener('keydown', this.webEmbedKeyHandler, true);
     document.body.appendChild(overlay);
+    this.addDismissLayer(overlay, () => this.closeWebEmbed());
     this.webEmbedOverlay = overlay;
     this.isWebEmbedVisible = true;
   }
@@ -11424,10 +11415,8 @@ class AdvancedMusicPlayer {
     if (!this.webEmbedOverlay) {
       return;
     }
-    document.removeEventListener('keydown', this.webEmbedKeyHandler, true);
     this.webEmbedOverlay.remove();
     this.webEmbedOverlay = null;
-    this.webEmbedKeyHandler = null;
     this.isWebEmbedVisible = false;
   }
   changeFavicon(iconURL) {
@@ -11828,6 +11817,7 @@ class AdvancedMusicPlayer {
     dropdown.appendChild(exportBackupBtn);
     dropdown.appendChild(importBackupBtn);
     document.body.appendChild(dropdown);
+    this.addDismissLayer(dropdown, () => this.hideExportDropdown());
     requestAnimationFrame(() => {
       dropdown.style.opacity = '1';
       dropdown.style.transform = 'translateY(0)';
@@ -15166,7 +15156,6 @@ class AdvancedMusicPlayer {
       size: 'xl',
       className: 'folder-linker',
       bodyClassName: 'folder-linker__body',
-      closeOnEscape: true,
       onClose: () => {
         if (this.folderLinker?.dialog === dialog) {
           this.folderLinker.run++;
@@ -17377,7 +17366,6 @@ class AdvancedMusicPlayer {
       size: 'lg',
       className: 'ytpl-modal',
       bodyClassName: 'ytpl-body',
-      closeOnEscape: true,
       onClose: () => {
         session?.abort();
         session = null;
@@ -18940,7 +18928,7 @@ class AdvancedMusicPlayer {
     this.keybindListener = e => {
       e.preventDefault();
       e.stopPropagation();
-      if (e.code === 'Escape') {
+      if (e.code === 'Escape' && action !== 'closeDialog') {
         this.cancelKeybindRecording();
         return;
       }
@@ -18973,7 +18961,8 @@ class AdvancedMusicPlayer {
       toggleMusicExplorer: 'Toggle Music Explorer',
       seekForward: 'Seek Forward 5s',
       seekBackward: 'Seek Backward 5s',
-      toggleMiniplayer: 'Toggle Miniplayer'
+      toggleMiniplayer: 'Toggle Miniplayer',
+      closeDialog: 'Close Window'
     };
     return actionNames[action] || action;
   }
@@ -20013,11 +20002,6 @@ class AdvancedMusicPlayer {
       }
     });
     closeBtn.addEventListener('click', close);
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && overlay.style.display !== 'none') {
-        close();
-      }
-    });
     document.getElementById('downloadButton').addEventListener('click', open);
     const addFromUrl = () => {
       const id = this.extractYouTubeId(urlInput.value.trim());
@@ -20563,11 +20547,7 @@ class AdvancedMusicPlayer {
       const w = encodeWAV(extractSamples(0, totalSamples / sampleRate), sampleRate);
       setClipForPlayback(w);
       recognize(w);
-    } ], [ addToLibraryBtn, 'click', sendMatchToLibrarySearch ], [ document, 'keydown', e => {
-      if (e.key === 'Escape' && overlay.style.display !== 'none') {
-        closeModal();
-      }
-    } ] ];
+    } ], [ addToLibraryBtn, 'click', sendMatchToLibrarySearch ] ];
     bindings.forEach(([el, evt, fn]) => el?.addEventListener(evt, fn));
   }
   handleListeningStatsToggle(event) {
@@ -20852,19 +20832,12 @@ class AdvancedMusicPlayer {
     let range = this._statsRange === 'lifetime' ? 'lifetime' : '30';
     let buckets = [];
     let observer = null;
-    const onKey = e => {
-      if (e.key === 'Escape') {
-        e.stopPropagation();
-        modal.close();
-      }
-    };
     const modal = UI.modal({
       title: 'Play history',
       size: 'lg',
       bodyClassName: 'ls-song-body',
       onClose: () => {
         observer?.disconnect();
-        document.removeEventListener('keydown', onKey, true);
       }
     });
     const tiles = [ [ 'Last 30 days', this._formatPlayCount(this.get30DayCount(record)) ], [ 'All time', this._formatPlayCount(lifetime) ], [ 'Best day', best ? `${this._formatPlayCount(days[best])} · ${this._statsDateLabel(best, {
@@ -20928,7 +20901,6 @@ class AdvancedMusicPlayer {
     chart.addEventListener('pointerleave', () => {
       tip.hidden = true;
     });
-    document.addEventListener('keydown', onKey, true);
     modal.open();
     render();
     if (typeof ResizeObserver === 'function') {
