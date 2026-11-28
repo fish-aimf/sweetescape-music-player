@@ -1060,8 +1060,7 @@ body[data-playlist-panel="left"] .watermark {
   position: relative;
   overflow: hidden;
 }
-#cancelTimer:hover,
-.reset-keybinds-btn:hover {
+#cancelTimer:hover {
   background: var(--error-hover);
 }
 .specific-time-input button {
@@ -1238,7 +1237,6 @@ body[data-playlist-panel="left"] .watermark {
   justify-content: center;
   transition: 0.3s;
 }
-.keybind-items,
 .np-speed-options.show {
   display: flex;
   flex-direction: column;
@@ -3282,62 +3280,48 @@ body:has(#ytPlayer.fullscreen-video) {
   margin-top: 15px;
   transition: background-color 0.3s;
 }
-.reset-keybinds-btn {
-  align-items: center;
-  display: flex;
-  border-image: initial;
-  cursor: pointer;
-}
 .playlist-card {
   gap: 12px;
   cursor: pointer;
   user-select: none;
 }
 .keybinds-content {
-  padding: 20px;
-  max-height: 60vh;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 .keybinds-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 30px;
-  padding-bottom: 15px;
-  border-bottom: 2px solid var(--border-color);
-}
-.keybinds-header h3 {
-  margin: 0 0 5px;
-  color: var(--text-primary);
-  font-size: 1.4em;
-  font-weight: 600;
+  gap: 16px;
 }
 .keybinds-header p {
   margin: 0;
   color: var(--text-secondary);
   font-size: 0.9em;
+  line-height: 1.5;
 }
-.reset-keybinds-btn {
-  background: var(--error-color);
-  color: var(--button-text-color);
-  border: currentcolor;
-  padding: 10px 15px;
-  border-radius: 8px;
-  font-size: 0.9em;
-  gap: 8px;
-  transition: 0.3s;
+.keybinds-header .ui-btn {
+  flex-shrink: 0;
+}
+.keybinds-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr));
+  gap: 16px;
+  align-items: start;
 }
 .keybind-category {
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  padding: 20px;
+  padding: 16px;
   box-shadow: 0 2px 8px var(--shadow-color);
 }
 .keybind-category h4 {
-  margin: 0 0 15px;
+  margin: 0 0 6px;
   color: var(--text-primary);
-  font-size: 1.1em;
+  font-size: 1.05em;
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -3345,38 +3329,90 @@ body:has(#ytPlayer.fullscreen-video) {
   padding-bottom: 10px;
   border-bottom: 1px solid var(--border-color);
 }
-.keybind-input {
-  width: 140px;
-  padding: 8px 10px;
-  text-align: center;
-  font-weight: 600;
-  font-size: 0.85em;
-  color: var(--text-primary);
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  cursor: pointer;
-  transition:
-    border-color 0.15s,
-    background 0.15s;
+.keybind-category[hidden],
+.keybind-item[hidden],
+.keybind-adders[hidden] {
+  display: none;
 }
-.keybind-input.recording,
-.keybind-input.unbound:hover,
-.keybind-input:hover,
-.save-theme-row input[type="text"]:focus,
-.saved-theme-item:hover {
-  border-color: var(--accent-color);
+.keybind-items {
+  display: flex;
+  flex-direction: column;
 }
 .keybind-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 15px;
+  gap: 12px;
+  min-height: 44px;
+  padding: 7px 0;
 }
-.keybind-input.recording {
-  background: var(--accent-color);
-  color: var(--button-text-color);
+.keybind-item + .keybind-item {
+  border-top: 1px solid var(--border-color);
+}
+.keybind-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--text-primary);
+  font-size: 0.9em;
+}
+.keybind-label--value {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.keybind-label--value .keybind-value {
+  width: auto;
+  min-height: 30px;
+  padding-top: 0.2rem;
+  padding-bottom: 0.2rem;
+  font-size: inherit;
+}
+.keybind-label--value input.keybind-value {
+  width: 76px;
+}
+.keybind-unit {
+  color: var(--text-secondary);
+}
+.keybind-keys {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+}
+.keybind-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 28px;
+  padding: 0 2px 0 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.8em;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.keybind-chip kbd {
+  font: inherit;
+}
+.keybind-then {
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+.keybind-chip--waits {
+  border-style: dashed;
+}
+.keybind-chip--recording {
+  padding: 0 8px;
+  border-color: var(--accent-color);
+  color: var(--text-secondary);
   animation: 1s infinite recording-pulse;
+}
+.keybind-chip--recording kbd {
+  color: var(--text-primary);
 }
 @keyframes recording-pulse {
   0%,
@@ -3384,67 +3420,36 @@ body:has(#ytPlayer.fullscreen-video) {
     opacity: 1;
   }
   50% {
-    opacity: 0.8;
+    opacity: 0.7;
   }
 }
-.keybind-items {
+.keybind-keys .ui-btn {
+  width: 28px;
+  min-height: 28px;
+  padding: 0;
+  justify-content: center;
+}
+.keybind-chip .ui-btn {
+  width: 22px;
+  min-height: 22px;
+  border-color: transparent;
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+.keybind-adders {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
-  max-height: 350px;
-  overflow-y: auto;
-  padding-right: 8px;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
 }
-.keybind-items::-webkit-scrollbar {
-  width: 6px;
-}
-.keybind-items::-webkit-scrollbar-track {
-  background: var(--border-color);
-  border-radius: 3px;
-}
-.keybind-items::-webkit-scrollbar-thumb {
-  background: var(--accent-color);
-  border-radius: 3px;
-}
-.keybind-items::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-hover);
-}
-.keybind-input.unbound {
+.keybinds-empty {
+  margin: 0;
   color: var(--text-secondary);
-  font-style: italic;
-  opacity: 0.7;
-  background: var(--bg-secondary);
+  text-align: center;
 }
-.keybind-input.unbound:hover {
-  opacity: 1;
-  background: var(--accent-color);
-  color: var(--button-text-color);
-}
-.keybind-item label[for*="2"]::after,
-.keybind-item:has(input[data-action*="2"]) label::after {
-  content: " (Alt)";
-  color: var(--text-secondary);
-  font-size: 0.8em;
-  font-style: italic;
-}
-.keybind-input.conflict {
-  border-color: var(--error-color);
-  background: rgba(255, 107, 107, 0.1);
-}
-.keybind-input.success {
-  border-color: #4caf50;
-  background: rgba(76, 175, 80, 0.1);
-  animation: 0.5s success-flash;
-}
-@keyframes success-flash {
-  0% {
-    background: rgba(76, 175, 80, 0.3);
-    transform: scale(1.02);
-  }
-  100% {
-    background: rgba(76, 175, 80, 0.1);
-    transform: scale(1);
-  }
+.keybind-confirm {
+  margin: 0;
+  line-height: 1.5;
 }
 @media (max-width: 768px) {
   .playlist-export-modal {
@@ -3511,26 +3516,6 @@ body:has(#ytPlayer.fullscreen-video) {
   .find-songs-content {
     margin-right: 0;
   }
-  .keybinds-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-  .keybinds-header {
-    flex-direction: column;
-    gap: 15px;
-    align-items: center;
-    text-align: center;
-  }
-  .keybind-item {
-    gap: 10px;
-  }
-  .keybind-input {
-    min-width: 80px;
-    font-size: 0.85em;
-  }
-  .keybind-items {
-    max-height: 300px;
-  }
 }
 @media (max-width: 480px) {
   .discovery-shuffle-btn span {
@@ -3550,18 +3535,20 @@ body:has(#ytPlayer.fullscreen-video) {
   .timer-status {
     font-size: 0.9em;
   }
-  .keybind-category,
-  .keybinds-content {
-    padding: 15px;
+  .keybind-category {
+    padding: 14px;
   }
+  .keybinds-header,
   .keybind-item {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
     gap: 8px;
   }
-  .keybind-input {
-    align-self: stretch;
-    min-width: auto;
+  .keybinds-header .ui-btn {
+    align-self: flex-start;
+  }
+  .keybind-keys {
+    justify-content: flex-start;
   }
 }
 .modify-library-container {

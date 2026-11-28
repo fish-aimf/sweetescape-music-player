@@ -92,7 +92,8 @@ Read the "UI Design System" section of `ARCHITECTURE.md` first. Short version:
   `UI.modal({title, icon, size, className, bodyClassName, dismissible, onClose})` →
   `{overlay, shell, header, heading, body, footer, close, addFooter, open}`,
   and `UI.button(label, {variant, size, icon, block, onClick})`.
-- Esc is the rebindable `closeDialog` keybind, handled once in `setupKeyboardControls`. It closes
+- Esc is the rebindable `closeDialog` keybind, handled once in `_onShortcutKey` (see Keyboard shortcuts in
+  `ARCHITECTURE.md`). It clears notifications and closes
   the topmost visible `.ui-overlay` by clicking its own `.ui-modal__close`, so every dialog needs
   one. Other layers (menus, the queue, fullscreen views) register with `addDismissLayer(el, close)`
   and drop out when removed from the DOM. Never add a per-dialog Escape listener: one press would

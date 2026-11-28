@@ -77,9 +77,16 @@ The file has four layers, in order:
   `{ overlay, shell, header, heading, body, footer, close, addFooter, open }`, and
   `UI.button(label, { variant, size, icon, block, onClick })` builds a `.ui-btn`.
   Prefer these over hand-rolling `document.createElement` chains and inline styles.
-- The Close Window keybind (`closeDialog`, Esc by default) closes the topmost visible `.ui-overlay`
-  through its `.ui-modal__close`, or a layer registered with `addDismissLayer(el, close)`.
-  Dialogs do not listen for Escape themselves.
+- The Close Window keybind (`closeDialog`, Esc by default) clears notifications (`dismissNotifications`)
+  and closes the topmost visible `.ui-overlay` through its `.ui-modal__close`, or a layer registered
+  with `addDismissLayer(el, close)`. Dialogs do not listen for Escape themselves.
+- Keyboard shortcuts: `KEYBIND_ACTIONS` (id → group, label, default binds, repeats) and `KEYBIND_VALUES`
+  (actions that carry a value, such as Set volume to) are the single source of truth; the settings panel
+  is rendered from them. A bind is a string of space-separated steps, each `Ctrl+Alt+Shift+Meta+` then
+  a `KeyboardEvent.code` (`Space`, `Ctrl+KeyK`, `KeyG KeyT`). `_buildKeyIndex` turns them into one
+  `Map` plus a prefix `Set`, so a key press is two lookups. Saved as `keybindsV2` in `userSettings`;
+  the old one-key-per-action `keybinds` row is only read, to migrate it. Add a new action to
+  `KEYBIND_ACTIONS` and a `case` in `runKeybind`; existing users get its default unless the key is taken.
 - No comments in source files; naming and this document carry the intent.
 
 ### Adding a new dialog

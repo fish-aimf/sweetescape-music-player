@@ -426,6 +426,128 @@ class AdvancedMusicPlayer {
   } ];
   static YOUTUBE_HOST = 'https://www.youtube-nocookie.com';
   static DISCORD_APP_VERSION = '2.2.0';
+  static KEYBIND_GROUPS = [ [ 'playback', 'Playback', 'fa-play' ], [ 'volume', 'Volume and speed', 'fa-volume-up' ], [ 'interface', 'Interface', 'fa-desktop' ] ];
+  static KEYBIND_ACTIONS = {
+    togglePlayPause: [ 'playback', 'Play or pause', [ 'Space', 'KeyK' ] ],
+    previousSong: [ 'playback', 'Previous song', [ 'ArrowLeft', 'KeyA' ] ],
+    nextSong: [ 'playback', 'Next song', [ 'ArrowRight', 'KeyD' ] ],
+    restartSong: [ 'playback', 'Restart the song', [ 'KeyR' ] ],
+    seekBackward: [ 'playback', 'Back 5 seconds', [ 'KeyF' ], true ],
+    seekForward: [ 'playback', 'Forward 5 seconds', [ 'KeyG' ], true ],
+    toggleLoop: [ 'playback', 'Loop this song', [ 'KeyL' ] ],
+    togglePlaylistLoop: [ 'playback', 'Loop the playlist', [] ],
+    toggleAutoplay: [ 'playback', 'Autoplay on or off', [] ],
+    shuffleQueue: [ 'playback', 'Shuffle the queue', [] ],
+    toggleFavorite: [ 'playback', 'Favourite the playing song', [] ],
+    volumeUp: [ 'volume', 'Volume up 10%', [ 'ArrowUp' ], true ],
+    volumeDown: [ 'volume', 'Volume down 10%', [ 'ArrowDown' ], true ],
+    volumeUpFine: [ 'volume', 'Volume up 1%', [ 'Equal' ], true ],
+    volumeDownFine: [ 'volume', 'Volume down 1%', [ 'Minus' ], true ],
+    toggleMute: [ 'volume', 'Mute or unmute', [] ],
+    speedUp: [ 'volume', 'Faster', [], true ],
+    speedDown: [ 'volume', 'Slower', [], true ],
+    toggleControlBar: [ 'interface', 'Show or hide the control bar', [ 'KeyH' ] ],
+    togglePlaylistSidebar: [ 'interface', 'Playlist side panel', [ 'KeyM', 'Tab' ] ],
+    cycleTab: [ 'interface', 'Next tab', [ 'KeyQ' ] ],
+    showQueue: [ 'interface', 'Queue', [ 'KeyY' ] ],
+    toggleVideoFullscreen: [ 'interface', 'Video mode', [ 'KeyU' ] ],
+    toggleMiniplayer: [ 'interface', 'Miniplayer', [ 'KeyI' ] ],
+    toggleMusicExplorer: [ 'interface', 'Music Explorer', [ 'KeyO' ] ],
+    toggleLyricsStage: [ 'interface', 'Fullscreen lyrics', [] ],
+    focusSearch: [ 'interface', 'Search the library', [] ],
+    toggleTheme: [ 'interface', 'Next theme', [ 'KeyP' ] ],
+    openTimer: [ 'interface', 'Sleep timer', [ 'KeyT' ] ],
+    openSettings: [ 'interface', 'Settings', [] ],
+    openShortcuts: [ 'interface', 'Keyboard shortcuts', [] ],
+    closeDialog: [ 'interface', 'Close the window on top and clear notifications', [ 'Escape' ] ]
+  };
+  static KEYBIND_VALUES = {
+    seekBy: {
+      group: 'playback',
+      add: 'Skip by…',
+      label: 'Skip by',
+      unit: ' seconds',
+      min: -600,
+      max: 600,
+      step: 1,
+      value: 10,
+      repeat: true
+    },
+    seekToPercent: {
+      group: 'playback',
+      add: 'Jump to…',
+      label: 'Jump to',
+      unit: '% of the song',
+      min: 0,
+      max: 99,
+      step: 1,
+      value: 50
+    },
+    setVolume: {
+      group: 'volume',
+      add: 'Set volume to…',
+      label: 'Set volume to',
+      unit: '%',
+      min: 0,
+      max: 100,
+      step: 1,
+      value: 50
+    },
+    setSpeed: {
+      group: 'volume',
+      add: 'Set speed to…',
+      label: 'Set speed to',
+      unit: 'x',
+      min: 0.25,
+      max: 2,
+      step: 0.25,
+      value: 1
+    },
+    goToTab: {
+      group: 'interface',
+      add: 'Open a tab…',
+      label: 'Open the tab',
+      options: {
+        nowplaying: 'Now Playing',
+        library: 'Library',
+        playlists: 'Playlists',
+        lyrics: 'Lyrics'
+      },
+      value: 'library'
+    }
+  };
+  static KEYBIND_VALUE_DEFAULTS = [ [ 'setVolume', 100, [ 'Digit0' ] ], [ 'setVolume', 90, [ 'Digit9' ] ], [ 'setVolume', 80, [ 'Digit8' ] ], [ 'setVolume', 70, [ 'Digit7' ] ] ];
+  static KEY_NAMES = {
+    Escape: 'Esc',
+    ArrowLeft: '←',
+    ArrowRight: '→',
+    ArrowUp: '↑',
+    ArrowDown: '↓',
+    Equal: '=',
+    Minus: '-',
+    Backquote: '`',
+    BracketLeft: '[',
+    BracketRight: ']',
+    Backslash: '\\',
+    IntlBackslash: '\\',
+    Semicolon: ';',
+    Quote: "'",
+    Comma: ',',
+    Period: '.',
+    Slash: '/',
+    PageUp: 'Page Up',
+    PageDown: 'Page Down',
+    CapsLock: 'Caps Lock',
+    ContextMenu: 'Menu',
+    NumpadAdd: 'Num +',
+    NumpadSubtract: 'Num -',
+    NumpadMultiply: 'Num *',
+    NumpadDivide: 'Num /',
+    NumpadDecimal: 'Num .',
+    NumpadEnter: 'Num Enter'
+  };
+  static MODIFIER_KEY = /^(Shift|Control|Alt|Meta|OS)(Left|Right)?$/;
+  static NON_TEXT_INPUTS = new Set([ 'range', 'checkbox', 'radio', 'button', 'submit', 'reset', 'file', 'color' ]);
   static BACKUP_STORES = [ 'settings', 'userSettings', 'recentlyPlayed', 'listeningStats' ];
   static BACKUP_LOCAL_KEYS = [ 'controlBarVisible', 'controlsLayout', 'disguiseCustomUrl', 'downloadHistory', 'faviconDisguise', 'lyricsStageMode', 'mixLabSeeds', 'musicPlayer_lastPosition', 'musicPlayer_listeningTime', 'musicPlayer_speed', 'musicPlayer_volume', 'playlistSidebarMode', 'playlistSidebarSides' ];
   static MIX_LAB_MAX_SEEDS = 5;
@@ -622,38 +744,14 @@ class AdvancedMusicPlayer {
     this.closeImportModalBtn = null;
     this.importSongsBtn = null;
     this.importSongsTextarea = null;
-    this.defaultKeybinds = {
-      togglePlayPause: 'Space',
-      togglePlayPause2: 'KeyK',
-      previousSong: 'ArrowLeft',
-      previousSong2: 'KeyA',
-      nextSong: 'ArrowRight',
-      nextSong2: 'KeyD',
-      volumeUp: 'ArrowUp',
-      volumeDown: 'ArrowDown',
-      toggleLoop: 'KeyL',
-      restartSong: 'KeyR',
-      toggleTheme: 'KeyP',
-      openTimer: 'KeyT',
-      volumeUpFine: 'Equal',
-      volumeDownFine: 'Minus',
-      toggleControlBar: 'KeyH',
-      togglePlaylistSidebar: 'KeyM',
-      togglePlaylistSidebar2: 'Tab',
-      cycleTab: 'KeyQ',
-      toggleVideoFullscreen: 'KeyU',
-      showQueue: 'KeyY',
-      toggleMusicExplorer: 'KeyO',
-      seekForward: 'KeyG',
-      seekBackward: 'KeyF',
-      toggleMiniplayer: 'KeyI',
-      closeDialog: 'Escape'
-    };
-    this.currentKeybinds = {
-      ...this.defaultKeybinds
-    };
-    this.isRecordingKeybind = false;
-    this.recordingAction = null;
+    this.keybinds = {};
+    this.valueKeybinds = [];
+    this._keyIndex = new Map();
+    this._keyPrefixes = new Set();
+    this._keySeq = '';
+    this._keySeqTimer = 0;
+    this._keyRecording = null;
+    this._applyKeybinds();
     this.discordWs = null;
     this.discordConnected = false;
     this.discordEnabled = false;
@@ -1266,11 +1364,7 @@ class AdvancedMusicPlayer {
   }
   _setupDelegatedListeners() {
     document.addEventListener('click', e => {
-      if (e.target.classList.contains('keybind-input')) {
-        const action = e.target.dataset.action;
-        this.startKeybindRecording(action, e.target);
-      }
-      if (e.target.id === 'resetKeybindsBtn') {
+      if (e.target.closest('#resetKeybindsBtn')) {
         this.resetKeybindsToDefault();
       }
       const settingsTile = e.target.closest('.settings-tile');
@@ -1376,29 +1470,7 @@ class AdvancedMusicPlayer {
     return this.guidePromise;
   }
   setupKeyboardControls() {
-    document.addEventListener('keydown', e => {
-      if (e.ctrlKey || e.metaKey || e.altKey) {
-        return;
-      }
-      if (e.code === this.currentKeybinds.closeDialog && this.closeTopLayer(e)) {
-        e.preventDefault();
-        return;
-      }
-      if (document.activeElement.tagName === 'INPUT') {
-        const inputType = document.activeElement.type;
-        if (inputType !== 'range' && inputType !== 'checkbox' && inputType !== 'radio') {
-          return;
-        }
-      }
-      if (document.activeElement.tagName === 'TEXTAREA' || document.activeElement.isContentEditable) {
-        return;
-      }
-      const preventDefaultCodes = Object.values(this.currentKeybinds);
-      if (preventDefaultCodes.includes(e.code)) {
-        e.preventDefault();
-      }
-      this.handleKeybind(e.code);
-    });
+    document.addEventListener('keydown', e => this._onShortcutKey(e));
   }
   addDismissLayer(el, close) {
     this.dismissLayers.forEach((_, layer) => {
@@ -1445,22 +1517,16 @@ class AdvancedMusicPlayer {
     }
     return Boolean(b.compareDocumentPosition(a) & Node.DOCUMENT_POSITION_FOLLOWING);
   }
-  closeTopLayer(event) {
-    const field = document.activeElement;
-    const typing = field && (field.tagName === 'TEXTAREA' || field.isContentEditable || field.tagName === 'INPUT' && ![ 'range', 'checkbox', 'radio', 'button', 'submit', 'reset', 'file', 'color' ].includes(field.type));
-    if (typing && (event.key.length === 1 || /^(Backspace|Delete|Enter|Tab|Arrow|Home|End|Page)/.test(event.key))) {
-      return false;
-    }
+  _typingKey(event) {
+    return this._isTyping() && !event.ctrlKey && !event.altKey && !event.metaKey && (event.key.length === 1 || /^(Backspace|Delete|Enter|Tab|Arrow|Home|End|Page)/.test(event.key));
+  }
+  closeTopLayer() {
     const layer = this.topLayer();
     if (!layer) {
       return false;
     }
     layer.close();
     return true;
-  }
-  withCloseKey(label) {
-    const key = this.currentKeybinds.closeDialog;
-    return key ? `${label} (${this.getKeyDisplayName(key)})` : label;
   }
   renderInitialState() {
     this.renderPlaylists();
@@ -6837,7 +6903,7 @@ class AdvancedMusicPlayer {
     this.setVolume(newVolume);
     this.showVolumeIndicator(newVolume);
   }
-  showVolumeIndicator(volumeLevel) {
+  showVolumeIndicator(volumeLevel, text = `Volume: ${Math.round(volumeLevel)}%`) {
     let volumeIndicator = document.getElementById('volumeIndicator');
     if (!volumeIndicator) {
       volumeIndicator = document.createElement('div');
@@ -6855,7 +6921,7 @@ class AdvancedMusicPlayer {
       volumeIndicator.style.transition = 'opacity 0.3s';
       document.body.appendChild(volumeIndicator);
     }
-    volumeIndicator.textContent = `Volume: ${Math.round(volumeLevel)}%`;
+    volumeIndicator.textContent = text;
     volumeIndicator.style.opacity = '1';
     clearTimeout(this.volumeIndicatorTimeout);
     this.volumeIndicatorTimeout = setTimeout(() => {
@@ -7957,8 +8023,8 @@ class AdvancedMusicPlayer {
     const hideBtn = document.createElement('button');
     hideBtn.className = 'hide-details-btn';
     hideBtn.innerHTML = '−';
-    const keybindKey = this.currentKeybinds.toggleMusicExplorer || 'KeyO';
-    hideBtn.title = `[${this.getKeyDisplayName(keybindKey)}] Hide Music Explorer`;
+    const explorerKey = this.keybinds.toggleMusicExplorer[0];
+    hideBtn.title = explorerKey ? `[${this.formatKeybind(explorerKey)}] Hide Music Explorer` : 'Hide Music Explorer';
     hideBtn.style.cssText = `background:transparent;border:none;color:var(--bg-primary);font-size:1.2rem;cursor:pointer;padding:4px 8px;border-radius:4px;transition:all 0.2s ease;line-height:1;font-weight:bold;flex-shrink:0;`;
     hideBtn.addEventListener('mouseenter', () => {
       hideBtn.style.color = 'var(--hover-color)';
@@ -12250,7 +12316,6 @@ class AdvancedMusicPlayer {
     this.loadDiscoverMoreSettings();
     this.loadLibrarySortSetting();
     this.loadLibraryReverseSetting();
-    this.loadKeybindsSettings();
     this.loadSavedThemesList();
   }
   showSettingsSection(name) {
@@ -12278,6 +12343,9 @@ class AdvancedMusicPlayer {
     });
     if (name === 'offline') {
       this.renderOfflineFolder();
+    }
+    if (name === 'keybinds') {
+      this.renderKeybindsPanel();
     }
     if (name === 'feedback') {
       const iframe = document.querySelector('#feedbackPanel iframe');
@@ -13277,7 +13345,7 @@ class AdvancedMusicPlayer {
     setTimeout(() => notification.style.opacity = '1', 10);
     setTimeout(() => {
       notification.style.opacity = '0';
-      setTimeout(() => document.body.removeChild(notification), 300);
+      setTimeout(() => notification.remove(), 300);
     }, 3e3);
   }
   exportTheme() {
@@ -18835,234 +18903,827 @@ class AdvancedMusicPlayer {
         resolve();
         return;
       }
-      const transaction = this.db.transaction([ 'userSettings' ], 'readonly');
-      const store = transaction.objectStore('userSettings');
-      const request = store.get('keybinds');
-      request.onsuccess = event => {
-        if (event.target.result && event.target.result.settings) {
-          const saved = event.target.result.settings;
-          this.currentKeybinds = {
-            ...this.defaultKeybinds
-          };
-          Object.keys(saved).forEach(action => {
-            if (action in this.defaultKeybinds) {
-              this.currentKeybinds[action] = saved[action];
-            }
-          });
-        }
+      try {
+        const transaction = this.db.transaction([ 'userSettings' ], 'readonly');
+        const store = transaction.objectStore('userSettings');
+        const current = store.get('keybindsV2');
+        const legacy = store.get('keybinds');
+        transaction.oncomplete = () => {
+          const saved = current.result?.settings;
+          this._applyKeybinds(saved && typeof saved === 'object' ? saved : this._migrateKeybinds(legacy.result?.settings));
+          resolve();
+        };
+        transaction.onerror = () => resolve();
+        transaction.onabort = () => resolve();
+      } catch (error) {
+        console.warn('Could not load keyboard shortcuts:', error);
         resolve();
-      };
-      request.onerror = () => resolve();
+      }
     });
   }
+  _migrateKeybinds(legacy) {
+    const binds = {};
+    if (legacy && typeof legacy === 'object') {
+      Object.entries(legacy).forEach(([action, code]) => {
+        const id = action.replace(/2$/, '');
+        if (Object.hasOwn(AdvancedMusicPlayer.KEYBIND_ACTIONS, id) && typeof code === 'string') {
+          binds[id] = binds[id] || [];
+          if (code) {
+            binds[id].push(code);
+          }
+        }
+      });
+    }
+    return {
+      binds
+    };
+  }
+  _applyKeybinds({binds, values} = {}) {
+    const actions = AdvancedMusicPlayer.KEYBIND_ACTIONS;
+    const used = new Set();
+    const claim = list => (Array.isArray(list) ? list : []).filter(bind => {
+      if (typeof bind !== 'string' || !bind || used.has(bind)) {
+        return false;
+      }
+      used.add(bind);
+      return true;
+    });
+    const saved = binds && typeof binds === 'object' ? binds : {};
+    const next = {};
+    Object.keys(actions).forEach(id => {
+      if (Array.isArray(saved[id])) {
+        next[id] = claim(saved[id]);
+      }
+    });
+    const kept = Array.isArray(values) ? values.filter(item => item && Object.hasOwn(AdvancedMusicPlayer.KEYBIND_VALUES, item.type)).map(item => ({
+      type: item.type,
+      value: this._keybindValue(item.type, item.value),
+      keys: claim(item.keys)
+    })) : null;
+    Object.keys(actions).forEach(id => {
+      next[id] = next[id] || claim(actions[id][2]);
+    });
+    this.valueKeybinds = kept || AdvancedMusicPlayer.KEYBIND_VALUE_DEFAULTS.map(([type, value, keys]) => ({
+      type,
+      value,
+      keys: claim(keys)
+    }));
+    this.keybinds = next;
+    this._buildKeyIndex();
+  }
+  _keybindValue(type, raw) {
+    const spec = AdvancedMusicPlayer.KEYBIND_VALUES[type];
+    if (spec.options) {
+      return Object.hasOwn(spec.options, raw) ? raw : spec.value;
+    }
+    const number = Number(raw);
+    if (raw === '' || !Number.isFinite(number)) {
+      return spec.value;
+    }
+    return Math.min(spec.max, Math.max(spec.min, Math.round(number / spec.step) * spec.step));
+  }
+  _buildKeyIndex() {
+    const index = new Map();
+    const prefixes = new Set();
+    const add = (bind, target) => {
+      index.set(bind, target);
+      for (let end = bind.indexOf(' '); end !== -1; end = bind.indexOf(' ', end + 1)) {
+        prefixes.add(bind.slice(0, end));
+      }
+    };
+    Object.entries(this.keybinds).forEach(([id, list]) => list.forEach(bind => add(bind, id)));
+    this.valueKeybinds.forEach(item => item.keys.forEach(bind => add(bind, item)));
+    this._keyIndex = index;
+    this._keyPrefixes = prefixes;
+  }
   saveKeybinds() {
+    this._buildKeyIndex();
     return new Promise((resolve, reject) => {
       if (!this.db) {
-        reject('Database not initialized');
+        reject(new Error('Database not initialized'));
         return;
       }
       const transaction = this.db.transaction([ 'userSettings' ], 'readwrite');
-      const store = transaction.objectStore('userSettings');
-      store.put({
-        category: 'keybinds',
-        settings: this.currentKeybinds
+      transaction.objectStore('userSettings').put({
+        category: 'keybindsV2',
+        settings: {
+          binds: this.keybinds,
+          values: this.valueKeybinds
+        }
       });
       transaction.oncomplete = () => resolve();
-      transaction.onerror = event => reject('Could not save keybinds');
-    });
+      transaction.onerror = () => reject(transaction.error);
+    }).catch(error => console.error('Could not save keyboard shortcuts:', error));
   }
-  loadKeybindsSettings() {
-    const keybindInputs = document.querySelectorAll('.keybind-input');
-    keybindInputs.forEach(input => {
-      const action = input.dataset.action;
-      input.classList.remove('unbound');
-      const keyCode = this.currentKeybinds[action];
-      if (keyCode && keyCode !== '') {
-        input.value = this.getKeyDisplayName(keyCode);
-      } else {
-        input.value = 'Not Set';
-        input.classList.add('unbound');
-      }
-    });
+  _keyStep(event) {
+    return `${event.ctrlKey ? 'Ctrl+' : ''}${event.altKey ? 'Alt+' : ''}${event.shiftKey ? 'Shift+' : ''}${event.metaKey ? 'Meta+' : ''}${event.code}`;
   }
-  getKeyDisplayName(code) {
-    if (!code || code === '') {
-      return 'Not Set';
-    }
-    const keyNames = {
-      Space: 'Space',
-      Tab: 'Tab',
-      Enter: 'Enter',
-      ArrowLeft: '← Left',
-      ArrowRight: '→ Right',
-      ArrowUp: '↑ Up',
-      ArrowDown: '↓ Down',
-      Equal: '+ (Plus)',
-      Minus: '- (Minus)',
-      Escape: 'Esc',
-      Backspace: 'Backspace'
-    };
-    if (code.startsWith('Key')) {
-      return code.replace('Key', '');
-    }
-    if (code.startsWith('Digit')) {
-      return code.replace('Digit', '');
-    }
-    if (code.startsWith('Numpad')) {
-      return 'Num ' + code.replace('Numpad', '');
-    }
-    if (code.startsWith('F') && code.length <= 3) {
-      return code;
-    }
-    return keyNames[code] || code;
+  _isTyping() {
+    const field = document.activeElement;
+    return Boolean(field) && (field.isContentEditable || field.tagName === 'TEXTAREA' || field.tagName === 'INPUT' && !AdvancedMusicPlayer.NON_TEXT_INPUTS.has(field.type));
   }
-  startKeybindRecording(action, inputElement) {
-    if (this.isRecordingKeybind) {
-      this.stopKeybindRecording();
-    }
-    this.isRecordingKeybind = true;
-    this.recordingAction = action;
-    this.recordingInput = inputElement;
-    inputElement.value = 'Press a key...';
-    inputElement.classList.add('recording');
-    this.keybindListener = e => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (e.code === 'Escape' && action !== 'closeDialog') {
-        this.cancelKeybindRecording();
-        return;
-      }
-      this.recordKeybind(e.code);
-    };
-    document.addEventListener('keydown', this.keybindListener, true);
-  }
-  getActionDisplayName(action) {
-    const actionNames = {
-      togglePlayPause: 'Play/Pause',
-      togglePlayPause2: 'Play/Pause (Alt)',
-      previousSong: 'Previous Song',
-      previousSong2: 'Previous Song (Alt)',
-      nextSong: 'Next Song',
-      nextSong2: 'Next Song (Alt)',
-      volumeUp: 'Volume Up',
-      volumeDown: 'Volume Down',
-      toggleLoop: 'Toggle Loop',
-      restartSong: 'Restart Song',
-      toggleTheme: 'Toggle Theme',
-      openTimer: 'Open Timer',
-      volumeUpFine: 'Volume Up (Fine)',
-      volumeDownFine: 'Volume Down (Fine)',
-      toggleControlBar: 'Toggle Control Bar',
-      togglePlaylistSidebar: 'Toggle Sidebar',
-      togglePlaylistSidebar2: 'Toggle Sidebar (Alt)',
-      cycleTab: 'Cycle Tab',
-      toggleVideoFullscreen: 'Toggle Fullscreen',
-      showQueue: 'Show Queue',
-      toggleMusicExplorer: 'Toggle Music Explorer',
-      seekForward: 'Seek Forward 5s',
-      seekBackward: 'Seek Backward 5s',
-      toggleMiniplayer: 'Toggle Miniplayer',
-      closeDialog: 'Close Window'
-    };
-    return actionNames[action] || action;
-  }
-  recordKeybind(keyCode) {
-    if (!this.isRecordingKeybind) {
+  _onShortcutKey(e) {
+    if (e.isComposing || !e.code || AdvancedMusicPlayer.MODIFIER_KEY.test(e.code)) {
       return;
     }
-    const conflictingAction = Object.keys(this.currentKeybinds).find(action => this.currentKeybinds[action] === keyCode && action !== this.recordingAction);
-    if (conflictingAction) {
-      const currentActionBase = this.recordingAction.replace(/2$/, '');
-      const conflictActionBase = conflictingAction.replace(/2$/, '');
-      if (currentActionBase !== conflictActionBase) {
-        alert(`Key "${this.getKeyDisplayName(keyCode)}" is already used for "${this.getActionDisplayName(conflictingAction)}"!`);
-        this.cancelKeybindRecording();
-        return;
+    const index = this._keyIndex;
+    const strict = this._keyStep(e);
+    if (this._isTyping()) {
+      this._clearKeySequence();
+      const target = index.get(strict);
+      if (target !== undefined && (target === 'closeDialog' || /(^|\+)(Ctrl|Alt|Meta)\+/.test(strict)) && this.runKeybind(target, e)) {
+        e.preventDefault();
       }
-      const userChoice = confirm(`Key "${this.getKeyDisplayName(keyCode)}" is already used for the same action. ` + `Click OK to swap the keys, or Cancel to keep both.`);
-      if (userChoice) {
-        this.currentKeybinds[conflictingAction] = '';
+      return;
+    }
+    const loose = e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey ? e.code : strict;
+    const match = prefix => {
+      for (const step of strict === loose ? [ strict ] : [ strict, loose ]) {
+        const seq = prefix ? `${prefix} ${step}` : step;
+        if (index.has(seq) || this._keyPrefixes.has(seq)) {
+          return seq;
+        }
       }
+      return '';
+    };
+    if (e.repeat) {
+      const seq = this._keySeq ? '' : match('');
+      if (seq) {
+        e.preventDefault();
+        const target = index.get(seq);
+        if (target !== undefined && !this._keyPrefixes.has(seq) && this._keybindRepeats(target)) {
+          this.runKeybind(target, e);
+        }
+      }
+      return;
     }
-    this.currentKeybinds[this.recordingAction] = keyCode;
-    this.recordingInput.value = this.getKeyDisplayName(keyCode);
-    this.recordingInput.classList.remove('recording');
-    this.saveKeybinds().then(() => {
-      this.loadKeybindsSettings();
-    }).catch(console.error);
-    this.stopKeybindRecording();
-  }
-  cancelKeybindRecording() {
-    if (this.recordingInput) {
-      this.recordingInput.value = this.getKeyDisplayName(this.currentKeybinds[this.recordingAction]);
-      this.recordingInput.classList.remove('recording');
+    const pending = this._keySeq;
+    this._clearKeySequence();
+    let seq = pending ? match(pending) : '';
+    if (pending && !seq && index.has(pending)) {
+      this.runKeybind(index.get(pending), null);
     }
-    this.stopKeybindRecording();
-  }
-  stopKeybindRecording() {
-    if (this.keybindListener) {
-      document.removeEventListener('keydown', this.keybindListener, true);
-      this.keybindListener = null;
+    seq = seq || match('');
+    if (!seq) {
+      return;
     }
-    this.isRecordingKeybind = false;
-    this.recordingAction = null;
-    this.recordingInput = null;
-  }
-  resetKeybindsToDefault() {
-    if (confirm('Reset all keybinds to default?')) {
-      this.currentKeybinds = {
-        ...this.defaultKeybinds
-      };
-      this.saveKeybinds().then(() => {
-        this.loadKeybindsSettings();
-      }).catch(console.error);
+    e.preventDefault();
+    const target = index.get(seq);
+    if (!this._keyPrefixes.has(seq)) {
+      this.runKeybind(target, e);
+      return;
     }
+    this._keySeq = seq;
+    this._keySeqTimer = setTimeout(() => {
+      this._keySeq = '';
+      if (target !== undefined) {
+        this.runKeybind(target, null);
+      }
+    }, target === undefined ? 1000 : 400);
   }
-  handleKeybind(code) {
-    const k = this.currentKeybinds;
-    if (code === k.togglePlayPause && k.togglePlayPause !== '' || code === k.togglePlayPause2 && k.togglePlayPause2 !== '') {
+  _clearKeySequence() {
+    clearTimeout(this._keySeqTimer);
+    this._keySeq = '';
+  }
+  _keybindRepeats(target) {
+    return typeof target === 'string' ? Boolean(AdvancedMusicPlayer.KEYBIND_ACTIONS[target][3]) : Boolean(AdvancedMusicPlayer.KEYBIND_VALUES[target.type].repeat);
+  }
+  runKeybind(target, event) {
+    if (typeof target !== 'string') {
+      this._runValueKeybind(target);
+      return true;
+    }
+    switch (target) {
+     case 'togglePlayPause':
       this.togglePlayPause();
-    } else if (code === k.previousSong && k.previousSong !== '' || code === k.previousSong2 && k.previousSong2 !== '') {
+      break;
+
+     case 'previousSong':
       this.playPreviousSong();
-    } else if (code === k.nextSong && k.nextSong !== '' || code === k.nextSong2 && k.nextSong2 !== '') {
+      break;
+
+     case 'nextSong':
       this.playNextSong();
-    } else if (code === k.volumeUp && k.volumeUp !== '') {
-      this.adjustVolume(0.1);
-    } else if (code === k.volumeDown && k.volumeDown !== '') {
-      this.adjustVolume(-0.1);
-    } else if (code === k.toggleLoop && k.toggleLoop !== '') {
-      this.toggleLoop();
-    } else if (code === k.restartSong && k.restartSong !== '') {
+      break;
+
+     case 'restartSong':
       this.restartCurrentSong();
-    } else if (code === k.toggleTheme && k.toggleTheme !== '') {
-      this.toggleTheme();
-    } else if (code === k.openTimer && k.openTimer !== '') {
-      this.openTimerModal();
-    } else if (code === k.volumeUpFine && k.volumeUpFine !== '') {
+      break;
+
+     case 'seekBackward':
+      this.seekBy(-5);
+      break;
+
+     case 'seekForward':
+      this.seekBy(5);
+      break;
+
+     case 'toggleLoop':
+      this.toggleLoop();
+      break;
+
+     case 'togglePlaylistLoop':
+      this.togglePlaylistLoop();
+      break;
+
+     case 'toggleAutoplay':
+      this.toggleAutoplay();
+      this.showQueueNotification(this.isAutoplayEnabled ? 'Autoplay on' : 'Autoplay off');
+      break;
+
+     case 'shuffleQueue':
+      this.shuffleQueue();
+      break;
+
+     case 'toggleFavorite':
+      this.favoriteCurrentSong();
+      break;
+
+     case 'volumeUp':
+      this.adjustVolume(0.1);
+      break;
+
+     case 'volumeDown':
+      this.adjustVolume(-0.1);
+      break;
+
+     case 'volumeUpFine':
       this.adjustVolume(0.01);
-    } else if (code === k.volumeDownFine && k.volumeDownFine !== '') {
+      break;
+
+     case 'volumeDownFine':
       this.adjustVolume(-0.01);
-    } else if (code === k.toggleControlBar && k.toggleControlBar !== '') {
+      break;
+
+     case 'toggleMute':
+      this.toggleMute();
+      break;
+
+     case 'speedUp':
+      this.stepPlaybackSpeed(1);
+      break;
+
+     case 'speedDown':
+      this.stepPlaybackSpeed(-1);
+      break;
+
+     case 'toggleControlBar':
       this.toggleControlBar();
-    } else if (code === k.togglePlaylistSidebar && k.togglePlaylistSidebar !== '' || code === k.togglePlaylistSidebar2 && k.togglePlaylistSidebar2 !== '') {
+      break;
+
+     case 'togglePlaylistSidebar':
       this.togglePlaylistSidebar();
-    } else if (code === k.cycleTab && k.cycleTab !== '') {
+      break;
+
+     case 'cycleTab':
       this.cycleToNextTab();
-    } else if (code === k.toggleVideoFullscreen && k.toggleVideoFullscreen !== '') {
+      break;
+
+     case 'showQueue':
+      this.showQueueOverlay();
+      break;
+
+     case 'toggleVideoFullscreen':
       if (this.ytPlayer && this.elements.currentSongName.textContent !== 'No Song Playing') {
         this.toggleVideoFullscreen();
       }
-    } else if (code === k.showQueue && k.showQueue !== '') {
-      this.showQueueOverlay();
-    } else if (code === k.toggleMusicExplorer && k.toggleMusicExplorer !== '') {
-      this.toggleAdditionalDetails();
-    } else if (code === k.seekForward && k.seekForward !== '') {
-      this.seekBy(5);
-    } else if (code === k.seekBackward && k.seekBackward !== '') {
-      this.seekBy(-5);
-    } else if (code === k.toggleMiniplayer && k.toggleMiniplayer !== '') {
+      break;
+
+     case 'toggleMiniplayer':
       this.toggleMiniplayer();
+      break;
+
+     case 'toggleMusicExplorer':
+      this.toggleAdditionalDetails();
+      break;
+
+     case 'toggleLyricsStage':
+      if (this.lyricsStage?.open) {
+        this.closeLyricsStage();
+      } else {
+        this.openLyricsStage(this.lyricsStageMode || localStorage.getItem('lyricsStageMode'));
+      }
+      break;
+
+     case 'focusSearch':
+      this.focusLibrarySearch();
+      break;
+
+     case 'toggleTheme':
+      this.toggleTheme();
+      break;
+
+     case 'openTimer':
+      this.openTimerModal();
+      break;
+
+     case 'openSettings':
+      this.openSettingsSection(null);
+      break;
+
+     case 'openShortcuts':
+      this.openSettingsSection('keybinds');
+      document.getElementById('keybindsSearch')?.focus();
+      break;
+
+     case 'closeDialog':
+      {
+        if (event && this._typingKey(event)) {
+          return false;
+        }
+        const dismissed = this.dismissNotifications();
+        return this.closeTopLayer() || dismissed;
+      }
     }
+    return true;
+  }
+  _runValueKeybind(item) {
+    switch (item.type) {
+     case 'setVolume':
+      this.setVolume(item.value);
+      this.showVolumeIndicator(item.value);
+      break;
+
+     case 'setSpeed':
+      this.setPlaybackSpeed(item.value);
+      this.showVolumeIndicator(0, `Speed: ${item.value}x`);
+      break;
+
+     case 'seekBy':
+      this.seekBy(item.value);
+      break;
+
+     case 'seekToPercent':
+      this.seekToFraction(item.value / 100);
+      break;
+
+     case 'goToTab':
+      this.switchTab(item.value);
+      break;
+    }
+  }
+  dismissNotifications() {
+    const toasts = document.querySelectorAll('.notification, .undo-toast, .queue-notification');
+    toasts.forEach(toast => toast.remove());
+    clearTimeout(this._undoToastTimer);
+    const indicator = document.getElementById('volumeIndicator');
+    const shown = indicator?.style.opacity === '1';
+    if (shown) {
+      clearTimeout(this.volumeIndicatorTimeout);
+      indicator.style.transition = 'none';
+      indicator.style.opacity = '0';
+      void indicator.offsetWidth;
+      indicator.style.transition = 'opacity 0.3s';
+    }
+    return toasts.length > 0 || shown;
+  }
+  toggleMute() {
+    const current = Number(this.elements.volumeSlider?.value ?? this.savedVolume ?? 0);
+    const next = current > 0 ? 0 : this._unmuteVolume || 50;
+    if (current > 0) {
+      this._unmuteVolume = current;
+    }
+    this.setVolume(next);
+    this.showVolumeIndicator(next, next ? `Volume: ${Math.round(next)}%` : 'Muted');
+  }
+  stepPlaybackSpeed(direction) {
+    const speed = Math.min(2, Math.max(0.25, Math.round((Number(this.currentSpeed) || 1) * 4 + direction) / 4));
+    this.setPlaybackSpeed(speed);
+    this.showVolumeIndicator(0, `Speed: ${speed}x`);
+  }
+  seekToFraction(fraction) {
+    const local = this.isLocalPlayback && this.localAudio;
+    if (!local && !(this.ytPlayer && this.ytPlayerReady)) {
+      return;
+    }
+    try {
+      const duration = local ? this.localAudio.duration : this.ytPlayer.getDuration();
+      if (duration) {
+        this.seekBy(duration * fraction - (local ? this.localAudio.currentTime : this.ytPlayer.getCurrentTime()));
+      }
+    } catch (error) {
+      console.warn('Seek failed:', error);
+    }
+  }
+  favoriteCurrentSong() {
+    const playing = this.currentSong;
+    const song = playing && (this.songLibrary.find(item => item.id === playing.id) || playing.videoId && this.songLibrary.find(item => item.videoId === playing.videoId));
+    if (!song) {
+      this.showQueueNotification('Play a song from your library first');
+      return;
+    }
+    this.toggleFavorite(song.id);
+    this.showQueueNotification(song.favorite ? 'Added to Favourites' : 'Removed from Favourites');
+  }
+  focusLibrarySearch() {
+    this.switchTab('library');
+    const input = document.getElementById('librarySearch');
+    input?.focus();
+    input?.select();
+  }
+  openSettingsSection(section) {
+    const open = this.elements.settingsModal?.style.display === 'flex';
+    if (open && !section) {
+      this.handleCloseSettings();
+      return;
+    }
+    if (!open) {
+      this.handleOpenSettings();
+    }
+    if (section) {
+      this.showSettingsSection(section);
+    }
+  }
+  getKeyDisplayName(code) {
+    if (!code) {
+      return 'Not set';
+    }
+    if (/^Key[A-Z]$/.test(code)) {
+      return code.slice(3);
+    }
+    if (/^Digit\d$/.test(code)) {
+      return code.slice(5);
+    }
+    if (/^Numpad\d$/.test(code)) {
+      return `Num ${code.slice(6)}`;
+    }
+    return AdvancedMusicPlayer.KEY_NAMES[code] || code;
+  }
+  formatKeyStep(step) {
+    const parts = step.split('+');
+    const code = parts.pop();
+    const mac = /Mac|iPhone|iPad/.test(navigator.platform);
+    return [ ...parts.map(mod => mod === 'Meta' ? mac ? 'Cmd' : 'Win' : mod === 'Alt' && mac ? 'Option' : mod), this.getKeyDisplayName(code) ].join(' + ');
+  }
+  formatKeybind(bind) {
+    const steps = bind.split(' ');
+    if (steps.length > 1 && steps.every(step => step === steps[0])) {
+      return `${this.formatKeyStep(steps[0])} ×${steps.length}`;
+    }
+    return steps.map(step => this.formatKeyStep(step)).join(', then ');
+  }
+  _fillKeybindChip(chip, bind) {
+    const steps = bind.split(' ');
+    const same = steps.length > 1 && steps.every(step => step === steps[0]);
+    (same ? [ steps[0] ] : steps).forEach((step, i) => {
+      if (i) {
+        chip.append(UI.el('span', 'keybind-then', 'then'));
+      }
+      const key = document.createElement('kbd');
+      key.textContent = this.formatKeyStep(step);
+      chip.append(key);
+    });
+    if (same) {
+      chip.append(UI.el('span', 'keybind-then', `×${steps.length}`));
+    }
+  }
+  _keybindList(target) {
+    return typeof target === 'string' ? this.keybinds[target] : target.keys;
+  }
+  _keybindLabel(target) {
+    if (typeof target === 'string') {
+      return AdvancedMusicPlayer.KEYBIND_ACTIONS[target][1];
+    }
+    const spec = AdvancedMusicPlayer.KEYBIND_VALUES[target.type];
+    return `${spec.label} ${spec.options ? spec.options[target.value] : target.value + spec.unit}`;
+  }
+  withCloseKey(label) {
+    const key = this.keybinds.closeDialog?.[0];
+    return key ? `${label} (${this.formatKeybind(key)})` : label;
+  }
+  renderKeybindsPanel() {
+    const root = document.getElementById('keybindsList');
+    if (!root) {
+      return;
+    }
+    if (!this._keybindsPanelReady) {
+      this._keybindsPanelReady = true;
+      this._setupKeybindsPanel(root);
+    }
+    const {KEYBIND_GROUPS, KEYBIND_ACTIONS, KEYBIND_VALUES} = AdvancedMusicPlayer;
+    root.replaceChildren(...KEYBIND_GROUPS.map(([group, title, icon]) => {
+      const card = UI.el('section', 'keybind-category');
+      const list = UI.el('div', 'keybind-items');
+      Object.entries(KEYBIND_ACTIONS).forEach(([id, [home, label, defaults]]) => {
+        if (home !== group) {
+          return;
+        }
+        const name = UI.el('span', 'keybind-label');
+        name.textContent = label;
+        const keys = this.keybinds[id];
+        const controls = [];
+        if (keys.join() !== defaults.join()) {
+          const reset = UI.button('', {
+            variant: 'ghost',
+            size: 'sm',
+            icon: 'fa-undo',
+            className: 'keybind-reset'
+          });
+          reset.title = defaults.length ? `Restore the default (${defaults.map(bind => this.formatKeybind(bind)).join(', ')})` : 'Restore the default (none)';
+          reset.setAttribute('aria-label', reset.title);
+          controls.push(reset);
+        }
+        const row = this._keybindRow(name, keys, controls, label);
+        row.dataset.action = id;
+        list.append(row);
+      });
+      this.valueKeybinds.forEach((item, i) => {
+        if (KEYBIND_VALUES[item.type].group === group) {
+          list.append(this._keybindValueRow(item, i));
+        }
+      });
+      const adders = UI.el('div', 'keybind-adders');
+      Object.entries(KEYBIND_VALUES).forEach(([type, spec]) => {
+        if (spec.group === group) {
+          const add = UI.button(spec.add, {
+            variant: 'ghost',
+            size: 'sm',
+            icon: 'fa-plus',
+            className: 'keybind-new'
+          });
+          add.dataset.type = type;
+          adders.append(add);
+        }
+      });
+      card.append(UI.el('h4', '', `${UI.icon(icon)} ${title}`), list, adders);
+      return card;
+    }));
+    this.filterKeybinds();
+  }
+  _keybindRow(name, keys, controls, label) {
+    const row = UI.el('div', 'keybind-item');
+    const box = UI.el('div', 'keybind-keys');
+    keys.forEach(bind => {
+      const waits = this._keyPrefixes.has(bind);
+      const chip = UI.el('span', waits ? 'keybind-chip keybind-chip--waits' : 'keybind-chip');
+      chip.title = waits ? `${this.formatKeybind(bind)} also starts a longer shortcut, so it runs after a short pause` : this.formatKeybind(bind);
+      this._fillKeybindChip(chip, bind);
+      const remove = UI.button('', {
+        variant: 'ghost',
+        size: 'sm',
+        icon: 'fa-times',
+        className: 'keybind-remove'
+      });
+      remove.dataset.bind = bind;
+      remove.title = `Remove ${this.formatKeybind(bind)}`;
+      remove.setAttribute('aria-label', remove.title);
+      chip.append(remove);
+      box.append(chip);
+    });
+    const add = UI.button('', {
+      variant: 'ghost',
+      size: 'sm',
+      icon: 'fa-plus',
+      className: 'keybind-add'
+    });
+    add.title = keys.length ? 'Add another shortcut' : 'Add a shortcut';
+    add.setAttribute('aria-label', `${add.title} for ${label}`);
+    box.append(add, ...controls);
+    row.append(name, box);
+    row.dataset.search = `${label} ${keys.map(bind => this.formatKeybind(bind)).join(' ')}`.toLowerCase();
+    return row;
+  }
+  _keybindValueRow(item, i) {
+    const spec = AdvancedMusicPlayer.KEYBIND_VALUES[item.type];
+    const name = UI.el('label', 'keybind-label keybind-label--value');
+    let field;
+    if (spec.options) {
+      field = UI.el('select', 'ui-select keybind-value');
+      Object.entries(spec.options).forEach(([value, text]) => field.add(new Option(text, value)));
+    } else {
+      field = UI.el('input', 'ui-input keybind-value');
+      Object.assign(field, {
+        type: 'number',
+        min: spec.min,
+        max: spec.max,
+        step: spec.step
+      });
+    }
+    field.value = item.value;
+    const unit = UI.el('span', 'keybind-unit');
+    unit.textContent = spec.unit?.trim() || '';
+    name.append(spec.label, field, unit);
+    const remove = UI.button('', {
+      variant: 'ghost',
+      size: 'sm',
+      icon: 'fa-trash-alt',
+      className: 'keybind-delete'
+    });
+    remove.title = 'Delete this action';
+    remove.setAttribute('aria-label', remove.title);
+    const row = this._keybindRow(name, item.keys, [ remove ], this._keybindLabel(item));
+    row.dataset.value = i;
+    return row;
+  }
+  _setupKeybindsPanel(root) {
+    root.addEventListener('click', e => {
+      const button = e.target.closest('button');
+      if (!button) {
+        return;
+      }
+      if (button.classList.contains('keybind-new')) {
+        this.addValueKeybind(button.dataset.type);
+        return;
+      }
+      const row = button.closest('.keybind-item');
+      const target = row?.dataset.action || this.valueKeybinds[row?.dataset.value];
+      if (!target) {
+        return;
+      }
+      if (button.classList.contains('keybind-add')) {
+        this.startKeybindRecording(target, button);
+      } else if (button.classList.contains('keybind-remove')) {
+        this.removeKeybind(target, button.dataset.bind);
+      } else if (button.classList.contains('keybind-reset')) {
+        this.resetKeybind(target);
+      } else if (button.classList.contains('keybind-delete')) {
+        this.valueKeybinds.splice(Number(row.dataset.value), 1);
+        this.saveKeybinds();
+        this.renderKeybindsPanel();
+      }
+    });
+    root.addEventListener('change', e => {
+      const field = e.target.closest('.keybind-value');
+      const row = field?.closest('.keybind-item');
+      const item = row && this.valueKeybinds[row.dataset.value];
+      if (!item) {
+        return;
+      }
+      item.value = this._keybindValue(item.type, field.value);
+      field.value = item.value;
+      row.dataset.search = `${this._keybindLabel(item)} ${item.keys.map(bind => this.formatKeybind(bind)).join(' ')}`.toLowerCase();
+      this.saveKeybinds();
+    });
+    const search = document.getElementById('keybindsSearch');
+    search?.addEventListener('input', () => this.filterKeybinds());
+    search?.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && search.value) {
+        e.stopPropagation();
+        search.value = '';
+        this.filterKeybinds();
+      }
+    });
+  }
+  filterKeybinds() {
+    const query = document.getElementById('keybindsSearch')?.value.trim().toLowerCase() || '';
+    let shown = 0;
+    document.querySelectorAll('#keybindsList .keybind-category').forEach(card => {
+      let count = 0;
+      card.querySelectorAll('.keybind-item').forEach(row => {
+        const match = !query || row.dataset.search.includes(query);
+        row.hidden = !match;
+        count += match ? 1 : 0;
+      });
+      card.querySelector('.keybind-adders').hidden = Boolean(query);
+      card.hidden = Boolean(query) && !count;
+      shown += count;
+    });
+    const empty = document.getElementById('keybindsEmpty');
+    if (empty) {
+      empty.hidden = shown > 0;
+    }
+  }
+  startKeybindRecording(target, button) {
+    this.stopKeybindRecording();
+    const live = UI.el('span', 'keybind-chip keybind-chip--recording', 'Press keys');
+    button.replaceWith(live);
+    const steps = [];
+    const finish = () => {
+      this.stopKeybindRecording();
+      if (steps.length) {
+        this.addKeybind(target, steps.join(' '));
+      } else {
+        live.replaceWith(button);
+        button.focus();
+      }
+    };
+    const onKey = e => {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      if (e.repeat || !e.code || AdvancedMusicPlayer.MODIFIER_KEY.test(e.code)) {
+        return;
+      }
+      const step = this._keyStep(e);
+      if (!steps.length && step === 'Escape' && target !== 'closeDialog') {
+        finish();
+        return;
+      }
+      steps.push(step);
+      live.replaceChildren();
+      this._fillKeybindChip(live, steps.join(' '));
+      clearTimeout(this._keyRecording.timer);
+      this._keyRecording.timer = setTimeout(finish, steps.length < 4 ? 900 : 0);
+    };
+    const onPointer = e => {
+      if (!live.contains(e.target)) {
+        finish();
+      }
+    };
+    window.addEventListener('keydown', onKey, true);
+    window.addEventListener('pointerdown', onPointer, true);
+    this._keyRecording = {
+      onKey,
+      onPointer,
+      timer: 0
+    };
+  }
+  stopKeybindRecording() {
+    const recording = this._keyRecording;
+    if (!recording) {
+      return;
+    }
+    clearTimeout(recording.timer);
+    window.removeEventListener('keydown', recording.onKey, true);
+    window.removeEventListener('pointerdown', recording.onPointer, true);
+    this._keyRecording = null;
+  }
+  async addKeybind(target, bind) {
+    if (bind === 'Alt+Shift+KeyG') {
+      this.showQueueNotification('Alt + Shift + G is kept for guide mode');
+      this.renderKeybindsPanel();
+      return;
+    }
+    const owner = this._keyIndex.get(bind);
+    if (owner !== undefined && owner !== target) {
+      const move = await this._confirmKeybind(`${this.formatKeybind(bind)} already does "${this._keybindLabel(owner)}". Move it to "${this._keybindLabel(target)}"?`, 'Move it');
+      if (!move) {
+        this.renderKeybindsPanel();
+        return;
+      }
+      const from = this._keybindList(owner);
+      from.splice(from.indexOf(bind), 1);
+    }
+    const list = this._keybindList(target);
+    if (!list.includes(bind)) {
+      list.push(bind);
+    }
+    this.saveKeybinds();
+    this.renderKeybindsPanel();
+  }
+  removeKeybind(target, bind) {
+    const list = this._keybindList(target);
+    const at = list.indexOf(bind);
+    if (at !== -1) {
+      list.splice(at, 1);
+      this.saveKeybinds();
+    }
+    this.renderKeybindsPanel();
+  }
+  resetKeybind(id) {
+    this.keybinds[id] = AdvancedMusicPlayer.KEYBIND_ACTIONS[id][2].filter(bind => {
+      const owner = this._keyIndex.get(bind);
+      return owner === undefined || owner === id;
+    });
+    this.saveKeybinds();
+    this.renderKeybindsPanel();
+  }
+  addValueKeybind(type) {
+    const spec = AdvancedMusicPlayer.KEYBIND_VALUES[type];
+    this.valueKeybinds.push({
+      type,
+      value: spec.value,
+      keys: []
+    });
+    this.saveKeybinds();
+    this.renderKeybindsPanel();
+    const field = document.querySelector(`#keybindsList [data-value="${this.valueKeybinds.length - 1}"] .keybind-value`);
+    field?.focus();
+    field?.select?.();
+  }
+  async resetKeybindsToDefault() {
+    if (!await this._confirmKeybind('Put every shortcut back to its default? Actions you added, such as Set volume to, go back to the four defaults.', 'Reset all')) {
+      return;
+    }
+    this._applyKeybinds({});
+    this.saveKeybinds();
+    this.renderKeybindsPanel();
+  }
+  _confirmKeybind(message, confirmLabel) {
+    return new Promise(resolve => {
+      let answer = false;
+      const dialog = UI.modal({
+        title: 'Keyboard shortcuts',
+        icon: 'fa-keyboard',
+        size: 'sm',
+        onClose: () => resolve(answer)
+      });
+      const text = UI.el('p', 'keybind-confirm');
+      text.textContent = message;
+      dialog.body.append(text);
+      const confirm = UI.button(confirmLabel, {
+        variant: 'primary',
+        onClick: () => {
+          answer = true;
+          dialog.close();
+        }
+      });
+      dialog.addFooter(UI.button('Cancel', {
+        variant: 'ghost',
+        onClick: () => dialog.close()
+      }), confirm);
+      dialog.open();
+      confirm.focus();
+    });
   }
   async loadDiscordSettings() {
     try {

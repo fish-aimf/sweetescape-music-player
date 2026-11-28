@@ -445,8 +445,8 @@
     {
       "id": "keys",
       "title": "A few more keys",
-      "body": "Every shortcut can be changed in Settings, Keyboard shortcuts. A few that are worth learning first:",
-      "keys": [["Y", "queue"], ["U", "video mode"], ["I", "miniplayer (Chrome, Edge)"], ["O", "hide Music Explorer"], ["Q", "next tab"], ["F / G", "seek 5s"], ["Esc", "close the window on top"]]
+      "body": "In Settings, Keyboard shortcuts, any action can have several keys, combinations like Ctrl + K, or sequences like G then T. A few worth learning first:",
+      "keys": [["Y", "queue"], ["U", "video mode"], ["I", "miniplayer (Chrome, Edge)"], ["O", "hide Music Explorer"], ["Q", "next tab"], ["F / G", "seek 5s"], ["0 9 8 7", "volume 100% to 70%"], ["Esc", "close the window on top and clear notifications"]]
     },
     {
       "id": "done",
