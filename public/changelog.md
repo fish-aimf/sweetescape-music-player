@@ -575,21 +575,21 @@
 - fixed a bug such that the lyrics will now highlight instantly when seeked, instead of until the time reaches for next lyric. v59.28.5
 - fixed bug when reset song key is hit, it will instantly show visually, rather than until the song is unpaused. v59.28.6
 - now playing tab added v60.0.0
-- the bottom control bar automatically hidden when nowplaying tab appears v60.1.0
-- moved all elements to the now playing tab. from the control bar when now playing tab is active.  v60.2.0
-- added styles for now playing tab. v60.3.0
-- moved it infront of library, and will not be shown by default v60.4.0
-- added backup thumbnail as not all videos have maxresdefault v60.5.0
-- added styles for the NP sliders v60.6.0
-- fixed a bug where some songs thumbnails will not be able to load due to the lack of the maxresdefault. in the now playing section. v60.6.1
-- added this check to discord rpc as well v60.6.2
-- removed ai generator, will replace with a better musicbrainz.org api instead of gemini. v60.7.0
-- fixed weird css in now playing section v60.7.1
-- going onto the now playing tab no longer shows the now playing section in the additional details. v60.8.0
-- clicking now playing section now opens the now playing tab. v60.9.0
-- fixed tiny thumbnail cover images on the recently played and nowplaying sections v60.10.0
-- made additional details not have fixed height, making it look a lot nicer. v60.11.0
-- cleaned up css file by a few hundred lines of duplicate stuff v60.12.0
+- the bottom control bar automatically hidden when nowplaying tab appears v60.0.1
+- moved all elements to the now playing tab. from the control bar when now playing tab is active. v60.0.2
+- added styles for now playing tab. v60.0.3
+- moved it infront of library, and will not be shown by default v60.0.4
+- added backup thumbnail as not all videos have maxresdefault v60.1.0
+- added styles for the NP sliders v60.1.1
+- fixed a bug where some songs thumbnails will not be able to load due to the lack of the maxresdefault. in the now playing section. v60.1.2
+- added this check to discord rpc as well v60.2.0
+- removed ai generator, will replace with a better musicbrainz.org api instead of gemini. v60.2.1
+- fixed weird css in now playing section v60.2.2
+- going onto the now playing tab no longer shows the now playing section in the additional details. v60.2.3
+- clicking now playing section now opens the now playing tab. v60.3.0
+- fixed tiny thumbnail cover images on the recently played and nowplaying sections v60.3.1
+- made additional details not have fixed height, making it look a lot nicer. v60.3.2
+- cleaned up css file by a few hundred lines of duplicate stuff v60.3.3
 - Queue update, songs can now be queued and ordered better. v61.0.0
 - queue can now be reordered v61.1.0
 - songs can be looped x number of times v61.2.0
@@ -597,248 +597,294 @@
 - stop block added v61.4.0
 - UI redone allows for wider and FA icons. v61.5.0
 - added a search bar to quickly add songs within the queue itself v61.6.0
-- changed core logic for stop play to just setting autoplay = false. v61.7.0
-- fixed a bug where the nested .song property doesn't exist v61.7.1
-- pressing enter would allow top song to be added instantly. v61.8.0
-- fixed visual bug where queue will show songs up next despite autoplay being off v61.8.1
-- fixed reordering lag bug. v61.8.2
-- fixed a bug where looping forever block would cause the song after that to be looped forever. v61.8.3
-- renamed loop forever block to loop previous song forever. v61.8.4
-- fixed visual clutter, Next: Queue: Stop is very unsightly. removed queue: for these commands. v61.9.0
-- added missing styles for qv2-repeat-btn v61.10.0
-- fixed hardcoded styles buttons in lyrics tab v61.11.0
-- fixed the awful hardcoded css for the top right settings buttons. v61.12.0
-- added a new download button next to the discord button v61.13.0
+- changed core logic for stop play to just setting autoplay = false. v61.6.1
+- fixed a bug where the nested .song property doesn't exist v61.6.2
+- pressing enter would allow top song to be added instantly. v61.7.0
+- fixed visual bug where queue will show songs up next despite autoplay being off v61.7.1
+- fixed reordering lag bug. v61.7.2
+- fixed a bug where looping forever block would cause the song after that to be looped forever. v61.7.3
+- renamed loop forever block to loop previous song forever. v61.7.4
+- fixed visual clutter, Next: Queue: Stop is very unsightly. removed queue: for these commands. v61.7.5
+- added missing styles for qv2-repeat-btn v61.7.6
+- fixed hardcoded styles buttons in lyrics tab v61.7.7
+- fixed the awful hardcoded css for the top right settings buttons. v61.7.8
+- added a new download button next to the discord button v61.8.0
 - added download mp3. v62.0.0
 - added download model. v62.1.0
 - added search functionality in download. v62.2.0
 - added bulk download v62.3.0
-- added delegation to search v62.3.1
-- maximum display 5 songs v62.3.2
-- when enter is pressed it could select song and convert song already v62.4.0
+- added delegation to search v62.4.0
+- maximum display 5 songs v62.4.1
+- when enter is pressed it could select song and convert song already v62.4.2
 - added download via url v62.5.0
 - added download all button v62.6.0
-- a song will be cancelled once it has been downloaded once to avoid duplicate downloads. v62.7.0
-- added cancel button v62.8.0
-- the download all button will turn into download the rest. v62.9.0
-- added strikethrough effect v62.10.0
-- changed styles of model so it wouldn't change size constantly v62.11.0
-- optimized api polling to save on api count. v62.12.0
-- limited max conversions at 1 time to 2. v62.13.0
-- added another api key to rotate to increase monthly limit to 600 downloads. v62.14.0
-- allowed searching for songs in cyrillic in latin. v62.15.0
-- added current version.txt file in preperation for offline update. v62.16.0
-- added caching to all files so they serve from the disk and save massive datacosts. v63.0.0
-- fixed some rendering order bug. v63.1.0
-- fixed some script execution order bug. v63.2.0
-- fetches version number from the tiny current-version.txt instead of the huge changelog.md. v63.3.0
-- offline playback v64.0.0
-- fixed bug with volume for offline playback v64.0.1
-- fixed bug with speed for offline playback v64.0.2
-- various optimizations v64.1.0
-- better error codes for offline playback issues v64.2.0
-- improved modal for edit song details. v64.3.0
-- fixed some style issues v64.3.1
-- changed saveplaylist to put preventing rare crashes v64.3.2
-- migration for loadsonglibrary. v64.3.3
-- optimizations to song play. v64.3.4
-- savequeue debounce added v64.3.5
-- added hotkeys to seek forwards and backwards 5 seconds v64.4.0
-- fixed restart song for offline playback. v64.5.0
-- switched hotkey v64.5.1
-- reworked the whole library v65.0.0
-- removed settings to modify library for simplicity. v65.1.0
-- all song buttons are hidden until song card is hovered over v65.2.0
-- fixed annoying bug where updating a song will trigger the whole menu to collapse. v65.3.0
-- added offline saved indicator. v65.4.0
-- added seperated favorited indicator v65.5.0
-- updating a song only saves that song instead of whole library v65.6.0
-- style changes such that the indicators will disappear when buttons appear v65.6.0
-- moved the indicator buttons to the right. v65.7.0
-- removed large words of remove, play, edit and replaced them with fa-icons v65.8.0
--  either of the attributes, saved or favorited will be pushed to the right most of the song card if only one is present. v65.9.0
--  added service worker so website can be visited while offline. v66.0.0
--  fixed numerous offline induced bugs. v66.1.0
--  playing song youtube player doesn't require in the case of when offline playback is avaliable v66.2.0
--  fixed initializing error while offline v66.3.0
--  fixed infinite console log and network attempts v66.4.0
--  fixed some offline bugs v66.5.0
--  removed all dependency on placehold.it opting for svg offline, reducing third party count. v66.6.0
--  song library display now virtualized, saving memory resources v66.7.0
--  favorite button styles now consistent with rest v66.8.0
--  favorite button will now have a grey star to better indicate its location v66.9.0
--  you can now drag audio files onto song items to quickly add them to offline playback. v66.10.0
--  render size is dynamically calculated now. v66.11.0
--  buffed cleanup method to mop up previously missed. v66.12.0
--  added filter option for library v67.0.0
--  changed icon to fa filter instead v67.1.0
--  instead of clicking, hovering will appear and disappear the ui. v67.2.0
--  fixed filter modal from appearing when hovering over search bar. v67.3.0
--  straight up removed google analytics tags. v67.4.0
--  added shazam song recognition modal v68.0.0
--  fixed css spacing bugs between the fa search icon and fa download icons v68.1.0
--  added microphone input v68.2.0
--  edited microphone input to remove noise cancellation v68.3.0
--  added file upload to shazam v68.4.0
--  added share system audio. v68.5.0
--  added recording and trimming options v68.6.0
--  addeed playback to check your audio before sending it to identification. v68.7.0
--  added input gain option to make audio more clear.  v68.8.0
--  limited length to conserve api requests v68.9.0
--  added song card as response and links to open in shazam, youtube music, youtube or spotify. v68.10.0
--  added a + button to directly add it to the song library will open search and search up song name in search bar v68.11.0
--  Optimized resources such that adding and deleting song will only save specific song instead of whole song library v68.12.0
--  added listening time tracking monthly and song statistics v69.0.0
--  fixed service worker bug v69.1.0
--  added some missing styles in settings v69.2.0
--  changed display structure of song history v69.3.0
--  edited styles for the top songs once more v69.4.0
--  added topic toggle button to make searching for topic videos easier. v69.5.0
--  revoked and regenerated all 20 api keys after investigation. v69.6.0
--  edited the youtube api key rotation logic for better reliability. v69.7.0
--  cracked down heavily on api security and abuse v69.8.0
--  fixed some song statistics bugs v69.9.0
--  added github workflow to autoupdate billboard v69.10.0
--  global library reworked v70.0.0
--  fixed share url for lyrics v70.1.0
--  allows for ctl + r without getting captured by keybinds v70.2.0
--  fixed now playing tab ui desync. v70.3.0
--  added genius api to automatically fetch lyrics. v70.4.0
--  new preview popup for the next.previous 3 songs when hovering over the next and previous buttons v70.5.0
--  fixed rebinding toggle web embed breaking it v70.6.0
--  fixed is playlist looping saved to localstorage bug. v70.7.0
--  removed duplicate css and optimized css v70.8.0
--  sped up initial page load (deferred scripts, lazy loaded karaoke share deps, dropped unused font preconnects) and cleaned up code formatting v70.9.0
--  added miniplayer v71.0.0
--  fixed missing keybind input styling v71.1.0
--  made miniplayer prev/next icons consistent with the rest of the player v71.2.0
--  fixed service worker so updates apply seamlessly without manually unregistering v71.2.1
--  leaving the tab no longer opens the miniplayer, only the hotkey toggles it now v71.3.0
--  fixed badly cropped miniplayer thumbnail and matched sidebar playlist thumbnails to the same crop v71.4.0
--  search bar unfocuses after pressing enter to play a song so hotkeys work immediately v71.5.0
--  fixed library view collapsing into a flattened list after adding a song via pasted YouTube URL v71.5.1
--  fixed genius lyrics auto-fetch failing (RapidAPI key rejected) by falling back to a free lyrics provider v71.6.0
--  fixed listening stats not counting plays from playlists since playlist songs don't carry the library id, now tracked by video id instead v71.7.0
--  standardized every modal and symbol onto one design system (ui-system.css): shared tokens, one modal shell (header / body / footer), one close button, one button and input set, consistent font awesome icons; removed all code comments v71.8.0
--  removed unused css (148 dead rules, 2 dead keyframes, 12 unused design tokens) from style.css and ui-system.css v71.8.1
--  added a regenerate button next to the youtube url in the edit song modal that re-searches the song and swaps in the right video from the results v71.9.0
--  increased the expanded song list height in the library tab by 50%, leaving the initial compact view height unchanged v71.9.1
--  fixed toggle switch knobs sliding outside the switch track v71.9.2
--  added glass mode: translucent panels, buttons and modals over a custom background image or gradient, with transparency, blur and vibrancy controls v72.0.0
--  made the tab pane and now playing tab fully transparent in glass mode v72.3.0
--  standardised glass surfaces so every card and panel shares the same tint, border and blur v72.4.0
--  stopped nested cards stacking their tints in glass mode, and turned the opacity slider into a transparency slider v72.5.0
--  documented the glass surface rules in ARCHITECTURE.md v72.5.1
--  fixed the ARCHITECTURE.md edit silently failing on mixed line endings v72.5.2
--  made glass cards as transparent as the tab bar and search field v72.6.0
--  gave the library and playlist search controls the same glass blur as the tab bar, and stopped opening settings from collapsing the compact library view v72.7.0
--  condensed the v72 changelog entries v72.8.0
--  listening timer no longer keeps ticking after you pause, which stops it inflating your listening stats and saves a wakeup every second; trimmed per-frame work in the visualizer v72.9.0
--  rebuilt the settings tab bar as a segmented control that stays on one row and scrolls sideways on narrow screens instead of stacking; gave selects a proper chevron, toggles a visible on state, compact rows for the colour pickers and toggle settings, and a settings dialog that no longer jumps height between tabs; fixed the miniplayer rendering with no background in glass mode and gave it the app glass treatment v72.10.0
--  rebuilt the music visualizer as a real spectrum analyser for local playback: it now reads the actual audio through a Web Audio analyser node instead of faking motion with random numbers, with log-spaced frequency bands and pink-noise tilt so the whole width responds. Dropped the 50 animated DOM bars for a single downscaled canvas, capped it at 30fps, and made it stop the animation loop entirely when nothing is playing instead of burning frames forever, which cuts its idle CPU to zero. YouTube playback keeps a synthetic animation since the iframe audio cannot be captured, but now runs on the same cheap canvas path. Also fixed play/pause and tab switches stacking duplicate animation loops on top of each other v72.11.0
--  six visualizer designs to pick from in Settings > Additional, all driven by the real audio during local playback: Bars, Levels (segmented equalizer blocks), Wave (a true oscilloscope reading the waveform, with auto-gain so quiet tracks still fill the screen), Ribbon (a flowing aurora band that thickens with the music), Radial (a circular spectrum ring that breathes with the bass) and Glow (drifting stage lights that brighten with low, mid and high energy separately). Your choice is remembered. Widened the analyser range and eased the treble tilt so loud tracks no longer peg every band at maximum. Every design shares one canvas, one analyser and the same 30fps cap, and still stops the animation loop completely when nothing is playing v73.0.0
--  the visualizers were overpowering the page, so every design now draws at a third of its old size, and a new Magnitude slider sits under the design picker to take it back up or further down. Default is 1.0x, the range is 0.2x to 4.0x, and 3.0x reproduces the old v73.0.0 size exactly. The setting is remembered v73.1.0
--  stopped wasting work while the tab is in the background: the visibility handler used to only log that it was pausing DOM updates without pausing anything, so it now genuinely drops the progress-bar interval and cancels the visualizer frame, and the lyrics highlighter, fullscreen lyrics and lyric-maker timeline no longer poll the YouTube player or touch the DOM while hidden. The miniplayer keeps updating, since its picture-in-picture window stays on screen when the tab does not, but it now only writes to the DOM when the song, artwork or play state actually changed instead of rewriting all four every 500ms v73.2.0
--  the visualizers now show far more of a song: the band response was hard-clipped at full scale, so loud passages flattened into a solid block, and quiet ones sat too high to read as quiet. Peaks can now overshoot past full scale on a soft knee while quiet bands drop much lower, widening the range from roughly 17x to 45x, with a faster fall so dips actually show. Colours are pulled from your accent with a saturation boost and a bright crest through the middle of each shape, so every design reads as a vivid core fading out at the tips instead of one flat tone, and hue is preserved for any accent. Every design reaches further, the Wave line is thicker with a stronger auto-gain, Glow burns brighter with the crest colour, and the Magnitude slider now goes up to 6.0x v73.3.0
--  youtube thumbnails now stay cached. youtube only lets the browser keep one for two hours, so every visit after that re-checked every tile in the grid one request at a time, and none of them worked offline. the service worker now keeps thumbnails in its own store that survives app updates, capped at 400 images, and folds the old img.youtube.com address into i.ytimg.com so a thumbnail is fetched once no matter which of the two names a song was saved with. also stopped shipping the supabase library to everyone on page load, since only Global library and the billboard charts need it and it is now fetched the first time you open them; stopped the first visit re-downloading script.js, style.css and the icon font a second time to fill the offline cache; preloaded the icon font so icons draw a round trip sooner; gave the library details and recently played lists lazy thumbnails; and the discord rich presence artwork check no longer downloads a full size thumbnail just to find out whether it exists v73.4.0
-- clicking Autofill Name & Author in the Add Song modal now reveals an Undo button that restores whatever was typed in those fields beforehand; and adding a song straight from a library search result now strips a "- Topic" (and its bracket/pipe/colon variants) off the channel name before dropping it into the Author field, since auto-generated topic channels already carry the real artist name and didn't need a manual autofill click to clean up v73.5.0
-- added a standalone /download page: a mobile-friendly search bar that looks up YouTube results and lets you tap one to convert and download it as MP3, reusing the same search and conversion endpoints as the in-app download modal v73.6.0
-- gave the /download page the same "topic" search toggle as the library search bar (on by default, strikethrough when off), and switched its buttons over to the local Font Awesome icon set to match the rest of the app v73.7.0
-- the /download page now only fetches 3 results per search to save YouTube API quota, with a "Show 3 more" button that pages through further results as many times as you tap it v73.8.0
-- added a share button next to the regenerate button in the Edit Song modal that copies the song's /song/:id link to the clipboard, so it can be pasted straight into Discord and other chats for a rich preview v73.9.0
-- fixed HTML entities leaking into song titles and artists throughout the app: YouTube titles are now decoded on the way in (add-song autofill, URL paste, search results, download queue, Genius lyrics), existing library, playlist and recently-played entries are repaired on startup, and the Billboard and global-library cards escape names properly instead of hand-rolling quote replacement v73.10.0
-- repo tooling only, no app changes: added scripts/codemap.js (generates CODEMAP.md, an index of all 567 AdvancedMusicPlayer methods by topic plus every element alias and dialog id), scripts/audit-css.js (reports unused selectors and orphan keyframes instead of rebuilding the audit by hand each time) and scripts/dev-server.js (serves public/ locally), rewrote CLAUDE.md around them, removed four dead file references from ARCHITECTURE.md, and added a .claude permission allowlist for the read-only verification commands v73.11.0
-- fixed the library filter panel being unreachable in glass mode: the glass blur on the search box put the panel underneath the song list, so it closed as soon as the mouse moved onto it v73.11.1
-- library search now matches Russian songs across many Latin spellings: both the query and song titles/artists are reduced to a shared phonetic key, so eto finds Это, yolka/elka/jolka find Ёлка, tsoi/tsoy find Цой, khorosho/xorosho/horosho find Хорошо, and typing with the wrong Cyrillic letter (ето) still works; keys are cached per title so filtering stays cheap v73.11.2
-- added a Language filter to the library filter panel: it guesses each song's language offline from the characters in its title (and the artist as a fallback), so Cyrillic, Korean, Japanese, Chinese, Arabic and other scripts are told apart, Cyrillic is split into RU/UK/BE/KK/SR, and Latin titles are sorted by their accented letters and common words; the dropdown lists only the languages in your library with a song count each, results are cached in memory so nothing is stored or fetched, and the search key cache no longer resets on libraries over 2,500 songs v73.12.0
-- fixed glass mode on the library filter panel: the search box's own blur stopped the panel from blurring the song list behind it, so text showed through sharp; the search box blur now sits on a separate layer, the panel is properly frosted again and the search box looks the same v73.12.1
-- restored the exact look of the search songs bar in glass mode, which the previous fix had made slightly more saturated, and switched all text in the library filter panel (labels, Yes/Any/No, language codes and counts) to the primary text colour; the search input also drops a redundant blur layer v73.12.2
-- library search now also finds Korean, Japanese and Greek songs typed in Latin letters, the same way it already did for Russian: saranghae finds 사랑해, arigato or arigatou finds ありがとう, kataomoi finds カタオモイ, agapi mou finds Αγάπη μου; spaces are ignored when matching so bom nal still finds 봄날, and libraries with only English titles skip the extra work entirely v73.13.0
-- added a Disguise button (mask icon) between the theme and statistics icons: it opens a Disguise window with Tab disguise on the left, 25 crisp built-in favicons with matching tab titles (Google Docs, Slides, Sheets, Drive, Gmail, Classroom, Google, SLS, Desmos, Wikipedia, Khan Academy, Quizlet, Canvas, ChatGPT, Gemini, DeepSeek, Copilot, Word, Outlook, Teams, Notion, Instagram, WhatsApp, Reddit, New Tab) that are remembered across reloads and no longer reset when the theme changes, and Page disguise on the right, which covers the player with one of 13 study sites or any URL you paste; embedded sites can no longer pop up "leave site?" prompts, the embed is fully unloaded when you press Esc or the corner x, and the old B (cycle favicon) and N (web embed) hotkeys are removed v73.14.0
-- updated the disguise favicons to the current live versions of each site: the 2025 gradient Google G, Google's 2026 Docs, Sheets, Slides, Drive and Gmail icons, the four-colour Gemini sparkle, the refreshed Microsoft 365 Word, Outlook, Teams and Copilot icons, ChatGPT's current knot (which turns white on dark-mode systems like the real one), the boxed Notion N, Reddit's speech-bubble Snoo and WhatsApp's outlined bubble v73.14.1
-- glass mode now keeps text readable over any background: when a background image or gradient (or album art behind a popup) would wash out the text, the text first shifts toward pure white or black (secondary text only halfway, so it still looks secondary), and the glass becomes only as opaque as needed to reach the WCAG 4.5:1 contrast standard; it is worked out once each time the theme, background or glass settings change, never per frame, and the default backgrounds look the same as before v73.15.0
-- removed the fullscreen lyrics view and its Expand Lyrics button; the compact lyrics tab (auto-center, karaoke share link, live line highlighting) works exactly as before, and the karaoke share page keeps its own fullscreen mode v73.16.0
-- added fullscreen lyrics: the expand button in the lyrics tab opens a style picker, and the chosen style takes over the screen, hiding everything except the bottom player bar and the visualizer; five styles: Verse (music-video lines that roll upward and fade), Cards (a "Now singing" reading area at the top with the upcoming lines queued below it, creeping up in time with the song and snapping in as each line starts while the finished card is pushed out the top), Mirror (lyric-video style with the cover in the middle and each line rising in word by word, alternating left and right), Spotlight (one big line that fills in word by word as it is sung, even when it wraps) and Flow (the whole song scrolls with the current line centred, also works for lyrics without timestamps); the cover, song name and artist sit on the left in every style except Mirror, everything matches glass mode, light and dark themes and phone screens, follows song changes, remembers your last style and closes with Esc v74.0.0
-- fullscreen lyrics: replaced Spotlight with a Lyric Video style that shows three lines and, once the bottom line is being sung, fades out the top line and swaps in the next lyric; Cards no longer shows the "Now singing" label, sits closer together, each upcoming card reaches the spot under the current one exactly when its line starts and moves straight up, and quick rap passages use smaller cards; the song title now has more room than the cover width v74.1.0
-- fullscreen lyrics Cards: now a conveyor with two lines queued under the current one; when the next line starts the whole stack moves up at a steady speed, the finished card is pushed out the top at that same speed and fades, and a new card fades in at the bottom v74.2.0
-- fullscreen lyrics Cards: cards are now all the same size and rise from the bottom of the screen at a steady speed so each one lands in the reading spot exactly when its line starts, showing you the timing; the arriving card pushes the finished one out the top at the same speed, the speed is set from the song so only one or two cards are on their way up at once, and the lyric timing no longer jumps ahead or stalls when you press play v74.3.0
-Listening Statistics has been redesigned: a clear Last 30 days / All time switch, summary tiles for time listened, plays, songs and top artist, a highlighted most-played song and a tidy ranked top 10 with play bars that fits phones, tablets and desktops, plus a searchable full list; replaying a YouTube song on repeat now counts every play, even while the tab is in the background v74.4.0
-Tap any song in Listening Statistics to open its play history: plays in the last 30 days and all time, its best day and when you last played it, plus a bar graph of plays per day or per month with hover details and a table view; daily play history is now kept beyond 30 days so the all-time graph grows over time, and tabs inside dialogs no longer pick up the generic button outline v74.5.0
-Library search now shows cover art: when only a few songs match, each result becomes a large card with big cover art; with a few more, a small cover sits beside each song without making the row any taller; with many matches the list stays text-only to stay fast v74.6.0
-Fixed small cover art in library search turning huge after deleting letters from the search, once the covers had loaded v74.6.1
-Library search covers are now a fixed size, so they can never blow up while typing or deleting, in any browser; songs with a cover show their title and artist on one line, ending in "..." if too long, so every row stays the same height, and big result cards cap long titles at two lines v74.6.2
-The speed button on the Now Playing tab now shows your actual playback speed instead of resetting to 1x v74.6.3
-The Lyrics tab now switches to the new song whenever the song changes, keeps highlighting after pause and resume, and several dialogs no longer leak keyboard listeners or timers when reopened v74.7.0
-Removed leftover code comments from the API functions and standalone pages v74.7.1
-Moved the outdated scriptforcoding.js out of the website into an archive folder, so it is no longer downloadable v74.7.2
-Added an Album Art Background option for glass mode in Settings, which fills the background with a soft, blurred version of the current song's cover that crossfades between songs and gently drifts while music plays v74.8.0
-Added Art blur and Art vibrancy sliders to the Album Art Background setting, so you can tune how soft and how colourful the cover background looks v74.9.0
-Added a Visualizer Colour setting to the Theme tab with Primary, Custom and Auto modes, where Auto picks a colour from the album art or background and keeps it visible, and made the album art background and visualizer much lighter on the GPU v74.10.0
-Cut GPU work while music plays: the album art drift now updates five times a second instead of every screen refresh, halving the cost of glass mode with album art, and the visualizer runs at a steady 30fps on high refresh rate screens v74.11.0
-Background tabs and paused music now use less power: synced lyrics stop polling while the tab is hidden, and the visualizer audio engine sleeps after 5 seconds of paused local playback v74.12.0
-Long song names now show in full in the browser tab with just the "Music - " prefix dropped, instead of being cut off or scrolling, and the player does less work in the background: local files skip progress updates while the tab is hidden and search, chart and recommendation thumbnails load only when scrolled into view v74.13.0
-Auto visualizer colour now actually follows the album cover: it keeps the cover's hue and only adjusts brightness to stay visible, instead of fading almost every song to plain white or black v74.14.0
-Recently Listened To now matches the other dialogs: wider, card rows with an accent border on hover and an always-visible remove button instead of the sliding rows and popping x, and the setting stacks neatly on phones. Every dialog is now at least 480px wide, and dialogs built in code finally get their intended width, so Songs with Lyrics, Disguise and Play history are no longer squeezed to 560px v74.15.0
-The Favourites strip in the Library now scrolls left and right with the mouse wheel, trackpad or swipe, with no visible scrollbar, loading more favourites only as you reach the end, and the All list now shows each song's cover on the left like short search results v74.16.0
-Stopped accidental back and forward navigation: trackpad swipe gestures, mouse side buttons and Alt+Left/Right no longer leave the player, and if you try to leave while music is playing the browser asks first v74.17.0
+- a song will be cancelled once it has been downloaded once to avoid duplicate downloads. v62.6.1
+- added cancel button v62.7.0
+- the download all button will turn into download the rest. v62.7.1
+- added strikethrough effect v62.8.0
+- changed styles of model so it wouldn't change size constantly v62.8.1
+- optimized api polling to save on api count. v62.8.2
+- limited max conversions at 1 time to 2. v62.8.3
+- added another api key to rotate to increase monthly limit to 600 downloads. v62.9.0
+- allowed searching for songs in cyrillic in latin. v62.10.0
+- added current version.txt file in preperation for offline update. v62.11.0
+- added caching to all files so they serve from the disk and save massive datacosts. v62.12.0
+- fixed some rendering order bug. v62.12.1
+- fixed some script execution order bug. v62.12.2
+- fetches version number from the tiny current-version.txt instead of the huge changelog.md. v62.12.3
+- offline playback v63.0.0
+- fixed bug with volume for offline playback v63.0.1
+- fixed bug with speed for offline playback v63.0.2
+- various optimizations v63.0.3
+- better error codes for offline playback issues v63.0.4
+- improved modal for edit song details. v63.0.5
+- fixed some style issues v63.0.6
+- changed saveplaylist to put preventing rare crashes v63.0.7
+- migration for loadsonglibrary. v63.0.8
+- optimizations to song play. v63.0.9
+- savequeue debounce added v63.1.0
+- added hotkeys to seek forwards and backwards 5 seconds v63.2.0
+- fixed restart song for offline playback. v63.2.1
+- switched hotkey v63.2.2
+- reworked the whole library v64.0.0
+- removed settings to modify library for simplicity. v64.0.1
+- all song buttons are hidden until song card is hovered over v64.0.2
+- fixed annoying bug where updating a song will trigger the whole menu to collapse. v64.0.3
+- added offline saved indicator. v64.1.0
+- added seperated favorited indicator v64.2.0
+- updating a song only saves that song instead of whole library v64.2.1
+- style changes such that the indicators will disappear when buttons appear v64.2.2
+- moved the indicator buttons to the right. v64.2.3
+- removed large words of remove, play, edit and replaced them with fa-icons v64.2.4
+-  either of the attributes, saved or favorited will be pushed to the right most of the song card if only one is present. v64.2.5
+-  added service worker so website can be visited while offline. v65.0.0
+-  fixed numerous offline induced bugs. v65.0.1
+-  playing song youtube player doesn't require in the case of when offline playback is avaliable v65.0.2
+-  fixed initializing error while offline v65.0.3
+-  fixed infinite console log and network attempts v65.0.4
+-  fixed some offline bugs v65.0.5
+-  removed all dependency on placehold.it opting for svg offline, reducing third party count. v65.0.6
+-  song library display now virtualized, saving memory resources v65.1.0
+-  favorite button styles now consistent with rest v65.1.1
+-  favorite button will now have a grey star to better indicate its location v65.2.0
+-  you can now drag audio files onto song items to quickly add them to offline playback. v65.3.0
+-  render size is dynamically calculated now. v65.4.0
+-  buffed cleanup method to mop up previously missed. v65.4.1
+-  added filter option for library v65.5.0
+-  changed icon to fa filter instead v65.5.1
+-  instead of clicking, hovering will appear and disappear the ui. v65.5.2
+-  fixed filter modal from appearing when hovering over search bar. v65.5.3
+-  straight up removed google analytics tags. v65.5.4
+-  added shazam song recognition modal v66.0.0
+-  fixed css spacing bugs between the fa search icon and fa download icons v66.0.1
+-  added microphone input v66.1.0
+-  edited microphone input to remove noise cancellation v66.1.1
+-  added file upload to shazam v66.2.0
+-  added share system audio. v66.3.0
+-  added recording and trimming options v66.4.0
+-  addeed playback to check your audio before sending it to identification. v66.4.1
+-  added input gain option to make audio more clear. v66.5.0
+-  limited length to conserve api requests v66.5.1
+-  added song card as response and links to open in shazam, youtube music, youtube or spotify. v66.6.0
+-  added a + button to directly add it to the song library will open search and search up song name in search bar v66.7.0
+-  Optimized resources such that adding and deleting song will only save specific song instead of whole song library v66.7.1
+-  added listening time tracking monthly and song statistics v67.0.0
+-  fixed service worker bug v67.0.1
+-  added some missing styles in settings v67.0.2
+-  changed display structure of song history v67.0.3
+-  edited styles for the top songs once more v67.0.4
+-  added topic toggle button to make searching for topic videos easier. v67.1.0
+-  revoked and regenerated all 20 api keys after investigation. v67.1.1
+-  edited the youtube api key rotation logic for better reliability. v67.1.2
+-  cracked down heavily on api security and abuse v67.1.3
+-  fixed some song statistics bugs v67.1.4
+-  added github workflow to autoupdate billboard v67.2.0
+-  global library reworked v68.0.0
+-  fixed share url for lyrics v68.0.1
+-  allows for ctl + r without getting captured by keybinds v68.1.0
+-  fixed now playing tab ui desync. v68.1.1
+-  added genius api to automatically fetch lyrics. v68.2.0
+-  new preview popup for the next.previous 3 songs when hovering over the next and previous buttons v68.3.0
+-  fixed rebinding toggle web embed breaking it v68.3.1
+-  fixed is playlist looping saved to localstorage bug. v68.3.2
+-  removed duplicate css and optimized css v68.3.3
+-  sped up initial page load (deferred scripts, lazy loaded karaoke share deps, dropped unused font preconnects) and cleaned up code formatting v68.3.4
+-  added miniplayer v69.0.0
+-  fixed missing keybind input styling v69.0.1
+-  made miniplayer prev/next icons consistent with the rest of the player v69.0.2
+-  fixed service worker so updates apply seamlessly without manually unregistering v69.0.3
+-  leaving the tab no longer opens the miniplayer, only the hotkey toggles it now v69.0.4
+-  fixed badly cropped miniplayer thumbnail and matched sidebar playlist thumbnails to the same crop v69.0.5
+-  search bar unfocuses after pressing enter to play a song so hotkeys work immediately v69.0.6
+-  fixed library view collapsing into a flattened list after adding a song via pasted YouTube URL v69.0.7
+-  fixed genius lyrics auto-fetch failing (RapidAPI key rejected) by falling back to a free lyrics provider v69.0.8
+-  fixed listening stats not counting plays from playlists since playlist songs don't carry the library id, now tracked by video id instead v69.0.9
+-  standardized every modal and symbol onto one design system (ui-system.css): shared tokens, one modal shell (header / body / footer), one close button, one button and input set, consistent font awesome icons; removed all code comments v70.0.0
+-  removed unused css (148 dead rules, 2 dead keyframes, 12 unused design tokens) from style.css and ui-system.css v70.0.1
+-  added a regenerate button next to the youtube url in the edit song modal that re-searches the song and swaps in the right video from the results v70.1.0
+-  increased the expanded song list height in the library tab by 50%, leaving the initial compact view height unchanged v70.1.1
+-  fixed toggle switch knobs sliding outside the switch track v70.1.2
+-  added glass mode: translucent panels, buttons and modals over a custom background image or gradient, with transparency, blur and vibrancy controls v71.0.0
+-  made the tab pane and now playing tab fully transparent in glass mode v71.1.0
+-  standardised glass surfaces so every card and panel shares the same tint, border and blur v71.1.1
+-  stopped nested cards stacking their tints in glass mode, and turned the opacity slider into a transparency slider v71.1.2
+-  documented the glass surface rules in ARCHITECTURE.md v71.1.3
+-  fixed the ARCHITECTURE.md edit silently failing on mixed line endings v71.1.4
+-  made glass cards as transparent as the tab bar and search field v71.1.5
+-  gave the library and playlist search controls the same glass blur as the tab bar, and stopped opening settings from collapsing the compact library view v71.1.6
+-  condensed the v72 changelog entries v71.1.7
+-  listening timer no longer keeps ticking after you pause, which stops it inflating your listening stats and saves a wakeup every second; trimmed per-frame work in the visualizer v71.1.8
+-  rebuilt the settings tab bar as a segmented control that stays on one row and scrolls sideways on narrow screens instead of stacking; gave selects a proper chevron, toggles a visible on state, compact rows for the colour pickers and toggle settings, and a settings dialog that no longer jumps height between tabs; fixed the miniplayer rendering with no background in glass mode and gave it the app glass treatment v71.2.0
+-  rebuilt the music visualizer as a real spectrum analyser for local playback: it now reads the actual audio through a Web Audio analyser node instead of faking motion with random numbers, with log-spaced frequency bands and pink-noise tilt so the whole width responds. v72.0.0
+-  Dropped the 50 animated DOM bars for a single downscaled canvas, capped it at 30fps, and made it stop the animation loop entirely when nothing is playing instead of burning frames forever, which cuts its idle CPU to zero. v72.0.1
+-  YouTube playback keeps a synthetic animation since the iframe audio cannot be captured, but now runs on the same cheap canvas path. v72.1.0
+-  Also fixed play/pause and tab switches stacking duplicate animation loops on top of each other v72.1.1
+-  six visualizer designs to pick from in Settings > Additional, all driven by the real audio during local playback: Bars, Levels (segmented equalizer blocks), Wave (a true oscilloscope reading the waveform, with auto-gain so quiet tracks still fill the screen), Ribbon (a flowing aurora band that thickens with the music), Radial (a circular spectrum ring that breathes with the bass) and Glow (drifting stage lights that brighten with low, mid and high energy separately). Your choice is remembered. v72.2.0
+-  Widened the analyser range and eased the treble tilt so loud tracks no longer peg every band at maximum. v72.2.1
+-  Every design shares one canvas, one analyser and the same 30fps cap, and still stops the animation loop completely when nothing is playing v72.2.2
+-  the visualizers were overpowering the page, so every design now draws at a third of its old size, and a new Magnitude slider sits under the design picker to take it back up or further down. v72.3.0
+-  Default is 1.0x, the range is 0.2x to 4.0x, and 3.0x reproduces the old v73.0.0 size exactly. The setting is remembered v72.3.1
+-  stopped wasting work while the tab is in the background: the visibility handler used to only log that it was pausing DOM updates without pausing anything, so it now genuinely drops the progress-bar interval and cancels the visualizer frame, and the lyrics highlighter, fullscreen lyrics and lyric-maker timeline no longer poll the YouTube player or touch the DOM while hidden. v72.3.2
+-  The miniplayer keeps updating, since its picture-in-picture window stays on screen when the tab does not, but it now only writes to the DOM when the song, artwork or play state actually changed instead of rewriting all four every 500ms v72.4.0
+-  the visualizers now show far more of a song: the band response was hard-clipped at full scale, so loud passages flattened into a solid block, and quiet ones sat too high to read as quiet. v72.5.0
+-  Peaks can now overshoot past full scale on a soft knee while quiet bands drop much lower, widening the range from roughly 17x to 45x, with a faster fall so dips actually show. v72.6.0
+-  Colours are pulled from your accent with a saturation boost and a bright crest through the middle of each shape, so every design reads as a vivid core fading out at the tips instead of one flat tone, and hue is preserved for any accent. v72.6.1
+-  Every design reaches further, the Wave line is thicker with a stronger auto-gain, Glow burns brighter with the crest colour, and the Magnitude slider now goes up to 6.0x v72.7.0
+-  youtube thumbnails now stay cached. youtube only lets the browser keep one for two hours, so every visit after that re-checked every tile in the grid one request at a time, and none of them worked offline. the service worker now keeps thumbnails in its own store that survives app updates, capped at 400 images, and folds the old img.youtube.com address into i.ytimg.com so a thumbnail is fetched once no matter which of the two names a song was saved with. also stopped shipping the supabase library to everyone on page load, since only Global library and the billboard charts need it and it is now fetched the first time you open them; stopped the first visit re-downloading script.js, style.css and the icon font a second time to fill the offline cache; preloaded the icon font so icons draw a round trip sooner; gave the library details and recently played lists lazy thumbnails; and the discord rich presence artwork check no longer downloads a full size thumbnail just to find out whether it exists v72.8.0
+- clicking Autofill Name & Author in the Add Song modal now reveals an Undo button that restores whatever was typed in those fields beforehand; and adding a song straight from a library search result now strips a "- Topic" (and its bracket/pipe/colon variants) off the channel name before dropping it into the Author field, since auto-generated topic channels already carry the real artist name and didn't need a manual autofill click to clean up v72.9.0
+- added a standalone /download page: a mobile-friendly search bar that looks up YouTube results and lets you tap one to convert and download it as MP3, reusing the same search and conversion endpoints as the in-app download modal v72.10.0
+- gave the /download page the same "topic" search toggle as the library search bar (on by default, strikethrough when off), and switched its buttons over to the local Font Awesome icon set to match the rest of the app v72.10.1
+- the /download page now only fetches 3 results per search to save YouTube API quota, with a "Show 3 more" button that pages through further results as many times as you tap it v72.11.0
+- added a share button next to the regenerate button in the Edit Song modal that copies the song's /song/:id link to the clipboard, so it can be pasted straight into Discord and other chats for a rich preview v72.12.0
+- fixed HTML entities leaking into song titles and artists throughout the app: YouTube titles are now decoded on the way in (add-song autofill, URL paste, search results, download queue, Genius lyrics), existing library, playlist and recently-played entries are repaired on startup, and the Billboard and global-library cards escape names properly instead of hand-rolling quote replacement v72.12.1
+- repo tooling only, no app changes: added scripts/codemap.js (generates CODEMAP.md, an index of all 567 AdvancedMusicPlayer methods by topic plus every element alias and dialog id), scripts/audit-css.js (reports unused selectors and orphan keyframes instead of rebuilding the audit by hand each time) and scripts/dev-server.js (serves public/ locally), rewrote CLAUDE.md around them, removed four dead file references from ARCHITECTURE.md, and added a .claude permission allowlist for the read-only verification commands v72.12.2
+- fixed the library filter panel being unreachable in glass mode: the glass blur on the search box put the panel underneath the song list, so it closed as soon as the mouse moved onto it v72.12.3
+- library search now matches Russian songs across many Latin spellings: both the query and song titles/artists are reduced to a shared phonetic key, so eto finds Это, yolka/elka/jolka find Ёлка, tsoi/tsoy find Цой, khorosho/xorosho/horosho find Хорошо, and typing with the wrong Cyrillic letter (ето) still works; keys are cached per title so filtering stays cheap v72.12.4
+- added a Language filter to the library filter panel: it guesses each song's language offline from the characters in its title (and the artist as a fallback), so Cyrillic, Korean, Japanese, Chinese, Arabic and other scripts are told apart, Cyrillic is split into RU/UK/BE/KK/SR, and Latin titles are sorted by their accented letters and common words; the dropdown lists only the languages in your library with a song count each, results are cached in memory so nothing is stored or fetched, and the search key cache no longer resets on libraries over 2,500 songs v72.13.0
+- fixed glass mode on the library filter panel: the search box's own blur stopped the panel from blurring the song list behind it, so text showed through sharp; the search box blur now sits on a separate layer, the panel is properly frosted again and the search box looks the same v72.13.1
+- restored the exact look of the search songs bar in glass mode, which the previous fix had made slightly more saturated, and switched all text in the library filter panel (labels, Yes/Any/No, language codes and counts) to the primary text colour; the search input also drops a redundant blur layer v72.13.2
+- library search now also finds Korean, Japanese and Greek songs typed in Latin letters, the same way it already did for Russian: saranghae finds 사랑해, arigato or arigatou finds ありがとう, kataomoi finds カタオモイ, agapi mou finds Αγάπη μου; spaces are ignored when matching so bom nal still finds 봄날, and libraries with only English titles skip the extra work entirely v72.14.0
+- added a Disguise button (mask icon) between the theme and statistics icons: it opens a Disguise window with Tab disguise on the left, 25 crisp built-in favicons with matching tab titles (Google Docs, Slides, Sheets, Drive, Gmail, Classroom, Google, SLS, Desmos, Wikipedia, Khan Academy, Quizlet, Canvas, ChatGPT, Gemini, DeepSeek, Copilot, Word, Outlook, Teams, Notion, Instagram, WhatsApp, Reddit, New Tab) that are remembered across reloads and no longer reset when the theme changes, and Page disguise on the right, which covers the player with one of 13 study sites or any URL you paste; embedded sites can no longer pop up "leave site?" prompts, the embed is fully unloaded when you press Esc or the corner x, and the old B (cycle favicon) and N (web embed) hotkeys are removed v72.15.0
+- updated the disguise favicons to the current live versions of each site: the 2025 gradient Google G, Google's 2026 Docs, Sheets, Slides, Drive and Gmail icons, the four-colour Gemini sparkle, the refreshed Microsoft 365 Word, Outlook, Teams and Copilot icons, ChatGPT's current knot (which turns white on dark-mode systems like the real one), the boxed Notion N, Reddit's speech-bubble Snoo and WhatsApp's outlined bubble v72.15.1
+- glass mode now keeps text readable over any background: when a background image or gradient (or album art behind a popup) would wash out the text, the text first shifts toward pure white or black (secondary text only halfway, so it still looks secondary), and the glass becomes only as opaque as needed to reach the WCAG 4.5:1 contrast standard; it is worked out once each time the theme, background or glass settings change, never per frame, and the default backgrounds look the same as before v72.16.0
+- removed the fullscreen lyrics view and its Expand Lyrics button; the compact lyrics tab (auto-center, karaoke share link, live line highlighting) works exactly as before, and the karaoke share page keeps its own fullscreen mode v72.16.1
+- added fullscreen lyrics: the expand button in the lyrics tab opens a style picker, and the chosen style takes over the screen, hiding everything except the bottom player bar and the visualizer; five styles: Verse (music-video lines that roll upward and fade), Cards (a "Now singing" reading area at the top with the upcoming lines queued below it, creeping up in time with the song and snapping in as each line starts while the finished card is pushed out the top), Mirror (lyric-video style with the cover in the middle and each line rising in word by word, alternating left and right), Spotlight (one big line that fills in word by word as it is sung, even when it wraps) and Flow (the whole song scrolls with the current line centred, also works for lyrics without timestamps); the cover, song name and artist sit on the left in every style except Mirror, everything matches glass mode, light and dark themes and phone screens, follows song changes, remembers your last style and closes with Esc v73.0.0
+- fullscreen lyrics: replaced Spotlight with a Lyric Video style that shows three lines and, once the bottom line is being sung, fades out the top line and swaps in the next lyric; Cards no longer shows the "Now singing" label, sits closer together, each upcoming card reaches the spot under the current one exactly when its line starts and moves straight up, and quick rap passages use smaller cards; the song title now has more room than the cover width v73.0.1
+- fullscreen lyrics Cards: now a conveyor with two lines queued under the current one; when the next line starts the whole stack moves up at a steady speed, the finished card is pushed out the top at that same speed and fades, and a new card fades in at the bottom v73.1.0
+- fullscreen lyrics Cards: cards are now all the same size and rise from the bottom of the screen at a steady speed so each one lands in the reading spot exactly when its line starts, showing you the timing; the arriving card pushes the finished one out the top at the same speed, the speed is set from the song so only one or two cards are on their way up at once, and the lyric timing no longer jumps ahead or stalls when you press play v73.2.0
+Listening Statistics has been redesigned: a clear Last 30 days / All time switch, summary tiles for time listened, plays, songs and top artist, a highlighted most-played song and a tidy ranked top 10 with play bars that fits phones, tablets and desktops, plus a searchable full list; replaying a YouTube song on repeat now counts every play, even while the tab is in the background v74.0.0
+Tap any song in Listening Statistics to open its play history: plays in the last 30 days and all time, its best day and when you last played it, plus a bar graph of plays per day or per month with hover details and a table view; daily play history is now kept beyond 30 days so the all-time graph grows over time, and tabs inside dialogs no longer pick up the generic button outline v74.1.0
+Library search now shows cover art: when only a few songs match, each result becomes a large card with big cover art; with a few more, a small cover sits beside each song without making the row any taller; with many matches the list stays text-only to stay fast v74.2.0
+Fixed small cover art in library search turning huge after deleting letters from the search, once the covers had loaded v74.2.1
+Library search covers are now a fixed size, so they can never blow up while typing or deleting, in any browser; songs with a cover show their title and artist on one line, ending in "..." if too long, so every row stays the same height, and big result cards cap long titles at two lines v74.2.2
+The speed button on the Now Playing tab now shows your actual playback speed instead of resetting to 1x v74.3.0
+The Lyrics tab now switches to the new song whenever the song changes, keeps highlighting after pause and resume, and several dialogs no longer leak keyboard listeners or timers when reopened v74.3.1
+Removed leftover code comments from the API functions and standalone pages v74.3.2
+Moved the outdated scriptforcoding.js out of the website into an archive folder, so it is no longer downloadable v74.3.3
+Added an Album Art Background option for glass mode in Settings, which fills the background with a soft, blurred version of the current song's cover that crossfades between songs and gently drifts while music plays v74.4.0
+Added Art blur and Art vibrancy sliders to the Album Art Background setting, so you can tune how soft and how colourful the cover background looks v74.5.0
+Added a Visualizer Colour setting to the Theme tab with Primary, Custom and Auto modes, where Auto picks a colour from the album art or background and keeps it visible, and made the album art background and visualizer much lighter on the GPU v74.6.0
+Cut GPU work while music plays: the album art drift now updates five times a second instead of every screen refresh, halving the cost of glass mode with album art, and the visualizer runs at a steady 30fps on high refresh rate screens v74.6.1
+Background tabs and paused music now use less power: synced lyrics stop polling while the tab is hidden, and the visualizer audio engine sleeps after 5 seconds of paused local playback v74.6.2
+Long song names now show in full in the browser tab with just the "Music - " prefix dropped, instead of being cut off or scrolling, and the player does less work in the background: local files skip progress updates while the tab is hidden and search, chart and recommendation thumbnails load only when scrolled into view v74.7.0
+Auto visualizer colour now actually follows the album cover: it keeps the cover's hue and only adjusts brightness to stay visible, instead of fading almost every song to plain white or black v74.8.0
+Recently Listened To now matches the other dialogs: wider, card rows with an accent border on hover and an always-visible remove button instead of the sliding rows and popping x, and the setting stacks neatly on phones. v74.9.0
+Every dialog is now at least 480px wide, and dialogs built in code finally get their intended width, so Songs with Lyrics, Disguise and Play history are no longer squeezed to 560px v74.10.0
+The Favourites strip in the Library now scrolls left and right with the mouse wheel, trackpad or swipe, with no visible scrollbar, loading more favourites only as you reach the end, and the All list now shows each song's cover on the left like short search results v74.11.0
+Stopped accidental back and forward navigation: trackpad swipe gestures, mouse side buttons and Alt+Left/Right no longer leave the player, and if you try to leave while music is playing the browser asks first v74.11.1
 Added an Introduction page and a Tutorial that goes through every feature with screenshots, including all the hidden right-clicks, long-presses and keys, plus a guide mode (Alt + Shift + G) that tours the player or explains whatever you point at, and only downloads when you open it v75.0.0
-The Tutorial and Introduction now cover every feature, including the sleep timer, all five fullscreen lyric styles, the karaoke page, the Lyrics Maker timeline, the full Billboard chart, artist pages, song share pages and the visualizer designs, with fresh screenshots that use official audio uploads and a glass mode example at high transparency; shortcuts are now presented as tips, in the docs and in guide mode v75.1.0
-Listening no longer leaves any YouTube or doubleclick.net cookies: every player now uses YouTube's privacy-enhanced mode, the YouTube player script is served from SweetEscape itself, and the site opts out of browser ad-interest tracking; also added an llms.txt summary and structured data so search engines and AI assistants can describe the site accurately v75.2.0
-Repo tooling only: the tutorial screenshot script no longer counts its page loads as site visits v75.2.1
-Guide mode's Point and ask no longer blocks the player: clicks and shortcuts work as normal while it explains whatever you hover over, its card stays still long enough to reach, and on touchscreens the first tap explains a control and the second uses it v75.2.2
-Redesigned the From your library shelf: covers now fill each row evenly with the song and artist underneath, a play button slides in on hover, only whole rows are shown so titles are never cut off, the song you're playing stays highlighted as it changes, and All is now Show all v75.3.0
-From your library no longer hides song titles below the edge on shorter screens: when a row of covers doesn't fit it switches to compact tiles with the cover beside the title, and on windows under 760px tall the playlist covers shrink a little to make room v75.3.1
-The page no longer scrolls down into an empty strip below the control bar, and From your library makes room for one more row of songs when it can: the Favourites and Playlists shelves slim down whenever that lets another row fit v75.3.2
-From your library keeps the Favourites and Playlists shelves at full size again and finds its extra row another way: it now reaches down to just above the control bar, a row is added whenever it fits with a slim bottom margin, and compact tiles stay until two rows of covers fit, so far less empty space is left at the bottom v75.3.3
-From your library no longer leaves an empty strip under its compact tiles: when a row almost fits the tiles get a few pixels smaller to make room for it, and otherwise they grow a little to fill the space v75.3.4
-Added Mix Lab to the Global library: pick up to five songs from your library, or type a vibe like "rainy day", "90s R&B" or "songs like Daft Punk", and Make my mix finds up to 24 songs that aren't in your library yet, each labelled with the pick it came from. Click a cover to preview the official topic track (each song is looked up on YouTube once and then shared through the Global library cache, so later previews don't use any search quota), + opens Add Song with the name, artist and link filled in, New picks deals a fresh set and the x hides a song you don't want. The rest of the player is now hidden while the Global library is open, so glass mode no longer shows the library through it. Song previews now pause whatever was playing and carry on afterwards, show the song's name with an Add to library button, and in glass mode with album-art backgrounds the background follows the song you're previewing v76.0.0
-Mix Lab mixes now play straight through like a playlist: the round Play button plays the whole mix in the player, Shuffle plays it in random order, and clicking a song plays the mix from there, with next, previous, autoplay, the playlist side panel and the miniplayer working as they do for any playlist. Each song's official topic track is looked up just before it plays (the next one in advance, so there's no gap) and more songs are added as the mix nears its end, so it keeps going. Mix Lab also has a cleaner layout: the mix shows as a playlist with a cover collage, a title, its song count and length, and a numbered track list with each song's artist, the pick it came from and its length, with the playing song marked; picks are now songs from your library or a mood, genre or artist v76.1.0
-The control bar now stays at the bottom while the Global library is open, so you can pause, skip and change speed without leaving it, and its playlist button opens the side panel over the Global library. The Global library also opens straight away instead of waiting for its database connection, starts connecting as soon as you point at its button, and no longer reloads the Billboard top three and random picks every time it opens (Refresh deals new picks without a network request). Mix Lab stays fast with long mixes, loads smaller covers in its song list, and cancels its catalog requests when you start a new mix v76.2.0
-Mix Lab can now keep a whole mix: Import as playlist adds every song in it to your library and saves them as a new playlist named after the mix, in the same order, with a live count while it works. Songs you already have are reused instead of added twice, songs that can't be found on YouTube are left out and counted, and importing another mix with the same name saves it as "Mix 2" v76.3.0
-Behind-the-scenes speed and reliability work: repeat YouTube searches, lyrics lookups and music-catalog requests are now answered from the site's cache instead of using up API quota (the same search now always shares one cached answer, and a key that has run out of quota is skipped for the rest of the session). The queue no longer leaks memory each time it is opened, and dragging a song in the queue can no longer move it more than once after the queue has been edited. The database library is pinned to an exact version so it is cached for a year, the player connects to YouTube ahead of time, and routine messages no longer fill the browser console v76.4.0
-Song recognition, MP3 downloads and lyrics lookups now switch to the backup API key straight away once the first one runs out for the month, instead of trying the used-up key first on every request (recognition no longer uploads your clip twice). A key that is used up or rejected is set aside for an hour and then tried again, a song with no lyrics no longer spends the backup key on a second identical lookup, and the "quota exhausted" message now only appears when both keys really are out v76.4.1
-Auto-Fetch Lyrics in the Lyrics Maker now gets its words from Musixmatch instead of the old Genius service, which had stopped working. It understands raw YouTube titles like "Artist - Song (Official Video)" and channel names like "ArtistVEVO" or "Artist - Topic", picks the original recording over remixes and covers, skips songs whose lyrics Musixmatch can't show, and still falls back to lyrics.ovh if nothing is found. The tutorial and introduction pages now say Musixmatch too v76.5.0
-The download window's Search library tab now lists every song in your library from A to Z, so you can scroll through all of them instead of seeing only five matches, and its search understands Russian, Korean, Japanese and Greek songs typed in Latin letters just like the library search, with exact matches listed first. Songs you have already downloaded (or linked to a file on your device) are marked Downloaded, with the date, in the list, on the current song and in the queue, and the list shows how many of your songs you have downloaded. The list stays fast with thousands of songs, Escape clears the search instead of closing the window, pressing Enter to finish typing in Japanese, Korean or Chinese no longer adds a song by mistake, and a song removed from the queue is no longer retried in the background v76.6.0
-The download window's icons now match the library cards: songs you have downloaded show the same green download arrow the library uses (hover it for the date), and the add, download, retry and remove buttons are the same plain icons that turn green (or red for remove) on hover. In the queue, the downloaded arrow sits next to the song's status so it is no longer confused with the download button v76.6.1
-The Playlists tab has been redesigned to match the library. Playlists are cover tiles now (Favorites first, the one that's playing outlined) that play when you click them, with edit and delete buttons that appear on hover, instead of a Play button on every row and a separate Edit mode. Deleting a playlist asks you to confirm first and leaves its songs in your library, New playlist asks for a name and opens the editor straight away, an empty playlist opens in the editor instead of showing an error, and you can drag tiles to reorder them (the library shelf follows). Searching shows playlists by name, then playlists that contain a matching song or artist, then matching artists. The new From artist button turns every song by one artist in your library into a playlist named after them, counting featured credits and VEVO or Topic channels, and later offers to add any of their songs you've saved since v76.7.0
-Starting a playlist now turns off the repeat-this-song loop, so the playlist plays through instead of repeating its first song v76.7.1
-The playlist editor has been rebuilt as a wider, two-panel window. Rename a playlist in a Name box at the top instead of clicking its title, see the songs on the left with covers, drag handles and hover buttons to play from a song or remove it, and add songs from your library on the right (search by song or artist like the library, or press Enter to add the top match; songs already in the playlist show a tick). Shuffle and Reverse sit above the list, a Remove duplicates bar appears only when a song is listed twice, and allowing the same song twice is now a switch that starts off. Everything saves as you go, and editing Favorites stars or unstars the songs so it stays in step with your stars. The odd grey bar and stacked green and red buttons are gone v76.8.0
-Every search for your own songs now works like the library search. The queue, the playlist side panel and listening statistics now also match artists and understand Russian, Korean, Japanese and Greek songs typed in Latin letters (gruppa krovi finds Группа крови, bomnal finds 봄날), the side panel searches artists as well as titles, and the queue and playlist editor list the closest matches first: titles that start with what you typed, then titles that contain it, then artists v76.9.0
-Add any song to a playlist from anywhere: hover a song in the library and click +, or press + in the Now Playing tab, to open a menu of your playlists with ticks on the ones it is already in. Click to add or remove it, or start a new playlist with it. Deleting a playlist now offers Undo for a few seconds. The playlist editor gains Sort (by title or artist), Duplicate, and Copy as text, and playlists made with From artist offer to add newer songs by that artist. The editor is also much faster: adding or removing a song takes a few milliseconds instead of a fifth of a second, a 2,000-song playlist opens instantly instead of after half a second, and only the playlist you changed is saved. Reordering, sorting or shuffling the playlist that is playing now carries on from the same song, the Favorites tile updates as soon as you star a song, and dropdowns in dialogs show their arrow again v76.10.0
-The playlist side panel can now sit on either side of the screen in both of its modes: a new swap button moves the floating overlay or the expanded panel between left and right, and each mode remembers its own side. The panel has been restyled as a floating card that stops above the control bar instead of running underneath it, shows the artist under every song, highlights the playing song with a soft tint instead of a solid block, keeps the expanded panel's play and skip buttons out of the way until you hover a song, and has search in both modes. It follows light, dark, custom and glass themes properly because its sizes and colours now come from the design tokens instead of fixed values. The expanded panel keeps the page centred in the space left beside it, and the round buttons at the bottom left get their own lane instead of covering songs. A search in the panel now survives skipping a song, and the Library and Playlists toolbars shrink their buttons to icons when space is tight instead of cutting them off v76.11.0
-Added a Backup Code to export and re-import your whole library, playlists and settings as one compressed code, and a Share Link for individual playlists (/playlist/...) that lets anyone add it to their own library in one click v76.12.0
-Shared playlist links now show every song before you add them, and the Export Songs dropdown finally gets the blurred glass look in Glass mode instead of a flat solid panel v76.13.0
-Fixed the Export Songs dropdown rendering behind the library modification modal it opens from, so hovering Export Songs there now actually shows a usable menu v76.14.0
-Fixed the playlist sidebar in glass mode: the overlay panel (floating over the page) is now more transparent with heavier blur so it no longer turns into an unreadable block when it sits above other text, while the expanded panel (which pushes content aside) keeps its original glass look v76.15.0
-Rewrote the Discord desktop app as SweetEscape RPC 2.0: progress bar and paused status on Discord, reconnects by itself when Discord restarts, only accepts sweetescape.vercel.app, and a new Open app button starts it from the browser; the Windows build now comes from a public GitHub workflow with checksums and a signed build record v76.16.0
-SweetEscape RPC 2.1: a tray setting to hide the SweetEscape icon and button from your Discord status, the site now opens the desktop app by itself on your first click when it has been quit (with a switch to turn that off), and Remove from this PC no longer gets stuck and now also clears the app's settings and log so reinstalling starts fresh v76.17.0
-SweetEscape RPC download is less than half the size (17.8 MB to 8.3 MB) and the app now uses no CPU at all until a SweetEscape tab connects; also hardened the release build so the step that runs build tools can no longer publish releases, and the Discord preview no longer inserts a custom thumbnail URL as HTML v76.18.0
-Your Discord status no longer shows the song title twice: the extra line under the artist is gone (SweetEscape RPC 2.1.1) v76.19.0
-Listening statistics has a plainer look: no icons, no accent-coloured text, the totals sit in one strip and the top 10 is a single ranked list v76.20.0
-SweetEscape RPC 2.2 keeps compressed backups of your whole library on your PC (library, playlists, themes, settings, listening stats and player preferences), weekly by default, with a Library backups tray menu to back up now, pick a schedule and how many to keep, and restore any backup; after a restore the site offers to relink offline songs from your music folder, and the site's own Export backup now covers all of the same data v76.20.0
-The desktop app now only opens when you click Open app in the Discord dialog: removed the automatic launch and its Open the app automatically switch v76.21.0
-Fixed Open app doing nothing on the live site: the site's security policy blocked the sweetescape-rpc link before the browser could ask to open the desktop app v76.22.0
-Import YouTube playlists: paste a playlist link anywhere (or use From YouTube on the Playlists tab) to see every song ticked, untick or rename any, and add them to your library with a matching playlist; songs you already have are never added twice, repeats are merged, unplayable videos are flagged, importing the same playlist again only adds its new songs, and Undo takes it all back v76.23.0
-Videos that can only be played on YouTube are now called out everywhere: the playlist importer marks them Won't play here and leaves them unticked, pasting one into Add Song shows a warning under the link and asks before adding it, and YouTube search no longer suggests them v76.24.0
-Battery saver: a new battery button in the top bar turns off the effects that drain a laptop battery while playback keeps working, and turning it off brings everything back exactly as it was; Settings, Additional has a Normal to Extreme slider, eight options you can tick yourself and an estimated battery saving next to each v76.25.0
-Removed the requests for low video quality, which YouTube has ignored for years; the player now just picks its own quality for the hidden video, as it already did v76.25.1
-SweetEscape Lite at /lite: a stripped-down player for the songs saved on your device, with search, playlists and lyrics only when you open the Lyrics tab; it looks like the full player, uses far less battery, and opens without internet once you have visited the site v76.26.0
-The introduction and tutorial now cover the battery saver and SweetEscape Lite, with screenshots of both v76.26.1
-The battery saver button now turns into a leaf while it is on, instead of filling with the accent colour v76.26.2
-The visualizer now sleeps between its frames instead of waking on every screen refresh, which saves the most on 120 Hz and 144 Hz screens and when battery saver lowers it to 12 frames a second v76.26.3
-Media keys now work: play, pause, next and previous on the keyboard, headphones or the Windows media overlay control the player, which also shows the song name, artist and cover there; with a disguise on it shows only the disguise title v76.27.0
-SweetEscape can be installed as an app: Install in Settings, Additional (Chrome and Edge) gives it its own window and an icon in the taskbar and Start menu, right-clicking the icon opens SweetEscape Lite, and it keeps the same library v76.28.0
-Cleanup: removed files and code nothing used anymore (the old help page and its 5.5 MB of screenshots, the old song page, an unused theme list, a stale copy of the settings code, an unused Gemini API endpoint, 48 CSS selectors for elements that no longer exist and leftover player state), so the site downloads and parses less v76.28.1
-Your library is safer: SweetEscape now asks the browser to keep its saved songs, playlists and settings instead of clearing them when the disk runs low (Chrome and Edge decide on their own, more readily once it is installed or used often; Firefox asks you once) v76.28.2
-Glass mode: the playlist panel now blurs whatever is behind it much more strongly (even with the blur slider turned all the way down), so its song list stays readable over busy pages, and its buttons are a little larger and use the same expand and loop icons as the rest of the app v76.28.3
-Playlist panel: song artwork is now a clean rounded square instead of a wide frame with coloured bars down both sides, which also leaves more room for song titles v76.28.4
-Lyrics Maker works offline: it plays the song's offline file when it has one, can time lyrics against any audio file you pick (and link it to the song), opens .txt and .lrc lyrics files, and starts with the song's saved lyrics ready to re-time v76.29.0
-Settings opens as a grid of tiles, one per section, and the crowded Theme and Additional tabs are split into Theme, Background & glass, Visualizer, Library, Privacy & stats and App. New Metered connection section saves mobile data (smaller artwork, updates on Wi-Fi, YouTube loaded on first play, no new images, or offline songs only) and has a Cache everything button. App updates now download only the files that changed v76.30.0
-Offline songs only now really stops YouTube: play, the space bar, Find Songs previews, Lyrics Maker and the embed check no longer stream, turning it on pauses a YouTube song that is playing, and moving Strength or ticking an option switches Save Mobile Data on v76.30.1
-Offline songs play reliably again with Offline songs only on: a song whose file needs your permission after a reload now waits for you to press play instead of being skipped along with every song after it, and artwork that cannot load offline shows a saved size or a blank tile instead of a broken image v76.30.2
-New Offline playback section in Settings: choose your music folder and every audio file in it is linked to its song by the YouTube video ID in the file name, or else its YouTube title or the song name, which repairs links that stopped working; it lists which songs have a file and which do not, links new files each time SweetEscape opens, and relinks a song from the folder when its file stops opening v76.31.0
-Linking a music folder now opens its own window: your audio files on one side and your library on the other, with the matching options and live progress on top, pairs appearing as they are found, pairing and unpairing by hand, and nothing saved until you press Save. You can also forget the folder, and the settings tiles use plain icons v76.32.0
-Linking a music folder: Save now works at any time (it could stay greyed out while YouTube titles were looked up), plus Unpair all, Match again and Check for new files, a clearer window that only offers songs to choose once you select a file, and a check for new files when SweetEscape opens or you come back to it v76.33.0
-Linking a music folder is now one simple list: files that did not match come first with Choose song and suggestions, every match below is ticked and can be unticked or changed, and matching options sit at the bottom. The Leave site question when closing during playback can be turned off in Settings, App, and dialog title icons use the text colour v76.34.0
-Every window now closes with Esc, the same way: settings, the Discord window, library and import windows, the timer, changelog, lyrics and stats, every menu and the queue all close on Esc. Only the window on top closes, so a window opened over Settings closes and leaves Settings open, and Esc in a search box with text clears it first. The key is a new Close Window shortcut in Settings, Keyboard shortcuts (Esc by default), which can be changed or turned off v76.35.0
-Keyboard shortcuts are far more flexible: any action can have as many shortcuts as you like, and a shortcut can be a single key, a combination such as Ctrl + Shift + M, or a sequence such as G then T or a double tap. New Set volume to actions put 0, 9, 8 and 7 on 100%, 90%, 80% and 70%, and you can add your own Set volume to, Set speed to, Skip by, Jump to and Open a tab actions with any value. New actions for mute, faster, slower, loop the playlist, autoplay, shuffle the queue, favourite the playing song, fullscreen lyrics, search, settings and shortcuts. The shortcuts page has search, per-action restore, asks before moving a key that is in use, and holding a key no longer flips toggles over and over. Esc also clears notifications straight away. Your existing keys carry over unchanged v76.36.0
+The Tutorial and Introduction now cover every feature, including the sleep timer, all five fullscreen lyric styles, the karaoke page, the Lyrics Maker timeline, the full Billboard chart, artist pages, song share pages and the visualizer designs, with fresh screenshots that use official audio uploads and a glass mode example at high transparency; shortcuts are now presented as tips, in the docs and in guide mode v75.0.1
+Listening no longer leaves any YouTube or doubleclick.net cookies: every player now uses YouTube's privacy-enhanced mode, the YouTube player script is served from SweetEscape itself, and the site opts out of browser ad-interest tracking; also added an llms.txt summary and structured data so search engines and AI assistants can describe the site accurately v75.0.2
+Repo tooling only: the tutorial screenshot script no longer counts its page loads as site visits v75.0.3
+Guide mode's Point and ask no longer blocks the player: clicks and shortcuts work as normal while it explains whatever you hover over, its card stays still long enough to reach, and on touchscreens the first tap explains a control and the second uses it v75.0.4
+Redesigned the From your library shelf: covers now fill each row evenly with the song and artist underneath, a play button slides in on hover, only whole rows are shown so titles are never cut off, the song you're playing stays highlighted as it changes, and All is now Show all v75.1.0
+From your library no longer hides song titles below the edge on shorter screens: when a row of covers doesn't fit it switches to compact tiles with the cover beside the title, and on windows under 760px tall the playlist covers shrink a little to make room v75.1.1
+The page no longer scrolls down into an empty strip below the control bar, and From your library makes room for one more row of songs when it can: the Favourites and Playlists shelves slim down whenever that lets another row fit v75.1.2
+From your library keeps the Favourites and Playlists shelves at full size again and finds its extra row another way: it now reaches down to just above the control bar, a row is added whenever it fits with a slim bottom margin, and compact tiles stay until two rows of covers fit, so far less empty space is left at the bottom v75.2.0
+From your library no longer leaves an empty strip under its compact tiles: when a row almost fits the tiles get a few pixels smaller to make room for it, and otherwise they grow a little to fill the space v75.2.1
+Added Mix Lab to the Global library: pick up to five songs from your library, or type a vibe like "rainy day", "90s R&B" or "songs like Daft Punk", and Make my mix finds up to 24 songs that aren't in your library yet, each labelled with the pick it came from. v76.0.0
+Click a cover to preview the official topic track (each song is looked up on YouTube once and then shared through the Global library cache, so later previews don't use any search quota), + opens Add Song with the name, artist and link filled in, New picks deals a fresh set and the x hides a song you don't want. v76.1.0
+The rest of the player is now hidden while the Global library is open, so glass mode no longer shows the library through it. v76.1.1
+Song previews now pause whatever was playing and carry on afterwards, show the song's name with an Add to library button, and in glass mode with album-art backgrounds the background follows the song you're previewing v76.2.0
+Mix Lab mixes now play straight through like a playlist: the round Play button plays the whole mix in the player, Shuffle plays it in random order, and clicking a song plays the mix from there, with next, previous, autoplay, the playlist side panel and the miniplayer working as they do for any playlist. v76.3.0
+Each song's official topic track is looked up just before it plays (the next one in advance, so there's no gap) and more songs are added as the mix nears its end, so it keeps going. v76.4.0
+Mix Lab also has a cleaner layout: the mix shows as a playlist with a cover collage, a title, its song count and length, and a numbered track list with each song's artist, the pick it came from and its length, with the playing song marked; picks are now songs from your library or a mood, genre or artist v76.5.0
+The control bar now stays at the bottom while the Global library is open, so you can pause, skip and change speed without leaving it, and its playlist button opens the side panel over the Global library. v76.6.0
+The Global library also opens straight away instead of waiting for its database connection, starts connecting as soon as you point at its button, and no longer reloads the Billboard top three and random picks every time it opens (Refresh deals new picks without a network request). v76.6.1
+Mix Lab stays fast with long mixes, loads smaller covers in its song list, and cancels its catalog requests when you start a new mix v76.7.0
+Mix Lab can now keep a whole mix: Import as playlist adds every song in it to your library and saves them as a new playlist named after the mix, in the same order, with a live count while it works. v76.8.0
+Songs you already have are reused instead of added twice, songs that can't be found on YouTube are left out and counted, and importing another mix with the same name saves it as "Mix 2" v76.9.0
+Behind-the-scenes speed and reliability work: repeat YouTube searches, lyrics lookups and music-catalog requests are now answered from the site's cache instead of using up API quota (the same search now always shares one cached answer, and a key that has run out of quota is skipped for the rest of the session). v76.9.1
+The queue no longer leaks memory each time it is opened, and dragging a song in the queue can no longer move it more than once after the queue has been edited. v76.9.2
+The database library is pinned to an exact version so it is cached for a year, the player connects to YouTube ahead of time, and routine messages no longer fill the browser console v76.9.3
+Song recognition, MP3 downloads and lyrics lookups now switch to the backup API key straight away once the first one runs out for the month, instead of trying the used-up key first on every request (recognition no longer uploads your clip twice). v76.10.0
+A key that is used up or rejected is set aside for an hour and then tried again, a song with no lyrics no longer spends the backup key on a second identical lookup, and the "quota exhausted" message now only appears when both keys really are out v76.10.1
+Auto-Fetch Lyrics in the Lyrics Maker now gets its words from Musixmatch instead of the old Genius service, which had stopped working. v76.10.2
+It understands raw YouTube titles like "Artist - Song (Official Video)" and channel names like "ArtistVEVO" or "Artist - Topic", picks the original recording over remixes and covers, skips songs whose lyrics Musixmatch can't show, and still falls back to lyrics.ovh if nothing is found. The tutorial and introduction pages now say Musixmatch too v76.11.0
+The download window's Search library tab now lists every song in your library from A to Z, so you can scroll through all of them instead of seeing only five matches, and its search understands Russian, Korean, Japanese and Greek songs typed in Latin letters just like the library search, with exact matches listed first. v76.12.0
+Songs you have already downloaded (or linked to a file on your device) are marked Downloaded, with the date, in the list, on the current song and in the queue, and the list shows how many of your songs you have downloaded. v76.12.1
+The list stays fast with thousands of songs, Escape clears the search instead of closing the window, pressing Enter to finish typing in Japanese, Korean or Chinese no longer adds a song by mistake, and a song removed from the queue is no longer retried in the background v76.13.0
+The download window's icons now match the library cards: songs you have downloaded show the same green download arrow the library uses (hover it for the date), and the add, download, retry and remove buttons are the same plain icons that turn green (or red for remove) on hover. v76.14.0
+In the queue, the downloaded arrow sits next to the song's status so it is no longer confused with the download button v76.14.1
+The Playlists tab has been redesigned to match the library. Playlists are cover tiles now (Favorites first, the one that's playing outlined) that play when you click them, with edit and delete buttons that appear on hover, instead of a Play button on every row and a separate Edit mode. v77.0.0
+Deleting a playlist asks you to confirm first and leaves its songs in your library, New playlist asks for a name and opens the editor straight away, an empty playlist opens in the editor instead of showing an error, and you can drag tiles to reorder them (the library shelf follows). v77.1.0
+Searching shows playlists by name, then playlists that contain a matching song or artist, then matching artists. v77.1.1
+The new From artist button turns every song by one artist in your library into a playlist named after them, counting featured credits and VEVO or Topic channels, and later offers to add any of their songs you've saved since v77.2.0
+Starting a playlist now turns off the repeat-this-song loop, so the playlist plays through instead of repeating its first song v77.3.0
+The playlist editor has been rebuilt as a wider, two-panel window. Rename a playlist in a Name box at the top instead of clicking its title, see the songs on the left with covers, drag handles and hover buttons to play from a song or remove it, and add songs from your library on the right (search by song or artist like the library, or press Enter to add the top match; songs already in the playlist show a tick). v77.3.1
+Shuffle and Reverse sit above the list, a Remove duplicates bar appears only when a song is listed twice, and allowing the same song twice is now a switch that starts off. v77.4.0
+Everything saves as you go, and editing Favorites stars or unstars the songs so it stays in step with your stars. The odd grey bar and stacked green and red buttons are gone v77.4.1
+Every search for your own songs now works like the library search. The queue, the playlist side panel and listening statistics now also match artists and understand Russian, Korean, Japanese and Greek songs typed in Latin letters (gruppa krovi finds Группа крови, bomnal finds 봄날), the side panel searches artists as well as titles, and the queue and playlist editor list the closest matches first: titles that start with what you typed, then titles that contain it, then artists v77.5.0
+Add any song to a playlist from anywhere: hover a song in the library and click +, or press + in the Now Playing tab, to open a menu of your playlists with ticks on the ones it is already in. Click to add or remove it, or start a new playlist with it. Deleting a playlist now offers Undo for a few seconds. v77.6.0
+The playlist editor gains Sort (by title or artist), Duplicate, and Copy as text, and playlists made with From artist offer to add newer songs by that artist. v77.7.0
+The editor is also much faster: adding or removing a song takes a few milliseconds instead of a fifth of a second, a 2,000-song playlist opens instantly instead of after half a second, and only the playlist you changed is saved. v77.7.1
+Reordering, sorting or shuffling the playlist that is playing now carries on from the same song, the Favorites tile updates as soon as you star a song, and dropdowns in dialogs show their arrow again v77.8.0
+The playlist side panel can now sit on either side of the screen in both of its modes: a new swap button moves the floating overlay or the expanded panel between left and right, and each mode remembers its own side. v77.9.0
+The panel has been restyled as a floating card that stops above the control bar instead of running underneath it, shows the artist under every song, highlights the playing song with a soft tint instead of a solid block, keeps the expanded panel's play and skip buttons out of the way until you hover a song, and has search in both modes. v77.9.1
+It follows light, dark, custom and glass themes properly because its sizes and colours now come from the design tokens instead of fixed values. v77.9.2
+The expanded panel keeps the page centred in the space left beside it, and the round buttons at the bottom left get their own lane instead of covering songs. v77.9.3
+A search in the panel now survives skipping a song, and the Library and Playlists toolbars shrink their buttons to icons when space is tight instead of cutting them off v77.10.0
+Added a Backup Code to export and re-import your whole library, playlists and settings as one compressed code, and a Share Link for individual playlists (/playlist/...) that lets anyone add it to their own library in one click v77.11.0
+Shared playlist links now show every song before you add them, and the Export Songs dropdown finally gets the blurred glass look in Glass mode instead of a flat solid panel v77.12.0
+Fixed the Export Songs dropdown rendering behind the library modification modal it opens from, so hovering Export Songs there now actually shows a usable menu v77.12.1
+Fixed the playlist sidebar in glass mode: the overlay panel (floating over the page) is now more transparent with heavier blur so it no longer turns into an unreadable block when it sits above other text, while the expanded panel (which pushes content aside) keeps its original glass look v77.12.2
+Rewrote the Discord desktop app as SweetEscape RPC 2.0: progress bar and paused status on Discord, reconnects by itself when Discord restarts, only accepts sweetescape.vercel.app, and a new Open app button starts it from the browser; the Windows build now comes from a public GitHub workflow with checksums and a signed build record v78.0.0
+SweetEscape RPC 2.1: a tray setting to hide the SweetEscape icon and button from your Discord status, the site now opens the desktop app by itself on your first click when it has been quit (with a switch to turn that off), and Remove from this PC no longer gets stuck and now also clears the app's settings and log so reinstalling starts fresh v78.1.0
+SweetEscape RPC download is less than half the size (17.8 MB to 8.3 MB) and the app now uses no CPU at all until a SweetEscape tab connects; also hardened the release build so the step that runs build tools can no longer publish releases, and the Discord preview no longer inserts a custom thumbnail URL as HTML v78.2.0
+Your Discord status no longer shows the song title twice: the extra line under the artist is gone (SweetEscape RPC 2.1.1) v78.2.1
+Listening statistics has a plainer look: no icons, no accent-coloured text, the totals sit in one strip and the top 10 is a single ranked list v78.2.2
+SweetEscape RPC 2.2 keeps compressed backups of your whole library on your PC (library, playlists, themes, settings, listening stats and player preferences), weekly by default, with a Library backups tray menu to back up now, pick a schedule and how many to keep, and restore any backup; after a restore the site offers to relink offline songs from your music folder, and the site's own Export backup now covers all of the same data v78.3.0
+The desktop app now only opens when you click Open app in the Discord dialog: removed the automatic launch and its Open the app automatically switch v78.3.1
+Fixed Open app doing nothing on the live site: the site's security policy blocked the sweetescape-rpc link before the browser could ask to open the desktop app v78.3.2
+Import YouTube playlists: paste a playlist link anywhere (or use From YouTube on the Playlists tab) to see every song ticked, untick or rename any, and add them to your library with a matching playlist; songs you already have are never added twice, repeats are merged, unplayable videos are flagged, importing the same playlist again only adds its new songs, and Undo takes it all back v79.0.0
+Videos that can only be played on YouTube are now called out everywhere: the playlist importer marks them Won't play here and leaves them unticked, pasting one into Add Song shows a warning under the link and asks before adding it, and YouTube search no longer suggests them v79.1.0
+Battery saver: a new battery button in the top bar turns off the effects that drain a laptop battery while playback keeps working, and turning it off brings everything back exactly as it was; Settings, Additional has a Normal to Extreme slider, eight options you can tick yourself and an estimated battery saving next to each v80.0.0
+Removed the requests for low video quality, which YouTube has ignored for years; the player now just picks its own quality for the hidden video, as it already did v80.0.1
+SweetEscape Lite at /lite: a stripped-down player for the songs saved on your device, with search, playlists and lyrics only when you open the Lyrics tab; it looks like the full player, uses far less battery, and opens without internet once you have visited the site v81.0.0
+The introduction and tutorial now cover the battery saver and SweetEscape Lite, with screenshots of both v81.1.0
+The battery saver button now turns into a leaf while it is on, instead of filling with the accent colour v81.2.0
+The visualizer now sleeps between its frames instead of waking on every screen refresh, which saves the most on 120 Hz and 144 Hz screens and when battery saver lowers it to 12 frames a second v81.3.0
+Media keys now work: play, pause, next and previous on the keyboard, headphones or the Windows media overlay control the player, which also shows the song name, artist and cover there; with a disguise on it shows only the disguise title v81.4.0
+SweetEscape can be installed as an app: Install in Settings, Additional (Chrome and Edge) gives it its own window and an icon in the taskbar and Start menu, right-clicking the icon opens SweetEscape Lite, and it keeps the same library v81.5.0
+Cleanup: removed files and code nothing used anymore (the old help page and its 5.5 MB of screenshots, the old song page, an unused theme list, a stale copy of the settings code, an unused Gemini API endpoint, 48 CSS selectors for elements that no longer exist and leftover player state), so the site downloads and parses less v81.5.1
+Your library is safer: SweetEscape now asks the browser to keep its saved songs, playlists and settings instead of clearing them when the disk runs low (Chrome and Edge decide on their own, more readily once it is installed or used often; Firefox asks you once) v81.6.0
+Glass mode: the playlist panel now blurs whatever is behind it much more strongly (even with the blur slider turned all the way down), so its song list stays readable over busy pages, and its buttons are a little larger and use the same expand and loop icons as the rest of the app v81.7.0
+Playlist panel: song artwork is now a clean rounded square instead of a wide frame with coloured bars down both sides, which also leaves more room for song titles v81.8.0
+Lyrics Maker works offline: it plays the song's offline file when it has one, can time lyrics against any audio file you pick (and link it to the song), opens .txt and .lrc lyrics files, and starts with the song's saved lyrics ready to re-time v81.9.0
+Settings opens as a grid of tiles, one per section, and the crowded Theme and Additional tabs are split into Theme, Background & glass, Visualizer, Library, Privacy & stats and App. v82.0.0
+New Metered connection section saves mobile data (smaller artwork, updates on Wi-Fi, YouTube loaded on first play, no new images, or offline songs only) and has a Cache everything button. App updates now download only the files that changed v83.0.0
+Offline songs only now really stops YouTube: play, the space bar, Find Songs previews, Lyrics Maker and the embed check no longer stream, turning it on pauses a YouTube song that is playing, and moving Strength or ticking an option switches Save Mobile Data on v83.0.1
+Offline songs play reliably again with Offline songs only on: a song whose file needs your permission after a reload now waits for you to press play instead of being skipped along with every song after it, and artwork that cannot load offline shows a saved size or a blank tile instead of a broken image v83.1.0
+New Offline playback section in Settings: choose your music folder and every audio file in it is linked to its song by the YouTube video ID in the file name, or else its YouTube title or the song name, which repairs links that stopped working; it lists which songs have a file and which do not, links new files each time SweetEscape opens, and relinks a song from the folder when its file stops opening v84.0.0
+Linking a music folder now opens its own window: your audio files on one side and your library on the other, with the matching options and live progress on top, pairs appearing as they are found, pairing and unpairing by hand, and nothing saved until you press Save. v84.1.0
+You can also forget the folder, and the settings tiles use plain icons v84.2.0
+Linking a music folder: Save now works at any time (it could stay greyed out while YouTube titles were looked up), plus Unpair all, Match again and Check for new files, a clearer window that only offers songs to choose once you select a file, and a check for new files when SweetEscape opens or you come back to it v84.3.0
+Linking a music folder is now one simple list: files that did not match come first with Choose song and suggestions, every match below is ticked and can be unticked or changed, and matching options sit at the bottom. v84.4.0
+The Leave site question when closing during playback can be turned off in Settings, App, and dialog title icons use the text colour v84.5.0
+Every window now closes with Esc, the same way: settings, the Discord window, library and import windows, the timer, changelog, lyrics and stats, every menu and the queue all close on Esc. v84.6.0
+Only the window on top closes, so a window opened over Settings closes and leaves Settings open, and Esc in a search box with text clears it first. v84.6.1
+The key is a new Close Window shortcut in Settings, Keyboard shortcuts (Esc by default), which can be changed or turned off v84.6.2
+Keyboard shortcuts are far more flexible: any action can have as many shortcuts as you like, and a shortcut can be a single key, a combination such as Ctrl + Shift + M, or a sequence such as G then T or a double tap. v85.0.0
+New Set volume to actions put 0, 9, 8 and 7 on 100%, 90%, 80% and 70%, and you can add your own Set volume to, Set speed to, Skip by, Jump to and Open a tab actions with any value. v85.1.0
+New actions for mute, faster, slower, loop the playlist, autoplay, shuffle the queue, favourite the playing song, fullscreen lyrics, search, settings and shortcuts. v85.2.0
+The shortcuts page has search, per-action restore, asks before moving a key that is in use, and holding a key no longer flips toggles over and over. Esc also clears notifications straight away. Your existing keys carry over unchanged v85.2.1
